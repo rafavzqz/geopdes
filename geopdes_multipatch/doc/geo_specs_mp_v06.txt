@@ -1,0 +1,208 @@
+###########################################################
+# Explanation of the format for multipatch geometry files #
+###########################################################
+#
+# The format is based on the paper:
+#   [1] T. Dokken, E. Quak, V. Skytt.
+#   Requirements from Isogeometric Analysis for changes in product design ontologies, 2010.
+#
+# NOTATION
+#  We use the following notation:
+#
+# N               : dimension of the geometry
+# Np              : number of patches to construct the geometry
+# Ni              : total number of interfaces, each one connecting two patches
+# p(i)            : NURBS (or spline) degree in the Cartesian direction x_i
+# ncp(i)          : number of control points in the Cartesian direction x_i
+# knots{i}        : knot sequence in the Cartesian direction x_i
+# cp_x, cp_y, cp_z: coordinates of the weighted control points
+#                   (see Section 4.2 of The NURBS Book, L. Piegl & W. Tiller)
+# weights         : weight associated to each basis function (or control point)
+#
+#  And for the interfaces between patch we use the following (see [1]):
+#
+# patch1: number of the first patch on the coinciding boundary interface.
+# side1:  the boundary surface index on patch1, for the coinciding surface/edge.
+# patch2: number of the second patch on the coinciding boundary interface.
+# side2:  the boundary surface index on patch2, for the coinciding surface/edge.
+#
+#  For 2D multipatch geometries
+#
+# ornt:  a flag telling if the parameter direction on the edge of patch1 matches
+#         the parameter direction on the edge of patch2.
+#
+#  For 3D multipatch geometries
+#
+# flag:  a flag telling if the two parameters directions on side1 coincide 
+#         with the two parameter directions on side2.
+# ornt1: a flag telling if the first parameter direction on side1 matches the 
+#         corresponding parameter direction on side2.
+# ornt2: a flag telling if the second parameter direction on side1 matches the
+#         corresponding parameter direction on side2.
+#
+#
+# FILE STRUCTURE:
+#
+# The file starts with a header containing information about the file,
+#  formed by an arbitrary number of lines starting with the symbol "#".
+#
+# The first line after the header gives the dimension and the number 
+#   of patches and interfaces between patches.
+#
+#   N Np Ni      (3 integer values)
+#
+# Then follow Np records containing the information for each patch.
+#
+#   p          (N integer values)
+#   ncp        (N integer values)
+#   knots{i}   (N lines, each one with  ncp(i)+p(i)+1  float values)
+#   cp_x       (prod_{i=1}^{N} ncp(i) float values)
+#   cp_y       (prod_{i=1}^{N} ncp(i) float values)
+#   cp_z       (prod_{i=1}^{N} ncp(i) float values)
+#   weights    (prod_{i=1}^{N} ncp(i) float values)
+#
+# And then Ni records with the information for each interface.
+#
+# For 2D multipatch geometries:
+#
+#   name:          (string)
+#   patch1, side1: (2 integer values)
+#   patch2, side2: (2 integer values)
+#   ornt:          (1 integer value)
+#
+# And for 3D multipatch geometries:
+#
+#   name:               (string)
+#   patch1, side1:      (2 integer values)
+#   patch2, side2:      (2 integer values)
+#   flag, ornt1, ornt2: (3 integer values)
+#
+# The control points are numbered in a reverse lexicographic order: starting
+#  from the origin, we first increase the parametric coordinate x_1 and then 
+#  the parametric coordinate x_2 (and for 3D cases, then the coordinate x_3).
+#
+# For the interfaces and boundary information, we assign a number to each side
+#  of the parametric domain, which is inherited by the boundaries of the
+#  physical one. The numbers assigned in the parametric domain are the following
+#
+#            2D CASE                        3D CASE
+#    Edge 1, {(u,v) : u = 0}        Face 1, {(u,v,w) : u = 0}
+#    Edge 2, {(u,v) : u = 1}        Face 2, {(u,v,w) : u = 1}
+#    Edge 3, {(u,v) : v = 0}        Face 3, {(u,v,w) : v = 0}
+#    Edge 4, {(u,v) : v = 1}        Face 4, {(u,v,w) : v = 1}
+#                                   Face 5, {(u,v,w) : w = 0}
+#                                   Face 6, {(u,v,w) : w = 1}
+#
+# Optionally, some information about the boundary may be added, to impose the 
+#  same boundary condition on different sides.
+#
+# In this case, we add as many records as boundaries, with the following information:
+#
+#   name:         (string)
+#   nsides:       (1 integer value)
+#   patch, side:  (nsides lines, each one with 2 integer values)
+#  
+#
+# EXAMPLE
+#
+#  The geometry is a three-dimensional thick L-shaped domain, with coordinates
+#
+#   Omega = (-1,1)^3 \ [(0,1) x (-1,0) x (0,1)].
+#
+#  It is defined with three patches, which correspond to the coordinates
+#
+#   Omega_1 = (-1,0) x (-1,0) x (0,1)
+#   Omega_2 = (-1,0) x  (0,1) x (0,1)
+#   Omega_3 =  (0,1) x  (0,1) x (0,1)
+#
+#  The first and third patches are translations of the reference domain.
+#  The second patch has been rotated, to 
+#  The first interface matches the first and second patches.
+#  The second interface matches the second and third patches.
+#  The exterior boundaries are as follows:
+#
+#   Gamma_1 = {0}    x (-1,0) x (0,1)
+#   Gamma_2 = (0,1)  x   {0}  x (0,1)
+#   Gamma_3 = (-1,0) x  {-1}  x (0,1)
+#   Gamma_4 = {1}    x  (0,1) x (0,1)
+#   Gamma_5 = {-1}   x (-1,1) x (0,1)
+#   Gamma_6 = (-1,1) x   {1}  x (0,1)
+#   Gamma_7 = [(-1,1)^2 \ [(0,1) x (-1,0)]] x {0} (lower part)
+#   Gamma_8 = [(-1,1)^2 \ [(0,1) x (-1,0)]] x {1} (upper part)
+#
+# HEADER
+# file: geo_specs_mp_v06.txt
+# nurbs geometry v.0.6
+#
+# Thick L-shaped domain, defined with three patches
+# The patch in the middle has been rotated with respect to the reference domain
+# The faces adjacent to the reentrant edge have reference numbers 1 and 2
+# The other boundary faces have reference number from 3 to 8
+# September 20th 2010
+#
+3 3 2
+1 1 1
+2 2 2
+0.00000   0.00000   1.00000   1.00000
+0.00000   0.00000   1.00000   1.00000
+0.00000   0.00000   1.00000   1.00000
+-1.0000   0.00000  -1.00000   0.00000  -1.00000   0.00000  -1.00000   0.00000
+-1.0000  -1.00000   0.00000   0.00000  -1.00000  -1.00000   0.00000   0.00000
+0.00000   0.00000   0.00000   0.00000   1.00000   1.00000   1.00000   1.00000
+1.00000   1.00000   1.00000   1.00000   1.00000   1.00000   1.00000   1.00000
+1 1 1
+2 2 2
+0.00000   0.00000   1.00000   1.00000
+0.00000   0.00000   1.00000   1.00000
+0.00000   0.00000   1.00000   1.00000
+0.00000  -1.00000   0.00000  -1.00000   0.00000  -1.00000   0.00000  -1.00000
+0.00000   0.00000   1.00000   1.00000   0.00000   0.00000   1.00000   1.00000
+1.00000   1.00000   1.00000   1.00000   0.00000   0.00000   0.00000   0.00000
+1.00000   1.00000   1.00000   1.00000   1.00000   1.00000   1.00000   1.00000
+1 1 1
+2 2 2
+0.00000   0.00000   1.00000   1.00000
+0.00000   0.00000   1.00000   1.00000
+0.00000   0.00000   1.00000   1.00000
+0.00000   1.00000   0.00000   1.00000   0.00000   1.00000   0.00000   1.00000
+0.00000   0.00000   1.00000   1.00000   0.00000   0.00000   1.00000   1.00000
+0.00000   0.00000   0.00000   0.00000   1.00000   1.00000   1.00000   1.00000
+1.00000   1.00000   1.00000   1.00000   1.00000   1.00000   1.00000   1.00000
+INTERFACE 1
+1 4
+2 3
+1 -1 -1
+INTERFACE 2
+2 1
+3 1
+1 1 -1
+BOUNDARY 1
+1
+1 2
+BOUNDARY 2
+1
+3 3
+BOUNDARY 3
+1
+1 3
+BOUNDARY 4
+1
+3 2
+BOUNDARY 5
+2
+1 1
+2 2
+BOUNDARY 6
+2
+2 4
+3 4
+BOUNDARY 7
+3
+1 5
+2 6
+3 5
+BOUNDARY 8
+3
+1 6
+2 5
+3 6
