@@ -1,0 +1,11 @@
+geopdes_elasticity >> Iso-Geometric Analysis for Linear Elasticity Problems
+Operators
+ op_su_ev
+ op_pn_v
+Examples
+ ex_nurbs_linear_elasticity_3d
+ ex_nurbs_plane_strain_2d
+ geopdes_elasticity_examples
+Multipatch
+ ex_nurbs_linear_elasticity_3d_mp
+ ex_nurbs_plane_strain_2d_mp

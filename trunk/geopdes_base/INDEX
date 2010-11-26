@@ -1,0 +1,49 @@
+geopdes_base >> A research tool for Iso-Geometric Analysis of PDEs
+Geometry
+ geo_2d_nurbs
+ geo_3d_nurbs
+ geo_load
+ geo_read_nurbs
+Mesh
+ msh_gauss_nodes
+ msh_set_quad_nodes
+ msh_push_forward_2d
+ msh_2d_tensor_product
+ msh_push_forward_3d
+ msh_3d_tensor_product
+Space
+ sp_bspline_1d_param
+ sp_bspline_2d_param
+ sp_bspline_2d_phys
+ sp_bspline_3d_param
+ sp_bspline_3d_phys
+ sp_nurbs_2d_param
+ sp_nurbs_2d_phys
+ sp_nurbs_3d_param
+ sp_nurbs_3d_phys
+ sp_eval_2d
+ sp_eval_3d
+ sp_h1_error
+ sp_l2_error
+ sp_to_vtk_2d
+ sp_to_vtk_3d
+ sp_drchlt_l2_proj
+ sp_scalar_to_vector_2d
+ sp_scalar_to_vector_3d
+Operators
+ op_f_v
+ op_gradu_gradv
+ op_u_v
+Examples
+ geopdes_base_examples
+ ex_nurbs_laplace_2d
+ ex_nurbs_laplace_3d
+ ex_bspline_laplace_2d
+ ex_bspline_laplace_3d
+ ex_bspline_laplace_2d_eig
+ ex_bspline_laplace_param_2d
+ ex_nurbs_laplace_2d_15lines
+ ex_article_section_511
+ ex_article_section_512
+ ex_article_section_513
+ ex_article_section_514
