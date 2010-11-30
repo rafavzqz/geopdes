@@ -49,12 +49,14 @@ function msh_to_vtk_3d (pts, values, filename, fieldname)
 '</StructuredGrid> \n', ...
 '</VTKFile> \n');
 
-  npts = size (squeeze (pts(1,:,:)));
+  npts = size (squeeze (pts(1,:,:,:)));
 
   if (numel (size (values)) == 3)
     fieldclass = 'Scalars';
+    ncomp = 1;
   else
     fieldclass = 'Vectors';
+    ncomp = 3;
   end
   
   if (length (filename) < 4 || ~strcmp (filename(end-3:end), '.vts'))
@@ -68,7 +70,7 @@ function msh_to_vtk_3d (pts, values, filename, fieldname)
   fprintf (fid, str1, ...
            npts(1)-1, npts(2)-1, npts(3)-1, ...
            npts(1)-1, npts(2)-1, npts(3)-1,...
-           fieldclass, fieldname, fieldname, space.ncomp);
+           fieldclass, fieldname, fieldname, ncomp);
   
   fprintf (fid, '%g ', values(:));
   fprintf (fid, str2);
