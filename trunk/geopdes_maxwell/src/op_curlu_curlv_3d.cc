@@ -71,7 +71,10 @@ OUTPUT: \n\
                               s += spv.shape_function_curls (icmp, inode, idof, iel) * spu.shape_function_curls (icmp, inode, jdof, iel);
 
 			    V(counter) += 
-			      msh.jacdet (inode, iel) * msh.weights (inode, iel) * s;
+			      msh.jacdet (inode, iel) * 
+                              msh.weights (inode, iel) * 
+                              coeff (inode, iel) *
+                              s;
 			  }  
 		      } // end for inode		  
 		    counter++;
