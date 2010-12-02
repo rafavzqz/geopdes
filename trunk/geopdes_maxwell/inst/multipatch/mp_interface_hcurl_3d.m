@@ -30,11 +30,11 @@
 
 function [glob_num, glob_ndof, dofs_ornt] = mp_interface_hcurl_3d (interfaces, sp)
 
-  edge_face = [4 12 5 8; 2 10 6 7; 1 9 5 6; 3 11 8 7; 1 3 4 2; 9 11 12 10];
+  edges_in_face = [4 12 5 8; 2 10 6 7; 1 9 5 6; 3 11 8 7; 1 3 4 2; 9 11 12 10];
 
   dofs_ornt = cell (numel (sp), 1);
   for iptc = 1:numel(sp)
-    dofs_ornt{iptc} = ones (1, sp{iptc}.ndof);
+    dofs_ornt{iptc} = zeros (1, sp{iptc}.ndof);
   end
 
   if (~isempty (interfaces))
@@ -69,8 +69,9 @@ function [glob_num, glob_ndof, dofs_ornt] = mp_interface_hcurl_3d (interfaces, s
     new_dofs = setdiff (1:sp{iptc}.ndof, [sp{iptc}.boundary(sides2(ind)).dofs]);
     glob_num{iptc}(new_dofs) = glob_ndof + [1:numel(new_dofs)];
     glob_ndof = glob_ndof + numel(new_dofs);
+    dofs_ornt{iptc}(new_dofs) = 1;
 
-    cntd_edges = edge_face(sides2(ind),:);
+    cntd_edges = edges_in_face(sides2(ind),:);
     new_edges  = setdiff (1:12, cntd_edges(:));
     edge_num{iptc}(new_edges) = nedges + [1:numel(new_edges)];
     nedges = nedges + numel(new_edges);
@@ -91,6 +92,11 @@ function [glob_num, glob_ndof, dofs_ornt] = mp_interface_hcurl_3d (interfaces, s
         aux = nghbr_dofs{1};
         nghbr_dofs{1} = nghbr_dofs{2}';
         nghbr_dofs{2} = aux';
+        edg_u = [3 4];
+        edg_v = [1 2];
+      else
+        edg_u = [1 2];
+        edg_v = [3 4];
       end
 
       if (interfaces(int).ornt1 == -1)
@@ -98,14 +104,21 @@ function [glob_num, glob_ndof, dofs_ornt] = mp_interface_hcurl_3d (interfaces, s
         nghbr_dofs{2} = flipud (nghbr_dofs{2});
         aux_dofs = nghbr_dofs{1}(:,2:end-1);
         dofs_ornt{nghbr}(aux_dofs) = -1;
+      else
+        aux_dofs = nghbr_dofs{1}(:,2:end-1);
+        dofs_ornt{nghbr}(aux_dofs) = 1;
       end
-      if (edge_ornt(edge_face(face, 1), iptc) == -1)
+      if (edge_ornt(edges_in_face(face_nghbr, edg_u(1)), nghbr) == 0)
+        edge_ornt(edges_in_face(face_nghbr, edg_u(1)), nghbr) = ...
+                                                 interfaces(int).ornt1;
         aux_dofs = nghbr_dofs{1}(:,1);
-        dofs_ornt{nghbr}(aux_dofs) = -1;
+        dofs_ornt{nghbr}(aux_dofs) = interfaces(int).ornt1;
       end
-      if (edge_ornt(edge_face(face, 2), iptc) == -1)
+      if (edge_ornt(edges_in_face(face_nghbr, edg_u(2)), nghbr) == 0)
+        edge_ornt(edges_in_face(face_nghbr, edg_u(2)), nghbr) = ...
+                                                 interfaces(int).ornt1;
         aux_dofs = nghbr_dofs{1}(:,end);
-        dofs_ornt{nghbr}(aux_dofs) = -1;
+        dofs_ornt{nghbr}(aux_dofs) = interfaces(int).ornt1;
       end
 
       if (interfaces(int).ornt2 == -1)
@@ -113,14 +126,21 @@ function [glob_num, glob_ndof, dofs_ornt] = mp_interface_hcurl_3d (interfaces, s
         nghbr_dofs{2} = fliplr (nghbr_dofs{2});
         aux_dofs = nghbr_dofs{2}(2:end-1,:);
         dofs_ornt{nghbr}(aux_dofs) = -1;
+      else
+        aux_dofs = nghbr_dofs{2}(2:end-1,:);
+        dofs_ornt{nghbr}(aux_dofs) = 1;
       end
-      if (edge_ornt(edge_face(face, 3), iptc) == -1)
+      if (edge_ornt(edges_in_face(face_nghbr, edg_v(1)), nghbr) == 0)
+        edge_ornt(edges_in_face(face_nghbr, edg_v(1)), nghbr) = ...
+                                                 interfaces(int).ornt2;
         aux_dofs = nghbr_dofs{2}(1,:);
-        dofs_ornt{nghbr}(aux_dofs) = -1;
+        dofs_ornt{nghbr}(aux_dofs) = interfaces(int).ornt2;
       end
-      if (edge_ornt(edge_face(face, 4), iptc) == -1)
+      if (edge_ornt(edges_in_face(face_nghbr, edg_v(2)), nghbr) == 0)
+        edge_ornt(edges_in_face(face_nghbr, edg_v(2)), nghbr) = ...
+                                                 interfaces(int).ornt2;
         aux_dofs = nghbr_dofs{2}(end,:);
-        dofs_ornt{nghbr}(aux_dofs) = -1;
+        dofs_ornt{nghbr}(aux_dofs) = interfaces(int).ornt2;
       end
 
       nghbr_dofs = [nghbr_dofs{1}(:); nghbr_dofs{2}(:)];
@@ -130,5 +150,4 @@ function [glob_num, glob_ndof, dofs_ornt] = mp_interface_hcurl_3d (interfaces, s
       clear nghbr_dofs
     end
   end
-
 end
