@@ -54,7 +54,48 @@
 function [geometry, boundaries, interfaces] = mp_geo_load (in)
   
   if (ischar (in))
-    if (strcmpi (in(end-3:end), '.txt'))
+    if (strcmpi (in(end-3:end), '.mat'))
+      tmp = load(in);
+      geometry   = tmp.geometry;
+      npatch = numel (geometry);
+      dim = numel (geometry(1).nurbs.knots);
+
+      if (dim == 2)
+        for iptc = 1:npatch
+          geometry(iptc).map      =  ...
+            @(PTS) geo_2d_nurbs (geometry(iptc).nurbs, PTS, 0);
+          geometry(iptc).map_der  =  ...
+            @(PTS) geo_2d_nurbs (geometry(iptc).nurbs, PTS, 1);
+          geometry(iptc).map_der2 =  ...
+            @(PTS) geo_2d_nurbs (geometry(iptc).nurbs, PTS, 2);
+        end
+      elseif (dim == 3)
+        for iptc = 1:npatch
+          geometry(iptc).map      =  ...
+            @(PTS) geo_3d_nurbs (geometry(iptc).nurbs, PTS, 0);
+          geometry(iptc).map_der  =  ...
+            @(PTS) geo_3d_nurbs (geometry(iptc).nurbs, PTS, 1);
+        end
+      end
+
+      if (isfield (tmp, 'interfaces'))
+        interfaces = tmp.interfaces;
+      else
+        interfaces = [];
+      end
+
+      if (isfield (tmp, 'boundaries'))
+        boundaries = tmp.boundaries;
+      elseif (npatch == 1)
+        for iface = 1:2*dim
+          boundaries(iface).name = ['BOUNDARY ' num2str(iface)];
+          boundaries(iface).nsides = 1;
+          boundaries(iface).patches = 1;
+          boundaries(iface).faces = iface;
+        end
+      end
+
+    elseif (strcmpi (in(end-3:end), '.txt'))
       [geometry, boundaries, interfaces] = mp_geo_read_nurbs (in);
     else
       error ('mp_geo_load: unknown file extension');
