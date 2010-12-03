@@ -19,6 +19,13 @@ CONTENTS:
 
 Below is a list of the main changes introduced with each new release
 
+Version geopdes_maxwell-1.0.1
+
+* mp_interface_hcurl_3d.m, fixed a bug in setting the orientation of 
+   the functions associated to the edges.
+
+*op_curlu_curlv.cc, fixed a bug where the coefficient was not actually used.
+
 Version geopdes_base-1.0.2 (18/11/2010)
 
 * msh_push_forward_2d.m, msh_push_forward_3d.m. Fixed a bug in the
