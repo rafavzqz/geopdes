@@ -48,48 +48,55 @@ OUTPUT: \n\
 
   if (!error_state)
     {      
+
       ColumnVector I (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
       ColumnVector J (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
       ColumnVector V (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
 
       octave_idx_type counter = 0;
 
-      for ( octave_idx_type iel(0); iel < msh.nel (); iel++)
-        if (msh.area (iel) > 0.0)
-	  {
-	    for ( octave_idx_type idof(0); idof < spv.nsh (iel); idof++) 
-	      {
-	        for ( octave_idx_type jdof(0); jdof < spu.nsh (iel); jdof++)
-		  {
-		    I(counter) = spv.connectivity (idof, iel)-1;
-		    J(counter) = spu.connectivity (jdof, iel)-1;
-		    V(counter) = 0.0;
-		    for ( octave_idx_type inode(0); inode < msh.nqn (); inode++)
-		      {
-		        if (msh.weights (inode, iel) > 0.0)
-			  {
-                            double s = 0.0;
-                            for (octave_idx_type icmp(0); icmp < spu.ncomp (); icmp++)
-                              s += spv.shape_functions (icmp, inode, idof, iel) * spu.shape_functions (icmp, inode, jdof, iel);
-                            
-			    V(counter) += msh.jacdet (inode, iel) * msh.weights (inode, iel) * coeff(inode, iel) * s;			  
-			  }  
-		      } // end for inode
-		    counter++;
-                    //		     if (idof != jdof) // copy upper triangular part to lower
-                    //		      { 
-                    //		        I(counter) = J(counter-1);
-                    //		        J(counter) = I(counter-1);
-                    //		        V(counter) = V(counter-1);
-                    //		        counter++;
-                    //		      } 
-		  } // end for jdof
-	      } // end for idof
-          } else {
-          warning_with_id ("geopdes:zero_measure_element", "op_u_v: element %d has 0 area (or volume)", iel);
-        }  // end for iel, if area > 0
+#pragma omp parallel default (private) shared (msh, spu, spv)
+      {
+        
+#pragma omp for
+        for ( octave_idx_type iel(0); iel < msh.nel (); iel++)
+          if (msh.area (iel) > 0.0)
+            {
+              for ( octave_idx_type idof(0); idof < spv.nsh (iel); idof++) 
+                {
+                  for ( octave_idx_type jdof(0); jdof < spu.nsh (iel); jdof++)
+                    {
+
+                      counter = jdof + spu.nsh (iel) * (idof + spv.nsh (iel) * iel);
+
+                      I(counter) = spv.connectivity (idof, iel)-1;
+                      J(counter) = spu.connectivity (jdof, iel)-1;
+                      V(counter) = 0.0;
+                      for ( octave_idx_type inode(0); inode < msh.nqn (); inode++)
+                        {
+                          if (msh.weights (inode, iel) > 0.0)
+                            {
+                              double s = 0.0;
+                              for (octave_idx_type icmp(0); icmp < spu.ncomp (); icmp++)
+                                s += spv.shape_functions (icmp, inode, idof, iel) *
+                                  spu.shape_functions (icmp, inode, jdof, iel);
+                              
+                              V(counter) += msh.jacdet (inode, iel) * 
+                                msh.weights (inode, iel) * 
+                                coeff(inode, iel) * s;			  
+
+                            }  
+                        } // end for inode
+                    } // end for jdof
+                } // end for idof
+            } else {
+            warning_with_id ("geopdes:zero_measure_element", "op_u_v: element %d has 0 area (or volume)", iel);
+          }  // end for iel, if area > 0
+      } // end of openmp parallel secion
+
       mat = SparseMatrix (V, I, J, spv.ndof (), spu.ndof (), true);
       retval (0) = octave_value (mat);
+
     } // end if !error_state
   return retval;
 }
