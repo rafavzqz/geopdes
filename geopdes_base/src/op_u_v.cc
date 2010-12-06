@@ -53,13 +53,11 @@ OUTPUT: \n\
       ColumnVector J (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
       ColumnVector V (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
 
-      octave_idx_type counter = 0;
-
-#pragma omp parallel default (private) shared (msh, spu, spv, I, J, V, coeff)
+#pragma omp parallel default (none) shared (msh, spu, spv, I, J, V, coeff)
       {
-        
+        octave_idx_type counter;
 #pragma omp for
-        for ( octave_idx_type iel(0); iel < msh.nel (); iel++)
+        for ( octave_idx_type iel=0; iel < msh.nel (); iel++)
           if (msh.area (iel) > 0.0)
             {
               for ( octave_idx_type idof(0); idof < spv.nsh (iel); idof++) 
