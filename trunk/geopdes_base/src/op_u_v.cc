@@ -55,7 +55,7 @@ OUTPUT: \n\
 
       octave_idx_type counter = 0;
 
-#pragma omp parallel default (private) shared (msh, spu, spv)
+#pragma omp parallel default (private) shared (msh, spu, spv, I, J, V, coeff)
       {
         
 #pragma omp for
@@ -92,7 +92,7 @@ OUTPUT: \n\
             } else {
             warning_with_id ("geopdes:zero_measure_element", "op_u_v: element %d has 0 area (or volume)", iel);
           }  // end for iel, if area > 0
-      } // end of openmp parallel secion
+      } // end of openmp parallel section
 
       mat = SparseMatrix (V, I, J, spv.ndof (), spu.ndof (), true);
       retval (0) = octave_value (mat);
