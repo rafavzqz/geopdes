@@ -44,8 +44,15 @@ OUTPUT:\n\
 
   if (!error_state)
     {
+
       ColumnVector mat (sp.ndof (), 0.0);
-      for (octave_idx_type iel(0); iel < msh.nel (); iel++) 
+
+#pragma omp parallel default (none) shared (msh, sp, idx, mat, coeff)
+      {
+        double local_contribution;
+
+#pragma omp for
+      for (octave_idx_type iel=0; iel < msh.nel (); iel++) 
         if (msh.area (iel) > 0.0)
 	  {
 	    for (octave_idx_type idof(0); idof < sp.nsh (iel); idof++) 
@@ -57,17 +64,16 @@ OUTPUT:\n\
                         double s = 0.0;
                         for (octave_idx_type icmp(0); icmp < sp.ncomp (); icmp++)
                             s += sp.shape_functions (icmp, inode, idof, iel) * coeff (icmp, inode, iel);
-
-                        mat(sp.connectivity (idof, iel) - 1) += 
-                          msh.jacdet  (inode, iel) *
-                          msh.weights (inode, iel) *
-                          s;			  
+                        local_contribution = msh.jacdet  (inode, iel) * msh.weights (inode, iel) * s;
+#pragma omp atomic
+                        mat(sp.connectivity (idof, iel) - 1) += local_contribution;			  
                       }  
                   } // end for inode
 	      } // end for idof
           } else {
           warning_with_id ("geopdes:zero_measure_element", "op_f_v: element %d has 0 area (or volume)", iel);
         }  // end for iel, if area > 0
+      }  // end for parallel region
       retval(0) = octave_value (mat);
     } // end if !error_state
   return retval;

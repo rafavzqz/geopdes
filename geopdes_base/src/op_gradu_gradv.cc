@@ -42,15 +42,15 @@ OUTPUT: \n\
   geopdes_space spv (args(1).map_value (), msh);
   Matrix coeff = args(3).matrix_value();
 
-  SparseMatrix mat;
-
   if (!error_state)
     {
+      
       ColumnVector I (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
       ColumnVector J (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
       ColumnVector V (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
      
-
+      SparseMatrix mat;
+        
 #pragma omp parallel default (none) shared (msh, spu, spv, I, J, V, coeff)
       {
         octave_idx_type counter;
@@ -64,7 +64,6 @@ OUTPUT: \n\
                     {
 
                       counter = jdof + spu.nsh (iel) * (idof + spv.nsh (iel) * iel);
-
 
                       I(counter) = spv.connectivity (idof, iel) - 1;
                       J(counter) = spu.connectivity (jdof, iel) - 1;
