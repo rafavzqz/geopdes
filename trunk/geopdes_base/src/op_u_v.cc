@@ -44,14 +44,14 @@ OUTPUT: \n\
 
   Matrix coeff = args(3).matrix_value ();
 
-  SparseMatrix mat;
-
   if (!error_state)
     {      
 
       ColumnVector I (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
       ColumnVector J (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
       ColumnVector V (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
+
+      SparseMatrix mat;
 
 #pragma omp parallel default (none) shared (msh, spu, spv, I, J, V, coeff)
       {
