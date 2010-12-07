@@ -62,7 +62,7 @@ OUTPUT:\n\
                 {
                   for (octave_idx_type jdof(0); jdof < spv.nsh (iel); jdof++)
                     {
-                      counter = jdof + spv.nsh (iel) * (idof + spv.nsh (iel) * iel);
+                      counter = jdof + spv.nsh (iel) * (idof + spp.nsh (iel) * iel);
                       I(counter) = spp.connectivity (idof,iel) - 1;
                       J(counter) = spv.connectivity (jdof,iel) - 1;
                       V(counter) = 0.0;
