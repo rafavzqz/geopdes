@@ -84,6 +84,7 @@ OP_V_GRADP: assemble the matrix B = [b(i,j)], b(i,j) = (epsilon grad p_i, v_j). 
 		  } // end for jdof
 	      } // end for idof
           } else {
+#pragma omp critical
           warning_with_id ("geopdes:zero_measure_element", "op_v_gradp: element %d has 0 area (or volume)", iel);
         }  // end for iel, if area > 0
       } // end of parallel section
