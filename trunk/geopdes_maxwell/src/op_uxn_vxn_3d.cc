@@ -46,69 +46,76 @@ OUTPUT:\n\
 
   SparseMatrix mat;
 
-  double ishp_x_n[3], jshp_x_n[3];
 
   if (!error_state)
     {      
-      ColumnVector I (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
-      ColumnVector J (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
-      ColumnVector V (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
+      Array <octave_idx_type>  I (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
+      Array <octave_idx_type> J (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
+      Array <double> V (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
 
-      octave_idx_type counter = 0;
+#pragma omp parallel default (none) shared (msh, spu, spv, I, J, V, coeff)
+      {
+        double ishp_x_n[3], jshp_x_n[3];
+        octave_idx_type counter;
 
-      for ( octave_idx_type iel(0); iel < msh.nel (); iel++)
-        if (msh.area (iel) > 0.0)
-          {
-            for ( octave_idx_type idof(0); idof < spv.nsh (iel); idof++) 
-	      {
-	        for ( octave_idx_type jdof(0); jdof < spu.nsh (iel); jdof++)
-	  	  {
-		    I(counter) = spv.connectivity (idof, iel)-1;
-		    J(counter) = spu.connectivity (jdof, iel)-1;
-		    V(counter) = 0.0;
-		    for ( octave_idx_type inode(0); inode < msh.nqn (); inode++)
-		      {
-		        if (msh.weights (inode, iel) > 0.0)
-			  {
-                            ishp_x_n[0] =
-                              spv.shape_functions (1, inode, idof, iel) * msh.normal (2, inode, iel) -
-                              spv.shape_functions (2, inode, idof, iel) * msh.normal (1, inode, iel);
-                            ishp_x_n[1] =
-                              spv.shape_functions (2, inode, idof, iel) * msh.normal (0, inode, iel) -
-                              spv.shape_functions (0, inode, idof, iel) * msh.normal (2, inode, iel);
-                            ishp_x_n[2] =
-                              spv.shape_functions (0, inode, idof, iel) * msh.normal (1, inode, iel) -
-                              spv.shape_functions (1, inode, idof, iel) * msh.normal (0, inode, iel);
-                            jshp_x_n[0] =
-                              spu.shape_functions (1, inode, jdof, iel) * msh.normal (2, inode, iel) -
-                              spu.shape_functions (2, inode, jdof, iel) * msh.normal (1, inode, iel);
-                            jshp_x_n[1] =
-                              spu.shape_functions (2, inode, jdof, iel) * msh.normal (0, inode, iel) -
-                              spu.shape_functions (0, inode, jdof, iel) * msh.normal (2, inode, iel);
-                            jshp_x_n[2] =
-                              spu.shape_functions (0, inode, jdof, iel) * msh.normal (1, inode, iel) -
-                              spu.shape_functions (1, inode, jdof, iel) * msh.normal (0, inode, iel);
+#pragma omp for
+        for ( octave_idx_type iel=0; iel < msh.nel (); iel++)
+          if (msh.area (iel) > 0.0)
+            {
+              for ( octave_idx_type idof(0); idof < spv.nsh (iel); idof++) 
+                {
+                  for ( octave_idx_type jdof(0); jdof < spu.nsh (iel); jdof++)
+                    {
 
-                            double s = 0.0;
-                            for (octave_idx_type icmp(0); icmp < spu.ncomp (); icmp++)
-                              s += ishp_x_n[icmp] * jshp_x_n[icmp];
+                      counter = jdof + spu.nsh (iel) * (idof + spv.nsh (iel) * iel);
 
-			    V(counter) += msh.jacdet (inode, iel) * msh.weights (inode, iel) * coeff(inode, iel) * s;
-			  }  
-		      } // end for inode
-		    counter++;
-                    //		   if (idof != jdof) // copy upper triangular part to lower
-//		      { 
-//		        I(counter) = J(counter-1);
-//		        J(counter) = I(counter-1);
-//		        V(counter) = V(counter-1);
-//		        counter++;
-//		      } 
-		  } // end for jdof
-	      } // end for idof
-          } else {
-          warning_with_id ("geopdes:zero_measure_element", "op_uxn_vxn_3d: element %d has 0 area", iel);
-        }  // end for iel, if area > 0
+                      I(counter) = spv.connectivity (idof, iel)-1;
+                      J(counter) = spu.connectivity (jdof, iel)-1;
+                      V(counter) = 0.0;
+
+                      for ( octave_idx_type inode(0); inode < msh.nqn (); inode++)
+                        {
+                          if (msh.weights (inode, iel) > 0.0)
+                            {
+                              ishp_x_n[0] =
+                                spv.shape_functions (1, inode, idof, iel) * msh.normal (2, inode, iel) -
+                                spv.shape_functions (2, inode, idof, iel) * msh.normal (1, inode, iel);
+                              ishp_x_n[1] =
+                                spv.shape_functions (2, inode, idof, iel) * msh.normal (0, inode, iel) -
+                                spv.shape_functions (0, inode, idof, iel) * msh.normal (2, inode, iel);
+                              ishp_x_n[2] =
+                                spv.shape_functions (0, inode, idof, iel) * msh.normal (1, inode, iel) -
+                                spv.shape_functions (1, inode, idof, iel) * msh.normal (0, inode, iel);
+                              jshp_x_n[0] =
+                                spu.shape_functions (1, inode, jdof, iel) * msh.normal (2, inode, iel) -
+                                spu.shape_functions (2, inode, jdof, iel) * msh.normal (1, inode, iel);
+                              jshp_x_n[1] =
+                                spu.shape_functions (2, inode, jdof, iel) * msh.normal (0, inode, iel) -
+                                spu.shape_functions (0, inode, jdof, iel) * msh.normal (2, inode, iel);
+                              jshp_x_n[2] =
+                                spu.shape_functions (0, inode, jdof, iel) * msh.normal (1, inode, iel) -
+                                spu.shape_functions (1, inode, jdof, iel) * msh.normal (0, inode, iel);
+
+                              double s = 0.0;
+                              for (octave_idx_type icmp(0); icmp < spu.ncomp (); icmp++)
+                                s += ishp_x_n[icmp] * jshp_x_n[icmp];
+
+                              V(counter) += msh.jacdet (inode, iel) * msh.weights (inode, iel) * coeff(inode, iel) * s;
+                            }  
+                        } // end for inode
+                      //		   if (idof != jdof) // copy upper triangular part to lower
+                      //		      { 
+                      //		        I(counter) = J(counter-1);
+                      //		        J(counter) = I(counter-1);
+                      //		        V(counter) = V(counter-1);
+                      //		        counter++;
+                      //		      } 
+                    } // end for jdof
+                } // end for idof
+            } else {
+            warning_with_id ("geopdes:zero_measure_element", "op_uxn_vxn_3d: element %d has 0 area", iel);
+          }  // end for iel, if area > 0
+      } // end of parallel section
       mat = SparseMatrix (V, I, J, spv.ndof (), spu.ndof (), true);
       retval (0) = octave_value (mat);
     } // end if !error_state

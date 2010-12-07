@@ -42,23 +42,27 @@ OUTPUT: \n\
   geopdes_space spv (args(1).map_value (), msh);
   Matrix coeff   = args(3).matrix_value();
 
-  SparseMatrix mat;
-
   if (!error_state)
     {
 
-      ColumnVector I (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
-      ColumnVector J (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
-      ColumnVector V (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
-      
-      octave_idx_type counter = 0;
-      for ( octave_idx_type iel(0); iel < msh.nel (); iel++) 
+      Array <octave_idx_type> I (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
+      Array <octave_idx_type> J (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
+      Array <double> V (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
+            
+      SparseMatrix mat;
+
+#pragma omp parallel default (none) shared (msh, spu, spv, I, J, V, coeff)
+      {      
+      octave_idx_type counter;
+#pragma omp for
+      for ( octave_idx_type iel=0; iel < msh.nel (); iel++) 
         if (msh.area (iel) > 0.0)
 	  {
 	    for ( octave_idx_type idof(0); idof < spv.nsh (iel); idof++) 
 	      {
 	        for (octave_idx_type jdof(0); jdof < spu.nsh (iel); jdof++)
 		  {
+                    counter = jdof + spu.nsh (iel) * (idof + spv.nsh (iel) * iel);
 		    I(counter) = spv.connectivity (idof, iel) - 1;
 		    J(counter) = spu.connectivity (jdof,iel)-1;
 		    V(counter) = 0.0;
@@ -77,7 +81,6 @@ OUTPUT: \n\
                               s;
 			  }  
 		      } // end for inode		  
-		    counter++;
 //		    if (idof != jdof) // copy upper triangular part to lower
 //		      { 
 //		        I(counter) = J(counter-1);
@@ -90,6 +93,7 @@ OUTPUT: \n\
           } else {
           warning_with_id ("geopdes:zero_measure_element", "op_curlu_curlv_3d: element %d has 0 volume", iel);
         }  // end for iel, if area > 0
+      } // end omp parallel
       mat = SparseMatrix(V, I, J, spv.ndof (), spu.ndof (), true);
       retval(0) = octave_value (mat);
     } // end if !error_state
