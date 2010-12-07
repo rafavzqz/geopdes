@@ -89,7 +89,7 @@ OUTPUT: \n\
                 } // end for idof
             } else {
 #pragma omp critical
-            warning_with_id ("geopdes:zero_measure_element", "op_u_v: element %d has 0 area (or volume)", iel);
+            {warning_with_id ("geopdes:zero_measure_element", "op_u_v: element %d has 0 area (or volume)", iel);}
           }  // end for iel, if area > 0
       } // end of openmp parallel section
 

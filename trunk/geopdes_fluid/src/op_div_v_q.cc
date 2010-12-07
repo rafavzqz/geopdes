@@ -80,7 +80,7 @@ DEFUN_DLD(op_div_v_q, args, nargout,"OP_DIV_V_Q: assemble the matrix B = [b(i,j)
 	      } // end for idof
           } else {
 #pragma omp critical
-          warning_with_id ("geopdes:zero_measure_element", "op_div_v_q: element %d has 0 area (or volume)", iel);
+          {warning_with_id ("geopdes:zero_measure_element", "op_div_v_q: element %d has 0 area (or volume)", iel);}
         }  // end for iel, if area > 0
       } // end of parallel region
       mat = SparseMatrix (V, I, J, spq.ndof (), spv.ndof (), true);

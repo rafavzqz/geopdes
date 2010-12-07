@@ -39,47 +39,51 @@ OUTPUT:\n\
 
   geopdes_mesh_normal msh (args(1).map_value ());
   geopdes_space       sp  (args(0).map_value (), msh);
-  dim_vector idx (sp.ncomp (), msh.nqn (), msh.nel ());
-  NDArray  coeff = args(2).array_value ().reshape (idx);
-
-  double ishp_x_n[3];
+  dim_vector          idx (sp.ncomp (), msh.nqn (), msh.nel ());
+  NDArray             coeff = args(2).array_value ().reshape (idx);
 
   if (!error_state)
     {
       ColumnVector mat (sp.ndof (), 0.0);
-      for (octave_idx_type iel(0); iel < msh.nel (); iel++) 
-        if (msh.area (iel) > 0)
-	  {
-	    for (octave_idx_type idof(0); idof < sp.nsh (iel); idof++) 
-	      {
-                for ( octave_idx_type inode(0); inode < msh.nqn (); inode++) 
-                  {
-                    if (msh.weights (inode, iel) > 0.0)
-                      {
-                        ishp_x_n[0] = 
-                          sp.shape_functions (1, inode, idof, iel) * msh.normal (2, inode, iel) -
-                          sp.shape_functions (2, inode, idof, iel) * msh.normal (1, inode, iel);
-                        ishp_x_n[1] = 
-                          sp.shape_functions (2, inode, idof, iel) * msh.normal (0, inode, iel) -
-                          sp.shape_functions (0, inode, idof, iel) * msh.normal (2, inode, iel);
-                        ishp_x_n[2] = 
-                          sp.shape_functions (0, inode, idof, iel) * msh.normal (1, inode, iel) -
-                          sp.shape_functions (1, inode, idof, iel) * msh.normal (0, inode, iel);
+#pragma omp parallel default (none) shared (msh, sp, coeff, mat) 
+      {
+        double ishp_x_n[3], local_contribution;
+#pragma omp for
+        for (octave_idx_type iel=0; iel < msh.nel (); iel++) 
+          if (msh.area (iel) > 0)
+            {
+              for (octave_idx_type idof(0); idof < sp.nsh (iel); idof++) 
+                {
+                  for ( octave_idx_type inode(0); inode < msh.nqn (); inode++) 
+                    {
+                      if (msh.weights (inode, iel) > 0.0)
+                        {
+                          ishp_x_n[0] = 
+                            sp.shape_functions (1, inode, idof, iel) * msh.normal (2, inode, iel) -
+                            sp.shape_functions (2, inode, idof, iel) * msh.normal (1, inode, iel);
+                          ishp_x_n[1] = 
+                            sp.shape_functions (2, inode, idof, iel) * msh.normal (0, inode, iel) -
+                            sp.shape_functions (0, inode, idof, iel) * msh.normal (2, inode, iel);
+                          ishp_x_n[2] = 
+                            sp.shape_functions (0, inode, idof, iel) * msh.normal (1, inode, iel) -
+                            sp.shape_functions (1, inode, idof, iel) * msh.normal (0, inode, iel);
 
-                        double s = 0.0;
-                        for (octave_idx_type icmp(0); icmp < sp.ncomp (); icmp++)
+                          double s = 0.0;
+                          for (octave_idx_type icmp(0); icmp < sp.ncomp (); icmp++)
                             s += ishp_x_n [icmp] * coeff (icmp, inode, iel);
+                        
+                          local_contribution = msh.jacdet  (inode, iel) * msh.weights (inode, iel) * s;
 
-                        mat(sp.connectivity (idof, iel) - 1) += 
-                          msh.jacdet  (inode, iel) *
-                          msh.weights (inode, iel) *
-                          s;
-                      }  
-                  } // end for inode
+#pragma omp critical
+                          {mat(sp.connectivity (idof, iel) - 1) += local_contribution;}
+                        }  
+                    } // end for inode
                 } // end for idof
             } else {
-         warning_with_id ("geopdes:zero_measure_element", "op_f_vxn_3d: element %d has 0 area", iel);
-        } // end for iel, if area > 0
+#pragma omp critical
+            {warning_with_id ("geopdes:zero_measure_element", "op_f_vxn_3d: element %d has 0 area", iel);}
+          } // end for iel, if area > 0
+      } // end of parallel section
       retval(0) = octave_value (mat);
     } // end if !error_state
   return retval;

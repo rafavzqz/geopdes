@@ -92,7 +92,7 @@ OUTPUT: \n\
 	      } // end for idof
           } else {
 #pragma omp critical
-          warning_with_id ("geopdes:zero_measure_element", "op_curlu_curlv_3d: element %d has 0 volume", iel);
+          {warning_with_id ("geopdes:zero_measure_element", "op_curlu_curlv_3d: element %d has 0 volume", iel);}
         }  // end for iel, if area > 0
       } // end omp parallel
       mat = SparseMatrix(V, I, J, spv.ndof (), spu.ndof (), true);

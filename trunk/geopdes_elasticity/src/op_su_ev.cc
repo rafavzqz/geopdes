@@ -118,7 +118,7 @@ DEFUN_DLD(op_su_ev, args, nargout,"\n\
               } // end for idof
           } else {
 #pragma omp critical
-          warning_with_id ("geopdes:zero_measure_element", "op_su_ev: element %d has 0 measure", iel);
+          {warning_with_id ("geopdes:zero_measure_element", "op_su_ev: element %d has 0 measure", iel);}
         }// end for iel
       }// end of parallel region
       mat = SparseMatrix (V, I, J, spv.ndof (), spu.ndof (), true);
