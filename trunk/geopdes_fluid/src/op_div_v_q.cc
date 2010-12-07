@@ -39,24 +39,30 @@ DEFUN_DLD(op_div_v_q, args, nargout,"OP_DIV_V_Q: assemble the matrix B = [b(i,j)
   geopdes_space spv (args(0).map_value (), msh);
   geopdes_space spq (args(1).map_value (), msh);
 
-
-  SparseMatrix mat;
-
   if (!error_state)
     {
 
-      ColumnVector I (msh.nel () * spv.nsh_max () * spq.nsh_max (), 0.0);
-      ColumnVector J (msh.nel () * spv.nsh_max () * spq.nsh_max (), 0.0);
-      ColumnVector V (msh.nel () * spv.nsh_max () * spq.nsh_max (), 0.0);      
+      Array <octave_idx_type> I (msh.nel () * spv.nsh_max () * spq.nsh_max (), 0.0);
+      Array <octave_idx_type> J (msh.nel () * spv.nsh_max () * spq.nsh_max (), 0.0);
+      Array <double> V (msh.nel () * spv.nsh_max () * spq.nsh_max (), 0.0);      
 
-      octave_idx_type counter = 0;
-      for ( octave_idx_type iel(0); iel < msh.nel (); iel++) 
+      SparseMatrix mat;
+
+#pragma omp parallel default (none) shared (msh, spv, spq, I, J, V)
+      {
+
+        octave_idx_type counter;
+#pragma omp for
+      for ( octave_idx_type iel=0; iel < msh.nel (); iel++) 
         if (msh.area (iel) > 0.0)
 	  {
 	    for ( octave_idx_type idof(0); idof < spq.nsh (iel); idof++) 
 	      {
 	        for ( octave_idx_type jdof(0); jdof < spv.nsh (iel); jdof++) 
 		  {
+                    
+                    counter = jdof + spv.nsh (iel) * (idof + spq.nsh (iel) * iel);
+                    
 		    I(counter) = spq.connectivity (idof, iel) - 1;
 		    J(counter) = spv.connectivity (jdof, iel) - 1;
 		    V(counter) = 0.0;
@@ -70,12 +76,13 @@ DEFUN_DLD(op_div_v_q, args, nargout,"OP_DIV_V_Q: assemble the matrix B = [b(i,j)
                               spq.shape_functions (0, inode, idof, iel);
 			  }  
 		      } // end for inode		  
-		    counter++;
 		  } // end for jdof
 	      } // end for idof
           } else {
+#pragma omp critical
           warning_with_id ("geopdes:zero_measure_element", "op_div_v_q: element %d has 0 area (or volume)", iel);
         }  // end for iel, if area > 0
+      } // end of parallel region
       mat = SparseMatrix (V, I, J, spq.ndof (), spv.ndof (), true);
       retval(0) = octave_value(mat);
     } // end if !error_state

@@ -62,13 +62,11 @@ DEFUN_DLD(op_su_ev, args, nargout,"\n\
   Matrix                   lambda = args(3).matrix_value();
   Matrix                   mu     = args(4).matrix_value();
 
-
-
   if (!error_state)
     {
-      ColumnVector I (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
-      ColumnVector J (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
-      ColumnVector V (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
+      Array <octave_idx_type> I (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
+      Array <octave_idx_type> J (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
+      Array <double> V (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
       
       SparseMatrix mat;
 
@@ -100,8 +98,7 @@ DEFUN_DLD(op_su_ev, args, nargout,"\n\
                                 s += 2 * mu(inode, iel) * 
                                   spu.shape_function_strain_tensor (icmp, jcmp, inode, jdof, iel) *
                                   spv.shape_function_strain_tensor (icmp, jcmp, inode, idof, iel);
-                            
-                            
+                                                        
                             V(counter) += 
                               msh.jacdet (inode, iel) *
                               msh.weights (inode, iel) *
@@ -120,6 +117,7 @@ DEFUN_DLD(op_su_ev, args, nargout,"\n\
                   } // end for jdof
               } // end for idof
           } else {
+#pragma omp critical
           warning_with_id ("geopdes:zero_measure_element", "op_su_ev: element %d has 0 measure", iel);
         }// end for iel
       }// end of parallel region
