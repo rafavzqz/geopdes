@@ -80,7 +80,7 @@ OUTPUT:\n\
                 } // end for idof
             } else {
 #pragma omp critical
-            warning_with_id ("geopdes:zero_measure_element", "op_curlv_p: element %d has 0 area", iel);
+            {warning_with_id ("geopdes:zero_measure_element", "op_curlv_p: element %d has 0 area", iel);}
           }  // end for iel, if area > 0
       } // end parallel section
       mat = SparseMatrix(V, I, J, spp.ndof (), spv.ndof (), true);

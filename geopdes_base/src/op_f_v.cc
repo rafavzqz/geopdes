@@ -39,8 +39,8 @@ OUTPUT:\n\
 
   geopdes_mesh  msh (args(1).map_value ());
   geopdes_space sp  (args(0).map_value (), msh);
-  dim_vector idx (sp.ncomp (), msh.nqn (), msh.nel ());
-  NDArray  coeff = args(2).array_value ().reshape (idx);
+  dim_vector    idx (sp.ncomp (), msh.nqn (), msh.nel ());
+  NDArray       coeff = args(2).array_value ().reshape (idx);
 
   if (!error_state)
     {
@@ -65,14 +65,14 @@ OUTPUT:\n\
                         for (octave_idx_type icmp(0); icmp < sp.ncomp (); icmp++)
                             s += sp.shape_functions (icmp, inode, idof, iel) * coeff (icmp, inode, iel);
                         local_contribution = msh.jacdet  (inode, iel) * msh.weights (inode, iel) * s;
-#pragma omp atomic
+#pragma omp critical
                         mat(sp.connectivity (idof, iel) - 1) += local_contribution;			  
                       }  
                   } // end for inode
 	      } // end for idof
           } else {
 #pragma omp critical
-          warning_with_id ("geopdes:zero_measure_element", "op_f_v: element %d has 0 area (or volume)", iel);
+          {warning_with_id ("geopdes:zero_measure_element", "op_f_v: element %d has 0 area (or volume)", iel);}
         }  // end for iel, if area > 0
       }  // end for parallel region
       retval(0) = octave_value (mat);
