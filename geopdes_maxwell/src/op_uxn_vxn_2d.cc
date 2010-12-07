@@ -95,6 +95,7 @@ OUTPUT:\n\
                   } // end for jdof
               } // end for idof
           } else {
+#pragma omp critical
           warning_with_id ("geopdes:zero_measure_element", "op_uxn_vxn_2d: element %d has 0 area", iel);
         }  // end for iel, if area > 0      
       } //end of parallel section
