@@ -47,9 +47,9 @@ OUTPUT: \n\
   if (!error_state)
     {      
 
-      ColumnVector I (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
-      ColumnVector J (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
-      ColumnVector V (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
+      Array <octave_idx_type> I (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
+      Array <octave_idx_type> J (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
+      Array <double> V (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
 
       SparseMatrix mat;
 
@@ -88,6 +88,7 @@ OUTPUT: \n\
                     } // end for jdof
                 } // end for idof
             } else {
+#pragma omp critical
             warning_with_id ("geopdes:zero_measure_element", "op_u_v: element %d has 0 area (or volume)", iel);
           }  // end for iel, if area > 0
       } // end of openmp parallel section
