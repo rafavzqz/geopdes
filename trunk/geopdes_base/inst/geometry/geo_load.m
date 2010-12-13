@@ -103,7 +103,7 @@ end
 function mps = affine_map_der2  (ps)
   ndim = size (ps, 1);
   nps  = size (ps, 2);
-  mps  = zeros (2, 2, 2, nps);
+  mps  = zeros (ndim, ndim, ndim, nps);
 end
 
 %!shared g1,g2,x
