@@ -18,7 +18,7 @@
 % In order to make it work, a script file with the data must also be executed.
 % The available data files for this problem are:
 %
-% - test_waveguide_3d
+% - test_waveguide_3d_mp
 %
 % Copyright (C) 2010 Carlo de Falco, Rafael Vazquez
 %
@@ -126,5 +126,5 @@ fprintf ('results being saved in: %s_displacement.pvd\n', output_file)
 mp_sp_to_vtk_3d (u, sp, geometry, gnum, vtk_pts, sprintf ('%s_displacement', output_file), 'displacement')
 
 %!demo
-%! test_linear_elasticity_cube_mp
-%! ex_nurbs_linear_elasticity_3d_mp
+%! test_waveguide_3d_mp
+%! ex_nurbs_linear_elasticity_3d_extract_mp
