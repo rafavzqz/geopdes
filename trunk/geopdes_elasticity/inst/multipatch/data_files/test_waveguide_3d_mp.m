@@ -1,4 +1,4 @@
-% TEST_LINEAR_ELASTICITY_CUBE_MP: data file for linear elasticity problem on a multipatch cube.
+% TEST_WAVEGUIDE_3D_MP: data file for linear elasticity problem on a multipatch waveguide.
 
 degree     = [2 2 2];     % Degree of the bsplines
 regularity = [1 1 1];     % Regularity of the splines
@@ -28,20 +28,11 @@ f = @(x, y, z) cat(1, ...
                    reshape (fx (x,y,z), [1, size(x)]), ...
                    reshape (fy (x,y,z), [1, size(x)]), ...
                    reshape (fz (x,y,z), [1, size(x)]));
-h = @test_waveguide_3d_h_drchlt;
-clear g p
-
-% Exact solution
-uxex = @(x, y, z) 0*x;
-uyex = @(x, y, z) 0*x;
-uzex = @(x, y, z) 0*x;
-uex  = @(x, y, z) cat(1, ...
-		      reshape (uxex (x,y,z), [1, size(x)]), ...
-		      reshape (uyex (x,y,z), [1, size(x)]), ...
-		      reshape (uzex (x,y,z), [1, size(x)]));
+h = @test_waveguide_3d_mp_h_drchlt;
+clear g p uex
 
 % Output file for Paraview
-output_file = 'linear_elasticity_cube2_mp';
+output_file = 'linear_elasticity_waveguide_mp';
 
 % Points for post-processing
 vtk_pts = {linspace(0, 1, 10)', linspace(0, 1, 10)', linspace(0, 1, 10)'};

@@ -1,6 +1,6 @@
-% TEST_WAVEGUIDE_3D_H_DRCHLT: data function for Dirichlet boundary condition.
+% TEST_WAVEGUIDE_3D_MP_H_DRCHLT: data function for Dirichlet boundary condition.
 
-function h = test_waveguide_3d_h_drchlt (x, y, z, ind)
+function h = test_waveguide_3d_mp_h_drchlt (x, y, z, ind)
 
   switch (ind)
    case 3
