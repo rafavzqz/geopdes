@@ -1,4 +1,6 @@
 OCTFILES =$(patsubst %.cc,%.oct,$(wildcard *.cc)) 
+CXXFLAGS =-fopenmp ${CXXFLAGS}
+LDFLAGS  =-fopenmp ${LDFLAGS}
 
 all: $(OCTFILES)
 

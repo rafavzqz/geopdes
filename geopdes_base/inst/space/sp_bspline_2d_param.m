@@ -86,17 +86,12 @@ function sp = sp_bspline_2d_param (knots, degree, msh, varargin)
 
   conn_u = reshape (spu.connectivity, spu.nsh_max, 1, nelu, 1);
   conn_u = repmat  (conn_u, [1, spv.nsh_max, 1, nelv]);
-  conn_u = reshape (conn_u, [], nel);
 
   conn_v = reshape (spv.connectivity, 1, spv.nsh_max, 1, nelv);
   conn_v = repmat  (conn_v, [spu.nsh_max, 1, nelu, 1]);
-  conn_v = reshape (conn_v, [], nel);
 
-  connectivity = zeros (nsh_max, nel);
   indices = (conn_u ~= 0) & (conn_v ~= 0);
-  connectivity(indices) = ...
-     sub2ind ([spu.ndof, spv.ndof], conn_u(indices), conn_v(indices));
-  connectivity = reshape (connectivity, nsh_max, nel);
+  connectivity = reshape (sub2ind ([spu.ndof, spv.ndof], conn_u(indices), conn_v(indices)), nsh_max, nel);
 
   clear conn_u conn_v
 
