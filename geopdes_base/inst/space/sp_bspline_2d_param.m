@@ -91,7 +91,8 @@ function sp = sp_bspline_2d_param (knots, degree, msh, varargin)
   conn_v = repmat  (conn_v, [spu.nsh_max, 1, nelu, 1]);
 
   indices = (conn_u ~= 0) & (conn_v ~= 0);
-  connectivity = reshape (sub2ind ([spu.ndof, spv.ndof], conn_u(indices), conn_v(indices)), [nsh_max, nel]);
+  connectivity = zeros (nsh_max, nel);
+  connectivity(indices) = reshape (sub2ind ([spu.ndof, spv.ndof], conn_u(indices), conn_v(indices)), [nsh_max, nel]);
   % magick trick to sort zeros to the end of each column as
   % suggested by b. abbot: http://octave.1599824.n4.nabble.com/Yet-Another-Vectorization-Quiz-td3088102.html#a3088146
   [ignore, indices] = sort (connectivity==0);
