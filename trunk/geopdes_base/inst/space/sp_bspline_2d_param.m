@@ -110,7 +110,11 @@ function sp = sp_bspline_2d_param (knots, degree, msh, varargin)
   shp_v = reshape (shp_v, nqn, nsh_max, nel);
 
   shape_functions = shp_u .* shp_v ;
-
+  
+  for j=1:nel
+    shape_functions(:,:,j) = shape_functions(:,indices(:,j),j);
+  end
+ 
   sp = struct('nsh_max', nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
 	      'ndof_dir', ndof_dir, 'connectivity', connectivity, ...
 	      'shape_functions', shape_functions, ...
@@ -129,6 +133,10 @@ function sp = sp_bspline_2d_param (knots, degree, msh, varargin)
     shape_function_gradients(1,:,:,:) = shg_u .* shp_v ;
     shape_function_gradients(2,:,:,:) = shp_u .* shg_v ;
     
+    for j=1:nel
+      shape_function_gradients(:,:,:,j) = shape_function_gradients(:,:,indices(:,j),j);
+    end
+  
     clear shg_u shg_v
     sp.shape_function_gradients = shape_function_gradients;
     
