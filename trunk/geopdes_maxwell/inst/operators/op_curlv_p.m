@@ -45,8 +45,8 @@ function mat = op_curlv_p (spv, spp, msh, coeff)
           %end  
         end
       end
-      mat(spp.connectivity(:, iel), spv.connectivity(:, iel)) = ...
-        mat(spp.connectivity(:, iel), spv.connectivity(:, iel)) + mat_loc;
+      mat(spp.connectivity(1:spp.nsh(iel), iel), spv.connectivity(1:spv.nsh(iel), iel)) = ...
+        mat(spp.connectivity(1:spp.nsh(iel), iel), spv.connectivity(1:spv.nsh(iel), iel)) + mat_loc;
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_curlv_p: singular map in element number %d', iel)
     end

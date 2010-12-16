@@ -49,7 +49,7 @@ function mat = op_f_vxn_3d (spv, msh, coeff)
             sum(ishp_x_n .* coeff(:, :, iel), 1).');
         %end  
       end
-      mat(spv.connectivity(:, iel)) = mat(spv.connectivity(:, iel)) + mat_loc;
+      mat(spv.connectivity(1:spv.nsh(iel), iel)) = mat(spv.connectivity(1:spv.nsh(iel), iel)) + mat_loc;
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_f_vxn_3d: singular map in element number %d', iel)
     end
