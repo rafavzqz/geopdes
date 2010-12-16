@@ -44,8 +44,8 @@ function mat = op_div_v_q (spv, spq, msh)
           %end  
         end
       end
-      mat(spq.connectivity(:, iel), spv.connectivity(:, iel)) = ...
-        mat(spq.connectivity(:, iel), spv.connectivity(:, iel)) + mat_loc;
+      mat(spq.connectivity(1:spq.nsh(iel), iel), spv.connectivity(1:spv.nsh(iel), iel)) = ...
+        mat(spq.connectivity(1:spq.nsh(iel), iel), spv.connectivity(1:spv.nsh(iel), iel)) + mat_loc;
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_div_v_q: singular map in element number %d', iel)
     end
