@@ -57,8 +57,8 @@ function mat = op_su_ev (spu, spv, msh, lambda, mu)
                     (idiv .* jdiv) .* lambda(:,iel)));
         end
       end
-      mat(spv.connectivity(:, iel), spu.connectivity(:, iel)) = ...
-        mat(spv.connectivity(:, iel), spu.connectivity(:, iel)) + mat_loc;
+      mat(spv.connectivity(1:spv.nsh(iel), iel), spu.connectivity(1:spu.nsh(iel), iel)) = ...
+        mat(spv.connectivity(1:spv.nsh(iel), iel), spu.connectivity(1:spu.nsh(iel), iel)) + mat_loc;
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_su_ev: singular map in element number %d', iel)
     end
