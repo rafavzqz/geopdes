@@ -86,18 +86,17 @@ function sp = sp_bspline_2d_param (knots, degree, msh, varargin)
 
   conn_u = reshape (spu.connectivity, spu.nsh_max, 1, nelu, 1);
   conn_u = repmat  (conn_u, [1, spv.nsh_max, 1, nelv]);
+  conn_u = reshape (conn_u, [], nel);
 
   conn_v = reshape (spv.connectivity, 1, spv.nsh_max, 1, nelv);
   conn_v = repmat  (conn_v, [spu.nsh_max, 1, nelu, 1]);
+  conn_v = reshape (conn_v, [], nel);
 
-  indices = (conn_u ~= 0) & (conn_v ~= 0);
   connectivity = zeros (nsh_max, nel);
-  connectivity(indices) = sub2ind ([spu.ndof, spv.ndof], conn_u(indices),conn_v(indices));
-  
-  % magick trick to sort zeros to the end of each column as
-  % suggested by b. abbot: http://octave.1599824.n4.nabble.com/Yet-Another-Vectorization-Quiz-td3088102.html#a3088146
-  [ignore, indices] = sort (connectivity==0);
-  connectivity = connectivity (ones (size (connectivity, 1), 1) * (0:size (connectivity, 2) - 1) * size (connectivity, 1) + indices);
+  indices = (conn_u ~= 0) & (conn_v ~= 0);
+  connectivity(indices) = ...
+     sub2ind ([spu.ndof, spv.ndof], conn_u(indices), conn_v(indices));
+  connectivity = reshape (connectivity, nsh_max, nel);
 
   clear conn_u conn_v
 
@@ -110,11 +109,7 @@ function sp = sp_bspline_2d_param (knots, degree, msh, varargin)
   shp_v = reshape (shp_v, nqn, nsh_max, nel);
 
   shape_functions = shp_u .* shp_v ;
-  
-  for j=1:nel
-    shape_functions(:,:,j) = shape_functions(:,indices(:,j),j);
-  end
- 
+
   sp = struct('nsh_max', nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
 	      'ndof_dir', ndof_dir, 'connectivity', connectivity, ...
 	      'shape_functions', shape_functions, ...
@@ -133,10 +128,6 @@ function sp = sp_bspline_2d_param (knots, degree, msh, varargin)
     shape_function_gradients(1,:,:,:) = shg_u .* shp_v ;
     shape_function_gradients(2,:,:,:) = shp_u .* shg_v ;
     
-    for j=1:nel
-      shape_function_gradients(:,:,:,j) = shape_function_gradients(:,:,indices(:,j),j);
-    end
-  
     clear shg_u shg_v
     sp.shape_function_gradients = shape_function_gradients;
     
