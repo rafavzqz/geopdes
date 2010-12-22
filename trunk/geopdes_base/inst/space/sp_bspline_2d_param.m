@@ -15,8 +15,9 @@
 %    'option', value: additional optional parameters, currently available options are:
 %            
 %              Name     |   Default value |  Meaning
-%           ------------+-----------------+-----------
+%           ------------+-----------------+----------------------------------
 %            gradient   |      true       |  compute shape_function_gradients
+%            hessian    |      false      |  compute shape_function_hessians
 %
 % OUTPUT:
 %
@@ -52,109 +53,130 @@
 
 function sp = sp_bspline_2d_param (knots, degree, msh, varargin)
 
-  gradient = true; 
-  if (~isempty (varargin))
-    if (~rem (length (varargin), 2) == 0)
-      error ('sp_bspline_2d_param: options must be passed in the [option, value] format');
-    end
-    for ii=1:2:length(varargin)-1
-      if (strcmpi (varargin {ii}, 'gradient'))
-        gradient = varargin {ii+1};
-      else
-        error ('sp_bspline_2d_param: unknown option %s', varargin {ii});
-      end
+gradient = true; 
+hessian = false;
+if (~isempty (varargin))
+  if (~rem (length (varargin), 2) == 0)
+    error ('sp_bspline_2d_param: options must be passed in the [option, value] format');
+  end
+  for ii=1:2:length(varargin)-1
+    if (strcmpi (varargin {ii}, 'gradient'))
+      gradient = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'hessian'))
+      hessian = varargin {ii+1};
+    else
+      error ('sp_bspline_2d_param: unknown option %s', varargin {ii});
     end
   end
+end
 
-  nodes = msh.qn;
-  spu = sp_bspline_1d_param (knots{1}, degree(1), nodes{1});
-  spv = sp_bspline_1d_param (knots{2}, degree(2), nodes{2});
+nodes = msh.qn;
+spu = sp_bspline_1d_param (knots{1}, degree(1), nodes{1}, 'gradient', gradient, 'hessian', hessian);
+spv = sp_bspline_1d_param (knots{2}, degree(2), nodes{2}, 'gradient', gradient, 'hessian', hessian);
 
-  nsh_max  = spu.nsh_max * spv.nsh_max;
-  nsh  = spu.nsh' * spv.nsh;
-  nsh  = nsh(:)';
-  ndof = spu.ndof * spv.ndof;
-  ndof_dir = [spu.ndof, spv.ndof];
+nsh_max  = spu.nsh_max * spv.nsh_max;
+nsh  = spu.nsh' * spv.nsh;
+nsh  = nsh(:)';
+ndof = spu.ndof * spv.ndof;
+ndof_dir = [spu.ndof, spv.ndof];
 
-  nelu = size (nodes{1}, 2);
-  nelv = size (nodes{2}, 2);
-  nel  = nelu * nelv;
+nelu = size (nodes{1}, 2);
+nelv = size (nodes{2}, 2);
+nel  = nelu * nelv;
 
-  nqnu = size (nodes{1}, 1);
-  nqnv = size (nodes{2}, 1);
-  nqn  = nqnu * nqnv;
+nqnu = size (nodes{1}, 1);
+nqnv = size (nodes{2}, 1);
+nqn  = nqnu * nqnv;
 
-  conn_u = reshape (spu.connectivity, spu.nsh_max, 1, nelu, 1);
-  conn_u = repmat  (conn_u, [1, spv.nsh_max, 1, nelv]);
-  conn_u = reshape (conn_u, [], nel);
+conn_u = reshape (spu.connectivity, spu.nsh_max, 1, nelu, 1);
+conn_u = repmat  (conn_u, [1, spv.nsh_max, 1, nelv]);
+conn_u = reshape (conn_u, [], nel);
 
-  conn_v = reshape (spv.connectivity, 1, spv.nsh_max, 1, nelv);
-  conn_v = repmat  (conn_v, [spu.nsh_max, 1, nelu, 1]);
-  conn_v = reshape (conn_v, [], nel);
+conn_v = reshape (spv.connectivity, 1, spv.nsh_max, 1, nelv);
+conn_v = repmat  (conn_v, [spu.nsh_max, 1, nelu, 1]);
+conn_v = reshape (conn_v, [], nel);
 
-  connectivity = zeros (nsh_max, nel);
-  indices = (conn_u ~= 0) & (conn_v ~= 0);
-  connectivity(indices) = ...
-     sub2ind ([spu.ndof, spv.ndof], conn_u(indices), conn_v(indices));
-  connectivity = reshape (connectivity, nsh_max, nel);
+connectivity = zeros (nsh_max, nel);
+indices = (conn_u ~= 0) & (conn_v ~= 0);
+connectivity(indices) = ...
+    sub2ind ([spu.ndof, spv.ndof], conn_u(indices), conn_v(indices));
+connectivity = reshape (connectivity, nsh_max, nel);
 
-  clear conn_u conn_v
+clear conn_u conn_v
 
-  shp_u = reshape (spu.shape_functions, nqnu, 1, spu.nsh_max, 1, nelu, 1);
-  shp_u = repmat  (shp_u, [1, nqnv, 1, spv.nsh_max, 1, nelv]);
-  shp_u = reshape (shp_u, nqn, nsh_max, nel);
+shp_u = reshape (spu.shape_functions, nqnu, 1, spu.nsh_max, 1, nelu, 1);
+shp_u = repmat  (shp_u, [1, nqnv, 1, spv.nsh_max, 1, nelv]);
+shp_u = reshape (shp_u, nqn, nsh_max, nel);
 
-  shp_v = reshape (spv.shape_functions, 1, nqnv, 1, spv.nsh_max, 1, nelv);
-  shp_v = repmat  (shp_v, [nqnu, 1, spu.nsh_max, 1, nelu, 1]);
-  shp_v = reshape (shp_v, nqn, nsh_max, nel);
+shp_v = reshape (spv.shape_functions, 1, nqnv, 1, spv.nsh_max, 1, nelv);
+shp_v = repmat  (shp_v, [nqnu, 1, spu.nsh_max, 1, nelu, 1]);
+shp_v = reshape (shp_v, nqn, nsh_max, nel);
 
-  shape_functions = shp_u .* shp_v ;
+shape_functions = shp_u .* shp_v ;
 
-  sp = struct('nsh_max', nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
-	      'ndof_dir', ndof_dir, 'connectivity', connectivity, ...
-	      'shape_functions', shape_functions, ...
-	      'ncomp', 1);
+sp = struct('nsh_max', nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
+            'ndof_dir', ndof_dir, 'connectivity', connectivity, ...
+            'shape_functions', shape_functions, ...
+            'ncomp', 1);
 
-  if (gradient)
+if (gradient || hessian)
   
-    shg_u = reshape (spu.shape_function_gradients, nqnu, 1, spu.nsh_max, 1, nelu, 1);
-    shg_u = repmat  (shg_u, [1, nqnv, 1, spv.nsh_max, 1, nelv]);
-    shg_u = reshape (shg_u, nqn, nsh_max, nel);
-    
-    shg_v = reshape (spv.shape_function_gradients, 1, nqnv, 1, spv.nsh_max, 1, nelv);
-    shg_v = repmat  (shg_v, [nqnu, 1, spu.nsh_max, 1, nelu, 1]);
-    shg_v = reshape (shg_v, nqn, nsh_max, nel);
-    
+  shg_u = reshape (spu.shape_function_gradients, nqnu, 1, spu.nsh_max, 1, nelu, 1);
+  shg_u = repmat  (shg_u, [1, nqnv, 1, spv.nsh_max, 1, nelv]);
+  shg_u = reshape (shg_u, nqn, nsh_max, nel);
+  
+  shg_v = reshape (spv.shape_function_gradients, 1, nqnv, 1, spv.nsh_max, 1, nelv);
+  shg_v = repmat  (shg_v, [nqnu, 1, spu.nsh_max, 1, nelu, 1]);
+  shg_v = reshape (shg_v, nqn, nsh_max, nel);
+  
+  if (gradient)
     shape_function_gradients(1,:,:,:) = shg_u .* shp_v ;
     shape_function_gradients(2,:,:,:) = shp_u .* shg_v ;
-    
-    clear shg_u shg_v
     sp.shape_function_gradients = shape_function_gradients;
+  end
+  
+  if (hessian)
+    shh_uu = reshape (spu.shape_function_hessians, nqnu, 1, spu.nsh_max, 1, nelu, 1);
+    shh_uu = repmat  (shh_uu, [1, nqnv, 1, spv.nsh_max, 1, nelv]);
+    shh_uu = reshape (shh_uu, nqn, nsh_max, nel);
+
+    shh_vv = reshape (spv.shape_function_hessians, 1, nqnv, 1, spv.nsh_max, 1, nelv);
+    shh_vv = repmat  (shh_vv, [nqnu, 1, spu.nsh_max, 1, nelu, 1]);
+    shh_vv = reshape (shh_vv, nqn, nsh_max, nel);
     
+    shape_function_hessians(1,1,:,:,:) = shh_uu .* shp_v ;
+    shape_function_hessians(1,2,:,:,:) = shg_u  .* shg_v ;
+    shape_function_hessians(2,1,:,:,:) = shape_function_hessians(1,2,:,:,:);
+    shape_function_hessians(2,2,:,:,:) = shp_u .* shh_vv ;
+    sp.shape_function_hessians = shape_function_hessians;
+    
+    clear shh_uu shh_vv shape_function_hessians
+  end    
+  clear shg_u shg_v shape_function_gradients
+end
+
+clear shp_u shp_v
+
+mcp = ndof_dir(1);
+ncp = ndof_dir(2);
+
+if (isfield (msh, 'boundary'))
+  for iside = 1:numel(msh.boundary)
+    ind = mod (floor ((iside+1)/2), 2) + 1;
+    bnodes = reshape (squeeze (msh.boundary(iside).quad_nodes(ind,:,:)), ...
+                      msh.boundary(iside).nqn, []);
+    bnd_iside = sp_bspline_1d_param (knots{ind}, degree(ind), bnodes);
+    boundary(iside) = rmfield (bnd_iside, 'shape_function_gradients');
   end
-  
-  clear shp_u shp_v
-  
-  mcp = ndof_dir(1);
-  ncp = ndof_dir(2);
 
-  if (isfield (msh, 'boundary'))
-    for iside = 1:numel(msh.boundary)
-      ind = mod (floor ((iside+1)/2), 2) + 1;
-      bnodes = reshape (squeeze (msh.boundary(iside).quad_nodes(ind,:,:)), ...
-                msh.boundary(iside).nqn, []);
-      bnd_iside = sp_bspline_1d_param (knots{ind}, degree(ind), bnodes);
-      boundary(iside) = rmfield (bnd_iside, 'shape_function_gradients');
-    end
+  boundary(1).dofs = sub2ind ([mcp, ncp], ones(1,ncp), 1:ncp);
+  boundary(2).dofs = sub2ind ([mcp, ncp], mcp*ones(1,ncp), 1:ncp);
+  boundary(3).dofs = sub2ind ([mcp, ncp], 1:mcp, ones(1,mcp));
+  boundary(4).dofs = sub2ind ([mcp, ncp], 1:mcp, ncp*ones(1,mcp));
 
-    boundary(1).dofs = sub2ind ([mcp, ncp], ones(1,ncp), 1:ncp);
-    boundary(2).dofs = sub2ind ([mcp, ncp], mcp*ones(1,ncp), 1:ncp);
-    boundary(3).dofs = sub2ind ([mcp, ncp], 1:mcp, ones(1,mcp));
-    boundary(4).dofs = sub2ind ([mcp, ncp], 1:mcp, ncp*ones(1,mcp));
-
-    sp.boundary = boundary;
-  end
-  sp.spfun = @(MSH) sp_bspline_2d_param (knots, degree, MSH);
+  sp.boundary = boundary;
+end
+sp.spfun = @(MSH) sp_bspline_2d_param (knots, degree, MSH);
 
 end
 
