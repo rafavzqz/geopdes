@@ -95,7 +95,7 @@ for inqn = 1:numel(nodes)
   ind = find (connectivity(:,iel) == nbf(ir,iel,1)); 
   ders(inqn,:,ind:ind+p) = tders(inqn,:,:);
 end
-keyboard
+
 shape_functions = reshape (ders (:, 1, :), nqn, nel, []);
 shape_functions = permute (shape_functions, [1, 3, 2]);
 
