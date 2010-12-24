@@ -17,15 +17,17 @@
 % <http://www.gnu.org/licenses/>.
 % Author: Carlo de Falco <cdf AT users.sourceforge.net>
 
-function [bxx, bxy, byy] = der2_basisfun_phys__ (ux, uy, vx, vy, uxx, uxy, uyy, vxx, vxy, vyy, buu, buv, bvv, bu, bv)
+function [bxx, bxy, byy] = der2_basisfun_phys__ (xu, xv, yu, yv, uxx, uxy, uyy, vxx, vxy, vyy, buu, buv, bvv, bu, bv)
 
-bxx = buu .* ux .^ 2 + bvv .* vx .^ 2 + bu .* uxx + bv .* vxx + ...
-      2 * buv .* ux .* vx;
+det = (-xv .* yu + xu .* yv);
 
-byy = buu .* uy .^ 2 + bvv .* vy .^ 2 + bu .* uyy + bv .* vyy + ...
-      2 * buv .* uy .* vy;
+ux =  yv ./ det;
+uy = -xv ./ det;
+vx = -yu ./ det;
+vy =  xu ./ det;
 
-bxx = buu .* ux .* uy + bvv .* vx .* vy + bu .* uxy + bv .* vxy + ...
-      buv .* ux .* vy + buv .* uy .* vx;
+bxx = buu.*ux.^2 + bvv.*vx.^2 + bu.*uxx + bv.*vxx + 2*buv.*ux.*vx;
+byy = buu.*uy.^2 + bvv.*vy.^2 + bu.*uyy + bv.*vyy + 2*buv.*uy.*vy;
+bxy = buu.*ux.*uy + bvv.*vx.*vy + bu.*uxy + bv.*vxy + buv.*ux.*vy + buv.*uy.*vx;
 
 end

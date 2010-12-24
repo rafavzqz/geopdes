@@ -32,6 +32,8 @@
 %        shape_functions (msh.nqn x nsh_max x msh.nel)     basis functions evaluated at each quadrature node in each element
 %        shape_function_gradients
 %                        (2 x msh.nqn x nsh_max x msh.nel) basis function gradients evaluated at each quadrature node in each element
+%        shape_function_hessians
+%                        (2 x 2 x msh.nqn x nsh_max x msh.nel) basis function hessians evaluated at each quadrature node in each element
 %        boundary        (1 x 4 struct array)              struct array representing the space of traces of basis functions on each edge
 %
 %   For more details, see the documentation

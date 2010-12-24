@@ -10,8 +10,9 @@
 %    'option', value: additional optional parameters, currently available options are:
 %            
 %              Name     |   Default value |  Meaning
-%           ------------+-----------------+-----------
+%           ------------+-----------------+-----------------------------------
 %            gradient   |      true       |  compute shape_function_gradients
+%            hessians   |      false      |  compute shape_function_hessians
 %
 % OUTPUT:
 %
@@ -26,6 +27,8 @@
 %        shape_functions (msh.nqn x nsh_max x msh.nel)     basis functions evaluated at each quadrature node in each element
 %        shape_function_gradients
 %                        (2 x msh.nqn x nsh_max x msh.nel) basis function gradients evaluated at each quadrature node in each element
+%        shape_function_hessians
+%                        (2 x 2 x msh.nqn x nsh_max x msh.nel) basis function hessians evaluated at each quadrature node in each element
 %        boundary        (1 x 4 struct array)              struct array representing the space of traces of basis functions on each edge
 %        spfun           (function handle)                 function to evaluate an element of the discrete function space, given the Fourier 
 %                                                          coefficients and a set of points in the parametric space
@@ -49,14 +52,50 @@
 
 function sp = sp_bspline_2d_phys (knots, degree, msh, varargin)
 
-  sp = sp_bspline_2d_param (knots, degree, msh, varargin{:});
+sp = sp_bspline_2d_param (knots, degree, msh, varargin{:});
 
-  if (isfield (sp, 'shape_function_gradients'))
-    JinvT = geopdes_invT__ (msh.geo_map_jac);
-    sp.shape_function_gradients = geopdes_prod__ (JinvT, sp.shape_function_gradients);
+if (isfield (sp, 'shape_function_gradients'))
+  JinvT = geopdes_invT__ (msh.geo_map_jac);
+  sp.shape_function_gradients = geopdes_prod__ (JinvT, sp.shape_function_gradients);
+end
+
+if (isfield (sp, 'shape_function_hessians'))
+  if (isfield (msh, 'geo_map_der2'))
+    
+    xu = squeeze (msh.geo_map_jac(1,1,:,:));
+    xv = squeeze (msh.geo_map_jac(1,2,:,:)); 
+    yu = squeeze (msh.geo_map_jac(2,1,:,:)); 
+    yv = squeeze (msh.geo_map_jac(2,2,:,:)); 
+    
+    xuu = reshape (msh.geo_map_der2(1, 1, 1, :, :), [], msh.nel);
+    yuu = reshape (msh.geo_map_der2(2, 1, 1, :, :), [], msh.nel);
+    xuv = reshape (msh.geo_map_der2(1, 1, 2, :, :), [], msh.nel);
+    yuv = reshape (msh.geo_map_der2(2, 2, 1, :, :), [], msh.nel);
+    xvv = reshape (msh.geo_map_der2(1, 2, 2, :, :), [], msh.nel);
+    yvv = reshape (msh.geo_map_der2(2, 2, 2, :, :), [], msh.nel);
+    
+    [uxx, uxy, uyy, vxx, vxy, vyy] = der2_inv_map__ (xu, xv, yu, yv, xuu, xuv, xvv, yuu, yuv, yvv);
+
+    for ii=1:sp.nsh_max   
+      bu = squeeze (sp.shape_function_gradients(1,:,ii,:));
+      bv = squeeze (sp.shape_function_gradients(2,:,ii,:));
+      buu = squeeze (sp.shape_function_hessians(1,1,:,ii,:));
+      buv = squeeze (sp.shape_function_hessians(1,2,:,ii,:));
+      bvv = squeeze (sp.shape_function_hessians(2,2,:,ii,:));
+
+      [bxx, bxy, byy] = der2_basisfun_phys__ (xu, xv, yu, yv, uxx, uxy, uyy, vxx, vxy, vyy, buu, buv, bvv, bu, bv);
+
+      sp.shape_function_hessians(1,1,:,ii,:) = bxx;
+      sp.shape_function_hessians(1,2,:,ii,:) = bxy;
+      sp.shape_function_hessians(2,1,:,ii,:) = bxy;
+      sp.shape_function_hessians(2,2,:,ii,:) = byy;
+    end  
+    
+  else
+    rmfield (sp, 'shape_function_hessians');
   end
+end
+sp.spfun  = @(MSH) sp_bspline_2d_phys (knots, degree, MSH, varargin{:});
 
-  sp.spfun  = @(MSH) sp_bspline_2d_phys (knots, degree, MSH, varargin{:});
- 
 end
 

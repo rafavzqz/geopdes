@@ -19,8 +19,11 @@
 
 function [uxx, uxy, uyy, vxx, vxy, vyy] = der2_inv_map__ (xu, xv, yu, yv, xuu, xuv, xvv, yuu, yuv, yvv)
 
-uxx = (-(xv.*yu.*yuv) + xuv.*yu.*yv + xv.*yuu.*yv - xuu.*yv.^2)./(xv.*yu - xu.*yv).^2;
-uxy = (-(xv.^2.*yuu) + xu.*xv.*yuv - xu.*xuv.*yv + xuu.*xv.*yv)./(xv.*yu - xu.*yv).^2;
-uyy = (-(xv.^2.*yuv) + xuv.*xv.*yv - xu.*xvv.*yv + xu.*xv.*yvv)./(xv.*yu - xu.*yv).^2;
-
+det2 = (xv.*yu - xu.*yv).^2;
+uxx = (-(xv.*yu.*yuv) + xuv.*yu.*yv + xv.*yuu.*yv - xuu.*yv.^2) ./ det2;
+uxy = (-(xv.^2.*yuu) + xu.*xv.*yuv - xu.*xuv.*yv + xuu.*xv.*yv) ./ det2;
+uyy = (-(xv.^2.*yuv) + xuv.*xv.*yv - xu.*xvv.*yv + xu.*xv.*yvv) ./ det2;
+vxx = (-(xuv.*yu.^2) + xu.*yu.*yuv + xuu.*yu.*yv - xu.*yuu.*yv) ./ det2;
+vxy = ( (xu.*xuv.*yu) - xuu.*xv.*yu + xu.*xv.*yuu - xu.^2.*yuv) ./ det2;
+vyy = (-(xuv.*xv.*yu) + xu.*(xvv.*yu + xv.*yuv - xu.*yvv)) ./ det2;
 end
