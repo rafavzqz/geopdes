@@ -63,4 +63,8 @@ int_dofs = setdiff (1:sp.ndof, drchlt_dofs);
 u = zeros (sp.ndof, 1);
 u(int_dofs) = A(int_dofs, int_dofs) \ b(int_dofs);
 
-sp_to_vtk_2d (u, sp, geometry, [20 20], 'stream_solution.vts', 'u')
+sp_to_vtk_2d (u, sp, geometry, [31 31], 'stream_solution.vts', 'u')
+
+pts = {linspace(0,1,31)', linspace(0,1,31)'};
+[eu, F] = sp_eval_curl_2d (u, sp, geometry, pts);
+msh_to_vtk_2d (F, squeeze (eu), 'vel.vts', 'vel')
