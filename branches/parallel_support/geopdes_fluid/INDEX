@@ -1,0 +1,13 @@
+geopdes_fluid >> Iso-Geometric Analysis for Incompressible fluids
+Space
+ sp_bspline_rt_2d_phys
+ sp_bspline_ndl_2d_phys
+ sp_bspline_th_2d_phys
+ sp_bspline_th_3d_phys
+Operators
+ op_div_v_q
+Examples
+ ex_bspline_stokes_2d
+ ex_bspline_stokes_2d_rt
+ ex_bspline_stokes_3d
+ geopdes_fluid_examples

@@ -1,0 +1,37 @@
+geopdes_maxwell >> Iso-Geometric Analysis for Maxwell equations
+Space
+ sp_bspline_curl_transform_2d
+ sp_bspline_curl_transform_3d
+ sp_curl_transform_2d
+ sp_curl_transform_3d
+ sp_bspline_3_forms
+ sp_hcurl_error
+ sp_drchlt_l2_proj_uxn_2d
+ sp_drchlt_l2_proj_uxn_3d
+Operators
+ op_curlu_curlv_2d
+ op_curlu_curlv_3d
+ op_curlv_p
+ op_v_gradp
+ op_uxn_vxn_2d
+ op_uxn_vxn_3d
+ op_f_vxn_2d
+ op_f_vxn_3d
+Examples
+ ex_bspline_maxwell_2d
+ ex_bspline_maxwell_3d
+ ex_bspline_maxwell_2d_eig
+ ex_bspline_maxwell_3d_eig
+ ex_bspline_mixed_form1_2d_eig
+ ex_bspline_mixed_form1_3d_eig
+ ex_bspline_mixed_form2_2d_eig
+ geopdes_maxwell_examples
+Multipatch
+ ex_bspline_maxwell_2d_eig_mp
+ ex_bspline_maxwell_3d_eig_mp
+ ex_bspline_mixed_form1_2d_eig_mp
+ ex_bspline_mixed_form1_3d_eig_mp
+ mp_interface_hcurl_2d
+ mp_interface_hcurl_3d
+Utilities
+ knt_derham

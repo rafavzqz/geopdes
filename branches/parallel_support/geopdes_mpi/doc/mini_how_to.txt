@@ -1,0 +1,29 @@
+1 - Install
+ 
+ * Install Octave version 3.2 or higher. Source code is available from http://www.octave.org, 
+ binary packages are available from http://octave.sf.net
+
+ * Install the "nurbs", "integration" and "geopdes_base" packages available on http://octave.sf.net and sourceforge.net.
+
+ * Install  geopdes_mpi
+    pkg install geopdes_mpi
+ 
+3 - Test
+
+To launch a multiprocess simulation use a command like this
+
+mpirun -np 24  octave -q --eval "test_ring_mixed_bc; n_sub = 5*n_sub; ex_bspline_laplace_2d_mpi"
+
+-np       set the number of processes
+
+-q        suppress the welcome message that would otherwise be printed by each node
+
+--eval    pass the commands to octave, in this case
+          
+          test_ring_mixed_bc;         load test data and exact solution
+          n_sub = 5*n_sub;            since each process need a minimum of few elements change
+                                      the number of mesh subdivision accordingly
+          ex_bspline_laplace_2d_mpi   launch the example script
+
+note that each test requires a different syntax to change the mesh data.
+   

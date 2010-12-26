@@ -1,0 +1,21 @@
+geopdes_mpi >> an extension to geopdes_base for parallel execution
+Examples
+ test_all.sh
+ ex_bspline_laplace_2d_mpi.m
+Mesh
+ msh_partition.m
+Solver
+ mpi_gmres_LP.m
+ mpi_gmres.m
+ mpi_Rgmres.m
+ mpi_gmres_LRP.m
+ mpi_gmres_RP.m
+Preconditioner
+ mpi_diagonal_preconditioner.m 
+ mpi_diagonal_preconditioner_fast.m
+MPI_Utils
+ MPI_Allmerge.m
+ MPI_Allreduce.m
+ mpi_timed_message.m
+ mpi_message.m
+ mpi_work_init.m

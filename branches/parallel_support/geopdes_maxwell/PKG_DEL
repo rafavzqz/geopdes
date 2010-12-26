@@ -1,0 +1,17 @@
+dirlist        = {"examples", "examples/data_files", ...
+                 "space", "operators", "utils", "multipatch", "multipatch/examples", "multipatch/examples/data_files"};
+
+dirname = fileparts(canonicalize_file_name (mfilename ("fullpath")));
+
+for ii=1:length(dirlist)
+  if (! exist (fullfile (dirname, "inst"), "dir"))
+    ## Run this if the package is installed
+    rmpath ( [ dirname "/../" dirlist{ii}])
+  else
+    ## Run this if we are testing the package without installation
+    rmpath ([ dirname "/inst/" dirlist{ii}])
+    rmpath ([ dirname "/src/"])
+  end
+end
+
+clear dirlist dirname

@@ -1,0 +1,10 @@
+Name: geopdes_mpi
+Version: 0.0.2
+Date: 2010-12-28
+Author: Andrea Bressan
+Maintainer: Andrea Bressan
+Title: Parallel Iso-Geometric Analysis
+Description: parallel addon for geopdes_base
+Depends: octave (>= 3.2.3), geopdes_base, openmpi_ext (>= 1.0.0)
+Autoload: yes
+License: GPLv3
