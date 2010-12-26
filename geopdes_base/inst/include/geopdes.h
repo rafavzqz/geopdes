@@ -11,8 +11,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
 
@@ -107,7 +106,8 @@ protected:
   double * shape_functions_rep, 
     * shape_function_gradients_rep, 
     * shape_function_curls_rep, 
-    * shape_function_divs_rep;
+    * shape_function_divs_rep, 
+    * shape_function_hessians_rep;
   Array<octave_idx_type> nsh_rep, connectivity_rep;
 public:
   geopdes_space (const Octave_map& refsp, const geopdes_mesh& msh): geopdes_mesh (msh) 
@@ -131,6 +131,10 @@ public:
     shape_function_divs_rep = NULL;
     if (sp->contains ("shape_function_divs"))
       shape_function_divs_rep = (double *) (sp->contents ("shape_function_divs")(0).array_value ()).data ();         
+
+    shape_function_hessians_rep = NULL;
+    if (sp->contains ("shape_function_hessians"))
+      shape_function_hessians_rep = (double *) (sp->contents ("shape_function_hessians")(0).array_value ()).data ();         
 
   }
 
@@ -163,4 +167,8 @@ public:
     return res;
   }
 
+  inline double shape_function_hessians (octave_idx_type c, octave_idx_type i, octave_idx_type j, octave_idx_type k, octave_idx_type m, octave_idx_type n) const {
+    double res =  (shape_function_hessians_rep != NULL) ? shape_function_hessians_rep[c + ncomp () * (i + ndir () * (j + ndir () * (k + nqn () * (m + nsh_max () * n))))] : octave_NaN;
+    return res;
+  }
 };

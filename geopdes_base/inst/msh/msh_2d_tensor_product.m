@@ -61,7 +61,7 @@ function msh = msh_2d_tensor_product (breaks, qn, qw, opts)
   nel  = nelu * nelv;
   msh.nel  = nel;
   msh.nqn  = nqnu * nqnv;
-  
+
   quad_nodes_u = reshape (qnu, nqnu, 1, nelu, 1);
   quad_nodes_u = repmat  (quad_nodes_u, [1, nqnv, 1, nelv]);
   quad_nodes_u = reshape (quad_nodes_u, [], nel);

@@ -82,13 +82,13 @@ if (isfield (sp, 'shape_function_hessians'))
       buu = squeeze (sp.shape_function_hessians(1,1,:,ii,:));
       buv = squeeze (sp.shape_function_hessians(1,2,:,ii,:));
       bvv = squeeze (sp.shape_function_hessians(2,2,:,ii,:));
-
-      [bxx, bxy, byy] = der2_basisfun_phys__ (xu, xv, yu, yv, uxx, uxy, uyy, vxx, vxy, vyy, buu, buv, bvv, bu, bv);
-
-      sp.shape_function_hessians(1,1,:,ii,:) = bxx;
-      sp.shape_function_hessians(1,2,:,ii,:) = bxy;
-      sp.shape_function_hessians(2,1,:,ii,:) = bxy;
-      sp.shape_function_hessians(2,2,:,ii,:) = byy;
+      
+      [bxx, bxy, byy] = der2_basisfun_phys__ (xu(:), xv(:), yu(:), yv(:), uxx(:), uxy(:), uyy(:), vxx(:), vxy(:), vyy(:), buu(:), buv(:), bvv(:), bu(:), bv(:));
+      sh = size (sp.shape_function_hessians(1,1,:,ii,:));
+      sp.shape_function_hessians(1,1,:,ii,:) = reshape (bxx, sh);
+      sp.shape_function_hessians(1,2,:,ii,:) = reshape (bxy, sh);
+      sp.shape_function_hessians(2,1,:,ii,:) = reshape (bxy, sh);
+      sp.shape_function_hessians(2,2,:,ii,:) = reshape (byy, sh);
     end  
     
   else
