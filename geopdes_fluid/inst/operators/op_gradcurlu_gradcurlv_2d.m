@@ -1,19 +1,19 @@
-% OP_GRADCURLU_GRADCURLV: assemble the matrix A = [a(i,j)], a(i,j) = (epsilon grad (curl u_j), grad (curl v_i)).
+% OP_GRADCURLU_GRADCURLV: assemble the matrix A = [a(i,j)], a(i,j) = (mu grad (curl u_j), grad (curl v_i)).
 %
-%   mat = op_gradcurlu_gradcurlv (spu, spv, msh, epsilon);
+%   mat = op_gradcurlu_gradcurlv (spu, spv, msh, mu);
 %
 % INPUT:
 %    
 %   spu:     structure representing the space of trial functions (see sp_bspline_2d_phys)
 %   spv:     structure representing the space of test functions  (see sp_bspline_2d_phys)
 %   msh:     structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)
-%   epsilon: diffusion coefficient
+%   mu:      coefficient
 %
 % OUTPUT:
 %
 %   mat: assembled matrix
 % 
-% Copyright (C) 2009, 2010 Carlo de Falco
+% Copyright (C) 2010 Rafael Vazquez, Carlo de Falco
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -33,21 +33,23 @@ function mat = op_gradcurlu_gradcurlv_2d (spu, spv, msh, coeff)
   mat = spalloc (spv.ndof, spu.ndof, 1);
   ndir = size (msh.quad_nodes, 1);
   
-  hessu = reshape (spu.shape_function_hessians, ndir, ndir, msh.nqn, spu.nsh_max, msh.nel);
-  hessv = reshape (spv.shape_function_hessians, ndir, ndir, msh.nqn, spv.nsh_max, msh.nel);
+  gcu(1,1,:,:,:) =  spu.shape_function_hessians(2,1,:,:,:);
+  gcu(1,2,:,:,:) =  spu.shape_function_hessians(2,2,:,:,:);
+  gcu(2,1,:,:,:) = -spu.shape_function_hessians(1,1,:,:,:);
+  gcu(2,2,:,:,:) = -spu.shape_function_hessians(1,2,:,:,:);
 
-  hessu = shift (hessu, 1, 1);
-  hessu(2,:,:,:,:) = -hessu(2,:,:,:,:);
-  hessv = shift (hessv, 1, 1);
-  hessv(2,:,:,:,:) = -hessv(2,:,:,:,:);
+  gcv(1,1,:,:,:) =  spv.shape_function_hessians(2,1,:,:,:);
+  gcv(1,2,:,:,:) =  spv.shape_function_hessians(2,2,:,:,:);
+  gcv(2,1,:,:,:) = -spv.shape_function_hessians(1,1,:,:,:);
+  gcv(2,2,:,:,:) = -spv.shape_function_hessians(1,2,:,:,:);
 
   for iel = 1:msh.nel
     if (all (msh.jacdet(:,iel)))
       mat_loc = zeros (spv.nsh(iel), spu.nsh(iel));
       for idof = 1:spv.nsh(iel)
-        ishgc = reshape(hessv(:,:,:,idof,iel), ndir*ndir, []);
+        ishgc = reshape(gcv(:,:,:,idof,iel), ndir*ndir, []);
         for jdof = 1:spu.nsh(iel) 
-          jshgc = reshape(hessu(:,:,:,jdof,iel), ndir*ndir, []);
+          jshgc = reshape(gcu(:,:,:,jdof,iel), ndir*ndir, []);
           %for inode = 1:msh.nqn
           mat_loc(idof, jdof) = mat_loc(idof, jdof) + ...
              sum (msh.jacdet(:,iel) .* msh.quad_weights(:, iel) .* ...
