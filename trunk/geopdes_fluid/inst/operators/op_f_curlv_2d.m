@@ -33,9 +33,8 @@ function mat = op_f_curlv_2d (spv, msh, coeff)
  mat   = zeros(spv.ndof, 1);
  ndir = size (msh.quad_nodes, 1);
 
- shpv  = reshape (spv.shape_function_gradients, ndir, msh.nqn, spv.nsh_max, msh.nel);
- shpv = shift (shpv, 1, 1);
- shpv(2,:,:,:) = -shpv(2,:,:,:);
+ shpv(1,:,:,:) =  spv.shape_function_gradients(2,:,:,:);
+ shpv(2,:,:,:) = -spv.shape_function_gradients(1,:,:,:);
 
  coeff = reshape (coeff, ndir, msh.nqn, msh.nel);
  for iel = 1:msh.nel
