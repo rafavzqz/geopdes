@@ -17,13 +17,63 @@
 % <http://www.gnu.org/licenses/>.
 % Author: Carlo de Falco <cdf AT users.sourceforge.net>
 
-function [uxx, uxy, uyy, vxx, vxy, vyy] = der2_inv_map__ (xu, xv, yu, yv, xuu, xuv, xvv, yuu, yuv, yvv)
+function [uxx, uxy, uyy, vxx, vxy, vyy, ux, uy, vx, vy] = der2_inv_map__ (xu, xv, yu, yv, xuu, xuv, xvv, yuu, yuv, yvv)
 
-det2 = (xv.*yu - xu.*yv).^2;
-uxx = (-(xv.*yu.*yuv) + xuv.*yu.*yv + xv.*yuu.*yv - xuu.*yv.^2) ./ det2;
-uxy = (-(xv.^2.*yuu) + xu.*xv.*yuv - xu.*xuv.*yv + xuu.*xv.*yv) ./ det2;
-uyy = (-(xv.^2.*yuv) + xuv.*xv.*yv - xu.*xvv.*yv + xu.*xv.*yvv) ./ det2;
-vxx = (-(xuv.*yu.^2) + xu.*yu.*yuv + xuu.*yu.*yv - xu.*yuu.*yv) ./ det2;
-vxy = ( (xu.*xuv.*yu) - xuu.*xv.*yu + xu.*xv.*yuu - xu.^2.*yuv) ./ det2;
-vyy = (-(xuv.*xv.*yu) + xu.*(xvv.*yu + xv.*yuv - xu.*yvv)) ./ det2;
+det = -(xv.*yu - xu.*yv);
+det2 = det.^2;
+
+ux =  yv./det;
+uy = -xv./det;
+vx = -yu./det;
+vy =  xu./det;
+
+uxx = (yu.*((uy.*yuv + ux.*xuv).*yv - yu.*(uy.*yvv + ux.*xvv)) - ...
+       yv.*((uy.*yuu + ux.*xuu).*yv - yu.*(uy.*yuv + ux.*xuv))) ./ det2;
+uxy = (yu.*(xu.*(uy.*yvv + ux.*xvv) - xv.*(uy.*yuv + ux.*xuv)) - ...
+       (xu.*(uy.*yuv + ux.*xuv) - xv.*(uy.*yuu + ux.*xuu)).*yv) ./ det2;
+uyy = (xv.*(xu.*(uy.*yuv + ux.*xuv) - xv.*(uy.*yuu + ux.*xuu)) - ...
+       xu.*(xu.*(uy.*yvv + ux.*xvv) - xv.*(uy.*yuv + ux.*xuv))) ./ det2;
+
+vxx = (yu.*((vy.*yuv + vx.*xuv).*yv - yu.*(vy.*yvv + vx.*xvv)) - ...
+       yv.*((vy.*yuu + vx.*xuu).*yv - yu.*(vy.*yuv + vx.*xuv))) ./ det2;
+vxy = (yu.*(xu.*(vy.*yvv + vx.*xvv) - xv.*(vy.*yuv + vx.*xuv)) - ...
+       (xu.*(vy.*yuv + vx.*xuv) - xv.*(vy.*yuu + vx.*xuu)).*yv) ./ det2;
+vyy= (xv.*(xu.*(vy.*yuv + vx.*xuv) - xv.*(vy.*yuu + vx.*xuu)) - ...
+      xu.*(xu.*(vy.*yvv + vx.*xvv) - xv.*(vy.*yuv + vx.*xuv))) ./ det2;
+
 end
+
+%!test 
+%!
+%! %% x = u^2 + u + 1 
+%! %% y = v^2 + v + 1 
+%!
+%! xufun = @(u, v) (2*u + 1);
+%! xvfun = @(u, v) (0*u);
+%! yufun = @(u, v) (0*u);
+%! yvfun = @(u, v) (2*v + 1);
+%!
+%! xuufun = @(u, v) (2+0*u);
+%! xuvfun = @(u, v) (0*u);
+%! xvvfun = @(u, v) (0*u);
+%!
+%! yuufun = @(u, v) (0*u);
+%! yuvfun = @(u, v) (0*u);
+%! yvvfun = @(u, v) (2+0*v);
+%!
+%! uxfun = @(u, v) (1./(2*u+1));
+%! vyfun = @(u, v) (1./(2*v+1));
+%! uxxfun = @(u, v) (-2./(2*u+1).^3);
+%! vyyfun = @(u, v) (-2./(2*v+1).^3);
+%!
+%! u = rand (100, 1);
+%! v = rand (100, 1);
+%! [uxx, uxy, uyy, vxx, vxy, vyy, ux, uy, vx, vy] = ...
+%!     der2_inv_map__ (xufun (u,v), xvfun (u,v), yufun (u,v), 
+%! 		    yvfun (u,v), xuufun (u,v), xuvfun (u,v), 
+%! 		    xvvfun (u,v), yuufun (u,v), yuvfun (u,v), 
+%! 		    yvvfun (u,v));
+%! assert (uxfun (u, v), ux, 1e-10)
+%! assert (vyfun (u, v), vy, 1e-10)
+%! assert (uxxfun (u, v), uxx, 1e-10)
+%! assert (vyyfun (u, v), vyy, 1e-10)
