@@ -20,9 +20,9 @@
 geometry = geo_load (eye (4));
 
 % Construct msh structure
-breaks = {(linspace (0, 1, 11)), (linspace (0, 1, 11))};
+breaks = {(linspace (0, 1, 21)), (linspace (0, 1, 21))};
 knotsp = kntbrkdegreg (breaks, [4 4], [3 3]);
-[qn, qw] = msh_set_quad_nodes (breaks, msh_gauss_nodes ([5 5]));
+[qn, qw] = msh_set_quad_nodes (breaks, msh_gauss_nodes ([6 6]));
 msh = msh_2d_tensor_product (breaks, qn, qw); 
 msh = msh_push_forward_2d (msh, geometry, 'der2', true);
 
@@ -65,6 +65,14 @@ figure (1);
 quiver (X, Y, squeeze(eu(1,:,:)), squeeze(eu(2,:,:)))
 axis equal
 title('Computed solution')
+figure (11)
+title ('components of computed solution')
+subplot (1, 2, 1)
+surf (X, Y, squeeze(eu(1,:,:)))
+title ('x component')
+subplot (1, 2, 2)
+surf (X, Y, squeeze(eu(2,:,:)))
+title ('y component')
 
 % Plot exact solution
 figure (2);
@@ -72,6 +80,14 @@ euex = vex (X, Y);
 quiver (X, Y, squeeze(euex(1,:,:)), squeeze(euex(2,:,:)))
 axis equal
 title('Exact solution')
+figure (12)
+title ('components of exact solution')
+subplot (1, 2, 1)
+surf (X, Y, squeeze(euex(1,:,:)))
+title ('x component')
+subplot (1, 2, 2)
+surf (X, Y, squeeze(euex(2,:,:)))
+title ('y component')
 
 % compute L2 distance of the exact solution from the approximation space
 M  = op_u_v (sp, sp, msh, ones (size (x))); 
