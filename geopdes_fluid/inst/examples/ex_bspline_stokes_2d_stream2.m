@@ -1,5 +1,5 @@
-% EX_BSPLINE_STOKES_2D_STREAM: Solve a Stokes flow in stream-function formulation 
-%                              problem on a two-dimensional domain.
+% EX_BSPLINE_STOKES_2D_STREAM_2: Solve a Stokes flow in stream-function formulation 
+%                                problem on a two-dimensional domain.
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 %
@@ -20,9 +20,9 @@
 geometry = geo_load (eye (4));
 
 % Construct msh structure
-breaks = {(linspace (0, 1, 31)), (linspace (0, 1, 31))};
+breaks = {(linspace (0, 1, 11)), (linspace (0, 1, 11))};
 knotsp = kntbrkdegreg (breaks, [4 4], [3 3]);
-[qn, qw] = msh_set_quad_nodes (breaks, msh_gauss_nodes ([6 6]));
+[qn, qw] = msh_set_quad_nodes (breaks, msh_gauss_nodes ([5 5]));
 msh = msh_2d_tensor_product (breaks, qn, qw); 
 msh = msh_push_forward_2d (msh, geometry, 'der2', true);
 
@@ -43,14 +43,6 @@ vex  = @(x, y) cat(1, ...
                 reshape (vexx (x,y), [1, size(x)]), ...
                 reshape (vexy (x,y), [1, size(x)]));
 
-gradpx = @(x, y) ones (size (x));
-gradpy = @(x, y) ones (size (x));
-gradp  = @(x, y) cat(1, ...
-                reshape (gradpx (x,y), [1, size(x)]), ...
-                reshape (gradpy (x,y), [1, size(x)]));
-
-pb = op_f_v (sp, msh, gradp (x, y));
-
 % Assemble the matrices
 [x, y] = deal (squeeze (msh.geo_map(1,:,:)), squeeze (msh.geo_map(2,:,:)));
 A = op_gradu_gradv (sp, sp, msh, ones (size (x))); 
@@ -60,39 +52,44 @@ b = op_f_v (sp, msh, f (x, y));
 drchlt_dofs = unique ([sp.boundary(:).dofs]);
 int_dofs = setdiff (1:sp.ndof, drchlt_dofs);
 
-M  = op_u_v (sp, sp, msh, ones (size (x))); 
-b  = op_f_v (sp, msh, vex (x, y));
-u2 = M \ b;
+u = zeros (sp.ndof, 1);
+u(int_dofs) = A(int_dofs, int_dofs) \ b(int_dofs);
 
-u = u2;
-u(int_dofs) = A(int_dofs, int_dofs) \ (b(int_dofs) - A(int_dofs, drchlt_dofs) * u(drchlt_dofs));
+l2_err = sp_l2_error (sp, msh, u, vex)
 
-toterr = sp_l2_error (sp, msh, u, vex)
-
+% Plot computed solution
 vtk_pts = {linspace(0,1,31)', linspace(0,1,31)'};
 [eu, F] = sp_eval_2d (u, sp, geometry, vtk_pts);
 [X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
 figure (1);
-quiver (X, Y, squeeze(eu(1,:,:)), squeeze(eu(2,:,:)), 10)
+quiver (X, Y, squeeze(eu(1,:,:)), squeeze(eu(2,:,:)))
 axis equal
 title('Computed solution')
+
+% Plot exact solution
 figure (2);
 euex = vex (X, Y);
 quiver (X, Y, squeeze(euex(1,:,:)), squeeze(euex(2,:,:)))
 axis equal
 title('Exact solution')
 
+% compute L2 distance of the exact solution from the approximation space
 M  = op_u_v (sp, sp, msh, ones (size (x))); 
 b  = op_f_v (sp, msh, vex (x, y));
-u2 = M \ b;
+u2 = zeros (size (u));
+u2(int_dofs) = M(int_dofs, int_dofs) \ b(int_dofs);
 
-interperr = sp_l2_error (sp, msh, u2, vex)
+interperr_l2 = sp_l2_error (sp, msh, u2, vex)
+
+% Plot project of exact solution on the approximation space
 [eui, F] = sp_eval_2d (u2, sp, geometry, vtk_pts);
 figure (3);
 quiver (X, Y, squeeze(eui(1,:,:)), squeeze(eui(2,:,:)))
 axis equal
 title('projection')
 
+% For FEM, res would be non-zero only at the boundary, why is it
+% different here?
 res = A * u2 - b;
 vtk_pts = {linspace(0.3,1-.3,31)', linspace(0.3,1-.3,31)'};
 [eui, F] = sp_eval_2d (res, sp, geometry, vtk_pts);
