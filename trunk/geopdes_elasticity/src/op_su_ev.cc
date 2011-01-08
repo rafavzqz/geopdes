@@ -64,8 +64,8 @@ DEFUN_DLD(op_su_ev, args, nargout,"\n\
 
   if (!error_state)
     {
-      Array <octave_idx_type> I (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
-      Array <octave_idx_type> J (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
+      Array <octave_idx_type> I (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0);
+      Array <octave_idx_type> J (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0);
       Array <double> V (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
       
       SparseMatrix mat;
