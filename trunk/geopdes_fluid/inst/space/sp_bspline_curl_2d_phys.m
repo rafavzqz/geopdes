@@ -69,10 +69,6 @@ if (isfield (msh, 'boundary'))
   sp.boundary(3).dofs = union (sub2ind ([mcp, ncp], 1:mcp, ones(1,mcp)), sub2ind ([mcp, ncp], 1:mcp, 2*ones(1,mcp)));
   sp.boundary(4).dofs = union (sub2ind ([mcp, ncp], 1:mcp, ncp*ones(1,mcp)), sub2ind ([mcp, ncp], 1:mcp, (ncp-1)*ones(1,mcp)));
 
-%  sp.boundary(1).dofs = spb.boundary(1).dofs; 
-%  sp.boundary(2).dofs = spb.boundary(2).dofs; 
-%  sp.boundary(3).dofs = spb.boundary(3).dofs; 
-%  sp.boundary(4).dofs = spb.boundary(4).dofs; 
 end
 
 sp.spfun  = @(MSH) sp_bspline_curl_2d_phys (knots, degree, MSH);
