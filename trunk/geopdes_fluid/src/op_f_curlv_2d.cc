@@ -49,7 +49,7 @@ DEFUN_DLD(op_f_curlv_2d, args, nargout,"")
                         {
                           double s = 0.0;
                           for (octave_idx_type icmp(0); icmp < 2; icmp++)
-                            s += pow (-1.0, 1-icmp) * sp.shape_function_gradients (0, 1-icmp, inode, idof, iel) * coeff (icmp, inode, iel);
+                            s += pow (-1.0, icmp) * sp.shape_function_gradients (0, 1-icmp, inode, idof, iel) * coeff (icmp, inode, iel);
                           local_contribution = msh.jacdet  (inode, iel) * msh.weights (inode, iel) * s;
 #pragma omp critical
                           mat(sp.connectivity (idof, iel) - 1) += local_contribution;			  
