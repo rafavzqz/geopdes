@@ -39,7 +39,7 @@
 [geometry, boundaries, interfaces] = mp_geo_load (geo_name);
 
 subdomains = [2 3 4 5];
-[geometry, interfaces, boundaries] = mp_extract_subdomains (geometry, interfaces, boundaries, subdomains);
+[geometry, interfaces, boundaries] = mp_extract_subdomains2 (geometry, interfaces, boundaries, subdomains);
 npatch = numel (geometry);
 
 for iptc = 1:npatch
@@ -63,7 +63,7 @@ for iptc = 1:npatch
 end
 
 % Create a correspondence between patches on the interfaces
-[gnum, ndof] = mp_interface_vector_3d (interfaces, sp);
+[gnum, ndof, gnum_bnd] = mp_interface_vector_3d_sub (interfaces, boundaries, sp);
 
 % Compute and assemble the matrices
 mat = spalloc (ndof, ndof, ndof);

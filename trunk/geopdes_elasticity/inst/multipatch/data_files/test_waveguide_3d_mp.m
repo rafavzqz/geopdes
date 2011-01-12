@@ -7,13 +7,13 @@ nquad      = [3 3 3];     % Points for the Gaussian quadrature rule
 
 % Type of boundary conditions
 nmnn_sides   = [];
-drchlt_sides = [3 4];
+drchlt_sides = [1:2 7:10 11:14];
 
 % NURBS map from text file
 % You can see how the patches should match in the files
 %  geo_2cubesa{b,c,d,e,f,g,h}.txt
 % In all the eight cases the result must be the same
-geo_name = 'geo_square_section_waveguide_mp.txt';
+geo_name = 'geo_rect_section_waveguide_mp.txt';
 
 % Physical parameters
 E  =  1; nu = 0.3;
