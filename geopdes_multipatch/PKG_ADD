@@ -14,7 +14,7 @@ else
   endfor
   ## if the package is not installed, dependencies are not
   ## automatically taken care of, so we need to load some packages here
-  pkg load nurbs integration geopdes_base
+  pkg load nurbs integration 
 endif
 warning('off', 'Octave:fopen-file-in-path');
 clear dirlist basename dir
