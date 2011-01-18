@@ -42,7 +42,6 @@
 subdomains = [2:5 7:10 12:15];
 [geo_ext, int_ext, bnd_ext] = mp_extract_subdomains2 (geometry, interfaces, boundaries, subdomains);
 npatch = numel (geo_ext);
-
 for iptc = 1:npatch
   degelev  = max (degree - (geo_ext(iptc).nurbs.order-1), 0);
   nurbs    = nrbdegelev (geo_ext(iptc).nurbs, degelev);
@@ -148,8 +147,23 @@ int_dofs = setdiff (1:ndof_int, drchlt_dofs);
 rhs(int_dofs) = rhs(int_dofs) - mat(int_dofs, drchlt_dofs) * uint(drchlt_dofs);
 
 % Solve the linear system
-uint(int_dofs) = 0;%mat(int_dofs, int_dofs) \ rhs(int_dofs);
+uint(int_dofs) = mat(int_dofs, int_dofs) \ rhs(int_dofs);
 
+clear geometry boundaries interfaces
+for ii=1:npatch
+warp  = uint(gnum_int{ii});
+warpx = reshape (warp(sp_int{ii}.comp_dofs{1}), [1 sp_int{ii}.ndof_dir(1,:)]);
+warpy = reshape (warp(sp_int{ii}.comp_dofs{2}), [1 sp_int{ii}.ndof_dir(2,:)])+.5842/2;
+warpz = reshape (warp(sp_int{ii}.comp_dofs{3}), [1 sp_int{ii}.ndof_dir(3,:)])+.5842;
+warp  = cat (1, warpx, warpy, warpz, zeros([1 sp_int{ii}.ndof_dir(1,:)]));  
+nurbs(ii) = geo_int(ii).nurbs;
+nurbs(ii).coefs = nurbs(ii).coefs + warp;
+geometry(ii) = geo_load (nurbs(ii));
+end
+boundaries = bnd_int;
+interfaces = int_int;
+  
+  
 fprintf ('results being saved in: %s_int_displacement.pvd\n', output_file)
 mp_sp_to_vtk_3d (uint, sp_int, geo_int, gnum_int, vtk_pts, sprintf ('%s_int_displacement', output_file), 'displacement')
 
