@@ -29,7 +29,7 @@
 % <http://www.gnu.org/licenses/>.
 
 
-function [new_geometry, new_interfaces, new_boundaries] = mp_extract_subdomains (geometry, interfaces, boundaries, subdomains)
+function [new_geometry, new_interfaces, new_boundaries, new_cpt] = mp_extract_subdomains (geometry, interfaces, boundaries, subdomains)
 
 npatch = numel (geometry);
 nsubdomains = numel (subdomains);
@@ -39,8 +39,7 @@ new_subdomains(subdomains) = 1:nsubdomains;
 
 new_geometry   = geometry(subdomains);
 
-keep_int = ismember ([interfaces.patch1], subdomains) & ...
-    ismember ([interfaces.patch2], subdomains);
+keep_int = ismember ([interfaces.patch1], subdomains) & ismember ([interfaces.patch2], subdomains);
 new_num_1 = num2cell (new_subdomains([interfaces.patch1]));
 new_num_2 = num2cell (new_subdomains([interfaces.patch2]));
 new_interfaces = interfaces;
@@ -59,12 +58,15 @@ for ibnd = 1:nbnd
     new_boundaries(ibnd).patches = new_boundaries(ibnd).patches(keep_patches);
     new_boundaries(ibnd).nsides  = numel (new_boundaries(ibnd).patches);
     new_boundaries(ibnd).faces   = new_boundaries(ibnd).faces(keep_patches);
+    new_boundaries(ibnd).flag    = ones (1, new_boundaries(ibnd).nsides);
+    new_boundaries(ibnd).ornt1   = ones (1, new_boundaries(ibnd).nsides);
+    new_boundaries(ibnd).ornt2   = ones (1, new_boundaries(ibnd).nsides);
   end
 end
+%new_boundaries = new_boundaries(keep_bnd);
+%nbnd   = numel (new_boundaries);
 
-nbnd   = numel (new_boundaries);
-int_2_bnd_1 = ismember ([interfaces.patch1], subdomains) & ...
-    ~ismember ([interfaces.patch2], subdomains);
+int_2_bnd_1 = ismember ([interfaces.patch1], subdomains) & ~ismember ([interfaces.patch2], subdomains);
 naddbnd = sum (int_2_bnd_1);
 if (naddbnd)
   [new_boundaries(nbnd+(1:naddbnd)).name]     = deal (interfaces(int_2_bnd_1).ref);
@@ -72,6 +74,11 @@ if (naddbnd)
   new_num  = num2cell (new_subdomains([interfaces(int_2_bnd_1).patch1]));
   [new_boundaries(nbnd+(1:naddbnd)).patches]  = deal (new_num{:});
   [new_boundaries(nbnd+(1:naddbnd)).faces]    = deal (interfaces(int_2_bnd_1).side1);
+  for iii = nbnd+(1:naddbnd)
+    [new_boundaries(iii).flag]     = 1;
+    [new_boundaries(iii).ornt1]    = 1;
+    [new_boundaries(iii).ornt2]    = 1;
+  end
 end
 
 nbnd   = numel (new_boundaries);
@@ -84,5 +91,8 @@ if (naddbnd)
   new_num  = num2cell (new_subdomains([interfaces(int_2_bnd_2).patch2]));
   [new_boundaries(nbnd+(1:naddbnd)).patches]  = deal (new_num{:});
   [new_boundaries(nbnd+(1:naddbnd)).faces]    = deal (interfaces(int_2_bnd_2).side2);
+  [new_boundaries(nbnd+(1:naddbnd)).flag]     = deal (interfaces(int_2_bnd_2).flag);
+  [new_boundaries(nbnd+(1:naddbnd)).ornt1]    = deal (interfaces(int_2_bnd_2).ornt1);
+  [new_boundaries(nbnd+(1:naddbnd)).ornt2]    = deal (interfaces(int_2_bnd_2).ornt2);
 end
 end
