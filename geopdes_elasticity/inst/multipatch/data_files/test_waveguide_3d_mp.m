@@ -16,7 +16,7 @@ drchlt_sides = [1:2 7:10 11:14];
 geo_name = 'geo_rect_section_waveguide_mp.txt';
 
 % Physical parameters
-E  =  1; nu = 0.3;
+E  =  1000; nu = 0.3;
 lam = @(x, y, z) ((nu*E)/((1+nu)*(1-2*nu)) * ones (size (x))); 
 mu  = @(x, y, z) (E/(2*(1+nu)) * ones (size (x)));
 
