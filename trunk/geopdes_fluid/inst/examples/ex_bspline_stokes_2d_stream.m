@@ -123,3 +123,6 @@ surf (X, Y, uex (X, Y))
 
 [eu, F] = sp_eval_curl_2d (u, sp, geometry, pts);
 msh_to_vtk_2d (F, squeeze (eu), 'vel.vts', 'vel')
+
+fprintf ('results being saved in: %s_velocity.vts and %s_pressure.vts\n', 'ex_stream', 'ex_stream')
+sp_to_vtk_2d (u, sp, geometry, vtk_pts, sprintf ('%s_velocity.vts', 'ex_stream'), 'velocity')
