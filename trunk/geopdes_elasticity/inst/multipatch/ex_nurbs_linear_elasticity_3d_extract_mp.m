@@ -12,7 +12,7 @@
 %
 %   u:          displacement vector
 %   sigma:      Cauchy stress tensor
-%   lambda, mu: Lame' parameters
+%   lambda, mu: Lame parameters
 %   I:          identity tensor
 %
 % In order to make it work, a script file with the data must also be executed.
@@ -35,95 +35,145 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+ext_subdomains = [2:5 7:10 12:15];
+int_subdomains = [1 6 11];
+geometry_output = 'geo_waveguide_interior.mat';
+
 % Construct geometry structure, and information for interfaces and boundaries
 [geometry, boundaries, interfaces] = mp_geo_load (geo_name);
 
-subdomains = [2 3 4 5];
-[geometry, interfaces, boundaries] = mp_extract_subdomains2 (geometry, interfaces, boundaries, subdomains);
-npatch = numel (geometry);
-
+%solve problem for the external shield
+[geo_ext, intrfc_ext, bnd_ext] = mp_extract_subdomains_3d (geometry, interfaces, boundaries, ext_subdomains);
+npatch = numel (geo_ext);
 for iptc = 1:npatch
-  degelev  = max (degree - (geometry(iptc).nurbs.order-1), 0);
-  nurbs    = nrbdegelev (geometry(iptc).nurbs, degelev);
+  degelev  = max (degree - (geo_ext(iptc).nurbs.order-1), 0);
+  nurbs    = nrbdegelev (geo_ext(iptc).nurbs, degelev);
   [rknots, zeta, nknots] = kntrefine (nurbs.knots, n_sub, nurbs.order-1, regularity);
 
   nurbs    = nrbkntins (nurbs, nknots);
-  geometry(iptc) = geo_load (nurbs);
+  geo_ext(iptc) = orderfields (geo_load (nurbs), geo_ext(iptc));
 
-% Construct msh structure
+  % Construct msh structure
   rule      = msh_gauss_nodes (nquad);
-  [qn, qw]  = msh_set_quad_nodes (geometry(iptc).nurbs.knots, rule);
-  msh{iptc} = msh_3d_tensor_product (geometry(iptc).nurbs.knots, qn, qw);
-  msh{iptc} = msh_push_forward_3d (msh{iptc}, geometry(iptc));
+  [qn, qw]  = msh_set_quad_nodes (geo_ext(iptc).nurbs.knots, rule);
+  msh_ext{iptc} = msh_3d_tensor_product (geo_ext(iptc).nurbs.knots, qn, qw);
+  msh_ext{iptc} = msh_push_forward_3d (msh_ext{iptc}, geo_ext(iptc));
 
-% Construct space structure
-  sp_scalar = sp_nurbs_3d_phys (geometry(iptc).nurbs, msh{iptc});
-  sp{iptc} = sp_scalar_to_vector_3d (sp_scalar, sp_scalar, sp_scalar, ...
-                                     msh{iptc}, 'divergence', true);
+  % Construct space structure
+  sp_scalar = sp_nurbs_3d_phys (geo_ext(iptc).nurbs, msh_ext{iptc});
+  sp_ext{iptc} = sp_scalar_to_vector_3d (sp_scalar, sp_scalar, sp_scalar, ...
+                                         msh_ext{iptc}, 'divergence', true);
 end
 
 % Create a correspondence between patches on the interfaces
-[gnum, ndof, gnum_bnd] = mp_interface_vector_3d_sub (interfaces, boundaries, sp);
+[gnum_ext, ndof_ext] = mp_interface_vector_3d (intrfc_ext, sp_ext); 
 
 % Compute and assemble the matrices
-mat = spalloc (ndof, ndof, ndof);
-rhs = zeros (ndof, 1);
+mat = spalloc (ndof_ext, ndof_ext, ndof_ext);
+rhs = zeros (ndof_ext, 1);
 
 for iptc = 1:npatch
-  [x, y, z] = deal (squeeze (msh{iptc}.geo_map(1,:,:)), squeeze (msh{iptc}.geo_map(2,:,:)), squeeze (msh{iptc}.geo_map(3,:,:)));
-  
-  mat_loc = op_su_ev (sp{iptc}, sp{iptc}, msh{iptc}, lam (x, y, z), mu (x, y, z)); 
-  rhs_loc = op_f_v (sp{iptc}, msh{iptc}, f (x, y, z));
+  [x, y, z] = deal (squeeze (msh_ext{iptc}.geo_map(1,:,:)), squeeze (msh_ext{iptc}.geo_map(2,:,:)), squeeze (msh_ext{iptc}.geo_map(3,:,:)));
 
-  mat(gnum{iptc},gnum{iptc}) = mat(gnum{iptc},gnum{iptc}) + mat_loc;
-  rhs(gnum{iptc}) = rhs(gnum{iptc}) + rhs_loc;
-end
+  mat_loc = op_su_ev (sp_ext{iptc}, sp_ext{iptc}, msh_ext{iptc}, lam (x, y, z), mu (x, y, z)); 
+  rhs_loc = op_f_v (sp_ext{iptc}, msh_ext{iptc}, f (x, y, z));
 
-% Apply Neumann boundary conditions
-for iref = nmnn_sides
-  for bnd_side = 1:boundaries(iref).nsides
-    iptc = boundaries(iref).patches(bnd_side);
-    iside = boundaries(iref).faces(bnd_side);
-    x = squeeze (msh.boundary(iside).geo_map(1,:,:));
-    y = squeeze (msh.boundary(iside).geo_map(2,:,:));
-    z = squeeze (msh.boundary(iside).geo_map(3,:,:));
-    gval = reshape (g (x, y, z, iref), ...
-           msh{iptc}.boundary(iside).nqn, msh{iptc}.boundary(iside).nel);
-    rhs_nmnn = ...
-           op_f_v (sp{iptc}.boundary(iside), msh{iptc}.boundary(iside), gval);
-    global_dofs = gnum{iptc}(sp{iptc}.boundary(iside).dofs);
-    rhs(global_dofs) = rhs(global_dofs) + rhs_nmnn;
-  end
+  mat(gnum_ext{iptc},gnum_ext{iptc}) = mat(gnum_ext{iptc},gnum_ext{iptc}) + mat_loc;
+  rhs(gnum_ext{iptc}) = rhs(gnum_ext{iptc}) + rhs_loc;
 end
 
 % Apply Dirichlet boundary conditions
-u = zeros (ndof, 1);
-[u_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj (sp, msh, h, gnum, boundaries, drchlt_sides);
-u(drchlt_dofs) = u_drchlt;
+uext = zeros (ndof_ext, 1);
+[u_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj (sp_ext, msh_ext, h, gnum_ext, bnd_ext, drchlt_sides);
+uext(drchlt_dofs) = u_drchlt;
 
-int_dofs = setdiff (1:ndof, drchlt_dofs);
+int_dofs = setdiff (1:ndof_ext, drchlt_dofs);
 rhs(int_dofs) = rhs(int_dofs) - mat(int_dofs, drchlt_dofs) * u_drchlt;
 
 % Solve the linear system
-u(int_dofs) = mat(int_dofs, int_dofs) \ rhs(int_dofs);
-
-% Postprocessing
-if (exist ('uex', 'var'))
-  for iptc = 1:npatch
-    error_l2(iptc) = sp_l2_error (sp{iptc}, msh{iptc}, u(gnum{iptc}), uex);
-  end
-  error_l2 = sqrt (sum (error_l2 .* error_l2))
-
-  if (exist ('graduex', 'var'))
-    for iptc = 1:npatch
-      error_h1(iptc) = sp_h1_error (sp{iptc}, msh{iptc}, u(gnum{iptc}), uex, graduex);
-    end
-    error_h1 = sqrt (sum (error_h1 .* error_h1))
-  end
-end
+uext(int_dofs) = mat(int_dofs, int_dofs) \ rhs(int_dofs);
 
 fprintf ('results being saved in: %s_displacement.pvd\n', output_file)
-mp_sp_to_vtk_3d (u, sp, geometry, gnum, vtk_pts, sprintf ('%s_displacement', output_file), 'displacement')
+mp_sp_to_vtk_3d (uext, sp_ext, geo_ext, gnum_ext, vtk_pts, sprintf ('%s_displacement', output_file), 'displacement')
+
+%solve problem for the internal domain, to create a geometry
+  [geo_int, intrfc_int, bnd_int] = mp_extract_subdomains_3d (geometry, interfaces, boundaries, int_subdomains);
+npatch = numel (geo_int);
+
+for iptc = 1:npatch
+  degelev  = max (degree - (geo_int(iptc).nurbs.order-1), 0);
+  nurbs    = nrbdegelev (geo_int(iptc).nurbs, degelev);
+  [rknots, zeta, nknots] = kntrefine (nurbs.knots, n_sub, nurbs.order-1, regularity);
+
+  nurbs    = nrbkntins (nurbs, nknots);
+  geo_int(iptc) = orderfields (geo_load (nurbs), geo_int(iptc));
+
+  % Construct msh structure
+  rule      = msh_gauss_nodes (nquad);
+  [qn, qw]  = msh_set_quad_nodes (geo_int(iptc).nurbs.knots, rule);
+  msh_int{iptc} = msh_3d_tensor_product (geo_int(iptc).nurbs.knots, qn, qw);
+  msh_int{iptc} = msh_push_forward_3d (msh_int{iptc}, geo_int(iptc));
+
+  % Construct space structure
+  sp_scalar = sp_nurbs_3d_phys (geo_int(iptc).nurbs, msh_int{iptc});
+  sp_int{iptc} = sp_scalar_to_vector_3d (sp_scalar, sp_scalar, sp_scalar, ...
+                                         msh_int{iptc}, 'divergence', true);
+end
+
+% Create a correspondence between patches on the interfaces
+[gnum_int, ndof_int] = mp_interface_vector_3d (intrfc_int, sp_int); 
+
+% Compute and assemble the matrices
+mat = spalloc (ndof_int, ndof_int, ndof_int);
+rhs = zeros (ndof_int, 1);
+
+for iptc = 1:npatch
+  [x, y, z] = deal (squeeze (msh_int{iptc}.geo_map(1,:,:)), squeeze (msh_int{iptc}.geo_map(2,:,:)), squeeze (msh_int{iptc}.geo_map(3,:,:)));
+  
+  mat_loc = op_su_ev (sp_int{iptc}, sp_int{iptc}, msh_int{iptc}, lam (x, y, z), mu (x, y, z)); 
+  rhs_loc = op_f_v (sp_int{iptc}, msh_int{iptc}, f (x, y, z));
+
+  mat(gnum_int{iptc},gnum_int{iptc}) = mat(gnum_int{iptc},gnum_int{iptc}) + mat_loc;
+  rhs(gnum_int{iptc}) = rhs(gnum_int{iptc}) + rhs_loc;
+end
+
+% Apply Dirichlet boundary conditions
+uint = zeros (ndof_int, 1);
+[u_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj (sp_int, msh_int, h, gnum_int, bnd_int, drchlt_sides);
+uint(drchlt_dofs) = u_drchlt;
+
+subint_to_subext = mp_interface_subdomains_3d_vec (bnd_int, bnd_ext, sp_int, sp_ext, gnum_int, gnum_ext);
+
+for jjj = 1:size (sub1_to_sub2, 1)
+  uint(subint_to_subext{jjj,1}) = uext(subint_to_subext{jjj,2});
+  drchlt_dofs = union (drchlt_dofs, subint_to_subext{jjj,1});
+end
+
+int_dofs = setdiff (1:ndof_int, drchlt_dofs);
+rhs(int_dofs) = rhs(int_dofs) - mat(int_dofs, drchlt_dofs) * uint(drchlt_dofs);
+
+% Solve the linear system
+uint(int_dofs) = mat(int_dofs, int_dofs) \ rhs(int_dofs);
+
+% Save the new geometry
+clear geometry boundaries interfaces
+for ii=1:npatch
+  warp  = uint(gnum_int{ii});
+  warpx = reshape (warp(sp_int{ii}.comp_dofs{1}), [1 sp_int{ii}.ndof_dir(1,:)]);
+  warpy = reshape (warp(sp_int{ii}.comp_dofs{2}), [1 sp_int{ii}.ndof_dir(2,:)]);
+  warpz = reshape (warp(sp_int{ii}.comp_dofs{3}), [1 sp_int{ii}.ndof_dir(3,:)]);
+  warp  = cat (1, warpx, warpy, warpz, zeros([1 sp_int{ii}.ndof_dir(1,:)]));  
+  nurbs(ii) = geo_int(ii).nurbs;
+  nurbs(ii).coefs = nurbs(ii).coefs + warp;
+  geometry(ii) = geo_load (nurbs(ii));
+end
+boundaries = bnd_int;
+interfaces = intrfc_int;
+
+save -binary geo_waveguide_interior.mat geometry boundaries interfaces
+
+fprintf ('results being saved in: %s_int_displacement.pvd\n', output_file)
+mp_sp_to_vtk_3d (uint, sp_int, geo_int, gnum_int, vtk_pts, sprintf ('%s_int_displacement', output_file), 'displacement')
 
 %!demo
 %! test_waveguide_3d_mp
