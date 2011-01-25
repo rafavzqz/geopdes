@@ -144,7 +144,7 @@ uint(drchlt_dofs) = u_drchlt;
 
 subint_to_subext = mp_interface_subdomains_3d_vec (bnd_int, bnd_ext, sp_int, sp_ext, gnum_int, gnum_ext);
 
-for jjj = 1:size (sub1_to_sub2, 1)
+for jjj = 1:size (subint_to_subext, 1)
   uint(subint_to_subext{jjj,1}) = uext(subint_to_subext{jjj,2});
   drchlt_dofs = union (drchlt_dofs, subint_to_subext{jjj,1});
 end
