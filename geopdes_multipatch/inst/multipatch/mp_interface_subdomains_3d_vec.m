@@ -94,6 +94,5 @@ function gn_sub1_to_sub2 = ...
     gn_sub1_to_sub2{ind1,1} = gn1{iptc1}(bnd_dofs1);
     gn_sub1_to_sub2{ind1,2} = gn2{iptc2}(bnd_dofs2);
 
-    end
   end
 end
