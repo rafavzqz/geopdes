@@ -48,7 +48,7 @@ for iptc = 1:npatch
   [rknots, zeta, nknots] = kntrefine (nurbs.knots, n_sub, nurbs.order-1, regularity);
 
   nurbs    = nrbkntins (nurbs, nknots);
-  geo_ext(iptc) = geo_load (nurbs);
+  geo_ext(iptc) = orderfields (geo_load (nurbs), geo_ext(iptc));
 
   % Construct msh structure
   rule      = msh_gauss_nodes (nquad);
@@ -104,7 +104,7 @@ for iptc = 1:npatch
   [rknots, zeta, nknots] = kntrefine (nurbs.knots, n_sub, nurbs.order-1, regularity);
 
   nurbs    = nrbkntins (nurbs, nknots);
-  geo_int(iptc) = geo_load (nurbs);
+  geo_int(iptc) = orderfields (geo_load (nurbs), geo_int(iptc));
 
   % Construct msh structure
   rule      = msh_gauss_nodes (nquad);
