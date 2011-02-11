@@ -32,10 +32,15 @@
 %               ornt1:  a flag telling if the u- direction on the first face matches the direction on patch2
 %               ornt2:  a flag telling if the v- direction on the first face matches the direction on patch2
 %
+%   subdomains: an array of structures that contains the following fields
+%               name:    the name of the subdomain
+%               patches: indices of the patches belonging to the subdomain
+%
+%
 % This format is based on the paper
 % [1] T. Dokken, E. Quak, V. Skytt, Requirements from Isogeometric Analysis for Changes in Product Design Ontologies. Proceedings of the Focus K3D Conference on Semantic 3D Media and Content, Sophia Antipolis (France), 2010.
 %
-% Copyright (C) 2010 Carlo de Falco, Rafael Vazquez
+% Copyright (C) 2010, 2011 Carlo de Falco, Rafael Vazquez
 % 
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -51,7 +56,7 @@
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
 
-function [geometry, boundaries, interfaces] = mp_geo_load (in)
+function [geometry, boundaries, interfaces, subdomains] = mp_geo_load (in)
   
   if (ischar (in))
     if (strcmpi (in(end-3:end), '.mat'))
@@ -62,6 +67,9 @@ function [geometry, boundaries, interfaces] = mp_geo_load (in)
         boundaries = tmp.boundaries;
         interfaces = tmp.interfaces;
         dim = numel (geometry(1).nurbs.knots);
+        if (isfield (tmp, 'subdomains'))
+          subdomains = tmp.subdomains;
+        end
       elseif (isfield (tmp,'geo'))
         geometry.nurbs = tmp.geo;
         dim = numel (geometry.nurbs.knots);
@@ -75,6 +83,12 @@ function [geometry, boundaries, interfaces] = mp_geo_load (in)
             boundaries(iface).patches = 1;
             boundaries(iface).faces = iface;
           end
+        end
+        if (isfield (tmp, 'subdomains'))
+          subdomains = tmp.subdomains;
+        else
+          subdomains(1).name = 'SUBDOMAIN 1';
+          subdomains(1).patches = 1;
         end
       end
       npatch = numel (geometry);
@@ -99,7 +113,7 @@ function [geometry, boundaries, interfaces] = mp_geo_load (in)
 
     elseif (strcmpi (in(end-3:end), '.txt'))
 %% load geometry from a txt file
-      [geometry, boundaries, interfaces] = mp_geo_read_nurbs (in);
+      [geometry, boundaries, interfaces, subdomains] = mp_geo_read_nurbs (in);
     else
       error ('mp_geo_load: unknown file extension');
     end
