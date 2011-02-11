@@ -56,29 +56,54 @@ for iptc = 1:npatches
   geom(iptc).nurbs.dim = 4;
 
   line = fgetl (fid);
+  while (line(1) == '#')
+    line = fgetl (fid);
+  end
+  if (isempty (str2num (line)))
+    geom(iptc).name = line;
+    line = fgetl (fid);
+    while (line(1) == '#')
+      line = fgetl (fid);
+    end
+  end
   vec = str2num (line);
   geom(iptc).nurbs.order = vec+1;
 
   line = fgetl (fid);
+  while (line(1) == '#')
+    line = fgetl (fid);
+  end
   vec = str2num (line);
   geom(iptc).nurbs.number = vec;
 
   for idim = 1:dim
     line = fgetl (fid);
+    while (line(1) == '#')
+      line = fgetl (fid);
+    end
     geom(iptc).nurbs.knots{idim} = str2num (line);
   end
 
   switch (dim)
    case 2
     line = fgetl (fid); 
+    while (line(1) == '#')
+      line = fgetl (fid);
+    end
     cp_x = reshape(str2num (line), geom(iptc).nurbs.number);
     
     line = fgetl (fid);
+    while (line(1) == '#')
+      line = fgetl (fid);
+    end
     cp_y = reshape(str2num (line), geom(iptc).nurbs.number);
 
     cp_z = zeros(geom(iptc).nurbs.number);
     
     line = fgetl (fid);
+    while (line(1) == '#')
+      line = fgetl (fid);
+    end
     weights = reshape(str2num (line), geom(iptc).nurbs.number);
 
     geom(iptc).nurbs.coefs(1,:,:) = cp_x;
@@ -88,15 +113,27 @@ for iptc = 1:npatches
 
    case 3
     line = fgetl (fid);
+    while (line(1) == '#')
+      line = fgetl (fid);
+    end
     cp_x = reshape(str2num (line), geom(iptc).nurbs.number);
 
     line = fgetl (fid);
+    while (line(1) == '#')
+      line = fgetl (fid);
+    end
     cp_y = reshape(str2num (line), geom(iptc).nurbs.number);
 
     line = fgetl (fid);
+    while (line(1) == '#')
+      line = fgetl (fid);
+    end
     cp_z = reshape(str2num (line), geom(iptc).nurbs.number);
 
     line = fgetl (fid);
+    while (line(1) == '#')
+      line = fgetl (fid);
+    end
     weights = reshape(str2num (line), geom(iptc).nurbs.number);
 
     geom(iptc).nurbs.coefs(1,:,:,:) = cp_x;
