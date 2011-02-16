@@ -24,7 +24,7 @@ P = 1;
 f = @(x, y) zeros (2, size (x, 1), size (x, 2));
 g = @(x, y, ind) test_plane_strain_ring_g_nmnn (x, y, P, nu, ind);
 h = @(x, y, ind) test_plane_strain_ring_uex (x, y, E, nu, P);
-p = @(x, y) P * ones (size (x));
+p = @(x, y, ind) P * ones (size (x));
 
 % Exact solution
 uex = @(x, y) test_plane_strain_ring_uex (x, y, E, nu, P);
