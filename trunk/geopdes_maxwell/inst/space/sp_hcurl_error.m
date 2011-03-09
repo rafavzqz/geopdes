@@ -63,7 +63,7 @@ function [toterr, errl2] = sp_hcurl_error (sp, msh, u, uex, curluex);
     end
   end
 
-  errl2  = sp_l2_error (sp, msh, u, uex));
+  errl2  = sp_l2_error (sp, msh, u, uex);
   toterr = sqrt (errl2^2 + err_curl);
 
 end
