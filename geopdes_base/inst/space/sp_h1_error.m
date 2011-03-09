@@ -1,6 +1,6 @@
 % SP_H1_ERROR: Evaluate the error in H^1 norm.
 %
-%   toterr = sp_h1_error (space, msh, u, uex, graduex);
+%   [toterr, errl2] = sp_h1_error (space, msh, u, uex, graduex);
 %
 % INPUT:
 %
@@ -13,6 +13,7 @@
 % OUTPUT:
 %
 %     toterr: error in H^1 norm
+%     errl2:  error in L^2 norm
 %
 % Copyright (C) 2010 Carlo de Falco
 %
@@ -31,7 +32,7 @@
 % <http://www.gnu.org/licenses/>.
 % Author: Carlo de Falco <cdf AT users.sourceforge.net>
 
-function toterr = sp_h1_error (sp, msh, u, uex, graduex);
+function [toterr, errl2] = sp_h1_error (sp, msh, u, uex, graduex);
 
   ndir = size (msh.geo_map, 1);
 
@@ -56,8 +57,8 @@ function toterr = sp_h1_error (sp, msh, u, uex, graduex);
   w = msh.quad_weights .* msh.jacdet;
   errh1s = sum (sum (squeeze (sum (sum ((grad_num - grad_valex).^2, 1), 2)) .* w));
   
-  errl2  = (sp_l2_error (sp, msh, u, uex))^2;
-  toterr = sqrt (errl2 + errh1s);
+  errl2  = sp_l2_error (sp, msh, u, uex);
+  toterr = sqrt (errl2^2 + errh1s);
   
 end
 
