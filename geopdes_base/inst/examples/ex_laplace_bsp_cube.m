@@ -46,5 +46,5 @@ sp_to_vtk_3d (u, space, geometry, vtk_pts, output_file, 'u')
 
 % 4.2) COMPARISON WITH THE EXACT SOLUTION
 
-error_l2 = sp_l2_error (space, msh, u, problem_data.uex)
-error_h1 = sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex)
+[error_h1, error_l2] = ...
+           sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex)
