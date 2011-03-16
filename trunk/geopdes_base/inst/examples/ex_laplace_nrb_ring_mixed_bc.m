@@ -53,6 +53,6 @@ surf (X, Y, problem_data.uex (X,Y))
 title ('Exact solution'), axis tight
 
 % Display errors of the computed solution in the L2 and H1 norm
-error_l2 = sp_l2_error (space, msh, u, problem_data.uex)
-error_h1 = sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex)
+[error_h1, error_l2] = ...
+           sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex)
 
