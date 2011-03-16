@@ -125,7 +125,7 @@ function [vexa, filename] = do_example (number)
 
 switch (number)
  case 1
-  filename = 'ex_nurbs_laplace_2d_15lines.m';
+  filename = 'ex_article_15lines.m';
  case 2
   filename = 'ex_article_section_511.m';
  case 3
