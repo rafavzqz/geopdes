@@ -3,7 +3,7 @@
 % 1) PHYSICAL DATA OF THE PROBLEM
 clear problem_data 
 % Physical domain, defined as NURBS map given in a text file
-problem_data.geo_name = 'geo_curvedL';
+problem_data.geo_name = 'geo_curvedL.txt';
 
 % Type of boundary conditions
 problem_data.nmnn_sides   = [];
