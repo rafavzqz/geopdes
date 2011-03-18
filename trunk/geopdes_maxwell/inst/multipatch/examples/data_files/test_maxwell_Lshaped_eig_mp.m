@@ -12,7 +12,7 @@ drchlt_sides = [1 2 3 4 5 6];
 % NURBS map from text file (in the three cases the result should be the same)
 geo_name = 'geo_Lshaped_mp.txt';
 %geo_name = 'geo_Lshaped_mp_b.txt';
-%geo_name = 'geo_Lshaped_mp_b.txt';
+%geo_name = 'geo_Lshaped_mp_c.txt';
 
 % Physical parameters
 c_elec_perm = @(x, y) ones(size(x));
