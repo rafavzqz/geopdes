@@ -15,10 +15,10 @@
 %  problem_data: a structure with data of the problem. It contains the fields:
 %    - geo_name:     name of the file containing the geometry
 %    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
-%    - drchlt_sides: sides with Dirichlet boundary conditio
+%    - drchlt_sides: sides with Dirichlet boundary condition
 %    - c_diff:       diffusion coefficient (epsilon in the equation)
 %    - f:            source term
-%    - g:            function for Neumann condition (in nmnn_sides is not empty)
+%    - g:            function for Neumann condition (if nmnn_sides is not empty)
 %    - h:            function for Dirichlet boundary condition
 %
 %  method_data : a structure with discretization data. Its fields are:
@@ -116,3 +116,5 @@ rhs(int_dofs) = rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt;
 
 % Solve the linear system
 u(int_dofs) = stiff_mat(int_dofs, int_dofs) \ rhs(int_dofs);
+
+end

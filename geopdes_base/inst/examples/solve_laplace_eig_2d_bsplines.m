@@ -15,12 +15,9 @@
 %  problem_data: a structure with data of the problem. It contains the fields:
 %    - geo_name:     name of the file containing the geometry
 %    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
-%    - drchlt_sides: sides with Dirichlet boundary conditio
+%    - drchlt_sides: sides with Dirichlet boundary condition
 %    - c_diff:       diffusion coefficient (epsilon in the equation)
 %    - c_mass:       mass coefficient (mu in the equation)
-%    - f:            source term
-%    - g:            function for Neumann condition (in nmnn_sides is not empty)
-%    - h:            function for Dirichlet boundary condition
 %
 %  method_data : a structure with discretization data. Its fields are:
 %    - degree:     degree of the spline functions.
