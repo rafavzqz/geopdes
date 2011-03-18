@@ -1,4 +1,4 @@
-% TEST_MAXWELL_SQUARE: solve Maxwell source problem in the unit square.
+% EX_MAXWELL_SRC_SQUARE: solve Maxwell source problem in the unit square.
 
 % 1) PHYSICAL DATA OF THE PROBLEM
 clear problem_data 
