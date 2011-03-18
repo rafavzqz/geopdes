@@ -1,15 +1,21 @@
-% SOLVE_MAXWELL_3D_EIG: Solve the 3d Maxwell eigenvalue problem with a B-spline discretization.
+% EX_BSPLINE_MIXED_FORM2_2D_EIG: Solve the 2d Maxwell eigenvalue problem with the second mixed formulation, and a B-spline discretization.
 %
 % Example to solve the problem
+%    curl (1/mu(x) curl (u)) = lambda (epsilon(x) u)   in Omega = F((0,1)^2)
+%          div (epsilon(x) u) = 0                       in Omega 
+%       (1/mu(x) curl(u)) x n = 0                       on Gamma_N
+%                       u x n = 0                       on Gamma_D
 %
-%    curl (1/mu(x) curl (u)) = lambda (epsilon(x) u)   in Omega = F((0,1)^3)
-%      (1/mu(x) curl(u)) x n = 0                       on Gamma_N
-%                      u x n = 0                       on Gamma_D
+% with the variational mixed formulation
+%
+%  \int (epsilon(x) u v) + \int (curl(v) p) = 0,       \forall v \in H_0(curl),
+%                          \int (curl(u) q) = -lambda \int (sqrt(1/mu(x)) p q), 
+%                                                          \forall q \in L^2_0.
 %
 % USAGE:
 %
-%  [geometry, msh, space, eigv, eigf] = 
-%                  solve_maxwell_eig_3d (problem_data, method_data)
+%  [geometry, msh, space, sp_mul, eigv, eigf] = 
+%                  solve_maxwell_eig_mixed2_2d (problem_data, method_data)
 %
 % INPUT:
 %
@@ -29,10 +35,13 @@
 % OUTPUT:
 %
 %  geometry: geometry structure (see geo_load)
-%  msh:      mesh structure (see msh_push_forward_3d)
-%  space:    space structure (see sp_bspline_curl_transform_3d)
+%  msh:      mesh structure (see msh_push_forward_2d)
+%  space:    space structure (see sp_bspline_curl_transform_2d)
+%  sp_mul:   space structure for the multiplier (see sp_bspline_3_forms)
 %  eigv:     the computed eigenvalues
 %  eigf:     degrees of freedom of the associated eigenfunctions
+%
+% See also EX_MAXWELL_EIG_MIXED2_SQUARE for an example
 %
 % Copyright (C) 2010, 2011 Rafael Vazquez
 %
@@ -49,8 +58,8 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [geometry, msh, sp, eigv, eigf] = ...
-              solve_maxwell_eig_3d (problem_data, method_data)
+function [geometry, msh, sp, sp_mul, eigv, eigf] = ...
+              solve_maxwell_eig_mixed2_2d (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
 data_names = fieldnames (problem_data);
@@ -62,43 +71,51 @@ for iopt  = 1:numel (data_names)
   eval ([data_names{iopt} sprintf('= method_data.(data_names{iopt});')]);
 end
 
-% Construct geometry structure
+% Construct geometry structure 
 geometry = geo_load (geo_name);
 
 [knots, zeta] = kntrefine (geometry.nurbs.knots, n_sub, degree, regularity);
-[knots_u1, knots_u2, knots_u3, degree1, degree2, degree3] = ...
+[knots_u1, knots_u2, knots_mul, degree1, degree2, degree_mul] = ...
                                                   knt_derham (knots, degree);
 
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (zeta, rule);
-msh      = msh_3d_tensor_product (zeta, qn, qw);
-msh      = msh_push_forward_3d (msh, geometry);
+msh      = msh_2d_tensor_product (zeta, qn, qw);
+msh      = msh_push_forward_2d (msh, geometry);
 
-% Construct space structure
-sp = sp_bspline_curl_transform_3d (knots_u1, knots_u2, knots_u3, ...
-                                   degree1, degree2, degree3, msh);
+% Construct the space structures for the field and the Lagrange multiplier
+sp = sp_bspline_curl_transform_2d (knots_u1, knots_u2, degree1, degree2, msh);
+sp_mul = sp_bspline_3_forms (knots_mul, degree-1, msh);
 
 % Precompute the coefficients
 x = squeeze (msh.geo_map(1,:,:));
 y = squeeze (msh.geo_map(2,:,:));
-z = squeeze (msh.geo_map(3,:,:));
 
-epsilon = reshape (c_elec_perm (x, y, z), msh.nqn, msh.nel);
-mu      = reshape (c_magn_perm (x, y, z), msh.nqn, msh.nel);
+epsilon = reshape (c_elec_perm (x, y), msh.nqn, msh.nel);
+mu      = reshape (c_magn_perm (x, y), msh.nqn, msh.nel);
+coeff   = ones (msh.nqn, msh.nel);
 
 % Assemble the matrices
-stiff_mat = op_curlu_curlv_3d (sp, sp, msh, 1./mu);
-mass_mat  = op_u_v (sp, sp, msh, epsilon);
+mass_mat     = op_u_v (sp, sp, msh, epsilon);
+mass_mul_mat = op_u_v (sp_mul, sp_mul, msh, sqrt(1./mu));
+saddle_mat   = op_curlv_p (sp, sp_mul, msh, coeff);
 
 % Apply homogeneous Dirichlet boundary conditions
-drchlt_dofs = unique ([sp.boundary(drchlt_sides).dofs]);
-int_dofs = setdiff (1:sp.ndof, drchlt_dofs);
+drchlt_dofs  = unique ([sp.boundary(drchlt_sides).dofs]);
+int_dofs     = setdiff (1:sp.ndof, drchlt_dofs);
 
 % Solve the eigenvalue problem
-eigf = zeros (sp.ndof, numel(int_dofs));
-[eigf(int_dofs, :), eigv] = ...
-    eig (full (stiff_mat(int_dofs, int_dofs)), full (mass_mat(int_dofs, int_dofs)));
+mass_mat   = mass_mat (int_dofs, int_dofs);
+saddle_mat = saddle_mat (:, int_dofs);
+
+A = [mass_mat, saddle_mat.'; ...
+     saddle_mat, sparse(sp_mul.ndof,sp_mul.ndof)];
+M = [sparse(numel(int_dofs), numel(int_dofs) + sp_mul.ndof); ...
+     sparse(sp_mul.ndof, numel(int_dofs)), -mass_mul_mat];
+
+eigf = zeros (sp.ndof + sp_mul.ndof, numel(int_dofs) + sp_mul.ndof);
+[eigf([int_dofs sp.ndof+[1:sp_mul.ndof]], :), eigv] = eig (full(A), full(M));
 eigv = diag (eigv);
 
 end
