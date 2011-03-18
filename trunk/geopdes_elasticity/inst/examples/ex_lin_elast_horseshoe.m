@@ -39,6 +39,6 @@ method_data.nquad      = [4 4 4];     % Points for the Gaussian quadrature rule
 output_file = 'lin_elast_horseshoe_Deg3_Reg2_Sub0';
 
 vtk_pts = {linspace(0, 1, 5)', linspace(0, 1, 5)', linspace(0, 1, 40)'};
-fprintf ('results being saved in: %s_displacement\n', output_file)
+fprintf ('results being saved in: %s_displacement\n \n', output_file)
 sp_to_vtk_3d (u, space, geometry, vtk_pts, sprintf ('%s_displacement', output_file), 'displacement')
 

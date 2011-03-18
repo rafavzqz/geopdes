@@ -36,12 +36,13 @@ method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
 output_file = 'plane_strain_mixed_bc_Deg3_Reg2_Sub9';
 
 vtk_pts = {linspace(0, 1, 20)', linspace(0, 1, 20)'};
-fprintf ('results being saved in: %s_displacement\n', output_file)
+fprintf ('results being saved in: %s_displacement\n \n', output_file)
 sp_to_vtk_2d (u, space, geometry, vtk_pts, sprintf ('%s_displacement.vts', output_file), 'displacement')
 
 % 4.2) Plot in Matlab.
 [eu, F] = sp_eval_2d (u, space, geometry, vtk_pts);
 [X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
 
+figure
 quiver (X, Y, squeeze(eu(1,:,:)), squeeze(eu(2,:,:)))
 axis equal tight
