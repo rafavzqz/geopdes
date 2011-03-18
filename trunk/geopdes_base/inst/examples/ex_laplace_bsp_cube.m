@@ -1,7 +1,7 @@
 % EX_LAPLACE_BSP_CUBE: solve the Poisson problem in the unit cube with a B-spline discretization.
 
 % 1) PHYSICAL DATA OF THE PROBLEM
- 
+clear problem_data 
 % Physical domain, defined as NURBS map given in a text file
 problem_data.geo_name = 'geo_cube.txt';
 
@@ -25,7 +25,7 @@ problem_data.graduex = @(x, y, z) cat (1, ...
                           reshape (exp (x + z) .* sin (y), [1, size(x)]));
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
-
+clear method_data
 method_data.degree     = [3 3 3];       % Degree of the splines
 method_data.regularity = [2 2 2];       % Regularity of the splines
 method_data.n_sub      = [2 2 2];       % Number of subdivisions

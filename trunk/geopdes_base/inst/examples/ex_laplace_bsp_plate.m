@@ -2,7 +2,7 @@
 % plate with a hole, discretized with B-splines (non-isoparametric approach).
 
 % 1) PHYSICAL DATA OF THE PROBLEM
- 
+clear problem_data 
 % Physical domain, defined as NURBS map given in a text file
 problem_data.geo_name = 'geo_plate_with_hole.txt';
 
@@ -25,6 +25,7 @@ problem_data.graduex = @(x, y) cat (1, ...
                        reshape (exp(x).*cos(y), [1, size(x)]));
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
+clear method_data
 method_data.degree     = [3 3];       % Degree of the splines
 method_data.regularity = [2 2];       % Regularity of the splines
 method_data.n_sub      = [7 7];       % Number of subdivisions

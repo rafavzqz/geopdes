@@ -1,24 +1,8 @@
 % EX_LAPLACE_EIG_BSP_SQUARE: Compute eigenvalues and eigenvectors for
 % the Laplace operator in the square.
 %
-% Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 201, Rafael Vazquez
-%
-%    This program is free software: you can redistribute it and/or modify
-%    it under the terms of the GNU General Public License as published by
-%    the Free Software Foundation, either version 3 of the License, or
-%    (at your option) any later version.
-
-%    This program is distributed in the hope that it will be useful,
-%    but WITHOUT ANY WARRANTY; without even the implied warranty of
-%    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-%    GNU General Public License for more details.
-%
-%    You should have received a copy of the GNU General Public License
-%    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 % 1) PHYSICAL DATA OF THE PROBLEM
-
+clear problem_data 
 % Physical domain, defined as NURBS map given in a text file
 problem_data.geo_name = 'geo_square.txt';
 
@@ -31,7 +15,7 @@ problem_data.c_diff = @(x, y) ones(size(x));
 problem_data.c_mass = @(x, y) ones(size(x));
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
-
+clear method_data
 method_data.degree     = [3 3];     % Degree of the bsplines
 method_data.regularity = [2 2];     % Regularity of the splines
 method_data.n_sub      = [7 7];     % Number of subdivisions

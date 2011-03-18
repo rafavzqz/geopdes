@@ -1,7 +1,7 @@
 % EX_LAPLACE_NRB_RING_MIXED_BC: solve the Poisson problem in one quarter of a ring, discretized with NURBS (isoparametric approach).
 
 % 1) PHYSICAL DATA OF THE PROBLEM
- 
+clear problem_data  
 % Physical domain, defined as NURBS map given in a text file
 problem_data.geo_name = 'geo_ring.txt';
 
@@ -24,6 +24,7 @@ problem_data.graduex = @(x, y) cat (1, ...
                reshape (exp(x).*x.*cos(x.*y), [1, size(x)]));
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
+clear method_data
 method_data.degree     = [3 3];       % Degree of the splines
 method_data.regularity = [2 2];       % Regularity of the splines
 method_data.n_sub      = [8 8];       % Number of subdivisions

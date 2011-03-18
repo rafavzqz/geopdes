@@ -1,7 +1,7 @@
 % EX_LAPLACE_BSP_THICK_RING: solve the Poisson problem in a thick ring with a B-spline discretization (non-isoparametric approach).
 
 % 1) PHYSICAL DATA OF THE PROBLEM
- 
+clear problem_data 
 % Physical domain, defined as NURBS map given in a text file
 problem_data.geo_name = 'geo_thick_ring.txt';
 
@@ -26,7 +26,7 @@ problem_data.graduex = @(x, y, z) cat (1, ...
              reshape (-exp (x) .* sin (x.*y) .* sin (z), [1, size(x)]));
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
-
+clear method_data
 method_data.degree     = [2 2 2];       % Degree of the splines
 method_data.regularity = [1 1 1];       % Regularity of the splines
 method_data.n_sub      = [3 3 3];       % Number of subdivisions

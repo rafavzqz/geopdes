@@ -1,7 +1,7 @@
 % EX_LAPLACE_BSP_RING: solve the Poisson problem in one quarter of a ring, discretized with B-splines (non-isoparametric approach).
 
 % 1) PHYSICAL DATA OF THE PROBLEM
- 
+clear problem_data 
 % Physical domain, defined as NURBS map given in a text file
 problem_data.geo_name = 'geo_ring.txt';
 
@@ -25,6 +25,7 @@ problem_data.graduex = @(x, y) cat (1, ...
                          2*x.*y.*(x.^2+y.^2-1).*(x.^2+y.^2-4), [1, size(x)]));
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
+clear method_data
 method_data.degree     = [3 3];       % Degree of the splines
 method_data.regularity = [2 2];       % Regularity of the splines
 method_data.n_sub      = [9 9];       % Number of subdivisions
@@ -56,4 +57,3 @@ title ('Exact solution'), axis tight
 % Display errors of the computed solution in the L2 and H1 norm
 [error_h1, error_l2] = ...
            sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex)
-
