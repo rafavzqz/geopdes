@@ -10,7 +10,7 @@
 %
 % USAGE:
 %
-%  [geometry, msh, space, eigv, eigf] = 
+%  [geometry, msh, space, eigv, eigf, gnum, dofs_ornt] = 
 %                  mp_solve_maxwell_eig_3d (problem_data, method_data)
 %
 % INPUT:
@@ -30,11 +30,13 @@
 %
 % OUTPUT:
 %
-%  geometry: array of geometry structures (see mp_geo_load)
-%  msh:      array of mesh structures (see msh_push_forward_3d)
-%  space:    array of space structures (see sp_bspline_curl_transform_3d)
-%  eigv:     the computed eigenvalues
-%  eigf:     degrees of freedom of the associated eigenfunctions
+%  geometry:  array of geometry structures (see mp_geo_load)
+%  msh:       array of mesh structures (see msh_push_forward_3d)
+%  space:     array of space structures (see sp_bspline_curl_transform_3d)
+%  eigv:      the computed eigenvalues
+%  eigf:      degrees of freedom of the associated eigenfunctions
+%  gnum:      global numbering of the degrees of freedom, for postprocessing
+%  dofs_ornt: orientation of the degrees of freedom, for postprocessing
 %
 % See also EX_MAXWELL_EIG_CUBE_MP for an example
 %
@@ -53,7 +55,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [geometry, msh, sp, eigv, eigf] = ...
+function [geometry, msh, sp, eigv, eigf, gnum, dofs_ornt] = ...
               mp_solve_maxwell_eig_3d (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
