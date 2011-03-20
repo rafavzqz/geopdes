@@ -48,4 +48,3 @@ output_file = 'linear_elasticity_cube_mp';
 
 % Points for post-processing
 vtk_pts = {linspace(0, 1, 10)', linspace(0, 1, 10)', linspace(0, 1, 10)'};
-
