@@ -18,7 +18,7 @@
 %
 % USAGE:
 %
-%  [geometry, msh, space, sp_mul, eigv, eigf] = 
+%  [geometry, msh, space, sp_mul, eigv, eigf, gnum, dofs_ornt, gnum_mul] = 
 %                  mp_solve_maxwell_eig_mixed1_2d (problem_data, method_data)
 %
 % INPUT:
@@ -38,12 +38,15 @@
 %
 % OUTPUT:
 %
-%  geometry: array of geometry structures (see mp_geo_load)
-%  msh:      array of mesh structures (see msh_push_forward_2d)
-%  space:    array of space structures (see sp_bspline_curl_transform_2d)
-%  sp_mul:   array of space structures for the multiplier (see sp_bspline_2d_phys)
-%  eigv:     the computed eigenvalues
-%  eigf:     degrees of freedom of the associated eigenfunctions
+%  geometry:  array of geometry structures (see mp_geo_load)
+%  msh:       array of mesh structures (see msh_push_forward_2d)
+%  space:     array of space structures (see sp_bspline_curl_transform_2d)
+%  sp_mul:    array of space structures for the multiplier (see sp_bspline_2d_phys)
+%  eigv:      the computed eigenvalues
+%  eigf:      degrees of freedom of the associated eigenfunctions
+%  gnum:      global numbering of the degrees of freedom, for postprocessing
+%  dofs_ornt: orientation of the degrees of freedom, for postprocessing
+%  gnum_mul:  global numbering of the degrees of freedom of the multiplier
 %
 % See also EX_MAXWELL_EIG_MIXED1_LSHAPED_MP for an example
 %
@@ -62,7 +65,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [geometry, msh, sp, sp_mul, eigv, eigf] = ...
+function [geometry, msh, sp, sp_mul, eigv, eigf, gnum, dofs_ornt, gnum_mul] = ...
               mp_solve_maxwell_eig_mixed1_2d (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
