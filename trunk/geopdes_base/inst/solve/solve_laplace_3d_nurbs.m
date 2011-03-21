@@ -96,14 +96,8 @@ stiff_mat = op_gradu_gradv (space, space, msh, epsilon);
 rhs       = op_f_v (space, msh, fval);
 
 % Apply Neumann boundary conditions
-for iside = nmnn_sides
-  x = squeeze (msh.boundary(iside).geo_map(1,:,:));
-  y = squeeze (msh.boundary(iside).geo_map(2,:,:));
-  z = squeeze (msh.boundary(iside).geo_map(3,:,:));
-  gval = reshape (g (x, y, z, iside), msh.boundary(iside).nqn, msh.boundary(iside).nel);
-
-  rhs(space.boundary(iside).dofs) = rhs(space.boundary(iside).dofs) + ...
-      op_f_v (space.boundary(iside), msh.boundary(iside), gval);
+if (~isempty (nmnn_sides))
+  rhs = rhs + sp_nmnn (space, msh, g, nmnn_sides);
 end
 
 % Apply Dirichlet boundary conditions
