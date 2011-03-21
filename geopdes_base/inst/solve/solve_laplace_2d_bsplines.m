@@ -1,4 +1,4 @@
-% SOLVE_LAPLACE_2D_NURBS: Solve a 2d Laplace problem with a NURBS discretization. 
+% SOLVE_LAPLACE_2D_BSPLINES: Solve a 2d Laplace problem with a B-spline discretization. 
 %
 % The function solves the diffusion problem
 %
@@ -8,7 +8,7 @@
 %
 % USAGE:
 %
-%  [geometry, msh, space, u] = solve_laplace_2d_nurbs (problem_data, method_data)
+%  [geometry, msh, space, u] = solve_laplace_2d_bsplines (problem_data, method_data)
 %
 % INPUT:
 %
@@ -34,7 +34,7 @@
 %  space:    space structure (see sp_bspline_2d_phys)
 %  u:        the computed degrees of freedom
 %
-% See also EX_LAPLACE_NRB_RING for an example.
+% See also EX_LAPLACE_BSP_SQUARE for an example.
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011, Rafael Vazquez
@@ -53,7 +53,7 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function [geometry, msh, space, u] = ...
-              solve_laplace_2d_nurbs (problem_data, method_data)
+              solve_laplace_2d_bsplines (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
 data_names = fieldnames (problem_data);
@@ -66,14 +66,10 @@ for iopt  = 1:numel (data_names)
 end
 
 % Construct geometry structure
-geometry = geo_load (geo_name);
-degelev  = max (degree - (geometry.nurbs.order-1), 0);
-nurbs    = nrbdegelev (geometry.nurbs, degelev);
-[rknots, zeta, nknots] = kntrefine (nurbs.knots, n_sub, nurbs.order-1, regularity);
+geometry  = geo_load (geo_name);
 
-nurbs = nrbkntins (nurbs, nknots);
-geometry = geo_load (nurbs);
-
+[knots, zeta] = kntrefine (geometry.nurbs.knots, n_sub, degree, regularity);
+  
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (zeta, rule);
@@ -81,7 +77,7 @@ msh      = msh_2d_tensor_product (zeta, qn, qw);
 msh      = msh_push_forward_2d (msh, geometry);
   
 % Construct space structure
-space  = sp_nurbs_2d_phys (geometry.nurbs, msh);
+space    = sp_bspline_2d_phys (knots, degree, msh);
   
 % Precompute the coefficients
 x = squeeze (msh.geo_map(1,:,:));
@@ -95,13 +91,8 @@ stiff_mat = op_gradu_gradv (space, space, msh, epsilon);
 rhs       = op_f_v (space, msh, fval);
 
 % Apply Neumann boundary conditions
-for iside = nmnn_sides
-  x = squeeze (msh.boundary(iside).geo_map(1,:,:));
-  y = squeeze (msh.boundary(iside).geo_map(2,:,:));
-  gval = reshape (g (x, y, iside), msh.boundary(iside).nqn, msh.boundary(iside).nel);
-
-  rhs(space.boundary(iside).dofs) = rhs(space.boundary(iside).dofs) + ...
-      op_f_v (space.boundary(iside), msh.boundary(iside), gval);
+if (~isempty (nmnn_sides))
+  rhs = rhs + sp_nmnn (space, msh, g, nmnn_sides);
 end
 
 % Apply Dirichlet boundary conditions

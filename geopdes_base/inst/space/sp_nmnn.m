@@ -33,22 +33,29 @@ function rhs = sp_nmnn (sp, msh, g, nmnn_sides)
 
   rhs = zeros (sp.ndof, 1);
 
-  for iside = nmnn_sides
-    if (size (msh.boundary(iside).geo_map, 1) == 2)
+  if (size (msh.boundary(1).geo_map, 1) == 2)
+    for iside = nmnn_sides
       [x, y] = deal (squeeze (msh.boundary(iside).geo_map(1,:,:)), ...
                      squeeze (msh.boundary(iside).geo_map(2,:,:)));
       gval = reshape (g (x, y, iside), msh.boundary(iside).nqn, msh.boundary(iside).nel);
 
-    elseif (size (msh.boundary(iside).geo_map, 1) == 3)
+      rhs(sp.boundary(iside).dofs) = rhs(sp.boundary(iside).dofs) + ...
+          op_f_v (sp.boundary(iside), msh.boundary(iside), gval);
+    end
+
+
+  elseif (size (msh.boundary(1).geo_map, 1) == 3)
+    for iside = nmnn_sides
       [x, y, z] = deal (squeeze (msh.boundary(iside).geo_map(1,:,:)), ...
                         squeeze (msh.boundary(iside).geo_map(2,:,:)), ...
                         squeeze (msh.boundary(iside).geo_map(3,:,:)));
 
       gval = reshape (g (x, y, z, iside), msh.boundary(iside).nqn, msh.boundary(iside).nel);
+
+      rhs(sp.boundary(iside).dofs) = rhs(sp.boundary(iside).dofs) + ...
+          op_f_v (sp.boundary(iside), msh.boundary(iside), gval);
     end
 
-    rhs(sp.boundary(iside).dofs) = rhs(sp.boundary(iside).dofs) + ...
-        op_f_v (sp.boundary(iside), msh.boundary(iside), gval);
   end
 
 end
