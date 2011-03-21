@@ -1,5 +1,4 @@
-dirlist        = {"examples", "examples/data_files", ...
-                  "space", "operators", "utils", "multipatch", "multipatch/examples", "multipatch/examples/data_files"};
+dirlist        = {"examples", "solve" "space", "operators", "utils", "multipatch", "multipatch/examples"};
 
 dirname = fileparts(canonicalize_file_name (mfilename ("fullpath")));
 
