@@ -1,5 +1,5 @@
-dirlist        = {"examples", "examples/geometry_files", "examples/data_files", ...
-                  "geometry", "utils", "msh", "operators", "space"};
+dirlist        = {"examples", "examples/geometry_files", ...
+                  "geometry", "utils", "msh", "operators", "solve", "space"};
 
 dir = fileparts (mfilename ("fullpath"));
 
