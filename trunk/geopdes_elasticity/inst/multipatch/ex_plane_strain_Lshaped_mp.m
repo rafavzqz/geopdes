@@ -51,7 +51,7 @@ method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
 output_file = 'plane_strain_Lshaped_mp_Deg3_Reg2_Sub5';
 
 vtk_pts = {linspace(0, 1, 20)', linspace(0, 1, 20)'};
-fprintf ('results being saved in: %s_displacement.pvd\n', output_file)
+fprintf ('results being saved in: %s_displacement.pvd\n \n', output_file)
 mp_sp_to_vtk_2d (u, space, geometry, gnum, vtk_pts, sprintf ('%s_displacement', output_file), 'displacement')
 
 % 4.2) COMPARISON WITH THE EXACT SOLUTION
