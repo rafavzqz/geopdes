@@ -58,7 +58,7 @@ method_data.nquad      = [3 3 3];     % Points for the Gaussian quadrature rule
 output_file = 'lin_elast_cube_mp_Deg2_Reg1_Sub1';
 
 vtk_pts = {linspace(0, 1, 10)', linspace(0, 1, 10)', linspace(0, 1, 10)'};
-fprintf ('results being saved in: %s_displacement.pvd\n', output_file)
+fprintf ('results being saved in: %s_displacement.pvd\n \n', output_file)
 mp_sp_to_vtk_3d (u, space, geometry, gnum, vtk_pts, sprintf ('%s_displacement', output_file), 'displacement')
 
 % 4.2) COMPARISON WITH THE EXACT SOLUTION
