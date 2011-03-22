@@ -99,7 +99,7 @@ for iside = nmnn_sides
   gval = reshape (g (x, y, z, iside), msh.boundary(iside).nqn, msh.boundary(iside).nel);
 
   rhs(space.boundary(iside).dofs) = rhs(space.boundary(iside).dofs) + ...
-      op_f_v (sp.boundary(iside), msh.boundary(iside), gval);
+      op_f_v (space.boundary(iside), msh.boundary(iside), gval);
 end
 
 % Apply Dirichlet boundary conditions
