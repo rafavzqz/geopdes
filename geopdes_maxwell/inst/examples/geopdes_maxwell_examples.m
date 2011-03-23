@@ -251,64 +251,66 @@ while (iopt > 0)
 
       iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
 
-      switch iopt2
-       case 1
-        clc;
-        fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_Lshaped_mp.m \n \n');
-        fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
-        ex_maxwell_eig_Lshaped_mp;
-        input ('Press <Enter> to continue: ');
+      if (~isempty (iopt2))
+        switch iopt2
+         case 1
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_Lshaped_mp.m \n \n');
+          fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
+          ex_maxwell_eig_Lshaped_mp;
+          input ('Press <Enter> to continue: ');
 
-       case 2
-        clc;
-        fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_mixed1_Lshaped_mp.m \n \n');
-        fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
-        ex_maxwell_eig_mixed1_Lshaped_mp;
-        input ('Press <Enter> to continue: ');
+         case 2
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_mixed1_Lshaped_mp.m \n \n');
+          fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
+          ex_maxwell_eig_mixed1_Lshaped_mp;
+          input ('Press <Enter> to continue: ');
 
-       case 3
-        clc;
-        fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_cube_mp.m \n \n');
-        fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
-        ex_maxwell_eig_cube_mp;
-        input ('Press <Enter> to continue: ');
+         case 3
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_cube_mp.m \n \n');
+          fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
+          ex_maxwell_eig_cube_mp;
+          input ('Press <Enter> to continue: ');
 
-       case 4
-        clc;
-        fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_mixed1_cube_mp.m \n \n');
-        fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
-        ex_maxwell_eig_mixed1_cube_mp;
-        input ('Press <Enter> to continue: ');
+         case 4
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_mixed1_cube_mp.m \n \n');
+          fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
+          ex_maxwell_eig_mixed1_cube_mp;
+          input ('Press <Enter> to continue: ');
 
-       case 5
-        clc;
-        fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_thick_L_mp.m \n \n');
-        fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
-        ex_maxwell_eig_thick_L_mp;
-        input ('Press <Enter> to continue: ');
+         case 5
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_thick_L_mp.m \n \n');
+          fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
+          ex_maxwell_eig_thick_L_mp;
+          input ('Press <Enter> to continue: ');
 
-       case 6
-        clc;
-        fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_mixed1_thick_L_mp.m \n \n');
-        fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
-        ex_maxwell_eig_mixed1_thick_L_mp;
-        input ('Press <Enter> to continue: ');
+         case 6
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_mixed1_thick_L_mp.m \n \n');
+          fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
+          ex_maxwell_eig_mixed1_thick_L_mp;
+          input ('Press <Enter> to continue: ');
 
-       case 7
-        clc;
-        fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_fichera_mp.m \n \n');
-        fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
-        ex_maxwell_eig_fichera_mp;
-        input ('Press <Enter> to continue: ');
+         case 7
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_fichera_mp.m \n \n');
+          fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
+          ex_maxwell_eig_fichera_mp;
+          input ('Press <Enter> to continue: ');
 
-       case 8
-        clc;
-        fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_mixed1_fichera_mp.m \n \n');
-        fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
-        ex_maxwell_eig_mixed1_fichera_mp;
-        input ('Press <Enter> to continue: ');
-     end
-    end %while iopt2>0
+         case 8
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_mixed1_fichera_mp.m \n \n');
+          fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
+          ex_maxwell_eig_mixed1_fichera_mp;
+          input ('Press <Enter> to continue: ');
+        end %# switch
+      end %# if (~isempty)
+    end %# while iopt2>0
 
   end
 
