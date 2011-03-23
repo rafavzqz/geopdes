@@ -42,27 +42,27 @@ while (iopt > 0)
 
   if (iopt == 1)
     clc;
-    fprintf (1, 'You can have a look at the source file: EX_PLANE_STRAIN_SQUARE \n \n');
+    fprintf (1, 'You can have a look at the source file: ex_plane_strain_square.m \n \n');
     ex_plane_strain_square;
     input ('Press <Enter> to continue: ');
   elseif (iopt == 2)
     clc;
-    fprintf (1, 'You can have a look at the source file: EX_PLANE_STRAIN_SQUARE_MIXED_BC \n \n');
+    fprintf (1, 'You can have a look at the source file: ex_plane_strain_square_mixed_bc.m \n \n');
     ex_plane_strain_square_mixed_bc;
     input ('Press <Enter> to continue: ');
   elseif (iopt == 3)
     clc;
-    fprintf (1, 'You can have a look at the source file: EX_PLANE_STRAIN_RING \n \n');
+    fprintf (1, 'You can have a look at the source file: ex_plane_strain_ring.m \n \n');
     ex_plane_strain_ring;
     input ('Press <Enter> to continue: ');
   elseif (iopt == 4)
     clc;
-    fprintf (1, 'You can have a look at the source file: EX_PLANE_STRAIN_PLATE \n \n');
+    fprintf (1, 'You can have a look at the source file: ex_plane_strain_plate.m \n \n');
     ex_plane_strain_plate;
     input ('Press <Enter> to continue: ');
   elseif (iopt == 5)
     clc;
-    fprintf (1, 'You can have a look at the source file: EX_LIN_ELAST_HORSESHOE \n \n');
+    fprintf (1, 'You can have a look at the source file: ex_lin_elast_horseshoe.m \n \n');
     ex_lin_elast_horseshoe;
     input ('Press <Enter> to continue: ');
   elseif (iopt == 6)
@@ -72,7 +72,7 @@ while (iopt > 0)
       fprintf(1, 'Be sure to install the latest version of geopdes_multipatch to run this example\n\n');
       input ('Press <Enter> to continue: ');
     else
-      fprintf (1, 'You can have a look at the source file: EX_PLANE_STRAIN_LSHAPED_MP \n \n');
+      fprintf (1, 'You can have a look at the source file: ex_plane_strain_lshaped_mp.m \n \n');
       fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
       ex_plane_strain_Lshaped_mp;
       input ('Press <Enter> to continue: ');
@@ -84,7 +84,7 @@ while (iopt > 0)
       fprintf(1, 'Be sure to install the latest version of geopdes_multipatch to run this example\n\n');
       input ('Press <Enter> to continue: ');
     else
-      fprintf (1, 'You can have a look at the source file: EX_LIN_ELAST_CUBE_MP \n \n');
+      fprintf (1, 'You can have a look at the source file: ex_lin_elast_cube_mp.m \n \n');
       fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
       ex_lin_elast_cube_mp;
       input ('Press <Enter> to continue: ');
