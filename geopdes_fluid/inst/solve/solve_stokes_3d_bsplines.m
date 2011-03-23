@@ -90,6 +90,8 @@ switch lower(element_name)
     degree_v     = degree+1;
     regularity_v = regularity+1;
     nsub_v       = 2*nsub;
+  otherwise
+    error('%s is not a known element type; use TH or SG', element_name);
 end
 
 
