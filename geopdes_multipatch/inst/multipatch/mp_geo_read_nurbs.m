@@ -72,7 +72,11 @@ function [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs (filenam
         nintrfc = vec(3);
         nsubd = 0;
         if (nargout == 4)
-          warning ('mp_geo_read_nurbs: no subdomain information is given in the file')
+          warning ('mp_geo_read_nurbs: no subdomain information is given in the file. The patch number will be used')
+          for ii = 1:npatches
+            subdomains(ii).name = sprintf ('Patch %i', ii);
+            subdomains(ii).patches = ii;
+          end
         end
       elseif (numel (vec) == 4)
         nintrfc = vec(3);
