@@ -10,8 +10,8 @@ problem_data.nmnn_sides   = [];
 problem_data.drchlt_sides = [1 2 3 4 5 6];
 
 % Physical parameters
-problem_data.c_elec_perm = @(x, y) ones(size(x));
-problem_data.c_magn_perm = @(x, y) ones(size(x));
+problem_data.c_elec_perm = @(x, y, z) ones(size(x));
+problem_data.c_magn_perm = @(x, y, z) ones(size(x));
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data 

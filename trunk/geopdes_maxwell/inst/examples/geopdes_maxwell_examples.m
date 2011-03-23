@@ -60,42 +60,42 @@ while (iopt > 0)
         switch iopt2
          case 1
           clc;
-          fprintf (1, 'You can have a look at the source file: EX_MAXWELL_EIG_SQUARE \n \n');
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_square.m \n \n');
           ex_maxwell_eig_square;
           input ('Press <Enter> to continue: ');
          case 2
           clc;
-          fprintf (1, 'You can have a look at the source file: EX_MAXWELL_EIG_RING_1EIGHTH \n \n');
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_ring_1eighth.m \n \n');
           ex_maxwell_eig_ring_1eighth;
           input ('Press <Enter> to continue: ');
          case 3
           clc;
-          fprintf (1, 'You can have a look at the source file: EX_MAXWELL_EIG_LSHAPED \n \n');
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_Lshaped.m \n \n');
           ex_maxwell_eig_Lshaped;
           input ('Press <Enter> to continue: ');
          case 4
           clc;
-          fprintf (1, 'You can have a look at the source file: EX_MAXWELL_EIG_CURVEDL \n \n');
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_curvedL.m \n \n');
           ex_maxwell_eig_curvedL;
           input ('Press <Enter> to continue: ');
          case 5
           clc;
-          fprintf (1, 'You can have a look at the source file: EX_MAXWELL_EIG_MIXED1_SQUARE \n \n');
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_mixed1_square.m \n \n');
           ex_maxwell_eig_mixed1_square;
           input ('Press <Enter> to continue: ');
          case 6
           clc;
-          fprintf (1, 'You can have a look at the source file: EX_MAXWELL_EIG_MIXED1_LSHAPED \n \n');
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_mixed1_Lshaped.m \n \n');
           ex_maxwell_eig_mixed1_Lshaped;
           input ('Press <Enter> to continue: ');
          case 7
           clc;
-          fprintf (1, 'You can have a look at the source file: EX_MAXWELL_EIG_MIXED2_SQUARE \n \n');
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_mixed2_square.m \n \n');
           ex_maxwell_eig_mixed2_square;
           input ('Press <Enter> to continue: ');
          case 8
           clc;
-          fprintf (1, 'You can have a look at the source file: EX_MAXWELL_EIG_MIXED2_LSHAPED \n \n');
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_mixed2_Lshaped.m \n \n');
           ex_maxwell_eig_mixed2_Lshaped;
           input ('Press <Enter> to continue: ');
         end %# switch (iopt2)
@@ -123,22 +123,22 @@ while (iopt > 0)
         switch iopt2
          case 1
           clc;
-          fprintf (1, 'You can have a look at the source file: EX_MAXWELL_EIG_CUBE \n \n');
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_cube.m \n \n');
           ex_maxwell_eig_cube;
           input ('Press <Enter> to continue: ');
          case 2
           clc;
-          fprintf (1, 'You can have a look at the source file: EX_MAXWELL_EIG_THICK_L \n \n');
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_thick_L.m \n \n');
           ex_maxwell_eig_thick_L;
           input ('Press <Enter> to continue: ');
          case 3
           clc;
-          fprintf (1, 'You can have a look at the source file: EX_MAXWELL_EIG_MIXED1_CUBE \n \n');
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_mixed1_cube.m \n \n');
           ex_maxwell_eig_mixed1_cube;
           input ('Press <Enter> to continue: ');
          case 4
           clc;
-          fprintf (1, 'You can have a look at the source file: EX_MAXWELL_EIG_MIXED1_THICK_L \n \n');
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_mixed1_thick_L.m \n \n');
           ex_maxwell_eig_mixed1_thick_L;
           input ('Press <Enter> to continue: ');
         end %# switch (iopt2)
@@ -165,22 +165,22 @@ while (iopt > 0)
         switch iopt2
          case 1
           clc;
-          fprintf (1, 'You can have a look at the source file: EX_MAXWELL_SRC_SQUARE \n \n');
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_src_square.m \n \n');
           ex_maxwell_src_square;
           input ('Press <Enter> to continue: ');
          case 2
           clc;
-          fprintf (1, 'You can have a look at the source file: EX_MAXWELL_SRC_LSHAPED \n \n');
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_src_Lshaped.m \n \n');
           ex_maxwell_src_Lshaped;
           input ('Press <Enter> to continue: ');
          case 3
           clc;
-          fprintf (1, 'You can have a look at the source file: EX_MAXWELL_SRC_RING \n \n');
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_src_ring.m \n \n');
           ex_maxwell_src_ring;
           input ('Press <Enter> to continue: ');
          case 4
           clc;
-          fprintf (1, 'You can have a look at the source file: EX_MAXWELL_SRC_PACMAN \n \n');
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_src_pacman.m \n \n');
           ex_maxwell_src_pacman;
           input ('Press <Enter> to continue: ');
         end %# switch (iopt2)
@@ -206,17 +206,17 @@ while (iopt > 0)
         switch iopt2
          case 1
           clc;
-          fprintf (1, 'You can have a look at the source file: EX_MAXWELL_SRC_CUBE \n \n');
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_src_cube.m \n \n');
           ex_maxwell_src_cube;
           input ('Press <Enter> to continue: ');
          case 2
           clc;
-          fprintf (1, 'You can have a look at the source file: EX_MAXWELL_SRC_THICK_RING \n \n');
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_src_thick_ring.m \n \n');
           ex_maxwell_src_thick_ring;
           input ('Press <Enter> to continue: ');
          case 3
           clc;
-          fprintf (1, 'You can have a look at the source file: EX_MAXWELL_SRC_CAMEMBERT \n \n');
+          fprintf (1, 'You can have a look at the source file: ex_maxwell_src_camembert.m \n \n');
           ex_maxwell_src_camembert;
           input ('Press <Enter> to continue: ');
         end %# switch (iopt2)
@@ -254,56 +254,56 @@ while (iopt > 0)
       switch iopt2
        case 1
         clc;
-        fprintf (1, 'You can have a look at the source file: EX_MAXWELL_EIG_LSHAPED_MP \n \n');
+        fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_Lshaped_mp.m \n \n');
         fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
         ex_maxwell_eig_Lshaped_mp;
         input ('Press <Enter> to continue: ');
 
        case 2
         clc;
-        fprintf (1, 'You can have a look at the source file: EX_MAXWELL_EIG_MIXED1_LSHAPED_MP \n \n');
+        fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_mixed1_Lshaped_mp.m \n \n');
         fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
         ex_maxwell_eig_mixed1_Lshaped_mp;
         input ('Press <Enter> to continue: ');
 
        case 3
         clc;
-        fprintf (1, 'You can have a look at the source file: EX_MAXWELL_EIG_CUBE_MP \n \n');
+        fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_cube_mp.m \n \n');
         fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
         ex_maxwell_eig_cube_mp;
         input ('Press <Enter> to continue: ');
 
        case 4
         clc;
-        fprintf (1, 'You can have a look at the source file: EX_MAXWELL_EIG_MIXED1_CUBE_MP \n \n');
+        fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_mixed1_cube_mp.m \n \n');
         fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
         ex_maxwell_eig_mixed1_cube_mp;
         input ('Press <Enter> to continue: ');
 
        case 5
         clc;
-        fprintf (1, 'You can have a look at the source file: EX_MAXWELL_EIG_THICK_L_MP \n \n');
+        fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_thick_L_mp.m \n \n');
         fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
         ex_maxwell_eig_thick_L_mp;
         input ('Press <Enter> to continue: ');
 
        case 6
         clc;
-        fprintf (1, 'You can have a look at the source file: EX_MAXWELL_EIG_MIXED1_THICK_L_MP \n \n');
+        fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_mixed1_thick_L_mp.m \n \n');
         fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
         ex_maxwell_eig_mixed1_thick_L_mp;
         input ('Press <Enter> to continue: ');
 
        case 7
         clc;
-        fprintf (1, 'You can have a look at the source file: EX_MAXWELL_EIG_FICHERA_MP \n \n');
+        fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_fichera_mp.m \n \n');
         fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
         ex_maxwell_eig_fichera_mp;
         input ('Press <Enter> to continue: ');
 
        case 8
         clc;
-        fprintf (1, 'You can have a look at the source file: EX_MAXWELL_EIG_MIXED1_FICHERA_MP \n \n');
+        fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_mixed1_fichera_mp.m \n \n');
         fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
         ex_maxwell_eig_mixed1_fichera_mp;
         input ('Press <Enter> to continue: ');
