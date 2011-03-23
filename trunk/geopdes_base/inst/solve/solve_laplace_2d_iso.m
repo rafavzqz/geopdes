@@ -1,14 +1,14 @@
-% SOLVE_LAPLACE_3D_NURBS: Solve a 3d Laplace problem with a NURBS discretization. 
+% SOLVE_LAPLACE_2D_ISO: Solve a 2d Laplace problem with a NURBS discretization (isoparametric approach). 
 %
 % The function solves the diffusion problem
 %
-%    - div ( epsilon(x) grad (u)) = f    in Omega = F((0,1)^3)
+%    - div ( epsilon(x) grad (u)) = f    in Omega = F((0,1)^2)
 %                epsilon(x) du/dn = g    on Gamma_N
 %                               u = h    on Gamma_D
 %
 % USAGE:
 %
-%  [geometry, msh, space, u] = solve_laplace_3d_nurbs (problem_data, method_data)
+%  [geometry, msh, space, u] = solve_laplace_2d_nurbs (problem_data, method_data)
 %
 % INPUT:
 %
@@ -30,11 +30,11 @@
 % OUTPUT:
 %
 %  geometry: geometry structure (see geo_load)
-%  msh:      mesh structure (see msh_push_forward_3d)
-%  space:    space structure (see sp_bspline_3d_phys)
+%  msh:      mesh structure (see msh_push_forward_2d)
+%  space:    space structure (see sp_bspline_2d_phys)
 %  u:        the computed degrees of freedom
 %
-% See also EX_LAPLACE_NRB_THICK_RING for an example.
+% See also EX_LAPLACE_NRB_RING for an example.
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011, Rafael Vazquez
@@ -53,7 +53,7 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function [geometry, msh, space, u] = ...
-              solve_laplace_3d_nurbs (problem_data, method_data)
+              solve_laplace_2d_nurbs (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
 data_names = fieldnames (problem_data);
@@ -77,20 +77,19 @@ geometry = geo_load (nurbs);
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (zeta, rule);
-msh      = msh_3d_tensor_product (zeta, qn, qw);
-msh      = msh_push_forward_3d (msh, geometry);
-
+msh      = msh_2d_tensor_product (zeta, qn, qw);
+msh      = msh_push_forward_2d (msh, geometry);
+  
 % Construct space structure
-space  = sp_nurbs_3d_phys (geometry.nurbs, msh);
-
+space  = sp_nurbs_2d_phys (geometry.nurbs, msh);
+  
 % Precompute the coefficients
 x = squeeze (msh.geo_map(1,:,:));
 y = squeeze (msh.geo_map(2,:,:));
-z = squeeze (msh.geo_map(3,:,:));
-
-epsilon = reshape (c_diff (x, y, z), msh.nqn, msh.nel);
-fval    = reshape (f (x, y, z), msh.nqn, msh.nel) ;
-
+  
+epsilon = reshape (c_diff (x, y), msh.nqn, msh.nel);
+fval    = reshape (f (x, y), msh.nqn, msh.nel) ;
+ 
 % Assemble the matrices
 stiff_mat = op_gradu_gradv (space, space, msh, epsilon);
 rhs       = op_f_v (space, msh, fval);
@@ -99,8 +98,7 @@ rhs       = op_f_v (space, msh, fval);
 for iside = nmnn_sides
   x = squeeze (msh.boundary(iside).geo_map(1,:,:));
   y = squeeze (msh.boundary(iside).geo_map(2,:,:));
-  z = squeeze (msh.boundary(iside).geo_map(3,:,:));
-  gval = reshape (g (x, y, z, iside), msh.boundary(iside).nqn, msh.boundary(iside).nel);
+  gval = reshape (g (x, y, iside), msh.boundary(iside).nqn, msh.boundary(iside).nel);
 
   rhs(space.boundary(iside).dofs) = rhs(space.boundary(iside).dofs) + ...
       op_f_v (space.boundary(iside), msh.boundary(iside), gval);

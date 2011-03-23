@@ -135,27 +135,27 @@ switch (number)
  case 5
   filename = 'ex_article_section_514.m';
  case 6
-  filename = 'ex_laplace_nrb_plate.m';
+  filename = 'ex_laplace_iso_plate.m';
  case 7
-  filename = 'ex_laplace_nrb_ring.m';
+  filename = 'ex_laplace_iso_ring.m';
  case 8
-  filename = 'ex_laplace_nrb_ring_mixed_bc.m';
+  filename = 'ex_laplace_iso_ring_mixed_bc.m';
  case 9
-  filename = 'ex_laplace_bsp_square.m';
+  filename = 'ex_laplace_square.m';
  case 10
-  filename = 'ex_laplace_bsp_plate.m';
+  filename = 'ex_laplace_plate.m';
  case 11
-  filename = 'ex_laplace_bsp_ring.m';
+  filename = 'ex_laplace_ring.m';
  case 12
-  filename = 'ex_laplace_bsp_ring_mixed_bc.m';
+  filename = 'ex_laplace_ring_mixed_bc.m';
  case 13
-  filename = 'ex_laplace_eig_bsp_square.m';
+  filename = 'ex_laplace_eig_square.m';
  case 14
-  filename = 'ex_laplace_nrb_thick_ring.m';  
+  filename = 'ex_laplace_iso_thick_ring.m';  
  case 15
-  filename = 'ex_laplace_bsp_cube.m';  
+  filename = 'ex_laplace_cube.m';  
  case 16
-  filename = 'ex_laplace_bsp_thick_ring.m';  
+  filename = 'ex_laplace_thick_ring.m';  
 end
 
 fid = fopen (filename);

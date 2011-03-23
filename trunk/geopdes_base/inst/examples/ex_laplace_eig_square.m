@@ -1,5 +1,4 @@
-% EX_LAPLACE_EIG_BSP_SQUARE: Compute eigenvalues and eigenvectors for
-% the Laplace operator in the square.
+% EX_LAPLACE_EIG_SQUARE: Compute eigenvalues and eigenvectors for the Laplace operator in the square.
 %
 % 1) PHYSICAL DATA OF THE PROBLEM
 clear problem_data 
@@ -24,7 +23,7 @@ method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
 % 3) CALL TO THE SOLVER
 
 [geometry, msh, space, lambda, u] = ...
-                 solve_laplace_eig_2d_bsplines (problem_data, method_data);
+                 solve_laplace_eig_2d (problem_data, method_data);
 
 % 4) POST-PROCESSING
 

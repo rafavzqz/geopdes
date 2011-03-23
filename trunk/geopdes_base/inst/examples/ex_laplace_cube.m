@@ -1,4 +1,4 @@
-% EX_LAPLACE_BSP_CUBE: solve the Poisson problem in the unit cube with a B-spline discretization.
+% EX_LAPLACE_CUBE: solve the Poisson problem in the unit cube with a B-spline discretization.
 
 % 1) PHYSICAL DATA OF THE PROBLEM
 clear problem_data 
@@ -33,7 +33,7 @@ method_data.nquad      = [4 4 4];       % Points for Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
 
-[geometry, msh, space, u] = solve_laplace_3d_bsplines (problem_data, method_data);
+[geometry, msh, space, u] = solve_laplace_3d (problem_data, method_data);
 
 % 4) POST-PROCESSING
 % 4.1) EXPORT TO PARAVIEW
