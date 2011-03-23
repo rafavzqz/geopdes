@@ -1,4 +1,4 @@
-% SOLVE_LAPLACE_EIG_2D_BSPLINES: Solve a 2d Laplace eigenproblem with a B-spline discretization (non-isoparametric approach). 
+% SOLVE_LAPLACE_EIG_2D: Solve a 2d Laplace eigenproblem with a B-spline discretization (non-isoparametric approach). 
 %
 % The function solves the diffusion problem
 %
@@ -8,7 +8,7 @@
 %
 % USAGE:
 %
-%  [geometry, msh, space, lambda, u] = solve_laplace_2d_bsplines (problem_data, method_data)
+%  [geometry, msh, space, lambda, u] = solve_laplace_eig_2d (problem_data, method_data)
 %
 % INPUT:
 %
@@ -33,7 +33,7 @@
 %  lambda:   the computed eigenvalues
 %  u:        degrees of freedom of the computed eigenvectors
 %
-% See also EX_LAPLACE_EIG_BSP_SQUARE for an example.
+% See also EX_LAPLACE_EIG_SQUARE for an example.
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011, Rafael Vazquez
@@ -52,7 +52,7 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function [geometry, msh, space, lambda, u] = ...
-              solve_laplace_eig_2d_bsplines (problem_data, method_data)
+              solve_laplace_eig_2d (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
 data_names = fieldnames (problem_data);
