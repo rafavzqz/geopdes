@@ -1,4 +1,4 @@
-% SOLVE_LAPLACE_3D_BSPLINES: Solve a 3d Laplace problem with a B-spline discretization (non-isoparametric approach). 
+% SOLVE_LAPLACE_3D: Solve a 3d Laplace problem with a B-spline discretization (non-isoparametric approach). 
 %
 % The function solves the diffusion problem
 %
@@ -8,7 +8,7 @@
 %
 % USAGE:
 %
-%  [geometry, msh, space, u] = solve_laplace_3d_bsplines (problem_data, method_data)
+%  [geometry, msh, space, u] = solve_laplace_3d (problem_data, method_data)
 %
 % INPUT:
 %
@@ -34,7 +34,7 @@
 %  space:    space structure (see sp_bspline_3d_phys)
 %  u:        the computed degrees of freedom
 %
-% See also EX_LAPLACE_BSP_CUBE for an example.
+% See also EX_LAPLACE_CUBE for an example.
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011, Rafael Vazquez
@@ -53,7 +53,7 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function [geometry, msh, space, u] = ...
-              solve_laplace_3d_bsplines (problem_data, method_data)
+              solve_laplace_3d (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
 data_names = fieldnames (problem_data);
