@@ -83,7 +83,7 @@ for iptc = 1:npatch
   [rknots, zeta, nknots] = kntrefine (nurbs.knots, n_sub, nurbs.order-1, regularity);
 
   nurbs    = nrbkntins (nurbs, nknots);
-  geometry(iptc) = geo_load (nurbs);
+  geometry(iptc) = orderfields (geo_load (nurbs), geometry);
 
 % Construct msh structure
   rule      = msh_gauss_nodes (nquad);
