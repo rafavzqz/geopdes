@@ -31,7 +31,6 @@ method_data.degree     = [2 2 2];       % Degree of the splines
 method_data.regularity = [1 1 1];       % Regularity of the splines
 method_data.n_sub      = [3 3 3];       % Number of subdivisions
 method_data.nquad      = [3 3 3];       % Points for Gaussian quadrature rule
-method_data.name       = 'NRB_Deg2_Reg1_Sub3'; % Not used by the solver
 
 % 3) CALL TO THE SOLVER
 
@@ -40,7 +39,7 @@ method_data.name       = 'NRB_Deg2_Reg1_Sub3'; % Not used by the solver
 % 4) POST-PROCESSING
 % 4.1) EXPORT TO PARAVIEW
 
-output_file = 'Thick_ring_NRB_Deg2_Reg1_Sub3'
+output_file = 'Thick_ring_NRB_Deg2_Reg1_Sub3';
 
 vtk_pts = {linspace(0, 1, 20)', linspace(0, 1, 20)', linspace(0, 1, 20)'};
 fprintf ('The result is saved in the file %s \n \n', output_file);

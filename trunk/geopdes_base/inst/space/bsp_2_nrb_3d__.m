@@ -24,13 +24,13 @@ function sp = bsp_2_nrb_3d__ (sp, msh, W)
   sp.shape_functions = shape_functions ./ D;
 
   if (isfield (sp, 'shape_function_gradients'))
-    Bu = W .* squeeze (sp.shape_function_gradients(1,:,:,:));
-    Bv = W .* squeeze (sp.shape_function_gradients(2,:,:,:));
-    Bw = W .* squeeze (sp.shape_function_gradients(3,:,:,:));
+    Bu = W .* reshape (sp.shape_function_gradients(1,:,:,:), [msh.nqn, sp.nsh_max, msh.nel]);
+    Bv = W .* reshape (sp.shape_function_gradients(2,:,:,:), [msh.nqn, sp.nsh_max, msh.nel]);
+    Bw = W .* reshape (sp.shape_function_gradients(3,:,:,:), [msh.nqn, sp.nsh_max, msh.nel]);
 
-    Du = repmat (reshape (sum (W .* squeeze (sp.shape_function_gradients(1,:,:,:)), 2), msh.nqn, 1, msh.nel), [1, sp.nsh_max, 1]);
-    Dv = repmat (reshape (sum (W .* squeeze (sp.shape_function_gradients(2,:,:,:)), 2), msh.nqn, 1, msh.nel), [1, sp.nsh_max, 1]);
-    Dw = repmat (reshape (sum (W .* squeeze (sp.shape_function_gradients(3,:,:,:)), 2), msh.nqn, 1, msh.nel), [1, sp.nsh_max, 1]);
+    Du = repmat (reshape (sum (Bu, 2), msh.nqn, 1, msh.nel), [1, sp.nsh_max, 1]);
+    Dv = repmat (reshape (sum (Bv, 2), msh.nqn, 1, msh.nel), [1, sp.nsh_max, 1]);
+    Dw = repmat (reshape (sum (Bw, 2), msh.nqn, 1, msh.nel), [1, sp.nsh_max, 1]);
 
     Nu = (Bu - sp.shape_functions .* Du)./D;
     Nv = (Bv - sp.shape_functions .* Dv)./D;

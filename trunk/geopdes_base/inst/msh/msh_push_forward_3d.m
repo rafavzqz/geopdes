@@ -48,6 +48,7 @@ function msh = msh_push_forward_3d (msh, geo)
   msh.geo_map = reshape (F, size (msh.quad_nodes));
   msh.geo_map_jac = reshape (jac, 3, 3, msh.nqn, msh.nel);
   msh.jacdet = abs (geopdes_det__ (msh.geo_map_jac));
+  msh.jacdet = reshape (msh.jacdet, [msh.nqn, msh.nel]);
 
   if (isfield (msh, 'boundary'))
     for iside = 1:6
