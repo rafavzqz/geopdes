@@ -104,9 +104,11 @@ end
 u = zeros (space.ndof, 1);
 [u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space, msh, h, drchlt_sides);
 u(drchlt_dofs) = u_drchlt;
+u(drchlt_dofs) = 0;
+disp('RICORDATI DI CAMBIARE SOLVE')
 
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
-rhs(int_dofs) = rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt;
+%rhs(int_dofs) = rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt;
 
 % Solve the linear system
 u(int_dofs) = stiff_mat(int_dofs, int_dofs) \ rhs(int_dofs);
