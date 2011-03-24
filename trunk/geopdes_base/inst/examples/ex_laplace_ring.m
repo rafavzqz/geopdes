@@ -26,10 +26,10 @@ problem_data.graduex = @(x, y) cat (1, ...
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
-method_data.degree     = [3 3];       % Degree of the splines
-method_data.regularity = [2 2];       % Regularity of the splines
+method_data.degree     = [1 1];       % Degree of the splines
+method_data.regularity = [0 0];       % Regularity of the splines
 method_data.n_sub      = [9 9];       % Number of subdivisions
-method_data.nquad      = [4 4];       % Points for the Gaussian quadrature rule
+method_data.nquad      = [1 1];       % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
 [geometry, msh, space, u] = solve_laplace_2d (problem_data, method_data);
