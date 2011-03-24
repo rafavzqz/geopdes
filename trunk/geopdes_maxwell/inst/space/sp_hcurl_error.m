@@ -56,7 +56,7 @@ function [toterr, errl2] = sp_hcurl_error (sp, msh, u, uex, curluex);
       for ish=1:sp.nsh_max
         valnum = valnum + ...
           reshape (sp.shape_function_curls(idir, :, ish, :), msh.nqn, msh.nel) .* ...
-	    u(repmat(sp.connectivity(ish,:), msh.nqn, 1));
+	  reshape (u(repmat(sp.connectivity(ish,:), msh.nqn, 1)), msh.nqn, msh.nel);
       end
       valex = curl_valex(idir, :);
       err_curl = err_curl + sum ((valnum(:) - valex(:)).^2 .* w);
