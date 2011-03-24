@@ -1,4 +1,4 @@
-dirlist        = {"examples", "examples/geometry_files", "multipatch"};
+dirlist        = {"examples", "examples/data_files", "examples/geometry_files", "multipatch"};
 
 [basename,dir] = fileparts (mfilename ("fullpath"));
 
