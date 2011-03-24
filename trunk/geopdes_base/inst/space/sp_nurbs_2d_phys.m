@@ -52,6 +52,7 @@ function sp = sp_nurbs_2d_phys (nurbs, msh, varargin)
 
   if (isfield (sp, 'shape_function_gradients'))
     JinvT = geopdes_invT__ (msh.geo_map_jac);
+    JinvT = reshape (JinvT, [2, 2, msh.nqn, msh.nel]);
     sp.shape_function_gradients = geopdes_prod__ (JinvT, sp.shape_function_gradients);
   end
 

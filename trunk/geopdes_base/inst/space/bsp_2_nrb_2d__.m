@@ -24,8 +24,8 @@ function sp = bsp_2_nrb_2d__ (sp, msh, W)
   sp.shape_functions = shape_functions ./ D;
 
   if (isfield (sp, 'shape_function_gradients'))
-    Bu = W .* squeeze (sp.shape_function_gradients(1,:,:,:));
-    Bv = W .* squeeze (sp.shape_function_gradients(2,:,:,:));
+    Bu = W .* reshape (sp.shape_function_gradients(1,:,:,:), [msh.nqn, sp.nsh_max, msh.nel]);
+    Bv = W .* reshape (sp.shape_function_gradients(2,:,:,:), [msh.nqn, sp.nsh_max, msh.nel]);
 
     Du = repmat (reshape (sum (Bu, 2), msh.nqn, 1, msh.nel), [1, sp.nsh_max, 1]);
     Dv = repmat (reshape (sum (Bv, 2), msh.nqn, 1, msh.nel), [1, sp.nsh_max, 1]);
