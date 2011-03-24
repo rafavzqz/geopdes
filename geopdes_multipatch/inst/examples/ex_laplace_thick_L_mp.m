@@ -1,4 +1,4 @@
-% EX_LAPLACE_BSP_THICK_L_MP: solve the Poisson problem in the multipatch thick L-shaped domain with a B-spline discretization.
+% EX_LAPLACE_THICK_L_MP: solve the Poisson problem in the multipatch thick L-shaped domain with a B-spline discretization.
 
 % 1) PHYSICAL DATA OF THE PROBLEM
 clear problem_data  

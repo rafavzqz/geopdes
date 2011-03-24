@@ -1,4 +1,4 @@
-% EX_LAPLACE_BSP_CUBE_MP: solve the Poisson problem in the multipatch unit cube.
+% EX_LAPLACE_CUBE_MP: solve the Poisson problem in the multipatch unit cube with a B-splines discretization.
 
 % 1) PHYSICAL DATA OF THE PROBLEM
 clear problem_data  
