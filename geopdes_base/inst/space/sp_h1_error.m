@@ -41,9 +41,9 @@ function [toterr, errl2] = sp_h1_error (sp, msh, u, uex, graduex);
   for idir = 1:ndir
     for ish=1:sp.nsh_max
       for icmp=1:sp.ncomp
-        grad_num(icmp, idir, :, :) = squeeze (grad_num(icmp, idir, :, :)) + ...
-            squeeze (gradients (icmp, idir, :, ish, :)) .* ...
-            repmat (u(sp.connectivity(ish,:)), 1, msh.nqn).';
+        grad_num(icmp, idir, :, :) = reshape (grad_num(icmp, idir, :, :), [msh.nqn, msh.nel]) + ...
+          reshape (gradients (icmp, idir, :, ish, :), [msh.nqn, msh.nel]) .* ...
+          repmat (u(sp.connectivity(ish,:)), 1, msh.nqn).';
       end
     end
   end
@@ -55,7 +55,7 @@ function [toterr, errl2] = sp_h1_error (sp, msh, u, uex, graduex);
   grad_valex  = reshape (feval (graduex, x{:}), sp.ncomp, ndir, msh.nqn, msh.nel);
 
   w = msh.quad_weights .* msh.jacdet;
-  errh1s = sum (sum (squeeze (sum (sum ((grad_num - grad_valex).^2, 1), 2)) .* w));
+  errh1s = sum (sum (reshape (sum (sum ((grad_num - grad_valex).^2, 1), 2), [msh.nqn, msh.nel]) .* w));
   
   errl2  = sp_l2_error (sp, msh, u, uex);
   toterr = sqrt (errl2^2 + errh1s);
