@@ -7,10 +7,10 @@ Geometry
 Mesh
  msh_gauss_nodes
  msh_set_quad_nodes
- msh_push_forward_2d
  msh_2d_tensor_product
- msh_push_forward_3d
  msh_3d_tensor_product
+ msh_push_forward_2d
+ msh_push_forward_3d
 Space
  sp_bspline_1d_param
  sp_bspline_2d_param
@@ -34,16 +34,27 @@ Operators
  op_f_v
  op_gradu_gradv
  op_u_v
+Solve
+ solve_laplace_2d
+ solve_laplace_2d_iso
+ solve_laplace_3d
+ solve_laplace_3d_iso
+ solve_laplace_eig_2d
 Examples
  geopdes_base_examples
- ex_nurbs_laplace_2d
- ex_nurbs_laplace_3d
- ex_bspline_laplace_2d
- ex_bspline_laplace_3d
- ex_bspline_laplace_2d_eig
- ex_bspline_laplace_param_2d
- ex_nurbs_laplace_2d_15lines
+ ex_article_15lines
  ex_article_section_511
  ex_article_section_512
  ex_article_section_513
  ex_article_section_514
+ ex_laplace_square
+ ex_laplace_plate
+ ex_laplace_ring
+ ex_laplace_ring_mixed_bc
+ ex_laplace_iso_plate
+ ex_laplace_iso_ring
+ ex_laplace_iso_ring_mixed_bc
+ ex_laplace_cube
+ ex_laplace_thick_ring
+ ex_laplace_iso_thick_ring
+ ex_laplace_eig_square
