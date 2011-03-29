@@ -100,3 +100,6 @@ u = zeros (space.ndof, numel(int_dofs));
 lambda = diag (lambda);
 
 end
+
+%!demo
+%! ex_laplace_eig_square
