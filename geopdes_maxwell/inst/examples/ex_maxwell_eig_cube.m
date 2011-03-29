@@ -31,3 +31,6 @@ nzeros = numel (find (eigv < 1e-10));
 fprintf ('Number of zero eigenvalues: %i \n', nzeros)
 fprintf ('First nonzero eigenvalues: \n')
 disp (eigv(nzeros+1:nzeros+5))
+
+%!demo
+%! ex_maxwell_eig_cube

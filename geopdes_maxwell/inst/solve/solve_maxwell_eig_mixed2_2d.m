@@ -119,3 +119,9 @@ eigf = zeros (sp.ndof + sp_mul.ndof, numel(int_dofs) + sp_mul.ndof);
 eigv = diag (eigv);
 
 end
+
+%!demo
+%! ex_maxwell_eig_mixed2_square
+
+%!demo
+%! ex_maxwell_eig_mixed2_Lshaped

@@ -137,3 +137,6 @@ eigf = zeros (ndof, numel(int_dofs));
 eigv = sort (diag (eigv));
 
 end
+
+%!demo
+%! ex_maxwell_eig_Lshaped_mp

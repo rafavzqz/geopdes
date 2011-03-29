@@ -102,3 +102,10 @@ eigf = zeros (sp.ndof, numel(int_dofs));
 eigv = diag (eigv);
 
 end
+
+%!demo
+%! ex_maxwell_eig_cube
+
+%!demo
+%! ex_maxwell_eig_thick_L
+

@@ -117,3 +117,15 @@ u(int_dofs) = (stiff_mat(int_dofs, int_dofs) + ...
                 mass_mat(int_dofs, int_dofs)) \ rhs(int_dofs);
 
 end
+
+%!demo
+%! ex_maxwell_src_square
+
+%!demo
+%! ex_maxwell_src_Lshaped
+
+%!demo
+%! ex_maxwell_src_ring
+
+%!demo
+%! ex_maxwell_src_pacman

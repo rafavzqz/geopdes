@@ -166,3 +166,6 @@ M = [mass_mat, sparse(numel(int_dofs), numel(int_dofs_mul)); ...
 eigv = diag (eigv);
 
 end
+
+%!demo
+%! ex_maxwell_eig_mixed1_Lshaped_mp

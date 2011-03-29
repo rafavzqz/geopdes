@@ -52,3 +52,6 @@ sp_to_vtk_3d (u, space, geometry, vtk_pts, output_file, 'u')
 % 4.2) Comparison with the exact solution
 [error_hcurl, error_l2] = ...
     sp_hcurl_error (space, msh, u, problem_data.uex, problem_data.curluex)
+
+%!demo
+%! ex_maxwell_src_thick_ring

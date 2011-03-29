@@ -31,3 +31,6 @@ method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
 
 fprintf ('First computed eigenvalues: \n')
 disp (eigv(1:5))
+
+%!demo
+%! ex_maxwell_eig_mixed1_Lshaped_mp
