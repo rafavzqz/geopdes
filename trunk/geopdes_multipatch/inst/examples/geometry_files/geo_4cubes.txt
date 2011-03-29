@@ -1,9 +1,9 @@
-# nurbs mesh v.0.6
+# nurbs mesh v.0.7
 # 
 # Unit cube represented by four patches.
-# 20th October 2010
+# March 29th 2011
 #
-3 4 4
+3 4 4 1
 1 1 1
 2 2 2
 0.00000   0.00000   1.00000   1.00000
@@ -56,6 +56,9 @@ INTERFACE 4
 4 6
 3 5
 1 1 1
+# The same subdomain is used for all patches
+SUBDOMAIN 1
+1 2 3 4
 BOUNDARY 1
 16
 1 1

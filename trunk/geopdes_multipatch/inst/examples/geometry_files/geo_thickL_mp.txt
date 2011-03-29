@@ -1,11 +1,11 @@
-# nurbs mesh v.0.6
+# nurbs mesh v.0.7
 # 
 # Thick L-shaped domain, defined with three patches
 # The faces adjacent to the reentrant edge have reference numbers 1 and 2
 # The other boundary faces have reference number from 3 to 8
-# 2nd September 2010
+# March 29th 2011
 #
-3 3 2
+3 3 2 1
 1 1 1
 2 2 2
 0.00000   0.00000   1.00000   1.00000
@@ -41,6 +41,9 @@ INTERFACE 2
 2 2
 3 1
 1 1 1
+# The same subdomain is used for all the patches
+SUBDOMAIN 1
+1 2 3
 BOUNDARY 1
 1
 1 2
