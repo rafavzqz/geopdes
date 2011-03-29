@@ -53,3 +53,6 @@ for iptc = 1:npatch
 end
 error_l2 = sqrt (sum (error_l2 .* error_l2))
 error_h1 = sqrt (sum (error_h1 .* error_h1))
+
+%!demo
+%! ex_laplace_cube_mp
