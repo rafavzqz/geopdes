@@ -1,17 +1,17 @@
-% MP_SOLVE_LAPLACE_2D_BSPLINES: solve the Laplacian problem in a multipatch geometry.
+% MP_SOLVE_LAPLACE_3D: solve the Laplacian problem in a multipatch geometry.
 %
 % Example to solve the diffusion problem
 %
-%    - div ( epsilon(x) grad (u)) = f    in Omega 
+%    - div ( epsilon(x) grad (u)) = f    in Omega
 %                epsilon(x) du/dn = g    on Gamma_N
 %                               u = h    on Gamma_D
 %
-% where the domain \Omega is formed by several patches of the form F((0,1)^2).
+% where the domain \Omega is formed by several patches of the form F((0,1)^3).
 %
 % USAGE:
 %
 %  [geometry, msh, space, u, gnum] = 
-%          mp_solve_laplace_2d_bsplines (problem_data, method_data)
+%          mp_solve_laplace_3d (problem_data, method_data)
 %
 % INPUT:
 %
@@ -55,7 +55,7 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function [geometry, msh, sp, u, gnum] = ...
-              mp_solve_laplace_2d_bsplines (problem_data, method_data)
+              mp_solve_laplace_3d (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
 data_names = fieldnames (problem_data);
@@ -82,26 +82,27 @@ for iptc = 1:npatch
 % Compute the quadrature rule
   rule      = msh_gauss_nodes (nquad);
   [qn, qw]  = msh_set_quad_nodes (zeta{iptc}, rule);
-  msh{iptc} = msh_2d_tensor_product (zeta{iptc}, qn, qw);
-  msh{iptc} = msh_push_forward_2d (msh{iptc}, geometry(iptc));
+  msh{iptc} = msh_3d_tensor_product (zeta{iptc}, qn, qw);
+  msh{iptc} = msh_push_forward_3d (msh{iptc}, geometry(iptc));
 
 % Evaluate the discrete space basis functions in the quadrature points
-  sp{iptc} = sp_bspline_2d_phys (knots{iptc}, degree, msh{iptc});
+  sp{iptc} = sp_bspline_3d_phys (knots{iptc}, degree, msh{iptc});
 end
 
 % Create a correspondence between patches on the interfaces
-[gnum, ndof] = mp_interface_2d (interfaces, sp);
+[gnum, ndof] = mp_interface_3d (interfaces, sp);
 
 % Compute and assemble the matrices 
 stiff_mat = spalloc (ndof, ndof, ndof);
 rhs = zeros (ndof, 1);
-
 for iptc = 1:npatch
+
   x = squeeze (msh{iptc}.geo_map (1,:,:));
   y = squeeze (msh{iptc}.geo_map (2,:,:));
+  z = squeeze (msh{iptc}.geo_map (3,:,:));
 
-  epsilon = reshape (c_diff (x, y), msh{iptc}.nqn, msh{iptc}.nel);
-  fval    = reshape (f(x, y), msh{iptc}.nqn, msh{iptc}.nel);
+  epsilon = reshape (c_diff (x, y, z), msh{iptc}.nqn, msh{iptc}.nel);
+  fval    = reshape (f(x, y, z), msh{iptc}.nqn, msh{iptc}.nel);
 
   A_loc   = op_gradu_gradv (sp{iptc}, sp{iptc}, msh{iptc}, epsilon);
   rhs_loc = op_f_v (sp{iptc}, msh{iptc}, fval);
@@ -110,14 +111,14 @@ for iptc = 1:npatch
   rhs(gnum{iptc}) = rhs(gnum{iptc}) + rhs_loc;
 end
 
-
 for iref = nmnn_sides
   for bnd_side = 1:boundaries(iref).nsides
-    iptc = boundaries(iref).patches(bnd_side); 
+    iptc = boundaries(iref).patches(bnd_side);
     iside = boundaries(iref).faces(bnd_side);
     x = squeeze (msh{iptc}.boundary(iside).geo_map(1,:,:));
-    y = squeeze (msh{iptc}.boundary(iside).geo_map(2,:,:)); 
-    gval = reshape (g (x, y, iref), ...
+    y = squeeze (msh{iptc}.boundary(iside).geo_map(2,:,:));
+    z = squeeze (msh{iptc}.boundary(iside).geo_map(3,:,:));
+    gval = reshape (g (x, y, z, iref), ...
            msh{iptc}.boundary(iside).nqn, msh{iptc}.boundary(iside).nel);
     rhs_nmnn = ...
            op_f_v (sp{iptc}.boundary(iside), msh{iptc}.boundary(iside), gval);
