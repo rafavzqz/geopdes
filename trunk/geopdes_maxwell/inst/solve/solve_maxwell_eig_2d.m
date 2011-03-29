@@ -101,3 +101,17 @@ eigf = zeros (sp.ndof, numel(int_dofs));
 eigv = diag (eigv);
 
 end
+
+%!demo
+%! ex_maxwell_eig_square
+
+%!demo
+%! ex_maxwell_eig_Lshaped
+
+%!demo
+%! ex_maxwell_eig_curvedL
+
+%!demo
+%! ex_maxwell_eig_ring_1eighth
+
+

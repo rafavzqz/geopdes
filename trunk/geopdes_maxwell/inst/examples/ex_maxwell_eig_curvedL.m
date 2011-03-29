@@ -38,3 +38,6 @@ figure
 quiver (squeeze(F(1,:,:)), squeeze(F(2,:,:)), ...
         squeeze(eu(1,:,:)), squeeze(eu(2,:,:)))
 title ('8^{th} eigenfunction')
+
+%!demo
+%! ex_maxwell_eig_curvedL

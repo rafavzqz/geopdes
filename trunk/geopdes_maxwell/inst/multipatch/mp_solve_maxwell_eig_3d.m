@@ -139,3 +139,12 @@ eigf = zeros (ndof, numel(int_dofs));
 eigv = diag (eigv);
 
 end
+
+%!demo
+%! ex_maxwell_eig_cube_mp
+
+%!demo
+%! ex_maxwell_eig_thick_L_mp
+
+%!demo
+%! ex_maxwell_eig_fichera_mp

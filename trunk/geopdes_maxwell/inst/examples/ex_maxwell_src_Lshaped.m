@@ -59,3 +59,5 @@ title('Exact solution')
 [error_hcurl, error_l2] = ...
     sp_hcurl_error (space, msh, u, problem_data.uex, problem_data.curluex)
 
+%!demo
+%! ex_maxwell_src_Lshaped
