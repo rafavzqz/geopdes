@@ -68,3 +68,6 @@ for iptc = 1:npatch
         sp_l2_error (space{iptc}, msh{iptc}, u(gnum{iptc}), problem_data.uex);
 end
 error_l2 = sqrt (sum (error_l2 .* error_l2))
+
+%!demo
+%! ex_lin_elast_cube_mp

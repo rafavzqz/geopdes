@@ -142,3 +142,6 @@ rhs(int_dofs) = rhs(int_dofs) - mat(int_dofs, drchlt_dofs) * u_drchlt;
 u(int_dofs) = mat(int_dofs, int_dofs) \ rhs(int_dofs);
 
 end
+
+%!demo
+%! ex_plane_strain_Lshaped_mp
