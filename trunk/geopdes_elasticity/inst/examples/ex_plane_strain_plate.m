@@ -45,3 +45,6 @@ sp_to_vtk_2d (u, space, geometry, vtk_pts, sprintf ('%s_displacement.vts', outpu
 figure
 quiver (X, Y, squeeze(eu(1,:,:)), squeeze(eu(2,:,:)))
 axis equal tight
+
+%!demo
+%! ex_plane_strain_plate

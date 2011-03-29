@@ -57,3 +57,6 @@ quiver (X, Y, squeeze(eu2(1,:,:)), squeeze(eu2(2,:,:)))
 title ('Exact solution'), axis equal tight
 
 error_l2 = sp_l2_error (space, msh, u, problem_data.uex)
+
+%!demo
+%! ex_plane_strain_ring
