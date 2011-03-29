@@ -54,3 +54,6 @@ spectrum = sqrt (lambda) ./ exact;
 subplot(1,2,2)
 plot (linspace (0, 1, numel (spectrum)), spectrum, '*')
 title ('Ratio of numerical to exact eigenvalues')
+
+%!demo
+%! ex_laplace_eig_square

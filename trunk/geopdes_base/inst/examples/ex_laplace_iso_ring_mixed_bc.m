@@ -57,3 +57,5 @@ title ('Exact solution'), axis tight
 [error_h1, error_l2] = ...
            sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex)
 
+%!demo
+%! ex_laplace_iso_ring_mixed_bc

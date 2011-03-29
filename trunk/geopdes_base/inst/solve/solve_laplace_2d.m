@@ -112,3 +112,15 @@ rhs(int_dofs) = rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt;
 u(int_dofs) = stiff_mat(int_dofs, int_dofs) \ rhs(int_dofs);
 
 end
+
+%!demo
+%! ex_laplace_square
+
+%!demo
+%! ex_laplace_plate
+
+%!demo
+%! ex_laplace_ring
+
+%!demo
+%! ex_laplace_ring_mixed_bc

@@ -57,3 +57,6 @@ title ('Exact solution'), axis tight
 % Display errors of the computed solution in the L2 and H1 norm
 [error_h1, error_l2] = ...
            sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex)
+
+%!demo
+%! ex_laplace_ring

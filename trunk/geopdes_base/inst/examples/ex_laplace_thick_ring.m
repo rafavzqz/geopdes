@@ -49,3 +49,6 @@ sp_to_vtk_3d (u, space, geometry, vtk_pts, output_file, 'u')
 
 [error_h1, error_l2] = ...
            sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex)
+
+%!demo
+%! ex_laplace_thick_ring
