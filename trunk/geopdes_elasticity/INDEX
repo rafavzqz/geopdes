@@ -2,10 +2,18 @@ geopdes_elasticity >> Iso-Geometric Analysis for Linear Elasticity Problems
 Operators
  op_su_ev
  op_pn_v
+Solve
+ solve_plane_strain_2d
+ solve_linear_elasticity_3d
 Examples
- ex_nurbs_linear_elasticity_3d
- ex_nurbs_plane_strain_2d
+ ex_plane_strain_square
+ ex_plane_strain_square_mixed_bc
+ ex_plane_strain_plate
+ ex_plane_strain_ring
+ ex_lin_elast_horseshoe
  geopdes_elasticity_examples
 Multipatch
- ex_nurbs_linear_elasticity_3d_mp
- ex_nurbs_plane_strain_2d_mp
+ mp_solve_plane_strain_2d
+ mp_solve_linear_elasticity_3d
+ ex_plane_strain_Lshaped_mp
+ ex_lin_elast_cube_mp
