@@ -17,7 +17,12 @@
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
 
-function PI = b2nst_odd__ (U, V, dU, dV, msh, space)
+function PI = b2nst_odd__ (space, knots, degree, msh)
+
+  U = knots{1};
+  V = knots{2};
+  dU = degree(1);
+  dV = degree(2);
 
   %% FIXME only odd degree supported at the moment
   if (mod (dU, 2) == 0 || mod (dV, 2) == 0)
