@@ -1,10 +1,13 @@
 % SP_BSPLINE_FLUID_2D_PHYS: Construct different pair of B-Splines spaces on the physical domain for fluid problems.
 %
-%   [spv, spp, PI] = sp_bspline_fluid_2d_phys (elem_name, ...
-%             knotsv1, degreev1, knotsv2, degreev2, knotsp, degreep, msh)
+%   [spv, spp, PI] = sp_bspline_fluid_2d_phys (knotsv1, degreev1, ...
+%          knotsv2, degreev2, knotsp, degreep, msh, fun_transform, press_proj)
 %
 % INPUTS:
 %
+%   elem_name: the name of the element. Right now 'TH' (Taylor-Hood), 
+%               'NDL' (Nedelec, 2nd family), 'RT' (Raviart-Thomas) and
+%               'SG' (SubGrid) are supported.
 %   knotsv1:   knot vector of the space for the first parametric component of 
 %               the velocity along each parametric direction
 %   degreev1:  degree of the space for the first parametric component of
@@ -46,18 +49,46 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [spv, spp, PI] = sp_bspline_fluid_2d_phys (knotsv1, degreev1, ...
-       knotsv2, degreev2, knotsp, degreep, msh, fun_transform, press_proj)
+function [spv, spp, PI] = sp_bspline_fluid_2d_phys (element_name, ...
+              knotsv1, degreev1, knotsv2, degreev2, knotsp, degreep, msh)
 
-spp  = sp_bspline_2d_phys (knotsp, degreep, msh, 'gradient', false);
+spp = sp_bspline_2d_phys (knotsp, degreep, msh, 'gradient', false);
 
-spv1 = sp_bspline_2d_phys (knotsv1, degreev1, msh);
-spv2 = sp_bspline_2d_phys (knotsv2, degreev2, msh);
-spv  = sp_scalar_to_vector_2d (spv1, spv2, msh, 'divergence', true);
-spv  = fun_transform (spv, msh);
+switch (lower (element_name))
+  case {'th', 'sg'}
+    spv = do_spv_component_wise__ (knotsv1, degreev1, knotsv2, degreev2, msh);
+    spv.spfun = @(MSH) do_spv_component_wise__ (knotsv1, degreev1, knotsv2, degreev2, MSH);
+    PI = speye (spp.ndof);
 
-if (nargout == 3)
-  PI = press_proj (spp, knotsp, degreep, msh);
+  case {'ndl'}
+    spv = do_spv_piola_transform__ (knotsv1, degreev1, knotsv2, degreev2, msh);
+    spv.spfun = @(MSH) do_spv_piola_transform__ (knotsv1, degreev1, knotsv2, degreev2, MSH);
+    PI = speye (spp.ndof);
+
+  case {'rt'}
+    spv = do_spv_piola_transform__ (knotsv1, degreev1, knotsv2, degreev2, msh);
+    spv.spfun = @(MSH) do_spv_piola_transform__ (knotsv1, degreev1, knotsv2, degreev2, MSH);
+    PI = b2nst_odd__ (spp, knotsp, degreep, msh);
+
+  otherwise
+    error ('sp_bspline_fluid_2d_phys: unknown element type')
+end
+
+end
+
+% This is fun_transform for 'TH' and 'SG' elements
+function spv = do_spv_component_wise__ (knotsv1, degreev1, knotsv2, degreev2, msh)
+  spv1 = sp_bspline_2d_phys (knotsv1, degreev1, msh);
+  spv2 = sp_bspline_2d_phys (knotsv2, degreev2, msh);
+  spv  = sp_scalar_to_vector_2d (spv1, spv2, msh, 'divergence', true);
+end
+
+% This is fun_transform for 'NDL' and 'RT'
+function spv = do_spv_piola_transform__ (knotsv1, degreev1, knotsv2, degreev2, msh)
+  spv1 = sp_bspline_2d_param (knotsv1, degreev1, msh);
+  spv2 = sp_bspline_2d_param (knotsv2, degreev2, msh);
+  spv  = sp_scalar_to_vector_2d (spv1, spv2, msh, 'divergence', true);
+  spv  = sp_piola_transform_2d (spv, msh);
 end
 
 spv.spfun  = @(MSH) sp_bspline_fluid_2d_phys (knotsv1, degreev1, ...
