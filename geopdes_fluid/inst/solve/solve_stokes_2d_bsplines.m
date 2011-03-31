@@ -26,7 +26,7 @@
 %  method_data : a structure with discretization data. Its fields are:
 %    - degree:       degree of the spline functions for pressure
 %    - regularity:   continuity of the spline functions for pressure
-%    - n_sub:        number of subdivisions for refinement for the pressure
+%    - nsub:         number of subdivisions for refinement for the pressure
 %    - nquad:        number of points for Gaussian quadrature rule
 %    - element_name: one of {TH,SG,RT,NDL}, specify how to build the velocity
 %                    space from the data for the pressure space
@@ -77,7 +77,7 @@ end
 
 % load geometry
 geometry    = geo_load (geo_name);
-[knotsp, knotsv1, degreev1, knotsv2, degreev2, fun_transform, press_proj, der2] = ...
+[knotsp, knotsv1, degreev1, knotsv2, degreev2, der2] = ...
    sp_fluid_set_options_2d (element_name, geometry.nurbs.knots, nsub, degree, regularity);
 
 % Compute the mesh structure using the finest mesh
@@ -87,8 +87,8 @@ msh         = msh_2d_tensor_product (knotsv1, qn, qw);
 msh         = msh_push_forward_2d (msh, geometry, 'der2', der2);
 
 % Compute the space structures
-[space_v, space_p, PI] = sp_bspline_fluid_2d_phys (knotsv1, degreev1, ...
-       knotsv2, degreev2, knotsp, degree, msh, fun_transform, press_proj);
+[space_v, space_p, PI] = sp_bspline_fluid_2d_phys (element_name, ...
+          knotsv1, degreev1, knotsv2, degreev2, knotsp, degree, msh);
 
 % Assemble the matrices
 x           = squeeze (msh.geo_map(1,:,:));

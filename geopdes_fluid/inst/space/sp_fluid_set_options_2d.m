@@ -53,10 +53,10 @@
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
 
-function [knotsp, knotsv1, degreev1, knotsv2, degreev2, fun_transform, press_proj, der2] = ...
+function [knotsp, knotsv1, degreev1, knotsv2, degreev2, der2] = ...
     sp_fluid_set_options_2d (elem_name, knots, nsub_p, degree_p, regularity_p)
 
-  knotsp = kntrefine (knots, nsub_p, degree_p, regularity_p);
+  knotsp = kntrefine (knots, nsub_p-1, degree_p, regularity_p);
 
   switch (lower (elem_name))
    case 'th'
@@ -66,11 +66,12 @@ function [knotsp, knotsv1, degreev1, knotsv2, degreev2, fun_transform, press_pro
     degreev2 = degreev1;
     regularity_v = regularity_p;
     nsub_v = nsub_p;
-    knotsv1 = kntrefine (knots, nsub_v, degreev1, regularity_v);
+    knotsv1 = kntrefine (knots, nsub_v-1, degreev1, regularity_v);
     knotsv2 = knotsv1;
 
-    fun_transform = @(spv, msh) spv;
-    press_proj = @(spp, knotsp, degreep, msh) speye (spp.ndof);
+%    fun_transform = @(knotsv1, degreev1, knotsv2, degreev2, msh) ...
+%        do_spv_component_wise__ (knotsv1, degreev1, knotsv2, degreev2, msh);
+%    press_proj = @(spp, knotsp, degreep, msh) speye (spp.ndof);
    case 'sg'
     der2 = false;
 
@@ -78,11 +79,12 @@ function [knotsp, knotsv1, degreev1, knotsv2, degreev2, fun_transform, press_pro
     degreev2 = degreev1;
     regularity_v = regularity_p+1;
     nsub_v = 2*nsub_p;
-    knotsv1 = kntrefine (knots, nsub_v, degreev1, regularity_v);
+    knotsv1 = kntrefine (knots, nsub_v-1, degreev1, regularity_v);
     knotsv2 = knotsv1;
 
-    fun_transform = @(spv, msh) spv;
-    press_proj = @(spp, knotsp, degreep, msh) speye (spp.ndof);
+%    fun_transform = @(knotsv1, degreev1, knotsv2, degreev2, msh) ...
+%        do_spv_component_wise__ (knotsv1, degreev1, knotsv2, degreev2, msh);
+%    press_proj = @(spp, knotsp, degreep, msh) speye (spp.ndof);
    case 'ndl'
     der2 = true;
 
@@ -93,8 +95,9 @@ function [knotsp, knotsv1, degreev1, knotsv2, degreev2, fun_transform, press_pro
     degreev1 = degree_p+1;
     degreev2 = degree_p+1;
 
-    fun_transform = @(spv, msh) sp_piola_transform_2d (spv, msh);
-    press_proj = @(spp, knotsp, degreep, msh) speye (spp.ndof);
+%    fun_transform = @(knotsv1, degreev1, knotsv2, degreev2, msh) ...
+%        do_spv_piola_transform__ (knotsv1, degreev1, knotsv2, degreev2, msh);
+%    press_proj = @(spp, knotsp, degreep, msh) speye (spp.ndof);
    case 'rt'
     der2 = true;
 
@@ -105,8 +108,9 @@ function [knotsp, knotsv1, degreev1, knotsv2, degreev2, fun_transform, press_pro
     degreev1 = [degree_p(1)+1 degree_p(2)];
     degreev2 = [degree_p(1) degree_p(2)+1];
 
-    fun_transform = @(spv, msh) sp_piola_transform_2d (spv, msh);
-    press_proj = @(spp, knotsp, degreep, msh) b2nst_odd__ (spp, knotsp, degreep, msh);
+%    fun_transform = @(knotsv1, degreev1, knotsv2, degreev2, msh) ...
+%        do_spv_piola_transform__ (knotsv1, degreev1, knotsv2, degreev2, msh);
+%    press_proj = @(spp, knotsp, degreep, msh) b2nst_odd__ (spp, knotsp, degreep, msh);
    otherwise
     error('space_set: Unknown element type')
   end
