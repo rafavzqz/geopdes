@@ -25,7 +25,8 @@
 %  method_data : a structure with discretization data. Its fields are:
 %    - degree:     degree of the spline functions.
 %    - regularity: continuity of the spline functions.
-%    - n_sub:      number of subdivisions for refinement.
+%    - nsub:       number of subelements with respect to the geometry mesh 
+%                   (nsub=1 leaves the mesh unchanged)
 %    - nquad:      number of points for Gaussian quadrature rule
 %
 % OUTPUT:
@@ -76,7 +77,7 @@ msh = cell (1, npatch);
 sp = cell (1, npatch);
 for iptc = 1:npatch
   [knots, zeta] = ...
-         kntrefine (geometry(iptc).nurbs.knots, n_sub, degree, regularity);
+         kntrefine (geometry(iptc).nurbs.knots, nsub-1, degree, regularity);
   [knots_u1, knots_u2, knots_u3, degree1, degree2, degree3] = ...
                                                  knt_derham (knots, degree);
 
