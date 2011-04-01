@@ -27,7 +27,8 @@
 %  method_data : a structure with discretization data. Its fields are:
 %    - degree:     degree of the spline functions.
 %    - regularity: continuity of the spline functions.
-%    - n_sub:      number of subdivisions for refinement.
+%    - nsub:       number of subelements with respect to the geometry mesh 
+%                   (nsub=1 leaves the mesh unchanged)
 %    - nquad:      number of points for Gaussian quadrature rule
 %
 % OUTPUT:
@@ -77,7 +78,7 @@ for iptc = 1:npatch
 
 % Define the refined mesh, with tensor product structure
   [knots{iptc}, zeta{iptc}] = ...
-         kntrefine (geometry(iptc).nurbs.knots, n_sub, degree, regularity);
+         kntrefine (geometry(iptc).nurbs.knots, nsub-1, degree, regularity);
 
 % Compute the quadrature rule
   rule      = msh_gauss_nodes (nquad);
@@ -90,7 +91,7 @@ for iptc = 1:npatch
 end
 
 % Create a correspondence between patches on the interfaces
-[gnum, ndof] = mp_interface_2d (interfaces, sp);
+[gnum, ndof] = mp_interface_prova2 (interfaces, sp);
 
 % Compute and assemble the matrices 
 stiff_mat = spalloc (ndof, ndof, ndof);
