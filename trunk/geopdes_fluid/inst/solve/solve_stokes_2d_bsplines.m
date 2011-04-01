@@ -44,7 +44,7 @@
 %  space_p:  space structure for the pressure 
 %  press:    the computed coeficcients of the pressure
 %
-% See also EX_STOKES_FLOW_3D for an example.
+% See also EX_STOKES_SQUARE_* EX_STOKES_ANNULUS_* for an examples.
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011, Andrea Bressan, Rafael Vazquez

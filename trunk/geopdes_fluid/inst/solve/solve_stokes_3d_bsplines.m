@@ -33,7 +33,6 @@
 %                    from the data for the preassure space
 %                     +TH is the generalized Taylor-Hood element
 %                     +SG is the SubGrid element
-%                     +RT the Raviart-Thomas element
 %                    for reference see ... citation
 % OUTPUT:
 %
