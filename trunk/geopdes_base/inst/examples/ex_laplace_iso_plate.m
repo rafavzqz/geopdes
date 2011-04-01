@@ -27,7 +27,7 @@ problem_data.graduex = @(x, y) cat (1, ...
 clear method_data 
 method_data.degree     = [3 3];       % Degree of the splines
 method_data.regularity = [2 2];       % Regularity of the splines
-method_data.n_sub      = [7 7];       % Number of subdivisions
+method_data.nsub       = [8 8];       % Number of subdivisions
 method_data.nquad      = [4 4];       % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER

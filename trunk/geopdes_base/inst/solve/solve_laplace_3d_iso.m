@@ -24,7 +24,8 @@
 %  method_data : a structure with discretization data. Its fields are:
 %    - degree:     degree of the spline functions.
 %    - regularity: continuity of the spline functions.
-%    - n_sub:      number of subdivisions for refinement.
+%    - nsub:       number of subelements with respect to the geometry mesh 
+%                   (nsub=1 leaves the mesh unchanged)
 %    - nquad:      number of points for Gaussian quadrature rule
 %
 % OUTPUT:
@@ -69,7 +70,7 @@ end
 geometry = geo_load (geo_name);
 degelev  = max (degree - (geometry.nurbs.order-1), 0);
 nurbs    = nrbdegelev (geometry.nurbs, degelev);
-[rknots, zeta, nknots] = kntrefine (nurbs.knots, n_sub, nurbs.order-1, regularity);
+[rknots, zeta, nknots] = kntrefine (nurbs.knots, nsub-1, nurbs.order-1, regularity);
 
 nurbs = nrbkntins (nurbs, nknots);
 geometry = geo_load (nurbs);
