@@ -17,7 +17,7 @@ problem_data.c_magn_perm = @(x, y, z) ones(size(x));
 clear method_data 
 method_data.degree     = [2 2 2]; % Degree of the bsplines
 method_data.regularity = [1 1 1]; % Regularity of the splines
-method_data.n_sub      = [3 3 3]; % Number of subdivisions
+method_data.nsub       = [4 4 4]; % Number of subdivisions
 method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
