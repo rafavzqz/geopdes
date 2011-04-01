@@ -46,7 +46,7 @@ problem_data.uex  = @(x, y, z) cat(1, ...
 clear method_data
 method_data.degree     = [2 2 2];     % Degree of the bsplines
 method_data.regularity = [1 1 1];     % Regularity of the splines
-method_data.n_sub      = [1 1 1];     % Number of subdivisions
+method_data.nsub       = [2 2 2];     % Number of subdivisions
 method_data.nquad      = [3 3 3];     % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
