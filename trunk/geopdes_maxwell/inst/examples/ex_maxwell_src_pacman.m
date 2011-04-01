@@ -27,7 +27,7 @@ problem_data.curluex = @(x, y) zeros (size(x));
 clear method_data 
 method_data.degree     = [3 3];     % Degree of the bsplines
 method_data.regularity = [2 2];     % Regularity of the splines
-method_data.n_sub      = [5 5];     % Number of subdivisions
+method_data.nsub       = [6 6];     % Number of subdivisions
 method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
