@@ -46,28 +46,30 @@ while (iopt > 0)
          '   (3) Thick L-shaped domain, defined with 3 patches. \n \n']);
 
       iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
+      if (~isempty(iopt2))
       switch iopt2
        case 1
         clc;
         fprintf (1, 'You can have a look at the source file: EX_LAPLACE_BSP_LSHAPED_MP \n \n');
         fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
-        ex_laplace_bsp_Lshaped_mp;
+        ex_laplace_Lshaped_mp;
         input ('Press <Enter> to continue: ');
 
        case 2
         clc;
         fprintf (1, 'You can have a look at the source file: EX_LAPLACE_BSP_CUBE_MP \n \n');
         fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
-        ex_laplace_bsp_cube_mp;
+        ex_laplace_cube_mp;
         input ('Press <Enter> to continue: ');
 
        case 3
         clc;
         fprintf (1, 'You can have a look at the source file: EX_LAPLACE_BSP_THICK_L_MP \n \n');
         fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
-        ex_laplace_bsp_thick_L_mp;
+        ex_laplace_thick_L_mp;
         input ('Press <Enter> to continue: ');
       end %switch
+      end %if
     end %while iopt2>0
 
   elseif (iopt == 3)
