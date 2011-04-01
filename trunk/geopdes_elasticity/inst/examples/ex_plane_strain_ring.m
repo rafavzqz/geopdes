@@ -30,7 +30,7 @@ problem_data.uex = @(x, y) test_plane_strain_ring_uex (x, y, E, nu, P);
 clear method_data
 method_data.degree     = [3 3];     % Degree of the basis functions
 method_data.regularity = [2 2];     % Regularity of the basis functions
-method_data.n_sub      = [9 9];     % Number of subdivisions
+method_data.nsub       = [9 9];     % Number of subdivisions
 method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
