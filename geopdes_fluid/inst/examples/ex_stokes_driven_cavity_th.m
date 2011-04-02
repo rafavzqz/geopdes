@@ -35,8 +35,8 @@ method_data.nquad        = [ 4  4];  % Points for the Gaussian quadrature rule
 output_file = 'Driven_cavity_TH_Deg3_Reg2_Sub10'
 
 vtk_pts = {linspace(0, 1, 20)', linspace(0, 1, 20)'};
-sp_to_vtk_2d (press, space_p, geometry, vtk_pts, output_file, 'press')
-sp_to_vtk_2d (vel,   space_v, geometry, vtk_pts, output_file, 'vel')
+sp_to_vtk_2d (press, space_p, geometry, vtk_pts, [output_file '_press'], 'press')
+sp_to_vtk_2d (vel,   space_v, geometry, vtk_pts, [output_file '_vel'  ], 'vel')
 
 % 4.2) PLOT IN MATLAB
 [eu, F] = sp_eval_2d (vel, space_v, geometry, vtk_pts);

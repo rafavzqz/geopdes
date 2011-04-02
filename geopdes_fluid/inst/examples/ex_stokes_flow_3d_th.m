@@ -28,7 +28,7 @@ clear method_data
 method_data.element_name = 'TH';
 method_data.degree       = [2 2 2];       % Degree of the splines
 method_data.regularity   = [1 1 1];       % Regularity of the splines
-method_data.nsub         = [1 1 1];       % Number of subdivisions
+method_data.nsub         = [2 2 2];       % Number of subdivisions
 method_data.nquad        = [4 4 4];       % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
@@ -40,24 +40,5 @@ method_data.nquad        = [4 4 4];       % Points for the Gaussian quadrature r
 output_file = 'TwistedPipe_BSP_Deg2_Reg1_Sub2'
 
 vtk_pts = {linspace(0, 1, 10)', linspace(0, 1, 10)', linspace(0, 1, 10)'};
-sp_to_vtk_3d (press, space_p, geometry, vtk_pts, output_file, 'press')
-sp_to_vtk_3d (vel,   space_v, geometry, vtk_pts, output_file, 'vel')
-
-% 4.2) PLOT IN MATLAB. COMPARISON WITH THE EXACT SOLUTION
-
-[eu, F] = sp_eval_2d (u, space, geometry, vtk_pts);
-[X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
-subplot (1,2,1)
-surf (X, Y, eu)
-title ('Numerical solution'), axis tight
-subplot (1,2,2)
-surf (X, Y, problem_data.uex (X,Y))
-title ('Exact solution'), axis tight
-
-% Display errors of the computed solution in the L2 and H1 norm
-return 
-% we can work for a better example where the exact solution is known
-[error_h1_v, error_l2_v] = ...
-           sp_h1_error (space_v, msh, vel, problem_data.velex, problem_data.gradvelex)
-error_l2_p = sp_l2_error (space_p, msh, press, problem_data.pressex)
-
+sp_to_vtk_3d (press, space_p, geometry, vtk_pts, [output_file '_press'], 'press')
+sp_to_vtk_3d (vel,   space_v, geometry, vtk_pts, [output_file '_vel'  ], 'vel')

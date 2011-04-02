@@ -1,4 +1,4 @@
-% EX_STOKES_SQUARE_RT: solve the Stokes problem in the unit square with generalized Raviart-Thomas elements.
+% EX_STOKES_2D_RT_SQUARE: solve the Stokes problem in the square using RT elements.
 
 % 1) PHYSICAL DATA OF THE PROBLEM
 clear problem_data  
@@ -30,6 +30,7 @@ problem_data.f  = @(x, y) cat(1, ...
 
 % Boundary terms
 problem_data.h  = @(x, y, iside) zeros ([2, size(x)]); %Dirichlet
+%problem_data.g = ... ;%Neumann boundary condition
 
 % Exact solution, to compute the errors
 uxex = @(x, y) (2.*exp(x).*(-1 + x).^2.*x.^2.*(-1 + y).*y.*(-1 + 2.*y));
@@ -47,17 +48,18 @@ problem_data.pressex   = @(x, y) (-424 + 156.*exp(1) + (-1 + y).*y.* ...
 
 problem_data.gradvelex = @test_stokes_square_graduex;
 
+
+
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
-method_data.element_name = 'rt';   % Element type for discretization
-method_data.degree       = [ 3  3];  % Degree of the splines
-method_data.regularity   = [ 2  2];  % Regularity of the splines
-method_data.nsub         = [10 10];  % Number of subdivisions
-method_data.nquad        = [ 4  4];  % Points for the Gaussian quadrature rule
+method_data.regularity   = [ 2  2];       % Regularity of the splines
+method_data.nsub         = [10 10];       % Number of subdivisions
+method_data.nquad        = [ 4  4];       % Points for the Gaussian quadrature rule
+
 
 % 3) CALL TO THE SOLVER
 [geometry, msh, space_v, vel, space_p, press] = ...
-                       solve_stokes_2d_bsplines (problem_data, method_data);
+                       solve_stokes_2d_bspline_rt (problem_data, method_data);
 
 % 4) POST-PROCESSING
 % 4.1) COMPARISON WITH EXACT SOLUTION
@@ -66,7 +68,7 @@ error_l2_p = sp_l2_error (space_p, msh, press, problem_data.pressex)
    sp_h1_error (space_v, msh, vel, problem_data.velex, problem_data.gradvelex)
 
 
-% 4.2) EXPORT TO PARAVIEW
+% 4.1) EXPORT TO PARAVIEW
 output_file = 'SQUARE_RT_Reg2_Sub10'
 
 vtk_pts = {linspace(0, 1, 20)', linspace(0, 1, 20)'};

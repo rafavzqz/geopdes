@@ -1,8 +1,9 @@
-% SP_FLUID_SET_OPTIONS_2D: Construct the knot vectors and set some options for the construction of different pair of spaces for fluid problems.
+% SP_FLUID_SET_OPTIONS_3D: Construct the knot vectors and set some options for the construction of different pair of spaces for fluid problems.
 %
 % 
-% [knotsp, knotsv1, degreev1, knotsv2, degreev2, der2] = 
-%  sp_fluid_set_options (elem_name, knots, nsub_p, degree_p, regularity_p)
+% [knotsp, knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, ...
+% fun_trans, press_proj, der2] = sp_fluid_set_options (elem_name, knots, ...
+%                                              nsub_p, degree_p, regularity_p)
 %
 % INPUTS:
 %
@@ -24,6 +25,10 @@
 %   knotsv2:    knot vector of the space for the second parametric component of 
 %                the velocity along each parametric direction
 %   degreev2:   degree of the space for the second parametric component of
+%                the velocity along each parametric direction
+%   knotsv3:    knot vector of the space for the third parametric component of 
+%                the velocity along each parametric direction
+%   degreev3:   degree of the space for the third parametric component of
 %                the velocity along each parametric direction
 %   der2:       option to know whether the second derivative of the
 %                parameterization must be computed or not
@@ -49,8 +54,8 @@
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
 
-function [knotsp, knotsv1, degreev1, knotsv2, degreev2, der2] = ...
-    sp_fluid_set_options_2d (elem_name, knots, nsub_p, degree_p, regularity_p)
+function [knotsp, knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, der2] = ...
+    sp_fluid_set_options_3d (elem_name, knots, nsub_p, degree_p, regularity_p)
 
   knotsp = kntrefine (knots, nsub_p-1, degree_p, regularity_p);
 
@@ -59,38 +64,53 @@ function [knotsp, knotsv1, degreev1, knotsv2, degreev2, der2] = ...
     der2 = false;
     degreev1 = degree_p + 1;
     degreev2 = degreev1;
+    degreev3 = gegreev1;
     regularity_v = regularity_p;
     nsub_v = nsub_p;
     knotsv1 = kntrefine (knots, nsub_v-1, degreev1, regularity_v);
     knotsv2 = knotsv1;
+    knotsv3 = knotsv1;
 
    case 'sg'
     der2 = false;
     degreev1 = degree_p + 1;
     degreev2 = degreev1;
+    degreev3 = degreev1;   
     regularity_v = regularity_p+1;
     nsub_v = 2*nsub_p;
     knotsv1 = kntrefine (knots, nsub_v-1, degreev1, regularity_v);
     knotsv2 = knotsv1;
+    knotsv3 = knotsv1;
 
-   case 'ndl'
-    der2 = true;
-    knotsv1{1}  = [knotsp{1}(1) knotsp{1} knotsp{1}(end)];
-    knotsv1{2}  = sort ([knotsp{2}, unique(knotsp{2})]);
-    knotsv2{1}  = sort ([knotsp{1}, unique(knotsp{1})]);
-    knotsv2{2}  = [knotsp{2}(1) knotsp{2} knotsp{2}(end)];
-    degreev1 = degree_p+1;
-    degreev2 = degree_p+1;
+%   case 'ndl'
+%    der2 = true;
+%    knotsv1{1}  = [knotsp{1}(1) knotsp{1} knotsp{1}(end)];
+%    knotsv1{2}  = sort ([knotsp{2}, unique(knotsp{2})]);
+%    knotsv1{3}  = sort ([knotsp{3}, unique(knotsp{3})]);
+%    knotsv2{1}  = sort ([knotsp{1}, unique(knotsp{1})]);
+%    knotsv2{2}  = [knotsp{2}(1) knotsp{2} knotsp{2}(end)];
+%    knotsv2{3}  = knotsv1{3};
+%    knotsv3{1}  = knotsv2{1};
+%    knotsv3{2}  = knotsv1{2};
+%    knotsv3{3}  = [knotsp{3}(1) knotsp{3} knotsp{3}(end)];
 
-   case 'rt'
-    der2 = true;
-    knotsv1{1}  = [knotsp{1}(1) knotsp{1} knotsp{1}(end)];
-    knotsv1{2}  = knotsp{2};
-    knotsv2{1}  = knotsp{1};
-    knotsv2{2}  = [knotsp{2}(1) knotsp{2} knotsp{2}(end)];
-    degreev1 = [degree_p(1)+1 degree_p(2)];
-    degreev2 = [degree_p(1) degree_p(2)+1];
+%    degreev1 = degree_p+1;
+%    degreev2 = degree_p+1;
+%    degreev3 = degree_p+1;
 
+%   case 'rt'
+%    der2 = true;
+
+%    knotsv1     = knotsp;
+%    knotsv1{1}  = [knotsp{1}(1) knotsp{1} knotsp{1}(end)];
+%    knotsv2     = knotsp;
+%    knotsv2{2}  = [knotsp{2}(1) knotsp{2} knotsp{1}(end)];
+%    knotsv3     = knotsp;    
+%    knotsv3{3}  = [knotsp{3}(1) knotsp{3} knotsp{3}(end)];
+%    degreev1 = [degree_p(1)+1 degree_p(2) degree_p(3)];
+%    degreev2 = [degree_p(1) degree_p(2)+1 degree_p(3)];
+%    degreev3 = [degree_p(1) degree_p(2) degree_p(3)+1]; 
+    
    otherwise
     error('space_set: Unknown element type')
   end
