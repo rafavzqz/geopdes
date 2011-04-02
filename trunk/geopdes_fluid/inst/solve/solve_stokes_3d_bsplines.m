@@ -2,11 +2,10 @@
 %
 % The function solves the stokes problem
 %
-%
-%   -mu div grad vel + grad press = f    in Omega
-%                         div vel = 0    in Omega
-%                      mu dvel/dn = g    on Gamma_N
-%                             vel = h    on Gamma_D
+%   -div(mu(x) grad(vel)) + grad(press) = f    in Omega
+%                              div(vel) = 0    in Omega
+%                         mu(x) dvel/dn = g    on Gamma_N
+%                                   vel = h    on Gamma_D
 %
 % USAGE:
 %
@@ -29,7 +28,7 @@
 %    - regularity:   continuity of the spline functions for pressure
 %    - n_sub:        number of subdivisions for refinement for the pressure
 %    - nquad:        number of points for Gaussian quadrature rule
-%    - element_name: one of {TH,SG,RT}, specify how to build the velocity space
+%    - element_name: one of {TH,SG}, specify how to build the velocity space
 %                    from the data for the preassure space
 %                     +TH is the generalized Taylor-Hood element
 %                     +SG is the SubGrid element
@@ -38,7 +37,7 @@
 %
 %  geometry: geometry structure (see geo_load)
 %  msh:      mesh structure (see msh_push_forward_2d)
-%  space_v:  space structure for the velocity (see sp_bspline_2d_phys)
+%  space_v:  space structure for the velocity (see sp_bspline_3d_phys)
 %  vel:      the computed coeficcients of the velocity
 %  space_p:  space structure for the pressure 
 %  press:    the computed coeficcients of the pressure
@@ -46,7 +45,7 @@
 % See also EX_STOKES_FLOW_3D for an example.
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
-% Copyright (C) 2011, Rafael Vazquez
+% Copyright (C) 2011, Andrea Bressan, Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -75,58 +74,37 @@ for iopt  = 1:numel (data_names)
   eval ([data_names{iopt} sprintf('= method_data.(data_names{iopt});')]);
 end
 
-% rename pressure data
-degree_p     = degree;
-regularity_p = regularity;
-nsub_p       = nsub;
-
-switch lower(element_name)
-  case 'th'
-    degree_v     = degree+1;
-    regularity_v = regularity;
-    nsub_v       = nsub;
-  case 'sg'
-    degree_v     = degree+1;
-    regularity_v = regularity+1;
-    nsub_v       = 2*nsub;
-  otherwise
-    error('%s is not a known element type; use TH or SG', element_name);
-end
-
-
 % load geometry
 geometry    = geo_load (geo_name);
-
-[knots_p, zeta_p] = kntrefine (geometry.nurbs.knots, nsub_p, degree_p, regularity_p);
-[knots_v, zeta_v] = kntrefine (geometry.nurbs.knots, nsub_v, degree_v, regularity_v);
+[knotsp, knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, der2] = ...
+   sp_fluid_set_options_3d (element_name, geometry.nurbs.knots, nsub, degree, regularity);
 
 % Compute the mesh structure using the finest mesh
 rule        = msh_gauss_nodes (nquad);
-[qn, qw]    = msh_set_quad_nodes (zeta_v, rule);
-msh         = msh_3d_tensor_product (zeta_v, qn, qw); 
+[qn, qw]    = msh_set_quad_nodes (knotsv1, rule);
+msh         = msh_3d_tensor_product (knotsv1, qn, qw); 
 msh         = msh_push_forward_3d (msh, geometry);
 
 % Compute the space structures
-space_p         = sp_bspline_3d_phys (knots_p, degree_p, msh, 'gradient', false); 
-space_v         = sp_bspline_3d_phys (knots_v, degree_v, msh);
-space_v         = sp_scalar_to_vector_3d (space_v, space_v, space_v, msh, 'divergence', true);
+[space_v, space_p, PI] = sp_bspline_fluid_3d_phys (element_name, ...
+          knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, knotsp, degree, msh);
 
 % Assemble the matrices
 x           = squeeze (msh.geo_map(1,:,:));
 y           = squeeze (msh.geo_map(2,:,:));
 z           = squeeze (msh.geo_map(3,:,:));
-%[x, y, z]   = deal (squeeze (msh.geo_map(1,:,:)), squeeze (msh.geo_map(2,:,:)), squeeze (msh.geo_map(3,:,:)));
+
 A           = op_gradu_gradv (space_v, space_v, msh, viscosity (x, y, z)); 
-B           = op_div_v_q (space_v, space_p, msh); 
+B           = PI' * op_div_v_q (space_v, space_p, msh); 
 M           = op_u_v (space_p, space_p, msh, ones (size (x))); 
-E           = sum (M, 1) / sum (sum (M)); 
+E           = sum (M, 1) * PI / sum (sum (M)); 
 F           = op_f_v (space_v, msh, f (x, y, z)); 
 
 vel         = zeros (space_v.ndof, 1);
 press       = zeros (space_p.ndof, 1);
 
 % Apply Dirichlet  boundary conditions
-[vel_drchlt, drchlt_dofs] = sp_drchlt_l2_proj(space_v, msh, h, drchlt_sides);
+[vel_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space_v, msh, h, drchlt_sides);
 vel(drchlt_dofs) = vel_drchlt;
 int_dofs = setdiff (1:space_v.ndof, drchlt_dofs);
 nintdofs = numel (int_dofs);
@@ -146,13 +124,13 @@ rhs_nmnn = rhs_nmnn(int_dofs);
 
 % Solve the linear system
 mat = [ A(int_dofs, int_dofs), -B(:,int_dofs).',            sparse(nintdofs, 1);
-       -B(:,int_dofs),          sparse(space_p.ndof, space_p.ndof), E';
+       -B(:,int_dofs),          sparse(size (B,1), size(B,1)), E';
         sparse(1, nintdofs),    E,                          0];
 rhs = [F(int_dofs) + rhs_dir + rhs_nmnn; 
        zeros(space_p.ndof, 1); 
        0];
 sol = mat \ rhs;
 vel(int_dofs) = sol(1:nintdofs);
-press = sol(1+nintdofs:end-1);
+press = PI * sol(1+nintdofs:end-1);
 
-
+end

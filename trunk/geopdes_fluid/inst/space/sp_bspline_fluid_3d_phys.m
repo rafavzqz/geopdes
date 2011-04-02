@@ -1,13 +1,13 @@
-% SP_BSPLINE_FLUID_2D_PHYS: Construct different pair of B-Splines spaces on the physical domain for fluid problems.
+% SP_BSPLINE_FLUID_3D_PHYS: Construct different pair of B-Splines spaces on the physical domain for fluid problems.
 %
 %   [spv, spp, PI] = sp_bspline_fluid_2d_phys (knotsv1, degreev1, ...
-%          knotsv2, degreev2, knotsp, degreep, msh)
+%          knotsv2, degreev2, knotsv3, degreev3, knotsp, degreep, ...
+%          msh, fun_transform, press_proj)
 %
 % INPUTS:
 %
 %   elem_name: the name of the element. Right now 'TH' (Taylor-Hood), 
-%               'NDL' (Nedelec, 2nd family), 'RT' (Raviart-Thomas) and
-%               'SG' (SubGrid) are supported.
+%              and 'SG' (SubGrid) are supported.
 %   knotsv1:   knot vector of the space for the first parametric component of 
 %               the velocity along each parametric direction
 %   degreev1:  degree of the space for the first parametric component of
@@ -15,6 +15,10 @@
 %   knotsv2:   knot vector of the space for the second parametric component of 
 %               the velocity along each parametric direction
 %   degreev2:  degree of the space for the second parametric component of
+%               the velocity along each parametric direction
+%   knotsv3:   knot vector of the space for the third parametric component of 
+%               the velocity along each parametric direction
+%   degreev3:  degree of the space for the third parametric component of
 %               the velocity along each parametric direction
 %   knotsp:    knot vector of the pressure space along each parametric direction
 %   degreep:   degree of the pressure space along each parametric direction
@@ -49,27 +53,19 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [spv, spp, PI] = sp_bspline_fluid_2d_phys (element_name, ...
-              knotsv1, degreev1, knotsv2, degreev2, knotsp, degreep, msh)
+function [spv, spp, PI] = sp_bspline_fluid_3d_phys (element_name, ...
+              knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, ...
+              knotsp, degreep, msh)
 
-spp = sp_bspline_2d_phys (knotsp, degreep, msh, 'gradient', false);
+spp = sp_bspline_3d_phys (knotsp, degreep, msh, 'gradient', false);
 
 switch (lower (element_name))
   case {'th', 'sg'}
-    spv = do_spv_component_wise__ (knotsv1, degreev1, knotsv2, degreev2, msh);
-    spv.spfun = @(MSH) do_spv_component_wise__ (knotsv1, degreev1, knotsv2, degreev2, MSH);
+    spv = do_spv_component_wise__ ( ...
+                knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, msh);
+    spv.spfun = @(MSH) do_spv_component_wise__ ( ...
+                knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, MSH);
     PI = speye (spp.ndof);
-
-  case {'ndl'}
-    spv = do_spv_piola_transform__ (knotsv1, degreev1, knotsv2, degreev2, msh);
-    spv.spfun = @(MSH) do_spv_piola_transform__ (knotsv1, degreev1, knotsv2, degreev2, MSH);
-    PI = speye (spp.ndof);
-
-  case {'rt'}
-    spv = do_spv_piola_transform__ (knotsv1, degreev1, knotsv2, degreev2, msh);
-    spv.spfun = @(MSH) do_spv_piola_transform__ (knotsv1, degreev1, knotsv2, degreev2, MSH);
-    PI = b2nst_odd__ (spp, knotsp, degreep, msh);
-
   otherwise
     error ('sp_bspline_fluid_2d_phys: unknown element type')
 end
@@ -77,16 +73,10 @@ end
 end
 
 % This is fun_transform for 'TH' and 'SG' elements
-function spv = do_spv_component_wise__ (knotsv1, degreev1, knotsv2, degreev2, msh)
-  spv1 = sp_bspline_2d_phys (knotsv1, degreev1, msh);
-  spv2 = sp_bspline_2d_phys (knotsv2, degreev2, msh);
-  spv  = sp_scalar_to_vector_2d (spv1, spv2, msh, 'divergence', true);
-end
-
-% This is fun_transform for 'NDL' and 'RT'
-function spv = do_spv_piola_transform__ (knotsv1, degreev1, knotsv2, degreev2, msh)
-  spv1 = sp_bspline_2d_param (knotsv1, degreev1, msh);
-  spv2 = sp_bspline_2d_param (knotsv2, degreev2, msh);
-  spv  = sp_scalar_to_vector_2d (spv1, spv2, msh, 'divergence', true);
-  spv  = sp_piola_transform_2d (spv, msh);
+function spv = do_spv_component_wise__ ( ... 
+                 knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, msh)
+  spv1 = sp_bspline_3d_phys (knotsv1, degreev1, msh);
+  spv2 = sp_bspline_3d_phys (knotsv2, degreev2, msh);
+  spv3 = sp_bspline_3d_phys (knotsv3, degreev3, msh);
+  spv  = sp_scalar_to_vector_3d (spv1, spv2,spv3, msh, 'divergence', true);
 end
