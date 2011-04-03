@@ -127,7 +127,7 @@ mat = [ A(int_dofs, int_dofs), -B(:,int_dofs).',            sparse(nintdofs, 1);
        -B(:,int_dofs),          sparse(size (B,1), size(B,1)), E';
         sparse(1, nintdofs),    E,                          0];
 rhs = [F(int_dofs) + rhs_dir + rhs_nmnn; 
-       zeros(space_p.ndof, 1); 
+       B(:, drchlt_dofs)*vel(drchlt_dofs); 
        0];
 sol = mat \ rhs;
 vel(int_dofs) = sol(1:nintdofs);
