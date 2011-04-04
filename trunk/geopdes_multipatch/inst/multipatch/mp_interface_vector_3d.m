@@ -1,4 +1,4 @@
-% MP_INTERFACE_VECTOR_3D: create a global numbering of vectorial basis functions in three-dimensional multipatch geometries.
+% MP_INTERFACE_VECTOR_3D: create a global numbering of basis functions in two-dimensional multipatch geometries.
 %
 %   [glob_num, glob_ndof] = mp_interface_vector_3d (interfaces, sp);
 %
@@ -12,7 +12,7 @@
 %  glob_num:  global numbering of the discrete basis functions
 %  glob_ndof: total number of degrees of freedom
 %
-% Copyright (C) 2010 Carlo de Falco, Rafael Vazquez
+% Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -30,67 +30,106 @@
 function [glob_num, glob_ndof] = mp_interface_vector_3d (interfaces, sp)
 
   if (~isempty (interfaces))
-% Reorder the sides, to avoid conflicts in setting the numbering
-    for ind = 1:numel(interfaces)
-      if (interfaces(ind).patch1 > interfaces(ind).patch2)
-        [interfaces(ind).patch1 interfaces(ind).patch2] = ...
-          deal (interfaces(ind).patch2, interfaces(ind).patch1);
-        [interfaces(ind).side1 interfaces(ind).side2] = ...
-          deal (interfaces(ind).side2, interfaces(ind).side1);
-        if (interfaces(ind).flag == -1)
-          [interfaces(ind).ornt1 interfaces(ind).ornt2] = ...
-            deal (interfaces(ind).ornt2, interfaces(ind).ornt1);
-        end
-      end
+    glob_ndof = 0;
+    glob_num = cell (numel (sp), 1);
+    patch_intrfc = cell (numel (sp), 1);
+    ttform   = cell (numel (sp), numel (interfaces));
+    ppnum    = cell (numel (interfaces), 1);
+    for iptc = 1:numel(sp)
+      glob_num{iptc} = zeros (1, sp{iptc}.ndof);
+      patch_intrfc{iptc} = union (find([interfaces.patch1] == iptc), ...
+                                  find([interfaces.patch2] == iptc));
     end
 
-    patches1 = [interfaces.patch1];
-    patches2 = [interfaces.patch2];
-    sides1   = [interfaces.side1];
-    sides2   = [interfaces.side2];
-  else
-    patches1 = []; sides1 = [];
-    patches2 = []; sides2 = [];
-  end
-
-  glob_ndof = 0;
-  for iptc = 1:numel (sp)
-    ind = find (patches2 == iptc);
-    new_dofs = setdiff (1:sp{iptc}.ndof, [sp{iptc}.boundary(sides2(ind)).dofs]);
-    glob_num{iptc}(new_dofs) = glob_ndof + [1:numel(new_dofs)];
-    glob_ndof = glob_ndof + numel(new_dofs);
-
-    for int = find (patches1 == iptc)
-      face = sides1(int);
-      intrfc_dofs = sp{iptc}.boundary(face).dofs;
-
-      nghbr = patches2(int); face_nghbr = sides2(int);
-      nghbr_dofs_comp1 = reshape (sp{nghbr}.boundary(face_nghbr).comp_dofs{1}, ...
-                    sp{nghbr}.boundary(face_nghbr).ndof_dir(1,:));
-      nghbr_dofs_comp2 = reshape (sp{nghbr}.boundary(face_nghbr).comp_dofs{2}, ...
-                    sp{nghbr}.boundary(face_nghbr).ndof_dir(2,:));
-      nghbr_dofs_comp3 = reshape (sp{nghbr}.boundary(face_nghbr).comp_dofs{3}, ...
-                    sp{nghbr}.boundary(face_nghbr).ndof_dir(3,:));
-
-      if (interfaces(int).flag == -1)
+    for intrfc = 1:numel(interfaces)
+      iptc1  = interfaces(intrfc).patch1;
+      iptc2  = interfaces(intrfc).patch2;
+      iside1 = interfaces(intrfc).side1;
+      iside2 = interfaces(intrfc).side2;
+      ttform{iptc1, intrfc} = sp{iptc1}.boundary(iside1).dofs;
+      nghbr_dofs_comp1 = reshape (sp{iptc2}.boundary(iside2).comp_dofs{1}, ...
+                    sp{iptc2}.boundary(iside2).ndof_dir(1,:));
+      nghbr_dofs_comp2 = reshape (sp{iptc2}.boundary(iside2).comp_dofs{2}, ...
+                    sp{iptc2}.boundary(iside2).ndof_dir(2,:));
+      nghbr_dofs_comp3 = reshape (sp{iptc2}.boundary(iside2).comp_dofs{3}, ...
+                    sp{iptc2}.boundary(iside2).ndof_dir(3,:));
+      if (interfaces(intrfc).flag == -1)
         nghbr_dofs_comp1 = nghbr_dofs_comp1';
         nghbr_dofs_comp2 = nghbr_dofs_comp2';
         nghbr_dofs_comp3 = nghbr_dofs_comp3';
       end
-      if (interfaces(int).ornt1 == -1)
+      if (interfaces(intrfc).ornt1 == -1)
         nghbr_dofs_comp1 = flipud (nghbr_dofs_comp1);
         nghbr_dofs_comp2 = flipud (nghbr_dofs_comp2);
         nghbr_dofs_comp3 = flipud (nghbr_dofs_comp3);
       end
-      if (interfaces(int).ornt2 == -1)
+      if (interfaces(intrfc).ornt2 == -1)
         nghbr_dofs_comp1 = fliplr (nghbr_dofs_comp1);
         nghbr_dofs_comp2 = fliplr (nghbr_dofs_comp2);
         nghbr_dofs_comp3 = fliplr (nghbr_dofs_comp3);
       end
-      nghbr_dofs = [nghbr_dofs_comp1(:) nghbr_dofs_comp2(:) nghbr_dofs_comp3(:)];
+      nghbr_dofs = [nghbr_dofs_comp1(:)' nghbr_dofs_comp2(:)' nghbr_dofs_comp3(:)'];
+      ttform{iptc2, intrfc} = nghbr_dofs;
+      ppnum{intrfc} = zeros (1, sp{iptc1}.boundary(iside1).ndof);
+    end
 
-      glob_num{nghbr}(nghbr_dofs) = glob_num{iptc}(intrfc_dofs(:));
+    glob_ndof = 0;
+% We start with the dofs that do not belong to any interface
+    for iptc = 1:numel (sp)
+      non_intrfc_dofs = setdiff(1:sp{iptc}.ndof, [ttform{iptc,:}]);
+      glob_num{iptc}(non_intrfc_dofs) = glob_ndof + (1:numel(non_intrfc_dofs));
+      glob_ndof = glob_ndof + numel (non_intrfc_dofs);
+    end
+
+% Then we set the interfaces
+    for intrfc = 1:numel(interfaces)
+      iptc     = interfaces(intrfc).patch1;
+      new_dofs = find (glob_num{iptc}(ttform{iptc, intrfc}) == 0);
+      new_dofs_number = glob_ndof + (1:numel (new_dofs));
+      glob_num{iptc}(ttform{iptc, intrfc}(new_dofs)) = new_dofs_number;
+      ppnum{intrfc}(new_dofs) = new_dofs_number;
+
+      [glob_num, ppnum] = set_same_interface (iptc, intrfc, ttform, new_dofs,...
+				   interfaces, glob_num, ppnum, patch_intrfc);
+      [glob_num, ppnum] = set_same_patch (iptc, intrfc, ttform, new_dofs, ...
+			       interfaces, glob_num, ppnum, patch_intrfc);
+      glob_ndof = glob_ndof + numel (new_dofs);
+
+    end
+
+  else
+    glob_ndof = 0;
+    glob_num = cell (numel (sp), 1);
+    for iptc = 1:numel(sp)
+      glob_num{iptc} = glob_ndof + (1:sp{iptc}.ndof);
+      glob_ndof = glob_ndof + sp{iptc}.ndof;
+    end
+  end    
+
+end
+
+function [glob_num, ppnum] = set_same_patch (iptc, intrfc, ttform, new_dofs, ...
+                                 interfaces, glob_num, ppnum, patch_intrfc);
+
+  intrfc_dofs = ttform{iptc, intrfc}(new_dofs);
+  for ii = setdiff (patch_intrfc{iptc}, intrfc)
+    [common_dofs, pos1, pos2] = intersect (ttform{iptc, ii}, intrfc_dofs);
+    not_set = find (ppnum{ii}(pos1) == 0);
+    if (~isempty (not_set))
+      ppnum{ii}(pos1(not_set)) = ppnum{intrfc}(pos2(not_set));
+      [glob_num, ppnum] = set_same_interface (iptc, ii, ttform, ...
+                      pos1(not_set), interfaces, glob_num, ppnum, patch_intrfc);
     end
   end
+end
+
+function [glob_num, ppnum] = set_same_interface (iptc, intrfc, ttform, ...
+                         new_dofs, interfaces, glob_num, ppnum, patch_intrfc)
+  intrfc_dofs = ttform{iptc, intrfc}(new_dofs);
+  iptc2 = setdiff ([interfaces(intrfc).patch1 interfaces(intrfc).patch2], iptc);
+  glob_num{iptc2}(ttform{iptc2, intrfc}(new_dofs)) = ...
+                            glob_num{iptc}(intrfc_dofs);
+  [glob_num, ppnum] = set_same_patch (iptc2, intrfc, ttform, new_dofs, ...
+			     interfaces, glob_num, ppnum, patch_intrfc);
 
 end
