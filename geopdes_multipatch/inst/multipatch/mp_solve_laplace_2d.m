@@ -91,7 +91,7 @@ for iptc = 1:npatch
 end
 
 % Create a correspondence between patches on the interfaces
-[gnum, ndof] = mp_interface_prova2 (interfaces, sp);
+[gnum, ndof] = mp_interface_2d (interfaces, sp);
 
 % Compute and assemble the matrices 
 stiff_mat = spalloc (ndof, ndof, ndof);
