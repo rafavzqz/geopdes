@@ -41,7 +41,7 @@ function [glob_num, glob_ndof, dofs_ornt] = mp_interface_hcurl_3d (interfaces, s
     dofs_ornt = cell (numel (sp), 1);
     for iptc = 1:numel(sp)
       glob_num{iptc} = zeros (1, sp{iptc}.ndof);
-      dofs_ornt{iptc} = ones (1, sp{iptc}.ndof);
+      dofs_ornt{iptc} = zeros (1, sp{iptc}.ndof);
       patch_intrfc{iptc} = union (find([interfaces.patch1] == iptc), ...
                                   find([interfaces.patch2] == iptc));
     end
@@ -94,12 +94,14 @@ function [glob_num, glob_ndof, dofs_ornt] = mp_interface_hcurl_3d (interfaces, s
       glob_num{iptc}(ttformu{iptc, intrfc}(new_dofs_u)) = new_dofs_number;
       glob_ndof = glob_ndof + numel (new_dofs_u);
       ppnumu{intrfc}(new_dofs_u) = new_dofs_number;
+      dofs_ornt{iptc}(ttformu{iptc, intrfc}(new_dofs_u)) = 1;
 
       new_dofs_v = find (glob_num{iptc}(ttformv{iptc, intrfc}) == 0);
       new_dofs_number = glob_ndof + (1:numel (new_dofs_v));
       glob_num{iptc}(ttformv{iptc, intrfc}(new_dofs_v)) = new_dofs_number;
       glob_ndof = glob_ndof + numel (new_dofs_v);
       ppnumv{intrfc}(new_dofs_v) = new_dofs_number;
+      dofs_ornt{iptc}(ttformv{iptc, intrfc}(new_dofs_v)) = 1;
 
       [glob_num, dofs_ornt, ppnumu, ppnumv] = set_same_interface (iptc, intrfc, ...
             ttformu, ttformv, new_dofs_u, new_dofs_v, interfaces, glob_num, ...
@@ -129,15 +131,26 @@ function [glob_num, dofs_ornt, ppnumu, ppnumv] = set_same_patch (iptc, intrfc, .
   intrfc_dofs_u = ttformu{iptc, intrfc}(new_dofs_u);
   intrfc_dofs_v = ttformv{iptc, intrfc}(new_dofs_v);
   for ii = setdiff (patch_intrfc{iptc}, intrfc)
-    [comm_dofs, pos1_u, pos2_u] = intersect (ttformu{iptc, ii}, intrfc_dofs_u);
-    [comm_dofs, pos1_v, pos2_v] = intersect (ttformv{iptc, ii}, intrfc_dofs_v);
-    not_set_u = find (ppnumu{ii}(pos1_u) == 0);
-    not_set_v = find (ppnumv{ii}(pos1_v) == 0);
-    if (~isempty (not_set_u) || ~isempty (not_set_v))
-      ppnumu{ii}(pos1_u(not_set_u)) = ppnumu{intrfc}(pos2_u(not_set_u));
-      ppnumv{ii}(pos1_v(not_set_v)) = ppnumv{intrfc}(pos2_v(not_set_v));
+    [dummy, pos1_u, pos2_u] = intersect (ttformu{iptc, ii}, intrfc_dofs_u);
+    [dummy, pos1_v, pos2_v] = intersect (ttformv{iptc, ii}, intrfc_dofs_v);
+    not_set_p1u = find (ppnumu{ii}(pos1_u) == 0);
+    not_set_p1v = find (ppnumv{ii}(pos1_v) == 0);
+
+    [dummy, pos1_ub, pos2_vb] = intersect (ttformu{iptc, ii}, intrfc_dofs_v);
+    [dummy, pos1_vb, pos2_ub] = intersect (ttformv{iptc, ii}, intrfc_dofs_u);
+    not_set_p1ub = find (ppnumu{ii}(pos1_ub) == 0);
+    not_set_p1vb = find (ppnumv{ii}(pos1_vb) == 0);
+    if (~isempty (not_set_p1u) || ~isempty (not_set_p1v))
+      ppnumu{ii}(pos1_u(not_set_p1u)) = ppnumu{intrfc}(pos2_u(not_set_p1u));
+      ppnumv{ii}(pos1_v(not_set_p1v)) = ppnumv{intrfc}(pos2_v(not_set_p1v));
       [glob_num, dofs_ornt, ppnumu, ppnumv] = set_same_interface (iptc, ii, ...
-          ttformu, ttformv, pos1_u(not_set_u), pos1_v(not_set_v), ...
+          ttformu, ttformv, pos1_u(not_set_p1u), pos1_v(not_set_p1v), ...
+          interfaces, glob_num, dofs_ornt, ppnumu, ppnumv, patch_intrfc);
+    elseif (~isempty (not_set_p1ub) || ~isempty (not_set_p1vb))
+      ppnumu{ii}(pos1_ub(not_set_p1ub)) = ppnumv{intrfc}(pos2_vb(not_set_p1ub));
+      ppnumv{ii}(pos1_vb(not_set_p1vb)) = ppnumu{intrfc}(pos2_ub(not_set_p1vb));
+      [glob_num, dofs_ornt, ppnumu, ppnumv] = set_same_interface (iptc, ii, ...
+          ttformu, ttformv, pos1_ub(not_set_p1ub), pos1_vb(not_set_p1vb), ...
           interfaces, glob_num, dofs_ornt, ppnumu, ppnumv, patch_intrfc);
     end
   end
