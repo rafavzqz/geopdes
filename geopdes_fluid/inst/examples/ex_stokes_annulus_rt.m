@@ -62,7 +62,7 @@ method_data.nquad        = [ 4  4];  % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
 [geometry, msh, space_v, vel, space_p, press] = ...
-                       solve_stokes_2d_bsplines (problem_data, method_data);
+                       solve_stokes_2d (problem_data, method_data);
 
 % 4) POST-PROCESSING
 % 4.1) COMPARISON WITH EXACT SOLUTION
@@ -72,9 +72,11 @@ error_l2_p = sp_l2_error (space_p, msh, press, problem_data.pressex)
 
 
 % 4.2) EXPORT TO PARAVIEW
-output_file = 'ANNULUS_RT_Deg3_Reg2_Sub10'
+output_file = 'ANNULUS_RT_Deg3_Reg2_Sub10';
 
-vtk_pts = {linspace(0, 1, 20)', linspace(0, 1, 20)'};
+fprintf ('The result is saved in the files %s \n and %s \n \n', ...
+           [output_file '_vel'], [output_file '_press']);
+vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20)};
 sp_to_vtk_2d (press, space_p, geometry, vtk_pts, [output_file '_press'], 'press')
 sp_to_vtk_2d (vel,   space_v, geometry, vtk_pts, [output_file '_vel'  ], 'vel')
 
