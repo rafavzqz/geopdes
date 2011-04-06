@@ -29,7 +29,7 @@ problem_data.h = @(x, y, z, ind) zeros (3, size (x, 1), size (x, 2));
 clear method_data
 method_data.degree     = [3 3 3];     % Degree of the bsplines
 method_data.regularity = [2 2 2];     % Regularity of the splines
-method_data.n_sub      = [0 0 0];     % Number of subdivisions
+method_data.nsub       = [0 0 0];     % Number of subdivisions
 method_data.nquad      = [4 4 4];     % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
@@ -38,7 +38,7 @@ method_data.nquad      = [4 4 4];     % Points for the Gaussian quadrature rule
 % 4) POST-PROCESSING. EXPORT TO PARAVIEW
 output_file = 'lin_elast_horseshoe_Deg3_Reg2_Sub0';
 
-vtk_pts = {linspace(0, 1, 5)', linspace(0, 1, 5)', linspace(0, 1, 40)'};
+vtk_pts = {linspace(0, 1, 5), linspace(0, 1, 5), linspace(0, 1, 40)};
 fprintf ('results being saved in: %s_displacement\n \n', output_file)
 sp_to_vtk_3d (u, space, geometry, vtk_pts, sprintf ('%s_displacement', output_file), 'displacement')
 
