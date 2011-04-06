@@ -32,7 +32,7 @@ fprintf ('Number of zero eigenvalues: %i \n', nzeros)
 fprintf ('First nonzero eigenvalues: \n')
 disp (eigv(nzeros+1:nzeros+5))
 
-vtk_pts = {linspace(0,1,30)' linspace(0,1,30)'};
+vtk_pts = {linspace(0,1,30) linspace(0,1,30)};
 figure
 [eu, F] = sp_eval_2d (eigf(:,perm(nzeros+8)), space, geometry, vtk_pts);
 quiver (squeeze(F(1,:,:)), squeeze(F(2,:,:)), ...

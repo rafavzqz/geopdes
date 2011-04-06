@@ -31,7 +31,7 @@ method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
 fprintf ('First computed eigenvalues: \n')
 disp (eigv(1:5))
 
-vtk_pts = {linspace(0,1,30)' linspace(0,1,30)'};
+vtk_pts = {linspace(0,1,30) linspace(0,1,30)};
 figure
 [eu, F] = sp_eval_2d (eigf(:,perm(8)), space, geometry, vtk_pts);
 quiver (squeeze(F(1,:,:)), squeeze(F(2,:,:)), ...
