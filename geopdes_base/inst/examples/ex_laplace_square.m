@@ -39,7 +39,7 @@ method_data.nquad      = [4 4];       % Points for the Gaussian quadrature rule
 
 output_file = 'Square_BSP_Deg3_Reg2_Sub9';
 
-vtk_pts = {linspace(0, 1, 20)', linspace(0, 1, 20)'};
+vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20)};
 fprintf ('The result is saved in the file %s \n \n', output_file);
 sp_to_vtk_2d (u, space, geometry, vtk_pts, output_file, 'u')
 

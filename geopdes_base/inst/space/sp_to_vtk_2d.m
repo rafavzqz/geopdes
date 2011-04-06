@@ -37,7 +37,7 @@ function sp_to_vtk_2d (u, space, geometry, npts, filename, fieldname)
   if (iscell (npts))
     pts = npts;
   elseif (isvector (npts))
-    pts = {(linspace (0, 1, npts(1)))', (linspace (0, 1, npts(2)))'};
+    pts = {(linspace (0, 1, npts(1))), (linspace (0, 1, npts(2)))};
   end
 
   [p, F] = sp_eval_2d (u, space, geometry, pts);

@@ -38,8 +38,8 @@ function [eu, F] = sp_eval_2d (u, space, varargin);
   if ((length (varargin) == 2) && ~ischar(varargin{2}))
     geometry = varargin {1};
     pts      = varargin {2};
-    ku = [0, 1];
-    kv = ku;
+    ku = [0, pts{1}(1:end-1) + diff(pts{1})/2, 1];
+    kv = [0, pts{2}(1:end-1) + diff(pts{2})/2, 1];
     
     warn = warning ('query');
     warning off
