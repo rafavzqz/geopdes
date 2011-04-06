@@ -41,7 +41,7 @@ method_data.nquad      = [3 3 3];  % Points for the Gaussian quadrature rule
 % 4.1) EXPORT TO PARAVIEW
 output_file = 'thickL_mp_BSP_Deg2_Reg1_Sub2';
 
-vtk_pts = {linspace(0, 1, 10)', linspace(0, 1, 10)', linspace(0, 1, 20)'};
+vtk_pts = {linspace(0, 1, 10), linspace(0, 1, 10), linspace(0, 1, 20)};
 fprintf ('The result is saved in the file %s.pvd \n \n', output_file);
 mp_sp_to_vtk_3d (u, space, geometry, gnum, vtk_pts, output_file, 'u')
 

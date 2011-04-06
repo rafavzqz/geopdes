@@ -40,11 +40,11 @@ method_data.nquad      = [4 4];       % Points for the Gaussian quadrature rule
 % 4.1) EXPORT TO PARAVIEW
 output_file = 'Lshaped_mp_BSP_Deg3_Reg2_Sub9';
 
-vtk_pts = {linspace(0, 1, 20)', linspace(0, 1, 20)'};
+vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20)};
 fprintf ('The result is saved in the file %s.pvd \n \n', output_file);
 mp_sp_to_vtk_2d (u, space, geometry, gnum, vtk_pts, output_file, 'u')
 
-% 4.2) PLOT IN MATLAB. COMPARISON WITH THE EXACT SOLUTION
+% 4.2) COMPARISON WITH THE EXACT SOLUTION
 npatch = numel (geometry);
 for iptc = 1:npatch
   [error_h1(iptc), error_l2(iptc)] = sp_h1_error (space{iptc}, msh{iptc}, ...
