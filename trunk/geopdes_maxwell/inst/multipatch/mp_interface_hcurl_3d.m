@@ -133,7 +133,7 @@ function [glob_num, dofs_ornt, ppnumu, ppnumv] = set_same_patch (iptc, intrfc, .
     [comm_dofs, pos1_v, pos2_v] = intersect (ttformv{iptc, ii}, intrfc_dofs_v);
     not_set_u = find (ppnumu{ii}(pos1_u) == 0);
     not_set_v = find (ppnumv{ii}(pos1_v) == 0);
-    if (~isempty (not_set_u))
+    if (~isempty (not_set_u) || ~isempty (not_set_v))
       ppnumu{ii}(pos1_u(not_set_u)) = ppnumu{intrfc}(pos2_u(not_set_u));
       ppnumv{ii}(pos1_v(not_set_v)) = ppnumv{intrfc}(pos2_v(not_set_v));
       [glob_num, dofs_ornt, ppnumu, ppnumv] = set_same_interface (iptc, ii, ...
