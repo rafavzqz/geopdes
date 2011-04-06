@@ -41,7 +41,7 @@ method_data.nquad      = [3 3 3];       % Points for Gaussian quadrature rule
 
 output_file = 'Thick_ring_NRB_Deg2_Reg1_Sub3';
 
-vtk_pts = {linspace(0, 1, 20)', linspace(0, 1, 20)', linspace(0, 1, 20)'};
+vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20), linspace(0, 1, 20)};
 fprintf ('The result is saved in the file %s \n \n', output_file);
 sp_to_vtk_3d (u, space, geometry, vtk_pts, output_file, 'u')
 

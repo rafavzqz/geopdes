@@ -38,7 +38,7 @@ function sp_to_vtk_3d (u, space, geometry, npts, filename, fieldname)
     pts = npts;
     npts = cellfun (@numel, npts);
   elseif (isvector (npts))
-    pts = {(linspace (0, 1, npts(1))'), (linspace (0, 1, npts(2))'), (linspace (0, 1, npts(3))')};
+    pts = {(linspace (0, 1, npts(1))), (linspace (0, 1, npts(2))), (linspace (0, 1, npts(3)))};
   end
 
   [eu, F] = sp_eval_3d (u, space, geometry, pts);

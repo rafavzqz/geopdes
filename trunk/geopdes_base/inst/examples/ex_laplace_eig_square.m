@@ -36,8 +36,8 @@ else
   [lambda, perm] = sort (real (lambda));
 end
 
-up = linspace(0,1,31)';
-vp = linspace(0,1,31)';
+up = linspace(0,1,31);
+vp = linspace(0,1,31);
 
 % Plot of the 11th eigenfunction
 subplot(1,2,1)
