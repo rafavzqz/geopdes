@@ -40,7 +40,7 @@ warning ('off', 'geopdes:zero_measure_element')
 % 4.1) EXPORT TO PARAVIEW
 output_file = 'maxwell_pacman_Deg3_Reg2_Sub5';
 
-vtk_pts = {linspace(0, 1, 20)', linspace(0, .99, 20)'};
+vtk_pts = {linspace(0, 1, 20), linspace(0, .99, 20)};
 fprintf ('The result is saved in the file %s \n \n', output_file);
 sp_to_vtk_2d (u, space, geometry, vtk_pts, output_file, 'u')
 
