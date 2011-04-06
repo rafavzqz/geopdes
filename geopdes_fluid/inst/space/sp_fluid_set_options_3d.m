@@ -8,7 +8,6 @@
 % INPUTS:
 %
 %   elem_name:    the type of element. Available choices are 'TH' (Taylor-Hood),
-%                  'NDL' (Nedelec, 2nd family), 'RT' (Raviart-Thomas) and 
 %                  'SG' (subgrid). For more details see the references below
 %   knots:        knot vector to be refined (usually, the one of the geometry)
 %   nsub_p:       number of subdivisions O QUALCOSA DEL GENERE. DEVO SISTEMARE
@@ -64,7 +63,7 @@ function [knotsp, knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, der2]
     der2 = false;
     degreev1 = degree_p + 1;
     degreev2 = degreev1;
-    degreev3 = gegreev1;
+    degreev3 = degreev1;
     regularity_v = regularity_p;
     nsub_v = nsub_p;
     knotsv1 = kntrefine (knots, nsub_v-1, degreev1, regularity_v);
@@ -110,7 +109,9 @@ function [knotsp, knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, der2]
 %    degreev1 = [degree_p(1)+1 degree_p(2) degree_p(3)];
 %    degreev2 = [degree_p(1) degree_p(2)+1 degree_p(3)];
 %    degreev3 = [degree_p(1) degree_p(2) degree_p(3)+1]; 
-    
+
+   case {'ndl', 'rt'}
+    error ('NDL and RT elements have not been implemented in 3D yet')
    otherwise
     error('space_set: Unknown element type')
   end

@@ -1,6 +1,6 @@
 % SP_BSPLINE_FLUID_3D_PHYS: Construct different pair of B-Splines spaces on the physical domain for fluid problems.
 %
-%   [spv, spp, PI] = sp_bspline_fluid_2d_phys (knotsv1, degreev1, ...
+%   [spv, spp, PI] = sp_bspline_fluid_3d_phys (knotsv1, degreev1, ...
 %          knotsv2, degreev2, knotsv3, degreev3, knotsp, degreep, ...
 %          msh, fun_transform, press_proj)
 %
@@ -22,13 +22,13 @@
 %               the velocity along each parametric direction
 %   knotsp:    knot vector of the pressure space along each parametric direction
 %   degreep:   degree of the pressure space along each parametric direction
-%   msh:       structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)
+%   msh:       structure containing the domain partition and the quadrature rule (see msh_push_forward_3d)
 %
 % OUTPUT:
 %
 %   spv: structure representing the discrete velocity function space
 %   spp: structure representing the discrete pressure function space
-%         see sp_bspline_2d_phys for more details
+%         see sp_bspline_3d_phys for more details
 %   PI:  a projection matrix for the application of boundary conditions
 %         for Raviart-Thomas spaces
 %
@@ -38,7 +38,7 @@
 %      IJNMF, 2010
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011 Andrea Bressan, Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -66,8 +66,10 @@ switch (lower (element_name))
     spv.spfun = @(MSH) do_spv_component_wise__ ( ...
                 knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, MSH);
     PI = speye (spp.ndof);
+  case {'ndl', 'rt'}
+    error ('NDL and RT elements have not been implemented in 3D yet')
   otherwise
-    error ('sp_bspline_fluid_2d_phys: unknown element type')
+    error ('sp_bspline_fluid_3d_phys: unknown element type')
 end
 
 end
