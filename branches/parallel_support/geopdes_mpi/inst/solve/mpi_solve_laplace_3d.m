@@ -75,7 +75,6 @@ geometry  = geo_load (geo_name);
 
 % Refine knots
 [knots, zeta] = kntrefine (geometry.nurbs.knots, nsub-1, degree, regularity);
-ser_zeta=zeta;
 
 % Identify ourselves and partition work
 mpi_size   = MPI_Comm_size(mpi_comm);
@@ -116,7 +115,7 @@ end
 
 % Apply Dirichlet boundary conditions
 u = zeros (space.ndof, 1);
-[u_drchlt, drchlt_dofs] = mpi_sp_drchlt_l2_proj(mpi_comm , mpi_prec, mpi_solv, space, msh, h, drchlt_sides);
+[u_drchlt, drchlt_dofs] = mpi_sp_drchlt_l2_proj(mpi_comm , drchlt_prec, drchlt_solv, space, msh, h, drchlt_sides);
 u(drchlt_dofs) = u_drchlt;
 
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
