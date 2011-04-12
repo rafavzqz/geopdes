@@ -38,9 +38,11 @@
 function [eu, F] = sp_eval_3d (u, space, varargin);
 
   if ((length (varargin) == 2) && ~ischar(varargin{2}))
-    geometry = varargin {1};
-    pts      = varargin {2};
-    ku = [0, 1]; kv = ku;  kw = ku;
+    geometry = varargin{1};
+    pts      = varargin{2};
+    ku = [0, pts{1}(1:end-1) + diff(pts{1})/2, 1];
+    kv = [0, pts{2}(1:end-1) + diff(pts{2})/2, 1];
+    kw = [0, pts{3}(1:end-1) + diff(pts{3})/2, 1];
 
     warn = warning ('query');
     warning off
@@ -49,10 +51,10 @@ function [eu, F] = sp_eval_3d (u, space, varargin);
     msh = msh_push_forward_3d (msh, geometry);
     sp  = feval (space.spfun, msh);
   elseif (length (varargin) == 1)
-    msh   = varargin {1};
+    msh   = varargin{1};
     sp  = space;
   elseif (ischar(varargin{2}) && strcmpi(varargin{2}, 'recompute'))
-    msh   = varargin {1};
+    msh   = varargin{1};
     sp  = feval (space.spfun, msh);
   else
     error ('sp_eval_3d: wrong input parameters')

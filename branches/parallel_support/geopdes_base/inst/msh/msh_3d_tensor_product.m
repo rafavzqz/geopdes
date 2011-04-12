@@ -163,7 +163,6 @@ function msh = msh_3d_tensor_product (breaks, qn, qw, varargin)
     boundary.normal(ind2,:,:) = (-1)^iside;
       
     msh.boundary(iside) = boundary;
-    end
   end
 
 end

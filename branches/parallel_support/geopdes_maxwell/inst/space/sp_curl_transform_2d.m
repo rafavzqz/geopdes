@@ -56,6 +56,7 @@ end
 function sp = do_sp_curl_transform_2d__ (sp, msh)
 
   [JinvT, jacdet] = geopdes_invT__ (msh.geo_map_jac);
+  JinvT = reshape (JinvT, [2, 2, msh.nqn, msh.nel]);
   sp.shape_functions = geopdes_prod__ (JinvT, sp.shape_functions);
 
   if (isfield (sp, 'shape_function_curls'))

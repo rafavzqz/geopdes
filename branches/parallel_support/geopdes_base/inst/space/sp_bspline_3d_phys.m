@@ -53,6 +53,7 @@ function sp = sp_bspline_3d_phys (knots, degree, msh, varargin)
 
   if (isfield (sp, 'shape_function_gradients'))
     JinvT = geopdes_invT__ (msh.geo_map_jac);
+    JinvT = reshape (JinvT, [3, 3, msh.nqn, msh.nel]);
     sp.shape_function_gradients = geopdes_prod__ (JinvT, sp.shape_function_gradients);
   end
 

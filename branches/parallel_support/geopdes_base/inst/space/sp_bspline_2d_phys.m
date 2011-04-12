@@ -54,10 +54,6 @@ function sp = sp_bspline_2d_phys (knots, degree, msh, varargin)
 
 sp = sp_bspline_2d_param (knots, degree, msh, varargin{:});
 
-if (isfield (sp, 'shape_function_gradients'))
-  JinvT = geopdes_invT__ (msh.geo_map_jac);
-  sp.shape_function_gradients = geopdes_prod__ (JinvT, sp.shape_function_gradients);
-end
 
 if (isfield (sp, 'shape_function_hessians'))
   if (isfield (msh, 'geo_map_der2'))
@@ -82,19 +78,26 @@ if (isfield (sp, 'shape_function_hessians'))
       buu = squeeze (sp.shape_function_hessians(1,1,:,ii,:));
       buv = squeeze (sp.shape_function_hessians(1,2,:,ii,:));
       bvv = squeeze (sp.shape_function_hessians(2,2,:,ii,:));
-
-      [bxx, bxy, byy] = der2_basisfun_phys__ (xu, xv, yu, yv, uxx, uxy, uyy, vxx, vxy, vyy, buu, buv, bvv, bu, bv);
-
-      sp.shape_function_hessians(1,1,:,ii,:) = bxx;
-      sp.shape_function_hessians(1,2,:,ii,:) = bxy;
-      sp.shape_function_hessians(2,1,:,ii,:) = bxy;
-      sp.shape_function_hessians(2,2,:,ii,:) = byy;
+      
+      [bxx, bxy, byy] = der2_basisfun_phys__ (xu(:), xv(:), yu(:), yv(:), uxx(:), uxy(:), uyy(:), vxx(:), vxy(:), vyy(:), buu(:), buv(:), bvv(:), bu(:), bv(:));
+      sh = size (sp.shape_function_hessians(1,1,:,ii,:));
+      shape_function_hessians(1,1,:,ii,:) = reshape (bxx, sh);
+      shape_function_hessians(1,2,:,ii,:) = reshape (bxy, sh);
+      shape_function_hessians(2,1,:,ii,:) = reshape (bxy, sh);
+      shape_function_hessians(2,2,:,ii,:) = reshape (byy, sh);
     end  
-    
+    sp.shape_function_hessians = shape_function_hessians;
   else
     rmfield (sp, 'shape_function_hessians');
   end
 end
+
+if (isfield (sp, 'shape_function_gradients'))
+  JinvT = geopdes_invT__ (msh.geo_map_jac);
+  JinvT = reshape (JinvT, [2, 2, msh.nqn, msh.nel]);
+  sp.shape_function_gradients = geopdes_prod__ (JinvT, sp.shape_function_gradients);
+end
+
 sp.spfun  = @(MSH) sp_bspline_2d_phys (knots, degree, MSH, varargin{:});
 
 end

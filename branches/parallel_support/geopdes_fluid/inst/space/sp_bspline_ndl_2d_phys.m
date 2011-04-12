@@ -44,7 +44,6 @@ knotsvy{2}  = [knotsp{2}(1) knotsp{2} knotsp{2}(end)];
 dvx = degree+1;
 dvy = degree+1;
 
-
 spp = sp_bspline_2d_phys (knotsp, degree, msh, 'gradient', false);
 
 spv = do_spv__ (knotsvx, dvx, knotsvy, dvy, msh);

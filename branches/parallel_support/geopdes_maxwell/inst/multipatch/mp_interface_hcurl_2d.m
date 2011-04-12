@@ -13,7 +13,7 @@
 %  glob_ndof: total number of degrees of freedom
 %  dofs_ornt: a cell-array with the orientation of the basis functions
 %
-% Copyright (C) 2010 Rafael Vazquez
+% Copyright (C) 2010, 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -30,51 +30,63 @@
 
 function [glob_num, glob_ndof, dofs_ornt] = mp_interface_hcurl_2d (interfaces, sp)
 
-  dofs_ornt = cell (numel (sp), 1);
-  for iptc = 1:numel(sp)
-    dofs_ornt{iptc} = ones (1, sp{iptc}.ndof);
-  end
-
   if (~isempty (interfaces))
-% Reorder the sides, to avoid conflicts in setting the numbering
-    for ind = 1:numel(interfaces)
-      if (interfaces(ind).patch1 > interfaces(ind).patch2)
-        [interfaces(ind).patch1 interfaces(ind).patch2] = ...
-          deal (interfaces(ind).patch2, interfaces(ind).patch1);
-        [interfaces(ind).side1 interfaces(ind).side2] = ...
-          deal (interfaces(ind).side2, interfaces(ind).side1);
-      end
+    glob_ndof  = 0;
+    glob_num   = cell (numel (sp), 1);
+    ttform     = cell (numel (sp), numel (interfaces));
+    dofs_ornt  = cell (numel (sp), 1);
+    for iptc = 1:numel(sp)
+      glob_num{iptc} = zeros (1, sp{iptc}.ndof);
+      dofs_ornt{iptc} = ones (1, sp{iptc}.ndof);
     end
 
-    patches1 = [interfaces.patch1];
-    patches2 = [interfaces.patch2];
-    sides1   = [interfaces.side1];
-    sides2   = [interfaces.side2];
+    for intrfc = 1:numel(interfaces)
+      iptc1  = interfaces(intrfc).patch1;
+      iptc2  = interfaces(intrfc).patch2;
+      iside1 = interfaces(intrfc).side1;
+      iside2 = interfaces(intrfc).side2;
+      ttform{iptc1, intrfc} = sp{iptc1}.boundary(iside1).dofs;
+      if (interfaces(intrfc).ornt == 1)
+        ttform{iptc2, intrfc} = sp{iptc2}.boundary(iside2).dofs;
+      else
+        ttform{iptc2, intrfc} = fliplr (sp{iptc2}.boundary(iside2).dofs);
+      end
+      ppnum{intrfc} = zeros (1, sp{iptc1}.boundary(iside1).ndof);
+    end
+
+    glob_ndof = 0;
+% We start with the dofs that do not belong to any interface
+    for iptc = 1:numel (sp)
+      non_intrfc_dofs = setdiff(1:sp{iptc}.ndof, [ttform{iptc,:}]);
+      glob_num{iptc}(non_intrfc_dofs) = glob_ndof + (1:numel(non_intrfc_dofs));
+      glob_ndof = glob_ndof + numel (non_intrfc_dofs);
+    end
+
+% Then we set the interfaces
+    for intrfc = 1:numel(interfaces)
+      iptc     = interfaces(intrfc).patch1;
+      iptc2    = interfaces(intrfc).patch2;
+      new_dofs_number = glob_ndof + (1:numel (ttform{iptc, intrfc}));
+      glob_num{iptc}(ttform{iptc, intrfc}) = new_dofs_number;
+      dofs_ornt{iptc}(ttform{iptc, intrfc}) = 1;
+
+      glob_num{iptc2}(ttform{iptc2, intrfc}) = glob_num{iptc}(ttform{iptc, intrfc});
+      dofs_ornt{iptc2}(ttform{iptc2, intrfc}) = ...
+               interfaces(intrfc).ornt * dofs_ornt{iptc}(ttform{iptc, intrfc});
+
+      glob_ndof = glob_ndof + numel (new_dofs_number);
+
+    end
+
   else
-    patches1 = []; sides1 = [];
-    patches2 = []; sides2 = [];
-  end
-
-  glob_ndof = 0;
-  for iptc = 1:numel (sp)
-    ind = find (patches2 == iptc);
-    new_dofs = setdiff (1:sp{iptc}.ndof, [sp{iptc}.boundary(sides2(ind)).dofs]);
-    glob_num{iptc}(new_dofs) = glob_ndof + [1:numel(new_dofs)];
-    glob_ndof = glob_ndof + numel(new_dofs);
-
-    for int = find(patches1 == iptc)
-      edge = sides1(int);
-      intrfc_dofs = sp{iptc}.boundary(edge).dofs;
-
-      nghbr = patches2(int); edge_nghbr = sides2(int);
-      nghbr_dofs = sp{nghbr}.boundary(edge_nghbr).dofs;
-
-      if (interfaces(int).ornt == -1)
-        nghbr_dofs = fliplr (nghbr_dofs);
-        dofs_ornt{nghbr}(nghbr_dofs) = -1;
-      end
-      glob_num{nghbr}(nghbr_dofs) = glob_num{iptc}(intrfc_dofs);
+    glob_ndof = 0;
+    glob_num = cell (numel (sp), 1);
+    dofs_ornt  = cell (numel (sp), 1);
+    for iptc = 1:numel(sp)
+      glob_num{iptc} = glob_ndof + (1:sp{iptc}.ndof);
+      glob_ndof = glob_ndof + sp{iptc}.ndof;
+      dofs_ornt{iptc} = ones (1, sp{iptc}.ndof);
     end
-  end
+  end    
 
 end

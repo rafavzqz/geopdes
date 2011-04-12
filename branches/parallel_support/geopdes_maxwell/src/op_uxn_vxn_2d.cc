@@ -49,9 +49,10 @@ OUTPUT:\n\
 
       SparseMatrix mat;
 
-      Array <octave_idx_type> I (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
-      Array <octave_idx_type> J (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
-      Array <double> V (msh.nel () * spv.nsh_max () * spu.nsh_max (), 0.0);
+      dim_vector dims (msh.nel () * spv.nsh_max () * spu.nsh_max (), 1);
+      Array <octave_idx_type> I (dims, 0);
+      Array <octave_idx_type> J (dims, 0);
+      Array <double> V (dims, 0.0);
 
 #pragma omp parallel default (none) shared (msh, spu, spv, I, J, V, coeff)
       {

@@ -48,6 +48,7 @@ function msh = msh_push_forward_3d (msh, geo)
   msh.geo_map = reshape (F, size (msh.quad_nodes));
   msh.geo_map_jac = reshape (jac, 3, 3, msh.nqn, msh.nel);
   msh.jacdet = abs (geopdes_det__ (msh.geo_map_jac));
+  msh.jacdet = reshape (msh.jacdet, [msh.nqn, msh.nel]);
 
   for iside = msh.boundary_list
     qnu = msh.boundary(iside).quad_nodes(1,:,:);
@@ -72,14 +73,19 @@ function msh = msh_push_forward_3d (msh, geo)
         ind1 = 3;
         ind2 = [1, 2];
     end
+      
     jacdet = ...
       geopdes_norm__ (cross (squeeze (msh.boundary(iside).geo_map_jac(:,ind2(1),:,:)), ...
-                squeeze (msh.boundary(iside).geo_map_jac(:,ind2(2),:,:))));
+                  squeeze (msh.boundary(iside).geo_map_jac(:,ind2(2),:,:))));
     msh.boundary(iside).jacdet = reshape (jacdet, ...
          msh.boundary(iside).nqn, msh.boundary(iside).nel);
+
     [JinvT, jacdet] = geopdes_invT__ (msh.boundary(iside).geo_map_jac);
+    JinvT = reshape (JinvT, [3, 3, msh.boundary(iside).nqn, msh.boundary(iside).nel]);
+
     normal = reshape (msh.boundary(iside).normal, [3, msh.boundary(iside).nqn, 1, msh.boundary(iside).nel]);
-    normal = squeeze (geopdes_prod__ (JinvT, normal));
+    normal = geopdes_prod__ (JinvT, normal);
+    normal = reshape (normal, [3, msh.boundary(iside).nqn, msh.boundary(iside).nel]);
     norms = repmat (reshape (geopdes_norm__ (normal), [1, msh.boundary(iside).nqn, msh.boundary(iside).nel]), [3 1 1]);
     msh.boundary(iside).normal = normal ./ norms;
   end

@@ -1,6 +1,6 @@
 % SP_HCURL_ERROR: Evaluate the error in H(curl) norm.
 %
-%   toterr = sp_hcurl_error (space, msh, u, uex, curluex);
+%   [toterr, errl2] = sp_hcurl_error (space, msh, u, uex, curluex);
 %
 % INPUT:
 %
@@ -13,6 +13,7 @@
 % OUTPUT:
 %
 %     toterr: error in H(curl) norm
+%     errl2:  error in L^2 norm
 %
 % Copyright (C) 2010 Carlo de Falco, Rafael Vazquez
 %
@@ -29,9 +30,8 @@
 % You should have received a copy of the GNU General Public License
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
-% Author: Carlo de Falco <cdf AT users.sourceforge.net>
 
-function toterr = sp_hcurl_error (sp, msh, u, uex, curluex);
+function [toterr, errl2] = sp_hcurl_error (sp, msh, u, uex, curluex);
 
   w = msh.quad_weights(:) .* msh.jacdet(:);
   ndir = size (msh.geo_map, 1);
@@ -56,14 +56,14 @@ function toterr = sp_hcurl_error (sp, msh, u, uex, curluex);
       for ish=1:sp.nsh_max
         valnum = valnum + ...
           reshape (sp.shape_function_curls(idir, :, ish, :), msh.nqn, msh.nel) .* ...
-	    u(repmat(sp.connectivity(ish,:), msh.nqn, 1));
+	  reshape (u(repmat(sp.connectivity(ish,:), msh.nqn, 1)), msh.nqn, msh.nel);
       end
       valex = curl_valex(idir, :);
       err_curl = err_curl + sum ((valnum(:) - valex(:)).^2 .* w);
     end
   end
 
-  errl2  = (sp_l2_error (sp, msh, u, uex))^2;
-  toterr = sqrt (errl2 + err_curl);
+  errl2  = sp_l2_error (sp, msh, u, uex);
+  toterr = sqrt (errl2^2 + err_curl);
 
 end

@@ -1,7 +1,7 @@
 % MULTIPATCH_EXAMPLES: Run some simple examples on how to use the geopdes_multipatch package.
 %
 % Copyright (C) 2006-2009, Thomas Treichl <treichl@users.sourceforge.net>
-% Copyright (C) 2010 Rafael Vazquez
+% Copyright (C) 2010-2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -25,78 +25,78 @@ while (iopt > 0)
            ['GeoPDEs_multipatch examples menu:\n', ...
             '---------------------------------\n', ...
             '\n', ...
-            '   (1) Examples in 2D: Poisson problem. \n \n',...
-            '   (2) Examples in 3D: Poisson problem. \n \n']);
+            '   (1) Poisson problem. \n \n',...
+            '   (3) Stokes problem (geopdes_fluid must be installed). \n \n']);
 
   iopt = input ('Please choose a number from above or press <Enter> to return: ');
   clc;
 
   if (iopt == 1)
-    clc;
-    fprintf (1, ...
-            ['GeoPDEs_multipatch examples menu: 2D examples\n', ...
-             '---------------------------------------------\n', ...
-             '\n', ...
-             '   2D Poisson problem in a multipatch domain. \n \n', ...
-             '   You can take a look at the script file: examples/ex_bspline_laplace_2d_mp.m \n \n', ...
-             '   You can solve with one of the following data files: \n \n', ...
-             '   - ''test_Lshaped_mp'' \n \n']);
-    fprintf ('Please write the name of the data file, including quotation marks: \n');
-    data_file = input ('[''test_Lshaped_mp'']');
-    if (~isempty (data_file))
-      eval(data_file);
-    else 
-      eval('test_Lshaped_mp');
-    end
-    vexa = do_example (1);
-    eval (vexa);
-fprintf (1, ...
-        ['\nYou may modify the data file to solve in the same geometry with rotated patches\n']);
-    input ('Press <Enter> to continue: ');
+    iopt2 = 1;
+    while (iopt2 > 0)
+      clc;
+      fprintf (1, ...
+        ['GeoPDEs_multipatch examples menu: Poisson problem \n', ...
+         '------------------------------------------------- \n', ...
+         '\n', ...
+         '2D examples \n \n', ...
+         '   (1) L-shaped domain, defined with 3 patches. \n \n',...
+         '3D examples \n \n', ...
+         '   (2) Unit cube, defined with 2 patches. \n \n',...
+         '   (3) Thick L-shaped domain, defined with 3 patches. \n \n']);
 
-  elseif (iopt == 2)
-    clc;
-    fprintf (1, ...
-            ['GeoPDEs_multipatch examples menu: 3D examples\n', ...
-             '---------------------------------------------\n', ...
-             '\n', ...
-             '   3D Poisson problem in a multipatch domain. \n \n', ...
-             '   You can take a look at the script file: examples/ex_bspline_laplace_3d_mp.m \n \n', ...
-             '   You can solve with one of the following data files: \n \n', ...
-             '   - ''test_cube_mp'' \n',...
-             '   - ''test_thick_Lshaped_mp'' \n \n']);
-    fprintf ('Please write the name of the data file, including quotation marks: \n');
-    data_file = input ('[''test_thick_Lshaped_mp''] ');
-    if (~isempty (data_file))
-      eval(data_file);
-    else 
-      eval('test_thick_Lshaped_mp');
-    end
-    vexa = do_example (2);
-    eval (vexa);
-    input ('Press <Enter> to continue: ');
+      iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
+      if (~isempty(iopt2))
+      switch iopt2
+       case 1
+        clc;
+        fprintf (1, 'You can have a look at the source file: EX_LAPLACE_BSP_LSHAPED_MP \n \n');
+        fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
+        ex_laplace_Lshaped_mp;
+        input ('Press <Enter> to continue: ');
 
+       case 2
+        clc;
+        fprintf (1, 'You can have a look at the source file: EX_LAPLACE_BSP_CUBE_MP \n \n');
+        fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
+        ex_laplace_cube_mp;
+        input ('Press <Enter> to continue: ');
+
+       case 3
+        clc;
+        fprintf (1, 'You can have a look at the source file: EX_LAPLACE_BSP_THICK_L_MP \n \n');
+        fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
+        ex_laplace_thick_L_mp;
+        input ('Press <Enter> to continue: ');
+      end %switch
+      end %if
+    end %while iopt2>0
+
+  elseif (iopt == 3)
+    if (~exist('ex_stokes_mp'))
+      fprintf(1, 'GUARDA IL FILE DEGLI ESEMPI \n\n');
+      fprintf(1, 'You must install geopdes_fluid to run the examples\n\n');
+      iopt2 = -1;
+      input ('Press <Enter> to continue: ');
+    else
+      iopt2 = 1;
+    end
+    while (iopt2 > 0)
+      clc;
+      fprintf (1, ...
+        ['GeoPDEs_multipatch examples menu: Stokes problem \n', ...
+         '------------------------------------------------ \n', ...
+         '\n', ...
+         '2D examples \n \n', ...
+         '   (1) NON HO ANCORA FINITO \n \n',...
+         '3D examples \n \n', ...
+         '   (2) NON HO ANCORA FINITO \n \n']);
+
+      iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
+    end %while iopt2>0
   end
 
 end %# while (iopt > 0)
 
-end
-
-function vexa = do_example (number)
-
-switch (number)
- case 1
-  filename = 'ex_bspline_laplace_2d_mp.m';
- case 2
-  filename = 'ex_bspline_laplace_3d_mp.m';
-end
-
-fid = fopen (filename);
-vexa = '';
-l = fgets (fid);
-while (l ~= -1)
-  vexa = cat (2, vexa, l);
-  l = fgets (fid);
-end
 end
 

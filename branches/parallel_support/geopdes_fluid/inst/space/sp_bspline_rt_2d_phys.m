@@ -41,7 +41,7 @@ function [spv, spp, PI] = sp_bspline_rt_2d_phys (knotsp, degree, msh)
 
 knotsvx{1}  = [knotsp{1}(1) knotsp{1} knotsp{1}(end)];
 knotsvx{2}  = knotsp{2};
-knotsvy{1}  = knotsp{1};;
+knotsvy{1}  = knotsp{1};
 knotsvy{2}  = [knotsp{2}(1) knotsp{2} knotsp{2}(end)];
 dvx = [degree(1)+1 degree(2)];
 dvy = [degree(1) degree(2)+1];
@@ -55,7 +55,7 @@ if (nargout >= 3)
   if (any (degree ~= [3 3]))
     error ('sp_bspline_rt_2d_phys: t-spline projector currently supported only for degree=[3 3]');
   else
-    PI = b2nst__ (knotsp{1}, knotsp{1}, degree(1), degree(1), msh, spp);
+    PI = b2nst__ (knotsp{1}, knotsp{2}, degree(1), degree(2), msh, spp);
   end
 end
 

@@ -155,7 +155,6 @@ function sp = sp_bspline_3d_param (knots, degree, msh, varargin)
   wcp = ndof_dir(3);
   
   
-  bpoints = msh.boundary;
   for iside = msh.boundary_list
     switch (iside)
       case {1}
@@ -184,7 +183,7 @@ function sp = sp_bspline_3d_param (knots, degree, msh, varargin)
         widx = wcp * ones (size (vidx));
     end
     bnd_iside = ...
-    sp_bspline_2d_param (knots(ind), degree(ind), bpoints(iside));
+    sp_bspline_2d_param (knots(ind), degree(ind), msh.boundary(iside));
 
     boundary      = rmfield (bnd_iside, 'shape_function_gradients');
     boundary.dofs = sub2ind ([ucp, vcp, wcp], uidx, vidx, widx);
