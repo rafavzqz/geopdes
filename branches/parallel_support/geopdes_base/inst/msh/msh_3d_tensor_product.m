@@ -140,6 +140,7 @@ function msh = msh_3d_tensor_product (breaks, qn, qw, varargin)
       nodes = { zeros(0, neld(ind(1))), zeros(0, neld(ind(2)))};
       weigh = { zeros(0, neld(ind(1))), zeros(0, neld(ind(2)))};
       boundary = msh_2d_tensor_product (msh.breaks(ind), nodes, weigh, 'no boundary');
+      boundary.quad_nodes(3,:,:) = boundary.quad_nodes(1,:,:);
       boundary.geo_map     = zeros(3, 0, msh.nel);
       boundary.geo_map_jac = zeros(0, msh.nel);
       boundary.jacdet      = zeros(0, msh.nel);
