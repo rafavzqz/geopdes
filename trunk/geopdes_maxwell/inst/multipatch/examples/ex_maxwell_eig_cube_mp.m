@@ -10,7 +10,7 @@ problem_data.geo_name = 'geo_2cubesa.txt';
 
 % Type of boundary conditions
 problem_data.nmnn_sides   = [];
-problem_data.drchlt_sides = [1];
+problem_data.drchlt_sides = [1 2 3 4 5 6];
 
 % Physical parameters
 problem_data.c_elec_perm = @(x, y, z) ones(size(x));
