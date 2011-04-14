@@ -32,6 +32,8 @@
 %        shape_functions (msh.nqn x nsh_max x msh.nel)     basis functions evaluated at each quadrature node in each element
 %        shape_function_gradients
 %                        (2 x msh.nqn x nsh_max x msh.nel) basis function gradients evaluated at each quadrature node in each element
+%        shape_function_hessians
+%                        (2 x 2 x msh.nqn x nsh_max x msh.nel) basis function hessians evaluated at each quadrature node in each element
 %        boundary        (1 x 4 struct array)              struct array representing the space of traces of basis functions on each edge
 %
 %   For more details, see the documentation
@@ -160,25 +162,22 @@ clear shp_u shp_v
 mcp = ndof_dir(1);
 ncp = ndof_dir(2);
 
-for iside = msh.boundary_list
-  ind = mod (floor ((iside+1)/2), 2) + 1;
-  bnodes = reshape (squeeze (msh.boundary(iside).quad_nodes(ind,:,:)), ...
-                    msh.boundary(iside).nqn, []);
-  bnd_iside = sp_bspline_1d_param (knots{ind}, degree(ind), bnodes);
-  switch (iside)
-    case {1}
-      bnd_iside.dofs = sub2ind ([mcp, ncp], ones(1,ncp), 1:ncp);
-    case {2}
-      bnd_iside.dofs = sub2ind ([mcp, ncp], mcp*ones(1,ncp), 1:ncp);
-    case {3}
-      bnd_iside.dofs = sub2ind ([mcp, ncp], 1:mcp, ones(1,mcp));
-    case {4}
-      bnd_iside.dofs = sub2ind ([mcp, ncp], 1:mcp, ncp*ones(1,mcp));
+if (isfield (msh, 'boundary'))
+  for iside = 1:numel(msh.boundary)
+    ind = mod (floor ((iside+1)/2), 2) + 1;
+    bnodes = reshape (squeeze (msh.boundary(iside).quad_nodes(ind,:,:)), ...
+                      msh.boundary(iside).nqn, []);
+    bnd_iside = sp_bspline_1d_param (knots{ind}, degree(ind), bnodes);
+    boundary(iside) = rmfield (bnd_iside, 'shape_function_gradients');
   end
-  sp.boundary(iside) = rmfield (bnd_iside, 'shape_function_gradients');
 
+  boundary(1).dofs = sub2ind ([mcp, ncp], ones(1,ncp), 1:ncp);
+  boundary(2).dofs = sub2ind ([mcp, ncp], mcp*ones(1,ncp), 1:ncp);
+  boundary(3).dofs = sub2ind ([mcp, ncp], 1:mcp, ones(1,mcp));
+  boundary(4).dofs = sub2ind ([mcp, ncp], 1:mcp, ncp*ones(1,mcp));
+
+  sp.boundary = boundary;
 end
-
 sp.spfun = @(MSH) sp_bspline_2d_param (knots, degree, MSH);
 
 end

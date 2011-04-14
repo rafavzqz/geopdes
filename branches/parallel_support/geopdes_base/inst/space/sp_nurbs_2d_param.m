@@ -52,8 +52,10 @@ function sp = sp_nurbs_2d_param (nrb, msh, varargin)
 
   sp = sp_bspline_2d_param (nrb.knots, nrb.order - 1, msh, varargin{:});
   sp = bsp_2_nrb_2d__ (sp, msh, w);
-  for iside = msh.boundary_list
-    sp.boundary(iside) = bsp_2_nrb_1d__ (sp.boundary(iside), msh.boundary(iside), w);
+  if (isfield (msh, 'boundary'))
+    for iside = 1:numel(msh.boundary)
+      sp.boundary(iside) = bsp_2_nrb_1d__ (sp.boundary(iside), msh.boundary(iside), w);
+    end
   end
 
 end

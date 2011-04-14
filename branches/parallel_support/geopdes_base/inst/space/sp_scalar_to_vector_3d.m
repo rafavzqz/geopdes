@@ -41,12 +41,13 @@ function sp = sp_scalar_to_vector_3d (spx, spy, spz, msh, varargin)
 
 sp = do_sp_scalar_to_vector_3d__ (spx, spx.ndof, spy, spy.ndof, spz, spz.ndof, msh, varargin{:});
 
-
-for iside = msh.boundary_list
-  sp.boundary(iside) = do_sp_scalar_to_vector_3d__ (spx.boundary(iside), spx.ndof, ...
-                                                    spy.boundary(iside), spy.ndof, ...
-                                                    spz.boundary(iside), spz.ndof, ...
-                                                    msh.boundary(iside), 'gradient', false);
+if (isfield (msh, 'boundary'))
+  for iside = 1:numel(msh.boundary)
+    sp.boundary(iside) = do_sp_scalar_to_vector_3d__ (spx.boundary(iside), spx.ndof, ...
+                                                      spy.boundary(iside), spy.ndof, ...
+                                                      spz.boundary(iside), spz.ndof, ...
+                                                      msh.boundary(iside), 'gradient', false);
+  end
 end
 
 end

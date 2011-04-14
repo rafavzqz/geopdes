@@ -44,27 +44,24 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function msh = msh_3d_tensor_product (breaks, qn, qw, varargin)
-
-  needed_boundary=1:6; % by default all boundaries are computed
-
+  % Set options
+  msh_has_boundaries = true;
+  boundaries_with_qn = 1:6;
   if (~isempty (varargin))
-    ii=1;
-    while (ii<=length(varargin))
-      if (strcmpi (varargin {ii}, 'no boundary'))
-        needed_boundary=[];
-      elseif (strcmpi (varargin {ii}, 'boundary'))
-        if (ii+1 <= length(varargin))
-          needed_boundary = sort( varargin {ii+1});
-          ii=ii+1;
+    switch lower (varargin{1})
+      case 'no boundary'
+        msh_has_boundaries = false;
+      case  'boundary'
+        if length(varargin) == 2
+          boundaries_with_qn = sort( unique( varargin{2}));
         else
-          error ('msh_3d_tensor_product: ''boundary'' option must be passed in the [option, value] format');
+          error ('msh_2d_tensor_product: only one of ... ''no boundary'')  or  ... ''boundary'', value)  can be passed as option');
         end
-      else
-        error ('msh_3d_tensor_product: unknown option %s', varargin {ii});
-      end
-      ii=ii+1;
+      otherwise
+        error ('msh_2d_tensor_product: unknown option %s', varargin{1});
     end
   end
+
 
   msh.qn = qn;
 
@@ -121,7 +118,7 @@ function msh = msh_3d_tensor_product (breaks, qn, qw, varargin)
       edge(idir)=msh.breaks{idir}(end)-msh.breaks{idir}(1);
     end
     area = prod(edge);
-    if (abs (sum ( msh.quad_weights(:)) - area) > 1e-10)
+    if (abs (sum ( msh.quad_weights(:)) - area) > 1e-10 && msh.nqn>0)
       warning ('msh_3d_tensor_product: inconsistent quadrature formula')
     end
 
@@ -135,34 +132,46 @@ function msh = msh_3d_tensor_product (breaks, qn, qw, varargin)
   msh.geo_map_jac(3, 3, :, :) = 1;
   msh.jacdet = ones (msh.nqn, msh.nel);
   
-  msh.boundary_list = needed_boundary; 
-  for iside = msh.boundary_list
-%%  ind =[2 3; 2 3; 1 3; 1 3; 1 2; 1 2]
-    ind = setdiff (1:3, ceil(iside/2)); 
-%%  ind2 = [1 1 2 2 3 3];
-    ind2 = floor ((iside+1)/2);
-      
-    bnd_aux = msh_2d_tensor_product (msh.breaks(ind), msh.qn(ind), qw(ind), 'no boundary');
-
-    boundary = bnd_aux;
-
-    if (mod (iside, 2) == 1)
-      boundary.quad_nodes = ones ([3, bnd_aux.nqn bnd_aux.nel])*breaks{ind2}(1);   %% this can be put to 0
-    else
-      boundary.quad_nodes = ones ([3, bnd_aux.nqn bnd_aux.nel])*breaks{ind2}(end); %% this can be put to 1
+  if msh_has_boundaries
+    msh.boundary_list = boundaries_with_qn;
+    neld = [nelu, nelv, nelw];
+    for iside = setdiff(1:6, msh.boundary_list)
+      ind = setdiff (1:3, ceil(iside/2)); 
+      nodes = { zeros(0, neld(ind(1))), zeros(0, neld(ind(2)))};
+      weigh = { zeros(0, neld(ind(1))), zeros(0, neld(ind(2)))};
+      boundary = msh_2d_tensor_product (msh.breaks(ind), nodes, weigh, 'no boundary');
+      boundary.geo_map     = zeros(3, 0, msh.nel);
+      boundary.geo_map_jac = zeros(0, msh.nel);
+      boundary.jacdet      = zeros(0, msh.nel);
+      boundary.normal      = zeros (3, 0, msh.nel);
+      msh.boundary(iside) = boundary;
     end
-    
-    boundary.quad_nodes(ind,:,:) = bnd_aux.quad_nodes;
-    boundary.geo_map = boundary.quad_nodes;
-    boundary.geo_map_jac = zeros (3, 3, boundary.nqn, boundary.nel);
-    boundary.geo_map_jac (1, 1, : , :) = 1;
-    boundary.geo_map_jac (2, 2, : , :) = 1;
-    boundary.geo_map_jac (3, 3, : , :) = 1;
-    boundary.jacdet = ones(boundary.nqn, boundary.nel);
-    boundary.normal = zeros (3, boundary.nqn, boundary.nel);
-    boundary.normal(ind2,:,:) = (-1)^iside;
+    for iside = msh.boundary_list
+    % ind =[2 3; 2 3; 1 3; 1 3; 1 2; 1 2]
+      ind = setdiff (1:3, ceil(iside/2)); 
+    % ind2 = [1 1 2 2 3 3];
+      ind2 = floor ((iside+1)/2);
       
-    msh.boundary(iside) = boundary;
-  end
+      bnd_aux = msh_2d_tensor_product (msh.breaks(ind), msh.qn(ind), qw(ind), 'no boundary');
+      boundary = bnd_aux;
 
+      if (mod (iside, 2) == 1)
+        boundary.quad_nodes = zeros ([3, bnd_aux.nqn bnd_aux.nel]);
+      else
+        boundary.quad_nodes = ones  ([3, bnd_aux.nqn bnd_aux.nel]);
+      end
+    
+      boundary.quad_nodes(ind,:,:) = bnd_aux.quad_nodes;
+      boundary.geo_map = boundary.quad_nodes;
+      boundary.geo_map_jac = zeros (3, 3, boundary.nqn, boundary.nel);
+      boundary.geo_map_jac (1, 1, : , :) = 1;
+      boundary.geo_map_jac (2, 2, : , :) = 1;
+      boundary.geo_map_jac (3, 3, : , :) = 1;
+      boundary.jacdet = ones(boundary.nqn, boundary.nel);
+      boundary.normal = zeros (3, boundary.nqn, boundary.nel);
+      boundary.normal(ind2,:,:) = (-1)^iside;
+      
+      msh.boundary(iside) = boundary;
+    end
+  end
 end

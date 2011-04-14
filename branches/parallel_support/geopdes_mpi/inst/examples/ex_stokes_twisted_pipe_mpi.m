@@ -37,7 +37,7 @@ method_data.mpi_prec = @(matrix, comm) {mpi_diagonal_preconditioner_fast( matrix
 method_data.mpi_solv = @(matrix, rhs, prec, comm) mpi_Rgmres( matrix, rhs, rhs, 10^-10, size(matrix,1), min(50,size(matrix,1)) , comm, prec);
 
 % Dirichlet condition solver
-method_data.drchlt_prec = @(matrix, comm) mpi_diagonal_preconditioner_fast( matrix, comm );
+method_data.drchlt_prec = @(matrix, comm) {mpi_diagonal_preconditioner_fast( matrix, comm ), [] }; 
 method_data.drchlt_solv = @(matrix, rhs, prec, comm) mpi_Rgmres( matrix, rhs, rhs, 10^-10, size(matrix,1), min(50,size(matrix,1)) , comm, prec);
 
 % 3)MPI Setup

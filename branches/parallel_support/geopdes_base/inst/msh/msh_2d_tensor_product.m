@@ -8,13 +8,14 @@
 %     qn:      quadrature nodes along each direction in parametric space
 %     qw:      quadrature weights along each direction in parametric space
 %     opts:    'boundary' followed by vector containing the indexes of
-%              the required boundaries. Boundaries are labelled this way
+%              the boundaries for which a msh structure with nodes must be built.
+%              Boundaries are labelled this way
 %                  __4__
 %                 |     |
 %               1 |     | 2
 %                 |__3__|
 %
-%              'no boundary' shorthand for  'boundary', []
+%              'no boundary' the resulting mesh wan't have the boundary field
 %
 %   
 % OUTPUT:
@@ -50,25 +51,21 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function msh = msh_2d_tensor_product (breaks, qn, qw, varargin)
-
-  needed_boundary=1:4; % by default all boundaries are computed
-
+  % Set options
+  msh_has_boundaries = true;
+  boundaries_with_qn = 1:4;
   if (~isempty (varargin))
-    ii=1;
-    while (ii<=length(varargin))
-      if (strcmpi (varargin {ii}, 'no boundary'))
-        needed_boundary=[];
-      elseif (strcmpi (varargin {ii}, 'boundary'))
-	if (ii+1 <= length(varargin))
-          needed_boundary = sort( varargin {ii+1});
-          ii=ii+1;
+    switch lower (varargin{1})
+      case 'no boundary'
+        msh_has_boundaries = false;
+      case  'boundary'
+        if length(varargin) == 2
+          boundaries_with_qn = sort( unique( varargin{2}));
         else
-          error ('msh_2d_tensor_product: ''boundary'' option must be passed in the [option, value] format');
+          error ('msh_2d_tensor_product: only one of ... ''no boundary'')  or  ... ''boundary'', value)  can be passed as option');
         end
-      else
-        error ('msh_2d_tensor_product: unknown option %s', varargin {ii});
-      end
-      ii=ii+1;
+      otherwise
+        error ('msh_2d_tensor_product: unknown option %s', varargin{1});
     end
   end
 
@@ -115,7 +112,7 @@ function msh = msh_2d_tensor_product (breaks, qn, qw, varargin)
       edge(idir)=msh.breaks{idir}(end)-msh.breaks{idir}(1);
     end
     area = prod(edge);
-    if (abs (sum ( msh.quad_weights(:)) - area) > 1e-10)
+    if (abs (sum ( msh.quad_weights(:)) - area) > 1e-10 && msh.nqn>0)
       warning ('msh_2d_tensor_product: inconsistent quadrature formula')
     end
     clear quad_weights_u quad_weights_v
@@ -127,34 +124,44 @@ function msh = msh_2d_tensor_product (breaks, qn, qw, varargin)
   msh.geo_map_jac(2, 2, :, :) = 1;
   msh.jacdet = ones (msh.nqn, msh.nel);
 
-  msh.boundary_list = needed_boundary;
-  for iside = msh.boundary_list
-    ind = mod (floor ((iside+1)/2), 2) + 1;  %ind  = [2 2 1 1];
-    ind2 = floor ((iside+1)/2);              %ind2 = [1 1 2 2];
 
-    boundary.breaks = msh.breaks{ind};
-    boundary.nel = numel (msh.breaks{ind}) - 1;
-    boundary.nqn = size (qn{ind},1);
-    boundary.quad_weights = qw{ind};
-    boundary.quad_nodes = zeros ([2, size(qn{ind})]);
-    boundary.quad_nodes(ind,:,:) = qn{ind};
+  % make boundaries, first empty ones and then the others
+  if msh_has_boundaries
+    msh.boundary_list = boundaries_with_qn;
+    boundary = struct( 'breaks', [], 'nel', 0, 'nqn', 0, 'quad_weights', zeros(2,0), ...
+			 'quad_nodes', zeros(2,0), 'geo_map', zeros(2,0), 'geo_map_jac',[], ...
+			 'jacdet', [], 'normal', zeros(2,0));
+    empty_boundaries = setdiff(1:4, msh.boundary_list);
+    msh.boundary(empty_boundaries) = boundary;
 
-    % set the boundary coordinate
-    if (iside == 1 || iside == 3)
-      boundary.quad_nodes(ind2,:,:) = breaks{ind2}(1);
+    for iside = msh.boundary_list
+      ind = mod (floor ((iside+1)/2), 2) + 1;  %ind  = [2 2 1 1];
+      ind2 = floor ((iside+1)/2);              %ind2 = [1 1 2 2];
+
+      boundary.breaks = msh.breaks{ind};
+      boundary.nel = numel (msh.breaks{ind}) - 1;
+      boundary.nqn = size (qn{ind},1);
+      boundary.quad_weights = qw{ind};
+      boundary.quad_nodes = zeros ([2, size(qn{ind})]);
+      boundary.quad_nodes(ind,:,:) = qn{ind};
+
+      % set the boundary coordinate
+      if (iside == 1 || iside == 3)
+        boundary.quad_nodes(ind2,:,:) = 0;
+      end
+      if (iside == 2 || iside == 4)
+        boundary.quad_nodes(ind2,:,:) = 1;
+      end
+
+      boundary.geo_map = boundary.quad_nodes;
+      boundary.geo_map_jac = zeros (2, 2, boundary.nqn, boundary.nel);
+      boundary.geo_map_jac (1, 1, :, :) = 1;
+      boundary.geo_map_jac (2, 2, :, :) = 1;
+      boundary.jacdet = ones (boundary.nqn, boundary.nel);
+      boundary.normal = zeros (2, boundary.nqn, boundary.nel);
+      boundary.normal(ind2,:,:) = (-1)^iside;
+
+      msh.boundary(iside) = boundary;
     end
-    if (iside == 2 || iside == 4)
-      boundary.quad_nodes(ind2,:,:) = breaks{ind2}(end);
-    end
-
-    boundary.geo_map = boundary.quad_nodes;
-    boundary.geo_map_jac = zeros (2, 2, boundary.nqn, boundary.nel);
-    boundary.geo_map_jac (1, 1, :, :) = 1;
-    boundary.geo_map_jac (2, 2, :, :) = 1;
-    boundary.jacdet = ones (boundary.nqn, boundary.nel);
-    boundary.normal = zeros (2, boundary.nqn, boundary.nel);
-    boundary.normal(ind2,:,:) = (-1)^iside;
-
-    msh.boundary(iside) = boundary;
   end
 end

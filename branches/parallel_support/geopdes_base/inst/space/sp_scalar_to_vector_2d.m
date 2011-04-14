@@ -41,10 +41,12 @@ function sp = sp_scalar_to_vector_2d (spx, spy, msh, varargin)
 
 sp = do_sp_scalar_to_vector__ (spx, spx.ndof, spy, spy.ndof, msh, varargin{:});
 
-for iside = msh.boundary_list
+if (isfield (msh, 'boundary'))
+  for iside = 1:numel(msh.boundary)
     sp.boundary(iside) = do_sp_scalar_to_vector__ (spx.boundary(iside), spx.ndof, ...
                                                    spy.boundary(iside), spy.ndof, ...
                                                    msh.boundary(iside), 'gradient', false);
+  end
 end
 
 end

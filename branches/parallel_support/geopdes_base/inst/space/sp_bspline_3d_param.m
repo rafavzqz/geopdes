@@ -154,42 +154,44 @@ function sp = sp_bspline_3d_param (knots, degree, msh, varargin)
   vcp = ndof_dir(2);
   wcp = ndof_dir(3);
   
-  
-  for iside = msh.boundary_list
-    switch (iside)
-      case {1}
-        ind = [2, 3];
-        [vidx, widx] = ind2sub ([vcp, wcp], 1:vcp*wcp);
-        uidx = ones (size (vidx));
-      case {2}
-        ind = [2, 3];
-        [vidx, widx] = ind2sub ([vcp, wcp], 1:vcp*wcp);
-        uidx = ucp * ones (size (vidx));
-      case {3}
-        ind = [1, 3];
-        [uidx, widx] = ind2sub ([ucp, wcp], 1:ucp*wcp);
-        vidx = ones (size (uidx));
-      case {4}
-        ind = [1, 3];
-        [uidx, widx] = ind2sub ([ucp, wcp], 1:ucp*wcp);
-        vidx = vcp * ones (size (uidx));
-      case {5}
-        ind = [1, 2];
-        [uidx, vidx] = ind2sub ([ucp, vcp], 1:ucp*vcp);
-        widx = ones (size (vidx));
-      case {6}
-        ind = [1, 2];
-        [uidx, vidx] = ind2sub ([ucp, vcp], 1:ucp*vcp);
-        widx = wcp * ones (size (vidx));
-    end
-    bnd_iside = ...
-    sp_bspline_2d_param (knots(ind), degree(ind), msh.boundary(iside));
+  if (isfield (msh, 'boundary'))
+    bpoints = msh.boundary;
+    for iside = 1:numel(bpoints)
+      switch (iside)
+        case {1}
+          ind = [2, 3];
+          [vidx, widx] = ind2sub ([vcp, wcp], 1:vcp*wcp);
+          uidx = ones (size (vidx));
+        case {2}
+          ind = [2, 3];
+          [vidx, widx] = ind2sub ([vcp, wcp], 1:vcp*wcp);
+          uidx = ucp * ones (size (vidx));
+        case {3}
+          ind = [1, 3];
+          [uidx, widx] = ind2sub ([ucp, wcp], 1:ucp*wcp);
+          vidx = ones (size (uidx));
+        case {4}
+          ind = [1, 3];
+          [uidx, widx] = ind2sub ([ucp, wcp], 1:ucp*wcp);
+          vidx = vcp * ones (size (uidx));
+        case {5}
+          ind = [1, 2];
+          [uidx, vidx] = ind2sub ([ucp, vcp], 1:ucp*vcp);
+          widx = ones (size (vidx));
+        case {6}
+          ind = [1, 2];
+          [uidx, vidx] = ind2sub ([ucp, vcp], 1:ucp*vcp);
+          widx = wcp * ones (size (vidx));
+      end
+      bnd_iside = ...
+        sp_bspline_2d_param (knots(ind), degree(ind), bpoints(iside));
 
-    boundary      = rmfield (bnd_iside, 'shape_function_gradients');
-    boundary.dofs = sub2ind ([ucp, vcp, wcp], uidx, vidx, widx);
+      boundary      = rmfield (bnd_iside, 'shape_function_gradients');
+      boundary.dofs = sub2ind ([ucp, vcp, wcp], uidx, vidx, widx);
 
-    sp.boundary(iside) = boundary;
-  end 
+      sp.boundary(iside) = boundary;
+    end 
+  end
   
   sp.spfun = @(MSH) sp_bspline_3d_param (knots, degree, MSH);
 

@@ -49,45 +49,52 @@ function msh = msh_push_forward_3d (msh, geo)
   msh.geo_map_jac = reshape (jac, 3, 3, msh.nqn, msh.nel);
   msh.jacdet = abs (geopdes_det__ (msh.geo_map_jac));
   msh.jacdet = reshape (msh.jacdet, [msh.nqn, msh.nel]);
-
-  for iside = msh.boundary_list
-    qnu = msh.boundary(iside).quad_nodes(1,:,:);
-    qnv = msh.boundary(iside).quad_nodes(2,:,:);
-    qnw = msh.boundary(iside).quad_nodes(3,:,:);
-    F   = feval (geo.map, [qnu(:), qnv(:), qnw(:)]');
-    jac = feval (geo.map_der, [qnu(:), qnv(:), qnw(:)]');
-
-    msh.boundary(iside).geo_map = ...
-         reshape (F, size (msh.boundary(iside).quad_nodes));
-    msh.boundary(iside).geo_map_jac = ...
-         reshape(jac, 3, 3, msh.boundary(iside).nqn, msh.boundary(iside).nel);
-
-    switch (iside)
-      case {1, 2}
-        ind1 = 1;
-        ind2 = [2, 3];
+  
+  if isfield(msh , 'boundary')
+    for iside = 1:6
+      qnu = msh.boundary(iside).quad_nodes(1,:,:);
+      qnv = msh.boundary(iside).quad_nodes(2,:,:);
+      qnw = msh.boundary(iside).quad_nodes(3,:,:);
+      F   = feval (geo.map, [qnu(:), qnv(:), qnw(:)]');
+      jac = feval (geo.map_der, [qnu(:), qnv(:), qnw(:)]');
+  
+      msh.boundary(iside).geo_map = ...
+           reshape (F, size (msh.boundary(iside).quad_nodes));
+      msh.boundary(iside).geo_map_jac = ...
+           reshape(jac, 3, 3, msh.boundary(iside).nqn, msh.boundary(iside).nel);
+  
+      switch (iside)
+        case {1, 2}
+          ind1 = 1;
+          ind2 = [2, 3];
       case {3, 4}
-        ind1 = 2;
-        ind2 = [1, 3];
+          ind1 = 2;
+          ind2 = [1, 3];
       case {5, 6}
         ind1 = 3;
-        ind2 = [1, 2];
-    end
-      
-    jacdet = ...
+          ind2 = [1, 2];
+      end
+          
+      jacdet = ...
       geopdes_norm__ (cross (squeeze (msh.boundary(iside).geo_map_jac(:,ind2(1),:,:)), ...
-                  squeeze (msh.boundary(iside).geo_map_jac(:,ind2(2),:,:))));
-    msh.boundary(iside).jacdet = reshape (jacdet, ...
-         msh.boundary(iside).nqn, msh.boundary(iside).nel);
+                    squeeze (msh.boundary(iside).geo_map_jac(:,ind2(2),:,:))));
+      msh.boundary(iside).jacdet = reshape (jacdet, ...
+           msh.boundary(iside).nqn, msh.boundary(iside).nel);
 
-    [JinvT, jacdet] = geopdes_invT__ (msh.boundary(iside).geo_map_jac);
-    JinvT = reshape (JinvT, [3, 3, msh.boundary(iside).nqn, msh.boundary(iside).nel]);
-
-    normal = reshape (msh.boundary(iside).normal, [3, msh.boundary(iside).nqn, 1, msh.boundary(iside).nel]);
-    normal = geopdes_prod__ (JinvT, normal);
-    normal = reshape (normal, [3, msh.boundary(iside).nqn, msh.boundary(iside).nel]);
-    norms = repmat (reshape (geopdes_norm__ (normal), [1, msh.boundary(iside).nqn, msh.boundary(iside).nel]), [3 1 1]);
-    msh.boundary(iside).normal = normal ./ norms;
+      [JinvT, jacdet] = geopdes_invT__ (msh.boundary(iside).geo_map_jac);
+      JinvT = reshape (JinvT, [3, 3, msh.boundary(iside).nqn, msh.boundary(iside).nel]);
+  
+      normal = reshape (msh.boundary(iside).normal, [3, msh.boundary(iside).nqn, 1, msh.boundary(iside).nel]);
+      normal = geopdes_prod__ (JinvT, normal);
+      normal = reshape (normal, [3, msh.boundary(iside).nqn, msh.boundary(iside).nel]);
+      norms = repmat (reshape (geopdes_norm__ (normal), [1, msh.boundary(iside).nqn, msh.boundary(iside).nel]), [3 1 1]);
+      msh.boundary(iside).normal = normal ./ norms;
+    end
   end
-
 end
+  
+
+  
+  
+  
+  
