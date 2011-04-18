@@ -61,3 +61,4 @@ if MPI_Comm_rank(mpi_comm) == 0
   sp_to_vtk_3d (vel,   space_v, geometry, vtk_pts, [output_file '_vel'  ], 'vel')
 end
 
+MPI_Finalize();

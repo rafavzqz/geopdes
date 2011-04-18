@@ -136,8 +136,8 @@ rhs = [F(int_dofs) + rhs_dir + rhs_nmnn;
        0];
 rhs = MPI_Allreduce(rhs, 'mpi_sum', mpi_comm);
 
-preconditioner = mpi_prec( stiff_mat(int_dofs,int_dofs), mpi_comm );
-sol            = mpi_solv( stiff_mat(int_dofs,int_dofs), rhs(int_dofs), preconditioner,  mpi_comm);
+preconditioner = mpi_prec( mat, mpi_comm );
+sol            = mpi_solv( mat, rhs, preconditioner,  mpi_comm);
 vel(int_dofs)  = sol(1:nintdofs);
 press          = PI * sol(1+nintdofs:end-1);
 
