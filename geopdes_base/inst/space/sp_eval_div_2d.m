@@ -87,6 +87,46 @@ function [div, F] = sp_eval_div_2d (u, space, varargin);
 
 end
 
+%!test
+%! degree       = [4 4];     
+%! regularity   = [3 3];   
+%! nsub         = [10 10];  
+%! nquad        = [4 4];
+%! 
+%! 
+%! geometry = geo_load ('geo_ring.txt');
+%! nurbs       = geometry.nurbs;
+%! degelev    = max (degree - (nurbs.order-1), 0);
+%! nurbs       = nrbdegelev (nurbs, degelev);
+%! [rknots, zeta, nknots] = kntrefine (nurbs.knots, nsub-1, nurbs.order-1, regularity);
+%! 
+%! nurbs       = nrbkntins (nurbs, nknots);
+%! geometry    = geo_load (nurbs);
+%! 
+%! rule        = msh_gauss_nodes (nquad);
+%! [qn, qw]    = msh_set_quad_nodes (geometry.nurbs.knots, rule);
+%! msh         = msh_2d_tensor_product (geometry.nurbs.knots, qn, qw);
+%! msh         = msh_push_forward_2d (msh, geometry);
+%! 
+%! sp_scalar = sp_nurbs_2d_phys (nurbs, msh);
+%! sp = sp_scalar_to_vector_2d (sp_scalar, sp_scalar, msh, 'divergence', true);
+%! 
+%! fx  = @(x, y)  reshape(x, [1, size(x)]);
+%! fy  = @(x, y)  reshape(-y, [1, size(x)]);
+%! f   = @(x, y)  cat (1, fx(x, y), fy(x, y));
+%! 
+%! [x, y] = deal (squeeze (msh.geo_map(1,:,:)), squeeze (msh.geo_map(2,:,:)));
+%! mat     = op_u_v (sp, sp, msh, ones (size (x))); 
+%! rhs     = op_f_v (sp, msh, f (x, y));
+%! 
+%! u = mat \ rhs;
+%! 
+%! vtk_pts = {linspace(0, 1, 31), linspace(0, 1, 31)};
+%! [div, F] = sp_eval_div_2d (u, sp, geometry, vtk_pts);
+%!
+%! assert (norm (div(:), inf), 0, 1e-10)
+
+
 %!demo
 %! degree       = [4 4];     
 %! regularity   = [3 3];   
