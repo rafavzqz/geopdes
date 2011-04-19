@@ -273,7 +273,7 @@ function [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs (filenam
       boundaries(bnd).faces(isides) = vec(2);
     end
     line = fgetl (fid);
-    while (line(1) == '#')
+    while (isempty(line) || line(1) == '#')
       line = fgetl (fid);
     end
   end
