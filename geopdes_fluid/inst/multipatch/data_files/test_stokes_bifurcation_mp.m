@@ -22,12 +22,11 @@ f = @(x, y) cat(1, ...
                 reshape (fx (x,y), [1, size(x)]), ...
                 reshape (fy (x,y), [1, size(x)]));
 
-% Functions to compute the Dirichlet boundary condition
-h  = @(x, y, iside) uex (x, y);
+h  = @test_stokes_bifurcation_mp_h_drchlt;
 
 % Output file for Paraview
 output_file  = 'test_stokes_bifurcation_mp';
 
 % Points for post-processing
-vtk_pts = {linspace(0, 1, 20)', linspace(0, 1, 20)'};
+vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20)};
 
