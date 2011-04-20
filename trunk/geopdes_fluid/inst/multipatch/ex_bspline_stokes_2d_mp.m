@@ -22,7 +22,7 @@ npatch = numel (geometry);
 ndofp = 0;
 for iptc = 1:npatch
 % Construct msh structure
-  breaks = {(linspace (0, 1, nbreaks(1))), (linspace (0, 1, nbreaks(2))), (linspace (0, 1, nbreaks(3)))};
+  breaks = {(linspace (0, 1, nbreaks(1))), (linspace (0, 1, nbreaks(2)))};
   knotsp = kntbrkdegreg (breaks, degree, regularity);
   [qn, qw] = msh_set_quad_nodes (breaks, msh_gauss_nodes (nquad));
   msh{iptc} = msh_2d_tensor_product (breaks, qn, qw); 
@@ -36,7 +36,7 @@ for iptc = 1:npatch
 end
 
 % Create a correspondence between patches on the interfaces
-[gnum, ndof] = mp_interface_vector_3d (interfaces, spv);
+[gnum, ndof] = mp_interface_vector_2d (interfaces, spv);
 
 % Compute and assemble the matrices
 A = spalloc (ndof, ndof, ndof);
@@ -45,11 +45,11 @@ B = spalloc (ndofp, ndof, ndofp);
 F = zeros (ndof, 1);
 
 for iptc = 1:npatch
-  [x, y, z] = deal (squeeze (msh{iptc}.geo_map(1,:,:)), squeeze (msh{iptc}.geo_map(2,:,:)), squeeze (msh{iptc}.geo_map(3,:,:)));
-  A_loc = op_gradu_gradv (spv{iptc}, spv{iptc}, msh{iptc}, mu (x, y, z));
+  [x, y] = deal (squeeze (msh{iptc}.geo_map(1,:,:)), squeeze (msh{iptc}.geo_map(2,:,:)));
+  A_loc = op_gradu_gradv (spv{iptc}, spv{iptc}, msh{iptc}, mu (x, y));
   B_loc = op_div_v_q (spv{iptc}, spp{iptc}, msh{iptc});
   M_loc = op_u_v (spp{iptc}, spp{iptc}, msh{iptc}, ones (size (x))); 
-  F_loc = op_f_v (spv{iptc}, msh{iptc}, f (x, y, z));
+  F_loc = op_f_v (spv{iptc}, msh{iptc}, f (x, y));
 
   A(gnum{iptc},gnum{iptc})   = A(gnum{iptc},gnum{iptc}) + A_loc;
   M(gnump{iptc},gnump{iptc}) = M(gnump{iptc},gnump{iptc}) + M_loc;
@@ -104,6 +104,6 @@ if (exist ('uex', 'var'))
 end
 
 fprintf ('results being saved in: %s_velocity.pvd and %s_pressure.pvd\n', output_file, output_file)
-mp_sp_to_vtk_3d (vel, spv, geometry, gnum, vtk_pts, sprintf ('%s_velocity', output_file), 'velocity')
-mp_sp_to_vtk_3d (press, spp, geometry, gnump, vtk_pts, sprintf ('%s_pressure', output_file), 'pressure')
+mp_sp_to_vtk_2d (vel, spv, geometry, gnum, vtk_pts, sprintf ('%s_velocity', output_file), 'velocity')
+mp_sp_to_vtk_2d (press, spp, geometry, gnump, vtk_pts, sprintf ('%s_pressure', output_file), 'pressure')
 
