@@ -81,8 +81,8 @@ sp_to_vtk_2d (press, space_p, geometry, vtk_pts, [output_file '_press'], 'press'
 sp_to_vtk_2d (vel,   space_v, geometry, vtk_pts, [output_file '_vel'  ], 'vel')
 
 % 4.3) PLOT IN MATLAB
-[eu, F] = sp_eval_2d (vel, space_v, geometry, vtk_pts);
-[X,  Y] = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
+[eu, F]  = sp_eval_2d (vel, space_v, geometry, vtk_pts);
+[X,  Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
 
 figure()
 subplot(1,2,2)
@@ -94,3 +94,10 @@ subplot(1,2,1)
 quiver (X, Y, squeeze(eu(1,:,:)), squeeze(eu(2,:,:)))
 axis equal
 title('Computed solution')
+
+[div, F] = sp_eval_div_2d (vel, space_v, geometry, vtk_pts);
+figure()
+surf (X, Y, div)
+view(2)
+axis equal
+title('Computed divergence')
