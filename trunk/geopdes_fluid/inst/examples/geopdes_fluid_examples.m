@@ -1,7 +1,7 @@
 % GEOPDES_FLUID_EXAMPLES: Run some simple examples on how to use the geopdes_fluid package.
 %
 % Copyright (C) 2006-2009, Thomas Treichl <treichl@users.sourceforge.net>
-% Copyright (C) 2010 Rafael Vazquez
+% Copyright (C) 2010-2011, Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -25,142 +25,154 @@ while (iopt > 0)
            ['GeoPDEs_Fluid examples menu:\n', ...
             '----------------------------\n', ...
             '\n', ...
-            '   (1) Examples in 2D. \n \n',...
-            '   (2) Examples in 3D. \n \n']);
+            '   (1) Stokes flow: 2D examples. \n \n', ...
+            '   (2) Stokes flow: 3D examples. \n \n', ...
+            '   (3) Stokes flow in multipatch geometries (require geopdes_multipatch). \n \n']);
+%            '3D Stokes flow examples. \n \n', ...
+%            '   (9) 3D driven cavity discretized with generalized Taylor-Hood elements. \n',...
+%            '   (10) 3D driven cavity discretized with the subgrid method. \n',...
+%            '   (11) Twisted pipe discretized with generalized Taylor-Hood elements. \n \n']);
 
   iopt = input ('Please choose a number from above or press <Enter> to return: ');
   clc;
 
   if (iopt == 1)
-    iopt2 = 1; 
+    iopt2 = 1;
     while (iopt2 > 0)
       clc;
       fprintf (1, ...
-               ['GeoPDEs_Fluid examples menu: 2D problems\n', ...
-                '----------------------------------------\n', ...
+               ['GeoPDEs_Fluid examples menu: 2D Stokes problem\n', ...
+                '----------------------------------------------\n', ...
                 '\n', ...
-                '   (1) Stokes problem on a square with homogeneous Dirichlet BCs.\n \n', ...
-                '   (2) Stokes problem on a square with non-homogeneous Dirichlet BCs.\n \n', ...
-                '   (3) Stokes problem on a NURBS geometry with homogeneous Dirichlet BCs.\n \n', ...
-                '   (4) Symmetric driven cavity problem. \n \n']);
+                '   (1) Unit square, discretized with generalized Taylor-Hood elements.\n', ...
+                '   (2) Unit square, discretized with generalized Raviart-Thomas elements.\n', ...
+                '   (3) Unit square, discretized with generalized Nedelec elements.\n', ...
+                '   (4) Unit square, discretized with the subgrid method.\n \n', ...
+                '   (5) Quarter of a ring, discretized with generalized Taylor-Hood elements.\n', ...
+                '   (6) Quarter of a ring, discretized with generalized Raviart-Thomas elements.\n\n', ...
+                '   (7) Driven cavity discretized with generalized Taylor-Hood elements. \n',...
+                '   (8) Driven cavity discretized with generalized Raviart-Thomas elements. \n\n']);
       
       iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
       
-      if (~isempty (iopt2) && iopt2 > 0 && iopt2 < 5)
+      if (~isempty (iopt2) && iopt2 > 0 && iopt2 < 9)
         switch iopt2
          case 1
-          datafile = 'test_stokes_square';
-          eval (datafile);
-         case 2
-          datafile = 'test_stokes_square_bc';
-          eval (datafile);
-         case 3
-          datafile = 'test_stokes_annulus';
-          eval (datafile);
-         case 4
-          datafile = 'test_stokes_symdrivcav';
-          eval (datafile);
-        end %# switch (iopt2)
-
-        
-        iopt3 = 1; 
-        clc;
-        fprintf (1, ...
-                 ['GeoPDEs_Fluid examples menu: choose function spaces.\n', ...
-                  '----------------------------------------------------\n', ...
-                  '\n', ...
-                  '   (1) TH function spaces.\n \n', ...
-                  '   (2) NDL function spaces.\n \n', ...
-                  '   (3) RT function spaces. \n \n']);
-        
-        iopt3 = input ('Please choose a number from above or press <Enter> to return: ');
-        
-        if (~isempty (iopt3))
-          switch iopt3
-           case 1
-            if (~strcmpi (sp_type, 'th'))
-              fun_space    = 'sp_bspline_th_2d_phys';
-              der2         = false;
-            end
-            fprintf (['\nRunning script ' '     ex_bspline_stokes_2d.m', ...
-                      '\nwith the data file  %s \n', ...
-                      '\nYou can have a look at the source using the command:\n' ...
-                      '   type ex_bspline_stokes_2d\n\n'], datafile)
-            ex_bspline_stokes_2d;
-           case 2
-            if (~strcmpi (sp_type, 'ndl'))
-              fun_space    = 'sp_bspline_ndl_2d_phys';
-              der2         = true;
-            end
-            fprintf (['\nRunning script ' '     ex_bspline_stokes_2d.m', ...
-                      '\nwith the data file  %s \n', ...
-                      '\nYou can have a look at the source using the command:\n' ...
-                      '   type ex_bspline_stokes_2d\n\n'], datafile)
-            ex_bspline_stokes_2d;
-           case 3
-            if (~strcmpi (sp_type, 'rt'))
-              fun_space    = 'sp_bspline_rt_2d_phys';
-              der2         = true;
-              if (~isempty (drchlt_sides) && any (degree ~= 3))
-                degree     = [3 3];
-                regularity = min (regularity, 2); 
-                fprintf ('N.B. for RT elements with Dirichlet conditions only degree 3 may be used\n')
-              end
-            end
-            fprintf (['\nRunning script ' '     ex_bspline_stokes_2d_rt.m', ...
-                      '\nwith the data file  %s \n', ...
-                      '\nYou can have a look at the source using the command:\n' ...
-                      '   type ex_bspline_stokes_2d_rt\n\n'], datafile)
-            ex_bspline_stokes_2d_rt;
-          end %# switch (iopt3)
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_stokes_square_th.m \n \n');
+          ex_stokes_square_th;
           input ('Press <Enter> to continue: ');
-        end %# if (~isempty (iopt3))
-      end %# while (iopt2 > 0)
-    end %# if (~isempty (iopt2))
+         case 2
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_stokes_square_rt.m \n \n');
+          ex_stokes_square_rt;
+          input ('Press <Enter> to continue: ');
+         case 3
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_stokes_square_ndl.m \n \n');
+          ex_stokes_square_ndl;
+          input ('Press <Enter> to continue: ');
+         case 4
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_stokes_square_sg.m \n \n');
+          ex_stokes_square_sg;
+          input ('Press <Enter> to continue: ');
+         case 5
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_stokes_annulus_th.m \n \n');
+          ex_stokes_annulus_th;
+          input ('Press <Enter> to continue: ');
+         case 6
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_stokes_annulus_rt.m \n \n');
+          ex_stokes_annulus_rt;
+          input ('Press <Enter> to continue: ');
+         case 7
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_stokes_driven_cavity_th.m \n \n');
+          ex_stokes_driven_cavity_th;
+          input ('Press <Enter> to continue: ');
+         case 8
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_stokes_driven_cavity_rt.m \n \n');
+          ex_stokes_driven_cavity_rt;
+          input ('Press <Enter> to continue: ');
+        end %# switch (iopt2)
+      end %# if (~isempty (iopt2))
+    end %# while (iopt2 > 0)
 
   elseif (iopt == 2)
     iopt2 = 1; 
     while (iopt2 > 0)
       clc;
       fprintf (1, ...
-               ['GeoPDEs_Fluid examples menu: 2D problems\n', ...
+               ['GeoPDEs_Fluid examples menu: 3D problems\n', ...
                 '----------------------------------------\n', ...
                 '\n', ...
-                '   (1) 3D Symmetric driven cavity problem. \n \n']);
+                '   (1) Symmetric driven cavity problem. Generalized Taylor-Hood elements.\n \n',...
+                '   (2) Symmetric driven cavity problem. Subgrid method.\n \n',...
+                '   (3) Twisted pipe. Generalized Taylor-Hood elements. \n \n']);
       
       iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
       
       if (~isempty (iopt2))
         switch iopt2
          case 1
-          datafile = 'test_stokes_3d_symdrivcav';
-          eval (datafile);
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_stokes_driven_cavity_3d_th.m \n \n');
+          ex_stokes_driven_cavity_3d_th;
+          input ('Press <Enter> to continue: ');
+         case 2
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_stokes_driven_cavity_3d_sg.m \n \n');
+          ex_stokes_driven_cavity_3d_sg;
+          input ('Press <Enter> to continue: ');
+         case 3
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_stokes_twisted_pipe.m \n \n');
+          ex_stokes_twisted_pipe;
+          input ('Press <Enter> to continue: ');
         end %# switch (iopt2)
         
-        iopt3 = 1; 
+      end %# if (~isempty (iopt2))
+    end %# while (iopt2 > 0)
+
+
+  elseif (iopt == 3)
+    clc;
+    if (~exist('mp_interface_vector_2d'))
+      fprintf(1, 'Unable to find the file ''mp_interface_vector_2d''.\n');
+      fprintf(1, 'Be sure to install the latest version of geopdes_multipatch to run this example\n\n');
+      input ('Press <Enter> to continue: ');
+    else
+      iopt2 = 1; 
+      while (iopt2 > 0)
         clc;
         fprintf (1, ...
-                 ['GeoPDEs_Fluid examples menu: choose function spaces.\n', ...
-                  '----------------------------------------------------\n', ...
-                  '\n', ...
-                  '   (1) TH function spaces.\n \n']);
-        
-        iopt3 = input ('Please choose a number from above or press <Enter> to return: ');
-        
-        if (~isempty (iopt3))
-          switch iopt3
+               ['GeoPDEs_Fluid examples menu: multipatch problems\n', ...
+                '------------------------------------------------\n', ...
+                '\n', ...
+                '   (1) 2D bifurcation problem. Generalized Taylor-Hood elements.\n \n',...
+                '   (2) 3D multipatch driven cavity. Generalized Taylor-Hood elements. \n \n']);
+      
+      iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
+      
+        if (~isempty (iopt2))
+          switch iopt2
            case 1
-             fprintf (['\nRunning script ' '     ex_bspline_stokes_3d.m', ...
-                       '\nwith the data file  %s \n', ...
-                       '\nYou can have a look at the source using the command:\n' ...
-                       '   type ex_bspline_stokes_3d\n\n'], datafile)
-
-            ex_bspline_stokes_3d;
-          end %# switch (iopt3)
-          input ('Press <Enter> to continue: ');
-        end %# if (~isempty (iopt3))
+            clc;
+            fprintf (1, 'You can have a look at the source file: ex_stokes_bifurcation_2d_mp.m \n \n');
+            ex_stokes_bifurcation_2d_mp;
+            input ('Press <Enter> to continue: ');
+           case 2
+            clc;
+            fprintf (1, 'You can have a look at the source file: ex_stokes_driven_cavity_3d_mp.m \n \n');
+            ex_stokes_driven_cavity_3d_mp;
+            input ('Press <Enter> to continue: ');
+          end %# switch (iopt2)
+        end %# if (~isempty)
       end %# while (iopt2 > 0)
-    end %# if (~isempty (iopt2))
+    end %# if (~exist())
   end
   
 end %# while (iopt > 0)
