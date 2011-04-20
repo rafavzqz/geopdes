@@ -96,13 +96,11 @@ for iptc = 1:npatch
 % Construct space structure
   [spv{iptc}, spp{iptc}] = sp_bspline_fluid_2d_phys (element_name, ...
             knotsv1, degreev1, knotsv2, degreev2, knotsp, degree, msh{iptc});
-
-  gnump{iptc} = ndofp + (1:spp{iptc}.ndof);
-  ndofp = ndofp + spp{iptc}.ndof;
 end
 
 % Create a correspondence between patches on the interfaces
-[gnum, ndof] = mp_interface_vector_2d (interfaces, spv);
+[gnum,  ndof]  = mp_interface_vector_2d (interfaces, spv);
+[gnump, ndofp] = mp_interface_2d (interfaces, spp);
 
 % Compute and assemble the matrices
 A = spalloc (ndof, ndof, ndof);
