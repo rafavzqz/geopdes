@@ -61,9 +61,9 @@ spp = sp_bspline_3d_phys (knotsp, degreep, msh, 'gradient', false);
 
 switch (lower (element_name))
   case {'th', 'sg'}
-    spv = do_spv_component_wise__ ( ...
+    spv = do_spv_component_wise_3d__ ( ...
                 knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, msh);
-    spv.spfun = @(MSH) do_spv_component_wise__ ( ...
+    spv.spfun = @(MSH) do_spv_component_wise_3d__ ( ...
                 knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, MSH);
     PI = speye (spp.ndof);
   case {'ndl', 'rt'}
@@ -74,11 +74,3 @@ end
 
 end
 
-% This is fun_transform for 'TH' and 'SG' elements
-function spv = do_spv_component_wise__ ( ... 
-                 knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, msh)
-  spv1 = sp_bspline_3d_phys (knotsv1, degreev1, msh);
-  spv2 = sp_bspline_3d_phys (knotsv2, degreev2, msh);
-  spv3 = sp_bspline_3d_phys (knotsv3, degreev3, msh);
-  spv  = sp_scalar_to_vector_3d (spv1, spv2,spv3, msh, 'divergence', true);
-end
