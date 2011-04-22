@@ -56,18 +56,18 @@ spp = sp_bspline_2d_phys (knotsp, degreep, msh, 'gradient', false);
 
 switch (lower (element_name))
   case {'th', 'sg'}
-    spv = do_spv_component_wise__ (knotsv1, degreev1, knotsv2, degreev2, msh);
-    spv.spfun = @(MSH) do_spv_component_wise__ (knotsv1, degreev1, knotsv2, degreev2, MSH);
+    spv = do_spv_component_wise_2d__ (knotsv1, degreev1, knotsv2, degreev2, msh);
+    spv.spfun = @(MSH) do_spv_component_wise_2d__ (knotsv1, degreev1, knotsv2, degreev2, MSH);
     PI = speye (spp.ndof);
 
   case {'ndl'}
-    spv = do_spv_piola_transform__ (knotsv1, degreev1, knotsv2, degreev2, msh);
-    spv.spfun = @(MSH) do_spv_piola_transform__ (knotsv1, degreev1, knotsv2, degreev2, MSH);
+    spv = do_spv_piola_transform_2d__ (knotsv1, degreev1, knotsv2, degreev2, msh);
+    spv.spfun = @(MSH) do_spv_piola_transform_2d__ (knotsv1, degreev1, knotsv2, degreev2, MSH);
     PI = speye (spp.ndof);
 
   case {'rt'}
-    spv = do_spv_piola_transform__ (knotsv1, degreev1, knotsv2, degreev2, msh);
-    spv.spfun = @(MSH) do_spv_piola_transform__ (knotsv1, degreev1, knotsv2, degreev2, MSH);
+    spv = do_spv_piola_transform_2d__ (knotsv1, degreev1, knotsv2, degreev2, msh);
+    spv.spfun = @(MSH) do_spv_piola_transform_2d__ (knotsv1, degreev1, knotsv2, degreev2, MSH);
     PI = b2nst_odd__ (spp, knotsp, degreep, msh);
 
   otherwise
@@ -76,17 +76,3 @@ end
 
 end
 
-% This is fun_transform for 'TH' and 'SG' elements
-function spv = do_spv_component_wise__ (knotsv1, degreev1, knotsv2, degreev2, msh)
-  spv1 = sp_bspline_2d_phys (knotsv1, degreev1, msh);
-  spv2 = sp_bspline_2d_phys (knotsv2, degreev2, msh);
-  spv  = sp_scalar_to_vector_2d (spv1, spv2, msh, 'divergence', true);
-end
-
-% This is fun_transform for 'NDL' and 'RT'
-function spv = do_spv_piola_transform__ (knotsv1, degreev1, knotsv2, degreev2, msh)
-  spv1 = sp_bspline_2d_param (knotsv1, degreev1, msh);
-  spv2 = sp_bspline_2d_param (knotsv2, degreev2, msh);
-  spv  = sp_scalar_to_vector_2d (spv1, spv2, msh, 'divergence', true);
-  spv  = sp_piola_transform_2d (spv, msh);
-end
