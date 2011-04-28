@@ -38,12 +38,19 @@ function [div, F] = sp_eval_div_2d (u, space, varargin);
   if ((length (varargin) == 2) && ~ischar(varargin{2}))
     geometry = varargin {1};
     pts      = varargin {2};
-    ku = [0, pts{1}(1:end-1) + diff(pts{1})/2, 1];
-    kv = [0, pts{2}(1:end-1) + diff(pts{2})/2, 1];
+
+    for jj = 1:3
+      pts{jj} = pts{jj}(:)';
+      if (numel (pts{jj}) > 1)
+        brk{jj} = [0, pts{jj}(1:end-1) + diff(pts{jj})/2, 1];
+      else
+        brk{jj} = [0 1];
+      end
+    end
     
     warn = warning ('query');
     warning off
-    msh = msh_2d_tensor_product ({ku, kv}, pts, [], 'no boundary');
+    msh = msh_2d_tensor_product ({brk{1}, brk{2}}, pts, [], 'no boundary');
     warning(warn);
     msh = msh_push_forward_2d (msh, geometry);
     sp  = feval (space.spfun, msh);
