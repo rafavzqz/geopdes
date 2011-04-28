@@ -1,3 +1,5 @@
+% TEST_STOKES_BIFURCATION_MP_H_DRCHLT: data function for Dirichlet boundary condition.
+
 function h  = test_stokes_bifurcation_mp_h_drchlt (x, y, iside) 
   switch (iside)
     case 2
