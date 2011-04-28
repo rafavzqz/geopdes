@@ -76,12 +76,19 @@ function sp = sp_bspline_curl_transform_3d (knots_u1, knots_u2, knots_u3, ...
         boundary.connectivity  = ...
                 [sp2.boundary(iface).connectivity; sp3.boundary(iface).connectivity + sp2.boundary(iface).ndof];
 
-        bnd_shape_functions(2,:,:,:) = sp2.boundary(iface).shape_functions;
+        sp2_shape_funs = reshape (sp2.boundary(iface).shape_functions, ...
+          [msh.boundary(iface).nqn, sp2.boundary(iface).nsh_max, msh.boundary(iface).nel]);
+        sp3_shape_funs = reshape (sp3.boundary(iface).shape_functions, ...
+          [msh.boundary(iface).nqn, sp3.boundary(iface).nsh_max, msh.boundary(iface).nel]);
+
+        bnd_shape_functions = zeros (3, msh.boundary(iface).nqn, boundary.nsh_max, msh.boundary(iface).nel);
+        bnd_shape_functions(2,:,1:sp2.boundary(iface).nsh_max,:) = sp2_shape_funs;
         bnd_shape_functions(1,:,:,:) = 0;
         bnd_shape_functions(3,:,:,:) = 0;
         bnd_shape_functions(1,:,(sp2.boundary(iface).nsh_max+1):boundary.nsh_max,:) = 0;
         bnd_shape_functions(2,:,(sp2.boundary(iface).nsh_max+1):boundary.nsh_max,:) = 0;
-        bnd_shape_functions(3,:,(sp2.boundary(iface).nsh_max+1):boundary.nsh_max,:) = sp3.boundary(iface).shape_functions;
+keyboard
+        bnd_shape_functions(3,:,(sp2.boundary(iface).nsh_max+1):boundary.nsh_max,:) = sp3_shape_funs;
 
         boundary.shape_functions = bnd_shape_functions;
 
@@ -102,12 +109,18 @@ function sp = sp_bspline_curl_transform_3d (knots_u1, knots_u2, knots_u3, ...
         boundary.connectivity  = ...
                     [sp1.boundary(iface).connectivity; sp3.boundary(iface).connectivity + sp1.boundary(iface).ndof];
 
-        bnd_shape_functions(1,:,:,:) = sp1.boundary(iface).shape_functions;
+        sp1_shape_funs = reshape (sp1.boundary(iface).shape_functions, ...
+          [msh.boundary(iface).nqn, sp1.boundary(iface).nsh_max, msh.boundary(iface).nel]);
+        sp3_shape_funs = reshape (sp3.boundary(iface).shape_functions, ...
+          [msh.boundary(iface).nqn, sp3.boundary(iface).nsh_max, msh.boundary(iface).nel]);
+
+        bnd_shape_functions = zeros (3, msh.boundary(iface).nqn, boundary.nsh_max, msh.boundary(iface).nel);
+        bnd_shape_functions(1,:,1:sp1.boundary(iface).nsh_max,:) = sp1_shape_funs;
         bnd_shape_functions(2,:,:,:) = 0;
         bnd_shape_functions(3,:,:,:) = 0;
         bnd_shape_functions(1,:,(sp1.boundary(iface).nsh_max+1):boundary.nsh_max,:) = 0;
         bnd_shape_functions(2,:,(sp1.boundary(iface).nsh_max+1):boundary.nsh_max,:) = 0;
-        bnd_shape_functions(3,:,(sp1.boundary(iface).nsh_max+1):boundary.nsh_max,:) = sp3.boundary(iface).shape_functions;
+        bnd_shape_functions(3,:,(sp1.boundary(iface).nsh_max+1):boundary.nsh_max,:) = sp3_shape_funs;
 
         boundary.shape_functions = bnd_shape_functions;
 
@@ -128,11 +141,17 @@ function sp = sp_bspline_curl_transform_3d (knots_u1, knots_u2, knots_u3, ...
         boundary.connectivity  = ...
                     [sp1.boundary(iface).connectivity; sp2.boundary(iface).connectivity + sp1.boundary(iface).ndof];
 
-        bnd_shape_functions(1,:,:,:) = sp1.boundary(iface).shape_functions;
+        sp1_shape_funs = reshape (sp1.boundary(iface).shape_functions, ...
+          [msh.boundary(iface).nqn, sp1.boundary(iface).nsh_max, msh.boundary(iface).nel]);
+        sp2_shape_funs = reshape (sp2.boundary(iface).shape_functions, ...
+          [msh.boundary(iface).nqn, sp2.boundary(iface).nsh_max, msh.boundary(iface).nel]);
+
+        bnd_shape_functions = zeros (3, msh.boundary(iface).nqn, boundary.nsh_max, msh.boundary(iface).nel);
+        bnd_shape_functions(1,:,1:sp1.boundary(iface).nsh_max,:) = sp1_shape_funs;
         bnd_shape_functions(2,:,:,:) = 0;
         bnd_shape_functions(3,:,:,:) = 0;
         bnd_shape_functions(1,:,(sp1.boundary(iface).nsh_max+1):boundary.nsh_max,:) = 0;
-        bnd_shape_functions(2,:,(sp1.boundary(iface).nsh_max+1):boundary.nsh_max,:) = sp2.boundary(iface).shape_functions;
+        bnd_shape_functions(2,:,(sp1.boundary(iface).nsh_max+1):boundary.nsh_max,:) = sp2_shape_funs;
         bnd_shape_functions(3,:,(sp1.boundary(iface).nsh_max+1):boundary.nsh_max,:) = 0;
 
         boundary.shape_functions = bnd_shape_functions;
