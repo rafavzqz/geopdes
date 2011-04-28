@@ -95,7 +95,8 @@ end
 if (isfield (sp, 'shape_function_gradients'))
   JinvT = geopdes_invT__ (msh.geo_map_jac);
   JinvT = reshape (JinvT, [2, 2, msh.nqn, msh.nel]);
-  sp.shape_function_gradients = geopdes_prod__ (JinvT, sp.shape_function_gradients);
+  shape_fun_grads = reshape (sp.shape_function_gradients, [2, msh.nqn, sp.nsh_max, msh.nel]);
+  sp.shape_function_gradients = geopdes_prod__ (JinvT, shape_fun_grads);
 end
 
 sp.spfun  = @(MSH) sp_bspline_2d_phys (knots, degree, MSH, varargin{:});
