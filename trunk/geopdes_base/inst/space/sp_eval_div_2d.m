@@ -39,7 +39,7 @@ function [div, F] = sp_eval_div_2d (u, space, varargin);
     geometry = varargin {1};
     pts      = varargin {2};
 
-    for jj = 1:3
+    for jj = 1:2
       pts{jj} = pts{jj}(:)';
       if (numel (pts{jj}) > 1)
         brk{jj} = [0, pts{jj}(1:end-1) + diff(pts{jj})/2, 1];
