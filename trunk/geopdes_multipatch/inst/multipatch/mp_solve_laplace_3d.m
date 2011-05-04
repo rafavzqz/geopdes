@@ -61,11 +61,11 @@ function [geometry, msh, sp, u, gnum] = ...
 % Extract the fields from the data structures into local variables
 data_names = fieldnames (problem_data);
 for iopt  = 1:numel (data_names)
-  eval ([data_names{iopt} sprintf('= problem_data.(data_names{iopt});')]);
+  eval ([data_names{iopt} '= problem_data.(data_names{iopt});']);
 end
 data_names = fieldnames (method_data);
 for iopt  = 1:numel (data_names)
-  eval ([data_names{iopt} sprintf('= method_data.(data_names{iopt});')]);
+  eval ([data_names{iopt} '= method_data.(data_names{iopt});']);
 end
 
 % Construct geometry structure, and information for interfaces and boundaries
