@@ -1,7 +1,7 @@
 % SP_BSPLINE_3D_PARAM: Construct a tensor-product space of B-Splines on the parametric domain in 3D.
 %                      This function is not usually meant to be invoked directly by the user but rather
 %                      through sp_bspline_3d_phys.
-
+%
 %     sp = sp_bspline_3d_param (knots, degree, msh, 'option1', value1, ...)
 %
 % INPUTS:
