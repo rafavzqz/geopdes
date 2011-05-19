@@ -43,16 +43,19 @@ function mat = op_u_v (spu, spv, msh, coeff)
     if (all (msh.jacdet(:,iel)))
       jacdet_weights = msh.jacdet(:, iel) .* ...
                        msh.quad_weights(:, iel) .* coeff(:, iel);
+
+      shpv_iel = reshape (shpv(:, :, :, iel), spv.ncomp, msh.nqn, spv.nsh_max);
+      shpu_iel = reshape (shpu(:, :, :, iel), spu.ncomp, msh.nqn, spu.nsh_max);
       for idof = 1:spv.nsh(iel)
-        ishp = reshape (shpv(:, :, idof, iel), spv.ncomp, []);
+        ishp = shpv_iel(:, :, idof);
         for jdof = 1:spu.nsh(iel)
           ncounter = ncounter + 1;
           rows(ncounter) = spv.connectivity(idof, iel);
           cols(ncounter) = spu.connectivity(jdof, iel);
 
-          jshp = reshape (shpu(:, :, jdof, iel), spu.ncomp, []);
+          jshp = shpu_iel(:, :, jdof);
 
-          values(ncounter) = sum (jacdet_weights .* sum(ishp .* jshp, 1).');
+          values(ncounter) = sum (jacdet_weights .* sum (ishp .* jshp, 1).');
         end
       end
     else
