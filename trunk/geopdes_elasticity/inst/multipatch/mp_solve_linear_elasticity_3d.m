@@ -106,10 +106,15 @@ mat = spalloc (ndof, ndof, ndof);
 rhs = zeros (ndof, 1);
 
 for iptc = 1:npatch
-  [x, y, z] = deal (squeeze (msh{iptc}.geo_map(1,:,:)), squeeze (msh{iptc}.geo_map(2,:,:)), squeeze (msh{iptc}.geo_map(3,:,:)));
+  x = squeeze (msh{iptc}.geo_map(1,:,:)); 
+  y = squeeze (msh{iptc}.geo_map(2,:,:)); 
+  z = squeeze (msh{iptc}.geo_map(3,:,:));
+  coeff_lam = reshape (lam (x, y, z), msh{iptc}.nqn, msh{iptc}.nel);
+  coeff_mu  = reshape (mu (x, y, z), msh{iptc}.nqn, msh{iptc}.nel);
+  fval      = reshape (f (x, y, z), 3, msh{iptc}.nqn, msh{iptc}.nel);
   
-  mat_loc = op_su_ev (sp{iptc}, sp{iptc}, msh{iptc}, lam (x, y, z), mu (x, y, z)); 
-  rhs_loc = op_f_v (sp{iptc}, msh{iptc}, f (x, y, z));
+  mat_loc = op_su_ev (sp{iptc}, sp{iptc}, msh{iptc}, coeff_lam, coeff_mu); 
+  rhs_loc = op_f_v (sp{iptc}, msh{iptc}, fval);
 
   mat(gnum{iptc},gnum{iptc}) = mat(gnum{iptc},gnum{iptc}) + mat_loc;
   rhs(gnum{iptc}) = rhs(gnum{iptc}) + rhs_loc;
