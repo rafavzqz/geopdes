@@ -63,7 +63,7 @@ function [u, dofs] = mp_sp_drchlt_l2_proj (sp, msh, h, gnum, boundaries, refs)
         hval = reshape (h (x, y, z, iref), sp_bnd.ncomp, msh_bnd.nqn, msh_bnd.nel);
       end
 
-      M_side = op_u_v (sp_bnd, sp_bnd, msh_bnd, ones (size (x)));
+      M_side = op_u_v (sp_bnd, sp_bnd, msh_bnd, ones (msh_bnd.nqn, msh_bnd.nel));
       M(global_dofs, global_dofs) = M(global_dofs, global_dofs) + M_side;
 
       rhs_side = op_f_v (sp_bnd, msh_bnd, hval);
