@@ -15,6 +15,7 @@
 %  dofs: global numbering of the corresponding basis functions
 %
 % Copyright (C) 2010 Carlo de Falco, Rafael Vazquez
+% Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -54,7 +55,7 @@ function [u, dofs] = sp_drchlt_l2_proj (sp, msh, h, sides)
       hval = reshape (h (x, y, z, iside), sp_bnd.ncomp, msh_bnd.nqn, msh_bnd.nel);
     end
 
-    M_side = op_u_v (sp_bnd, sp_bnd, msh_bnd, ones (size (x)));
+    M_side = op_u_v (sp_bnd, sp_bnd, msh_bnd, ones (msh_bnd.nqn, msh_bnd.nel));
     M(sp_bnd.dofs, sp_bnd.dofs) = M(sp_bnd.dofs, sp_bnd.dofs) + M_side;
 
     rhs_side = op_f_v (sp_bnd, msh_bnd, hval);

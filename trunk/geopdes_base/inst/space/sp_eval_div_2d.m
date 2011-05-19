@@ -68,21 +68,18 @@ function [div, F] = sp_eval_div_2d (u, space, varargin);
     error ('sp_eval_div_2d: field cannot be scalar')
   end
 
-  if (~isfield (sp, 'shape_function_divs'))
-    if (~isfield (sp, 'shape_function_gradients'))
-      error ('sp_eval_div_2d: the space structure must have either divs or gradients')
-    else
-      divs = reshape (sp.shape_function_gradients (1, 1, :, :, :) + sp.shape_function_gradients (2, 2, :, :, :), [msh.nqn, sp.nsh_max, msh.nel]);
-    end
-  else
+  if (isfield (sp, 'shape_function_divs'))
     divs = sp.shape_function_divs;
+  elseif (isfield (sp, 'shape_function_gradients'))
+    divs = reshape (sp.shape_function_gradients (1, 1, :, :, :) + sp.shape_function_gradients (2, 2, :, :, :), [msh.nqn, sp.nsh_max, msh.nel]);
+  else
+    error ('sp_eval_div_2d: the space structure must have either divs or gradients')
   end
 
   uc = zeros (size (sp.connectivity));
   uc(sp.connectivity~=0) = u(sp.connectivity(sp.connectivity~=0));
   weight = (repmat (reshape (uc, [1, sp.nsh_max, msh.nel]), [msh.nqn, 1, 1]));
  
-
   div = squeeze (sum (weight .* divs, 2));
   F   = msh.geo_map;
   if ((length (varargin) == 2) && ~ischar(varargin{2}))
