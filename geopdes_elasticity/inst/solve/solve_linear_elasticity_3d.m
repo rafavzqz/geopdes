@@ -96,8 +96,12 @@ clear sp_scalar
 
 % Assemble the matrices
 [x, y, z] = deal (squeeze (msh.geo_map(1,:,:)), squeeze (msh.geo_map(2,:,:)), squeeze (msh.geo_map(3,:,:)));
-mat    = op_su_ev (sp, sp, msh, lam (x, y, z), mu (x, y, z)); 
-rhs    = op_f_v (sp, msh, f (x, y, z));
+coeff_lam = reshape (lam (x, y, z), msh.nqn, msh.nel);
+coeff_mu  = reshape (mu (x, y, z), msh.nqn, msh.nel);
+fval      = reshape (f (x, y, z), 3, msh.nqn, msh.nel);
+
+mat    = op_su_ev (sp, sp, msh, coeff_lam, coeff_mu); 
+rhs    = op_f_v (sp, msh, fval);
 
 % Apply Neumann boundary conditions
 for iside = nmnn_sides
