@@ -14,6 +14,7 @@
 %  mat: assembled mass matrix
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
+% Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -30,27 +31,33 @@
 
 function mat = op_curlv_p (spv, spp, msh, coeff)
   
-  mat = spalloc(spp.ndof, spv.ndof, 1);
+  rows = zeros (msh.nel * spp.nsh_max * spv.nsh_max, 1);
+  cols = zeros (msh.nel * spp.nsh_max * spv.nsh_max, 1);
+  values = zeros (msh.nel * spp.nsh_max * spv.nsh_max, 1);
+
+  ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:,iel)))
-      mat_loc = zeros (spp.nsh(iel), spv.nsh(iel));
+      jacdet_weights = msh.jacdet(:, iel) .* ...
+                       msh.quad_weights(:, iel) .* coeff(:, iel);
       for idof = 1:spp.nsh(iel)
         ishp = squeeze(spp.shape_functions(:,idof,iel));
         for jdof = 1:spv.nsh(iel)
+          ncounter = ncounter + 1;
+          rows(ncounter) = spp.connectivity(idof, iel);
+          cols(ncounter) = spv.connectivity(jdof, iel);
+
           jshp = squeeze(spv.shape_function_curls(:,jdof,iel));
-          %for inode = 1:msh.nqn
-            mat_loc(idof, jdof) = mat_loc(idof, jdof) + ...
-              sum (msh.jacdet(:, iel) .* msh.quad_weights(:, iel) .* ...
-              ishp .* jshp .* coeff(:, iel));
-          %end  
+
+          values(ncounter) = sum (jacdet_weights .* ishp .* jshp);
         end
       end
-      mat(spp.connectivity(1:spp.nsh(iel), iel), spv.connectivity(1:spv.nsh(iel), iel)) = ...
-        mat(spp.connectivity(1:spp.nsh(iel), iel), spv.connectivity(1:spv.nsh(iel), iel)) + mat_loc;
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_curlv_p: singular map in element number %d', iel)
     end
   end
+
+  mat = sparse (rows, cols, values, spp.ndof, spv.ndof);
 
 end
 

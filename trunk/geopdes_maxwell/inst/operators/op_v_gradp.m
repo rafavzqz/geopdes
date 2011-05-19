@@ -14,6 +14,7 @@
 %   mat: assembled matrix
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
+% Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -30,28 +31,35 @@
 
 function mat = op_v_gradp (spv, spp, msh, coeff)
 
-  mat = spalloc(spp.ndof, spv.ndof, 1);
   ndir = size (spp.shape_function_gradients, 1);
+
+  rows = zeros (msh.nel * spp.nsh_max * spv.nsh_max, 1);
+  cols = zeros (msh.nel * spp.nsh_max * spv.nsh_max, 1);
+  values = zeros (msh.nel * spp.nsh_max * spv.nsh_max, 1);
+
+  ncounter = 0;
   for iel = 1:msh.nel
-    if (all (msh.jacdet(:,iel)))
-      mat_loc = zeros (spp.nsh(iel), spv.nsh(iel));
+    if (all (msh.jacdet(:, iel)))
+      jacdet_weights = msh.jacdet(:, iel) .* ...
+                       msh.quad_weights(:, iel) .* coeff(:, iel);
       for idof = 1:spp.nsh(iel)
-        ishg = reshape(spp.shape_function_gradients(:,:,idof,iel),ndir,[]);
+        ishg = reshape (spp.shape_function_gradients(:, :, idof, iel), ndir, []);
         for jdof = 1:spv.nsh(iel)
-          jshg = reshape(spv.shape_functions(:,:,jdof,iel),ndir,[]);
-          %for inode = 1:msh.nqn
-            mat_loc(idof, jdof) = mat_loc(idof, jdof) + ...
-             sum (msh.jacdet(:, iel) .* msh.quad_weights(:, iel) .* ...
-             sum (ishg .* jshg, 1).' .* coeff(:, iel));
-          %end  
+          ncounter = ncounter + 1;
+          rows(ncounter) = spp.connectivity(idof, iel);
+          cols(ncounter) = spv.connectivity(jdof, iel);
+
+          jshg = reshape (spv.shape_functions(:, :, jdof, iel), ndir, []);
+
+          values(ncounter) = sum (jacdet_weights .* sum (ishg .* jshg, 1).');
         end
       end
-      mat(spp.connectivity(1:spp.nsh(iel), iel), spv.connectivity(1:spv.nsh(iel), iel)) = ...
-        mat(spp.connectivity(1:spp.nsh(iel), iel), spv.connectivity(1:spv.nsh(iel), iel)) + mat_loc;
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_v_gradp: singular map in element number %d', iel)
     end
   end
+
+  mat = sparse (rows, cols, values, spp.ndof, spv.ndof);
 
 end
 
