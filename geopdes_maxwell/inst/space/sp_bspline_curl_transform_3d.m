@@ -87,7 +87,6 @@ function sp = sp_bspline_curl_transform_3d (knots_u1, knots_u2, knots_u3, ...
         bnd_shape_functions(3,:,:,:) = 0;
         bnd_shape_functions(1,:,(sp2.boundary(iface).nsh_max+1):boundary.nsh_max,:) = 0;
         bnd_shape_functions(2,:,(sp2.boundary(iface).nsh_max+1):boundary.nsh_max,:) = 0;
-keyboard
         bnd_shape_functions(3,:,(sp2.boundary(iface).nsh_max+1):boundary.nsh_max,:) = sp3_shape_funs;
 
         boundary.shape_functions = bnd_shape_functions;
@@ -168,7 +167,7 @@ keyboard
     end
   end
 
-% Map to the physical domain with a curl conseving transform
+% Map to the physical domain with a curl conserving transform
   sp = sp_curl_transform_3d (sp, msh);
 
   sp.spfun = @(MSH) sp_bspline_curl_transform_3d ...

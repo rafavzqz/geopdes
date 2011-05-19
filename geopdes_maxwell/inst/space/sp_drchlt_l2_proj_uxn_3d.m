@@ -48,7 +48,7 @@ function [u, dofs] = sp_drchlt_l2_proj_uxn_3d (sp, msh, h, sides)
 
     hval = reshape (h (x, y, z, iside), 3, msh_bnd.nqn, msh_bnd.nel);
 
-    M_s = op_uxn_vxn_3d (sp_bnd, sp_bnd, msh_bnd, ones(size(x)));
+    M_s = op_uxn_vxn_3d (sp_bnd, sp_bnd, msh_bnd, ones(msh_bnd.nqn, msh_bnd.nel));
     M(sp_bnd.dofs, sp_bnd.dofs) = M(sp_bnd.dofs, sp_bnd.dofs) + M_s;
 
     rhs_s = op_f_vxn_3d (sp_bnd, msh_bnd, hval);

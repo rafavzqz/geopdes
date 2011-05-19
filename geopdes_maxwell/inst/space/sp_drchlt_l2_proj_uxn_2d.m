@@ -46,7 +46,7 @@ function [u, dofs] = sp_drchlt_l2_proj_uxn_2d (sp, msh, h, sides)
 
     hval = reshape (h (x, y, iside), msh_bnd.nqn, msh_bnd.nel);
 
-    M_side = op_uxn_vxn_2d (sp_bnd, sp_bnd, msh_bnd, ones(size(x)));
+    M_side = op_uxn_vxn_2d (sp_bnd, sp_bnd, msh_bnd, ones(msh_bnd.nqn, msh_bnd.nel));
     M(sp_bnd.dofs, sp_bnd.dofs) = M(sp_bnd.dofs, sp_bnd.dofs) + M_side;
 
     rhs_side = op_f_vxn_2d (sp_bnd, msh_bnd, hval);
