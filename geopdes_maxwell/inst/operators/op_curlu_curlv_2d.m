@@ -14,6 +14,7 @@
 %   mat: assembled matrix
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
+% Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -31,27 +32,33 @@
 
 function mat = op_curlu_curlv_2d (spu, spv, msh, coeff)
   
-  mat = spalloc(spv.ndof, spu.ndof, 1);
+  rows = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
+  cols = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
+  values = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
+
+  ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:,iel)))
-      mat_loc = zeros (spv.nsh(iel), spu.nsh(iel));
+      jacdet_weights = msh.jacdet(:,iel) .* ...
+                       msh.quad_weights(:, iel) .* coeff (:, iel);
       for idof = 1:spv.nsh(iel)
-        ishc = squeeze (spv.shape_function_curls(:,idof,iel));
+        ishc = squeeze (spv.shape_function_curls(:, idof, iel));
         for jdof = 1:spu.nsh(iel)
-          jshc = squeeze (spu.shape_function_curls(:,jdof,iel));
-          %for inode = 1:msh.nqn
-            mat_loc(idof, jdof) = mat_loc(idof, jdof) + ...
-              sum (msh.jacdet(:,iel) .* msh.quad_weights(:, iel) .*...
-              ishc .* jshc .* coeff (:, iel));
-          %end  
+          ncounter = ncounter + 1;
+          rows(ncounter) = spv.connectivity(idof, iel);
+          cols(ncounter) = spu.connectivity(jdof, iel);
+
+          jshc = squeeze (spu.shape_function_curls(:, jdof, iel));
+
+          values(ncounter) = sum (jacdet_weights .* ishc .* jshc);
         end
       end
-      mat(spv.connectivity(1:spv.nsh(iel),iel), spu.connectivity(1:spu.nsh(iel),iel)) = ...
-        mat(spv.connectivity(1:spv.nsh(iel),iel), spu.connectivity(1:spu.nsh(iel),iel)) + mat_loc;
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_curlu_curlv: singular map in element number %d', iel)
     end
   end
+
+  mat = sparse (rows, cols, values, spv.ndof, spu.ndof);
 
 end
 
