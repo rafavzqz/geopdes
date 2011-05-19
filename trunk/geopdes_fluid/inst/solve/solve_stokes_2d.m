@@ -94,12 +94,14 @@ msh         = msh_push_forward_2d (msh, geometry, 'der2', der2);
 % Assemble the matrices
 x           = squeeze (msh.geo_map(1,:,:));
 y           = squeeze (msh.geo_map(2,:,:));
+visc        = reshape (viscosity (x, y), msh.nqn, msh.nel);
+fval        = reshape (f (x, y), 2, msh.nqn, msh.nel);
 
-A           = op_gradu_gradv (space_v, space_v, msh, viscosity (x, y)); 
+A           = op_gradu_gradv (space_v, space_v, msh, visc); 
 B           = PI' * op_div_v_q (space_v, space_p, msh);
-M           = op_u_v (space_p, space_p, msh, ones (size (x))); 
+M           = op_u_v (space_p, space_p, msh, ones (msh.nqn, msh.nel)); 
 E           = sum (M, 1) * PI / sum (sum (M)); 
-F           = op_f_v (space_v, msh, f (x, y)); 
+F           = op_f_v (space_v, msh, fval); 
 
 vel         = zeros (space_v.ndof, 1);
 press       = zeros (space_p.ndof, 1);

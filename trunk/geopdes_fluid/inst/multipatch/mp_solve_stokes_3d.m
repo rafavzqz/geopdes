@@ -116,10 +116,13 @@ for iptc = 1:npatch
   x = squeeze (msh{iptc}.geo_map(1,:,:));
   y = squeeze (msh{iptc}.geo_map(2,:,:));
   z = squeeze (msh{iptc}.geo_map(3,:,:));
-  A_loc = op_gradu_gradv (spv{iptc}, spv{iptc}, msh{iptc}, viscosity (x, y, z));
+  visc = reshape (viscosity (x, y, z), msh{iptc}.nqn, msh{iptc}.nel);
+  fval = reshape (f (x, y, z), 3, msh{iptc}.nqn, msh{iptc}.nel);
+
+  A_loc = op_gradu_gradv (spv{iptc}, spv{iptc}, msh{iptc}, visc);
   B_loc = op_div_v_q (spv{iptc}, spp{iptc}, msh{iptc});
-  M_loc = op_u_v (spp{iptc}, spp{iptc}, msh{iptc}, ones (size (x))); 
-  F_loc = op_f_v (spv{iptc}, msh{iptc}, f (x, y, z));
+  M_loc = op_u_v (spp{iptc}, spp{iptc}, msh{iptc}, ones (msh{iptc}.nqn, msh{iptc}.nel)); 
+  F_loc = op_f_v (spv{iptc}, msh{iptc}, fval);
 
   A(gnum{iptc},gnum{iptc})   = A(gnum{iptc},gnum{iptc}) + A_loc;
   M(gnump{iptc},gnump{iptc}) = M(gnump{iptc},gnump{iptc}) + M_loc;
