@@ -32,6 +32,7 @@
 %   For more details, see the documentation
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
+% Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -53,8 +54,12 @@ function sp = sp_nurbs_2d_param (nrb, msh, varargin)
   sp = sp_bspline_2d_param (nrb.knots, nrb.order - 1, msh, varargin{:});
   sp = bsp_2_nrb_2d__ (sp, msh, w);
   if (isfield (msh, 'boundary'))
+    w_bnd{1} = w(1,:);
+    w_bnd{2} = w(end,:);
+    w_bnd{3} = w(:,1);
+    w_bnd{4} = w(:,end);
     for iside = 1:numel(msh.boundary)
-      sp.boundary(iside) = bsp_2_nrb_1d__ (sp.boundary(iside), msh.boundary(iside), w);
+      sp.boundary(iside) = bsp_2_nrb_1d__ (sp.boundary(iside), msh.boundary(iside), w_bnd{iside});
     end
   end
 
