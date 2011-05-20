@@ -36,22 +36,23 @@ function mat = op_uxn_vxn_2d (spu, spv, msh, coeff)
     if (all (msh.jacdet(:, iel)))
       jacdet_weights = msh.jacdet(:, iel) .* ...
               msh.quad_weights(:, iel) .* coeff(:, iel);
+
       for idof = 1:spv.nsh(iel)
         ishp = squeeze (spv.shape_functions(:, :, idof, iel));
         ishp_x_n = (ishp(1, :) .* msh.normal(2, :, iel) - ...
                     ishp(2, :) .* msh.normal(1, :, iel))';
-        for jdof = 1:spu.nsh(iel)
-          ncounter = ncounter + 1;
-          rows(ncounter) = spv.connectivity(idof, iel);
-          cols(ncounter) = spu.connectivity(jdof, iel);
 
+        rows(ncounter+(1:spu.nsh(iel))) = spv.connectivity(idof, iel);
+        cols(ncounter+(1:spu.nsh(iel))) = spu.connectivity(1:spu.nsh(iel), iel);
+
+        for jdof = 1:spu.nsh(iel)
           jshp = squeeze (spu.shape_functions(:, :, jdof, iel));
           jshp_x_n = (jshp(1, :) .* msh.normal(2, :, iel) - ...
                       jshp(2, :) .* msh.normal(1, :, iel))';
 
-          values(ncounter) = sum (jacdet_weights .* ishp_x_n .* jshp_x_n);
-          %end  
+          values(ncounter+jdof) = sum (jacdet_weights .* ishp_x_n .* jshp_x_n);
         end
+        ncounter = ncounter + spu.nsh(iel);
       end
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_uxn_vxn_2d: singular map in element number %d', iel)

@@ -36,13 +36,16 @@ function rhs = op_f_vxn_2d (spv, msh, coeff)
     if (all (msh.jacdet(:,iel)))
       jacdet_weights = msh.jacdet(:, iel) .* ...
                       msh.quad_weights(:, iel) .* coeff(:, iel);
+
       rhs_loc = zeros (spv.nsh(iel), 1);
+
       for idof = 1:spv.nsh(iel)
         ishp = squeeze(spv.shape_functions(:, :, idof, iel));
         ishp_x_n = (ishp(1, :) .* msh.normal(2, :, iel) - ...
                     ishp(2, :) .* msh.normal(1, :, iel))';
         rhs_loc(idof) = rhs_loc(idof) + sum (jacdet_weights .* ishp_x_n);
       end
+
       rhs(spv.connectivity(1:spv.nsh(iel), iel)) = rhs(spv.connectivity(1:spv.nsh(iel), iel)) + rhs_loc;
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_f_vxn_2d: singular map in element number %d', iel)
