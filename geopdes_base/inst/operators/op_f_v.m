@@ -38,14 +38,18 @@ function rhs = op_f_v (spv, msh, coeff)
  coeff = reshape (coeff, spv.ncomp, msh.nqn, msh.nel);
  for iel = 1:msh.nel
    if (all (msh.jacdet(:,iel)))
-     jacdet_weights = msh.jacdet(:, iel) .* msh.quad_weights(:, iel);
      rhs_loc = zeros (spv.nsh(iel), 1);
-     for idof = 1:spv.nsh(iel)
-       ishp = reshape(shpv(:, :, idof, iel), spv.ncomp, []);
 
-       rhs_loc(idof) = rhs_loc(idof) + ...
-           sum (jacdet_weights .* sum(ishp .* coeff(:, :, iel), 1).');
-     end
+     jacdet_weights = msh.jacdet(:, iel) .* msh.quad_weights(:, iel);
+     jacdet_weights = repmat (jacdet_weights, [1, spv.nsh(iel)]);
+
+     coeff_iel = repmat (coeff(:, :, iel), [1, 1, spv.nsh(iel)]);
+
+     shpv_iel = reshape (shpv(:, :, 1:spv.nsh(iel), iel), spv.ncomp, msh.nqn, spv.nsh(iel));
+
+     val1 = reshape (sum (shpv_iel .* coeff_iel, 1), [msh.nqn, spv.nsh(iel)]);
+     rhs_loc = sum (jacdet_weights .* val1, 1).';
+
      rhs(spv.connectivity(1:spv.nsh(iel), iel)) = rhs(spv.connectivity(1:spv.nsh(iel), iel)) + rhs_loc; 
    else
      warning ('geopdes:jacdet_zero_at_quad_node', 'op_f_v: singular map in element number %d', iel)

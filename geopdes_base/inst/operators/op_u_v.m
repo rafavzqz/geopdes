@@ -43,20 +43,20 @@ function mat = op_u_v (spu, spv, msh, coeff)
     if (all (msh.jacdet(:,iel)))
       jacdet_weights = msh.jacdet(:, iel) .* ...
                        msh.quad_weights(:, iel) .* coeff(:, iel);
+      jacdet_weights = repmat (jacdet_weights, [1, spu.nsh(iel)]);
 
-      shpv_iel = reshape (shpv(:, :, :, iel), spv.ncomp, msh.nqn, spv.nsh_max);
-      shpu_iel = reshape (shpu(:, :, :, iel), spu.ncomp, msh.nqn, spu.nsh_max);
+      shpv_iel = reshape (shpv(:, :, 1:spv.nsh(iel), iel), spv.ncomp, msh.nqn, spv.nsh(iel));
+      shpu_iel = reshape (shpu(:, :, 1:spu.nsh(iel), iel), spu.ncomp, msh.nqn, spu.nsh(iel));
+
       for idof = 1:spv.nsh(iel)
-        ishp = shpv_iel(:, :, idof);
-        for jdof = 1:spu.nsh(iel)
-          ncounter = ncounter + 1;
-          rows(ncounter) = spv.connectivity(idof, iel);
-          cols(ncounter) = spu.connectivity(jdof, iel);
+        ishp  = repmat (shpv_iel(:, :, idof), [1, 1, spu.nsh(iel)]);
 
-          jshp = shpu_iel(:, :, jdof);
+        rows(ncounter+(1:spu.nsh(iel))) = spv.connectivity(idof, iel);
+        cols(ncounter+(1:spu.nsh(iel))) = spu.connectivity(1:spu.nsh(iel), iel);
 
-          values(ncounter) = sum (jacdet_weights .* sum (ishp .* jshp, 1).');
-        end
+        values(ncounter+(1:spu.nsh(iel))) = sum (jacdet_weights .* ...
+          reshape (sum (ishp .* shpu_iel, 1), msh.nqn, spu.nsh(iel)), 1);
+        ncounter = ncounter + spu.nsh(iel);
       end
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_u_v: singular map in element number %d', iel)
