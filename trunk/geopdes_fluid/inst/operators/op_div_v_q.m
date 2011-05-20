@@ -38,17 +38,20 @@ function mat = op_div_v_q (spv, spq, msh)
   for iel = 1:msh.nel
     if (all (msh.jacdet(:, iel)))
       jacdet_weights = msh.jacdet(:,iel) .* msh.quad_weights(:, iel);
+      jacdet_weights = repmat (jacdet_weights, [1, spv.nsh(iel)]);
+
+      shpq_iel = spq.shape_functions(:, 1:spq.nsh(iel), iel);
+      divv_iel = spv.shape_function_divs(:, 1:spv.nsh(iel), iel);
+
       for idof = 1:spq.nsh(iel)
-        ishp = spq.shape_functions(:, idof, iel);
-        for jdof = 1:spv.nsh(iel) 
-          ncounter = ncounter + 1;
-          rows(ncounter) = spq.connectivity(idof, iel);
-          cols(ncounter) = spv.connectivity(jdof, iel);
+        ishp  = repmat (shpq_iel(:, idof), [1, spv.nsh(iel)]);
 
-          jshd = spv.shape_function_divs(:, jdof, iel);
+        rows(ncounter+(1:spv.nsh(iel))) = spq.connectivity(idof, iel);
+        cols(ncounter+(1:spv.nsh(iel))) = spv.connectivity(1:spv.nsh(iel), iel);
 
-          values(ncounter) = sum (jacdet_weights .* ishp .* jshd);
-        end
+        values(ncounter+(1:spv.nsh(iel))) = ...
+                  sum (jacdet_weights .* ishp .* divv_iel);
+        ncounter = ncounter + spv.nsh(iel);
       end
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_div_v_q: singular map in element number %d', iel)
