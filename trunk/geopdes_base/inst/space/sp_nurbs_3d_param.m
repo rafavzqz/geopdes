@@ -48,13 +48,19 @@
 
 function sp = sp_nurbs_3d_param (nrb, msh, varargin)
 
-  w  = squeeze (nrb.coefs(4,:,:));
+  w  = squeeze (nrb.coefs(4,:,:,:));
 
   sp = sp_bspline_3d_param (nrb.knots, nrb.order - 1, msh, varargin{:});
   sp = bsp_2_nrb_3d__ (sp, msh, w);
   if (isfield (msh, 'boundary'))
+    w_bnd{1} = w(1,:,:);
+    w_bnd{2} = w(end,:,:);
+    w_bnd{3} = w(:,1,:);
+    w_bnd{4} = w(:,end,:);
+    w_bnd{5} = w(:,:,1);
+    w_bnd{6} = w(:,:,end);
     for iside = 1:numel(msh.boundary)
-      sp.boundary(iside) = bsp_2_nrb_2d__ (sp.boundary(iside), msh.boundary(iside), w);
+      sp.boundary(iside) = bsp_2_nrb_2d__ (sp.boundary(iside), msh.boundary(iside), w_bnd{iside});
     end
   end
 
