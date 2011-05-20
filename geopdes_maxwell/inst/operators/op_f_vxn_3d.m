@@ -36,6 +36,7 @@ function rhs = op_f_vxn_3d (spv, msh, coeff)
   for iel = 1:msh.nel
     if (all (msh.jacdet(:,iel)))
       jacdet_weights = msh.jacdet(:, iel) .* msh.quad_weights(:, iel);
+
       rhs_loc = zeros (spv.nsh(iel), 1);
       for idof = 1:spv.nsh(iel)
         ishp = squeeze(spv.shape_functions(:,:,idof,iel));
@@ -45,9 +46,11 @@ function rhs = op_f_vxn_3d (spv, msh, coeff)
                        ishp(1,:) .* msh.normal(3,:,iel); ...
                     ishp(1,:) .* msh.normal(2,:,iel) - ...
                        ishp(2,:) .* msh.normal(1,:,iel)];
+
           rhs_loc(idof) = rhs_loc(idof) +  ...
             sum (jacdet_weights .* sum(ishp_x_n .* coeff(:, :, iel), 1).');
       end
+
       rhs(spv.connectivity(1:spv.nsh(iel), iel)) = rhs(spv.connectivity(1:spv.nsh(iel), iel)) + rhs_loc;
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_f_vxn_3d: singular map in element number %d', iel)

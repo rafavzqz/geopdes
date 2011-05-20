@@ -42,17 +42,22 @@ function mat = op_v_gradp (spv, spp, msh, coeff)
     if (all (msh.jacdet(:, iel)))
       jacdet_weights = msh.jacdet(:, iel) .* ...
                        msh.quad_weights(:, iel) .* coeff(:, iel);
+      jacdet_weights = repmat (jacdet_weights, [1, spv.nsh(iel)]);
+
+      gradp_iel = reshape (spp.shape_function_gradients(:, :, 1:spp.nsh(iel), iel), ...
+                                     ndir, msh.nqn, spp.nsh(iel));
+      shpv_iel = reshape (spv.shape_functions(:, :, 1:spv.nsh(iel), iel), ...
+                                     ndir, msh.nqn, spv.nsh(iel));
+
       for idof = 1:spp.nsh(iel)
-        ishg = reshape (spp.shape_function_gradients(:, :, idof, iel), ndir, []);
-        for jdof = 1:spv.nsh(iel)
-          ncounter = ncounter + 1;
-          rows(ncounter) = spp.connectivity(idof, iel);
-          cols(ncounter) = spv.connectivity(jdof, iel);
+        ishg  = repmat (gradp_iel(:, :, idof), [1, 1, spv.nsh(iel)]);
 
-          jshg = reshape (spv.shape_functions(:, :, jdof, iel), ndir, []);
+        rows(ncounter+(1:spv.nsh(iel))) = spp.connectivity(idof, iel);
+        cols(ncounter+(1:spv.nsh(iel))) = spv.connectivity(1:spv.nsh(iel), iel);
 
-          values(ncounter) = sum (jacdet_weights .* sum (ishg .* jshg, 1).');
-        end
+        values(ncounter+(1:spv.nsh(iel))) = sum (jacdet_weights .* ...
+          reshape (sum (ishg .* shpv_iel, 1), msh.nqn, spv.nsh(iel)), 1);
+        ncounter = ncounter + spv.nsh(iel);
       end
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_v_gradp: singular map in element number %d', iel)

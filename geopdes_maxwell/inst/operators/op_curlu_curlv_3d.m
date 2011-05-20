@@ -41,17 +41,22 @@ function mat = op_curlu_curlv_3d (spu, spv, msh, coeff)
     if (all (msh.jacdet(:,iel)))
       jacdet_weights = msh.jacdet(:, iel) .* ...
                        msh.quad_weights(:, iel) .* coeff (:, iel);
+      jacdet_weights = repmat (jacdet_weights, [1, spu.nsh(iel)]);
+
+      curlv_iel = reshape (spv.shape_function_curls(:, :, 1:spv.nsh(iel), iel), ...
+                            3, msh.nqn, spv.nsh(iel));
+      curlu_iel = reshape (spu.shape_function_curls(:, :, 1:spu.nsh(iel), iel), ...
+                            3, msh.nqn, spu.nsh(iel));
       for idof = 1:spv.nsh(iel)
-        ishc = reshape(spv.shape_function_curls(:, :, idof, iel), 3, []);
-        for jdof = 1:spu.nsh(iel)
-          ncounter = ncounter + 1;
-          rows(ncounter) = spv.connectivity(idof, iel);
-          cols(ncounter) = spu.connectivity(jdof, iel);
+        ishc = repmat (curlv_iel(:, :, idof), [1, 1, spu.nsh(iel)]);
 
-          jshc = reshape (spu.shape_function_curls(:, :, jdof, iel), 3, []);
+        rows(ncounter+(1:spu.nsh(iel))) = spv.connectivity(idof, iel);
+        cols(ncounter+(1:spu.nsh(iel))) = spu.connectivity(1:spu.nsh(iel), iel);
 
-          values(ncounter) = sum (jacdet_weights .* sum (ishc .* jshc, 1).');
-        end
+        values(ncounter+(1:spu.nsh(iel))) = sum (jacdet_weights .* ...
+           reshape (sum (ishc .* curlu_iel, 1), msh.nqn, spu.nsh(iel)), 1);
+
+        ncounter = ncounter + spu.nsh(iel);
       end
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_curlu_curlv_3d: singular map in element number %d', iel)

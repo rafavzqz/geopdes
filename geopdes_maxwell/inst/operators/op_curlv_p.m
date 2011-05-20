@@ -40,17 +40,23 @@ function mat = op_curlv_p (spv, spp, msh, coeff)
     if (all (msh.jacdet(:,iel)))
       jacdet_weights = msh.jacdet(:, iel) .* ...
                        msh.quad_weights(:, iel) .* coeff(:, iel);
+      jacdet_weights = repmat (jacdet_weights, [1, spv.nsh(iel)]);
+
+      shapep_iel = reshape (spp.shape_functions(:, 1:spp.nsh(iel), iel), ...
+                                                  msh.nqn, spp.nsh(iel));
+      curlv_iel = reshape (spv.shape_function_curls(:, 1:spv.nsh(iel), iel), ...
+                           msh.nqn, spv.nsh(iel));
+
       for idof = 1:spp.nsh(iel)
-        ishp = squeeze(spp.shape_functions(:,idof,iel));
-        for jdof = 1:spv.nsh(iel)
-          ncounter = ncounter + 1;
-          rows(ncounter) = spp.connectivity(idof, iel);
-          cols(ncounter) = spv.connectivity(jdof, iel);
+        ishp = repmat (shapep_iel(:, idof), [1, spv.nsh(iel)]);
 
-          jshp = squeeze(spv.shape_function_curls(:,jdof,iel));
+        rows(ncounter+(1:spv.nsh(iel))) = spp.connectivity(idof, iel);
+        cols(ncounter+(1:spv.nsh(iel))) = spv.connectivity(1:spv.nsh(iel), iel);
 
-          values(ncounter) = sum (jacdet_weights .* ishp .* jshp);
-        end
+        values(ncounter+(1:spv.nsh(iel))) = ...
+               sum (jacdet_weights .* ishp .* curlv_iel, 1);
+
+        ncounter = ncounter + spv.nsh(iel);
       end
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_curlv_p: singular map in element number %d', iel)
