@@ -44,33 +44,34 @@ function mat = op_su_ev (spu, spv, msh, lambda, mu)
   for iel = 1:msh.nel
     if (all (msh.jacdet(:, iel)))
       jacdet_weights = msh.jacdet(:, iel) .* msh.quad_weights(:, iel);
-      jacdet_weights_mu = jacdet_weights .* mu(:, iel);
-      jacdet_weights_lambda = jacdet_weights .* lambda(:, iel);
+      jacdet_weights_mu = repmat (jacdet_weights .* mu(:, iel), [1,spu.nsh(iel)]);
+      jacdet_weights_lambda = repmat (jacdet_weights .* lambda(:, iel), [1,spu.nsh(iel)]);
 
-      gradu_iel = permute (gradu(:, :, :, :, iel), [1 2 4 3]);
+      gradu_iel = permute (gradu(:, :, :, 1:spu.nsh(iel), iel), [1 2 4 3]);
       epsu_iel = (gradu_iel + permute (gradu_iel, [2 1 3 4]))/2;
-      epsu_iel = reshape (epsu_iel, spu.ncomp * ndir, spu.nsh_max, []);
+      epsu_iel = reshape (epsu_iel, spu.ncomp * ndir, spu.nsh(iel), []);
       epsu_iel = permute (epsu_iel, [1 3 2]);
 
-      gradv_iel = permute (gradv(:, :, :, :, iel), [1 2 4 3]);
+      gradv_iel = permute (gradv(:, :, :, 1:spv.nsh(iel), iel), [1 2 4 3]);
       epsv_iel = (gradv_iel + permute (gradv_iel, [2 1 3 4]))/2;
-      epsv_iel = reshape (epsv_iel, spv.ncomp * ndir, spv.nsh_max, []);
+      epsv_iel = reshape (epsv_iel, spv.ncomp * ndir, spv.nsh(iel), []);
       epsv_iel = permute (epsv_iel, [1 3 2]);
 
-      for idof = 1:spv.nsh(iel)
-        ieps  = epsv_iel(:, :, idof);
-        idiv  = spv.shape_function_divs(:, idof, iel);
-        for jdof = 1:spu.nsh(iel) 
-          ncounter = ncounter + 1;
-          rows(ncounter) = spv.connectivity(idof, iel);
-          cols(ncounter) = spu.connectivity(jdof, iel);
+      divu_iel = spu.shape_function_divs(:,:,iel);
 
-          jeps  = epsu_iel(:, :, jdof);
-          jdiv  = spu.shape_function_divs(:, jdof, iel);
-          
-          values(ncounter) = 2 * sum (sum (ieps .* jeps, 1).' .* jacdet_weights_mu)  + ...
-                    sum (jacdet_weights_lambda .* (idiv .* jdiv));
-        end
+      for idof = 1:spv.nsh(iel)
+        ieps  = repmat (epsv_iel(:, :, idof), [1 1 spu.nsh(iel)]);;
+        idiv  = repmat (spv.shape_function_divs(:, idof, iel), [1 spu.nsh(iel)]);
+
+        rows(ncounter+(1:spu.nsh(iel))) = spv.connectivity(idof, iel);
+        cols(ncounter+(1:spu.nsh(iel))) = spu.connectivity(1:spu.nsh(iel), iel);
+
+        val1 = 2 * sum (jacdet_weights_mu .* ...
+          reshape (sum (ieps .* epsu_iel, 1), msh.nqn, spu.nsh(iel)), 1);
+        val2 = sum (jacdet_weights_lambda .* idiv .* divu_iel, 1);
+
+        values(ncounter+(1:spu.nsh(iel))) = val1 + val2;
+        ncounter = ncounter + spu.nsh(iel);
       end
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_su_ev: singular map in element number %d', iel)
