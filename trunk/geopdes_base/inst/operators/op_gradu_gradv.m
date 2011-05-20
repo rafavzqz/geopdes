@@ -45,26 +45,25 @@ function mat = op_gradu_gradv (spu, spv, msh, coeff)
     if (all (msh.jacdet(:, iel)))
       jacdet_weights = msh.jacdet(:, iel) .* ...
                        msh.quad_weights(:, iel) .* coeff(:, iel);
+      jacdet_weights = repmat (jacdet_weights, [1,spu.nsh(iel)]);
 
-      gradu_iel = permute (gradu(:, :, :, :, iel), [1 2 4 3]);
-      gradu_iel = reshape (gradu_iel, spu.ncomp * ndir, spu.nsh_max, []);
+      gradu_iel = permute (gradu(:, :, :, 1:spu.nsh(iel), iel), [1 2 4 3]);
+      gradu_iel = reshape (gradu_iel, spu.ncomp * ndir, spu.nsh(iel), []);
       gradu_iel = permute (gradu_iel, [1 3 2]);
 
-      gradv_iel = permute (gradv(:, :, :, :, iel), [1 2 4 3]);
-      gradv_iel = reshape (gradv_iel, spv.ncomp * ndir, spv.nsh_max, []);
+      gradv_iel = permute (gradv(:, :, :, 1:spv.nsh(iel), iel), [1 2 4 3]);
+      gradv_iel = reshape (gradv_iel, spv.ncomp * ndir, spv.nsh(iel), []);
       gradv_iel = permute (gradv_iel, [1 3 2]);
 
       for idof = 1:spv.nsh(iel)
-        ishg = gradv_iel(:, :, idof);
-        for jdof = 1:spu.nsh(iel) 
-          ncounter = ncounter + 1;
-          rows(ncounter) = spv.connectivity(idof, iel);
-          cols(ncounter) = spu.connectivity(jdof, iel);
+        ishg = repmat (gradv_iel(:, :, idof), [1 1 spu.nsh(iel)]);
 
-          jshg = gradu_iel(:, :, jdof);
+        rows(ncounter+(1:spu.nsh(iel))) = spv.connectivity(idof, iel);
+        cols(ncounter+(1:spu.nsh(iel))) = spu.connectivity(1:spu.nsh(iel), iel);
 
-          values(ncounter) = sum (jacdet_weights .* sum (ishg .* jshg, 1).');
-        end
+        values(ncounter+(1:spu.nsh(iel))) = sum (jacdet_weights .* ...
+          reshape (sum (ishg .* gradu_iel, 1), msh.nqn, spu.nsh(iel)), 1);
+        ncounter = ncounter + spu.nsh(iel);
       end
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_gradu_gradv: singular map in element number %d', iel)
