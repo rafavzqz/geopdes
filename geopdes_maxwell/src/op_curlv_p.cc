@@ -1,4 +1,5 @@
 /* Copyright (C) 2009, 2010 Carlo de Falco, Rafael Vazquez
+   Copyright (C) 2011 Rafael Vazquez
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,12 +21,12 @@
 DEFUN_DLD(op_curlv_p, args, nargout,"\n\
 OP_CURLV_P: assemble the matrix B = [b(i,j)], b(i,j) = (coeff p_i, curl v_j). \n\
 \n\
-  mat = op_curlv_p (spu, spv, msh, coeff); \n\
+  mat = op_curlv_p (spv, spp, msh, coeff); \n\
 \n\
 INPUT:\n\
 \n\
-  spu:   structure representing the space of vectorial trial functions (see sp_bsp_hcurl_2d_phys) \n\
-  spv:   structure representing the space of scalar test functions  (see sp_bsp_l2_2d_phys) \n\
+  spv:   structure representing the space of vectorial trial functions (see sp_bsp_hcurl_2d_phys) \n\
+  spp:   structure representing the space of scalar test functions  (see sp_bsp_l2_2d_phys) \n\
   msh:   structure containing the domain partition and the quadrature rule (see msh_push_forward_2d) \n\
   coeff: physical parameter \n\
 \n\
@@ -44,36 +45,74 @@ OUTPUT:\n\
 
   if (!error_state)
     {
-      dim_vector dims (msh.nel () * spv.nsh_max () * spp.nsh_max (), 1);
+      const octave_idx_type nel = msh.nel (), ndir = msh.ndir (), ncomp = spv.ncomp (), nqn = msh.nqn (), ndof_spp = spp.ndof (), nsh_max_spp = spp.nsh_max (), ndof_spv = spv.ndof (), nsh_max_spv = spv.nsh_max ();
+
+      dim_vector dims (nel * nsh_max_spv * nsh_max_spp, 1);
       Array <octave_idx_type> I (dims, 0);
       Array <octave_idx_type> J (dims, 0);
       Array <double> V (dims, 0.0);
 
       SparseMatrix mat;
 
+      octave_idx_type counter = 0, iel, inode, idof, jdof;
+
 #pragma omp parallel default (none) shared (msh, spp, spv, I, J, V)
       {      
         octave_idx_type counter;
 
 #pragma omp for
-        for ( octave_idx_type iel=0; iel < msh.nel (); iel++) 
+        for ( iel=0; iel < nel; iel++) 
           if (msh.area (iel) > 0.0)
             {
-              for ( octave_idx_type idof(0); idof < spp.nsh (iel); idof++) 
+              const octave_idx_type nsh_p = spp.nsh (iel);
+              const octave_idx_type nsh_v = spv.nsh (iel);
+              double jacdet_weights[nqn];
+
+              for ( inode = 0; inode < nqn; inode++)
                 {
-                  for (octave_idx_type jdof(0); jdof < spv.nsh (iel); jdof++)
+                  jacdet_weights[inode] = msh.jacdet (inode, iel) *
+                    msh.weights (inode, iel) * coeff (inode, iel);
+                }
+
+              double shcv[nsh_v][nqn];
+              double shpp[nsh_p][nqn];
+              int conn_v[nsh_v];
+              int conn_p[nsh_p];
+
+              for ( idof = 0; idof < nsh_p; idof++) 
+		{
+                  for ( inode = 0; inode < nqn; inode++)
                     {
-                      counter = jdof + spv.nsh (iel) * (idof + spp.nsh (iel) * iel);
-                      I(counter) = spp.connectivity (idof,iel) - 1;
-                      J(counter) = spv.connectivity (jdof,iel) - 1;
+                      shpp[idof][inode] = spp.shape_functions (0, inode, idof, iel);
+                    }
+		  conn_p[idof] = spp.connectivity (idof, iel) - 1;
+	        }
+
+              for ( jdof = 0; jdof < nsh_v; jdof++) 
+		{
+                  for ( inode = 0; inode < nqn; inode++)
+                    {
+                      shcv[jdof][inode] = spv.shape_function_curls (inode, jdof, iel);
+                    }
+		  conn_v[jdof] = spv.connectivity (jdof, iel) - 1;
+	        }
+
+
+              for ( idof = 0; idof < nsh_p; idof++) 
+                {
+                  for ( jdof = 0; jdof < nsh_v; jdof++) 
+                    {
+                      counter = jdof + nsh_v * (idof + nsh_p * iel);
+
+                      I(counter) = conn_p[idof];
+                      J(counter) = conn_v[jdof];
                       V(counter) = 0.0;
-                      for ( octave_idx_type inode(0); inode < msh.nqn (); inode++)
+                      for ( inode = 0; inode < nqn; inode++)
                         {
                           if (msh.weights (inode, iel) > 0.0)
                             {			  
-                              V(counter) += 
-                                msh.jacdet (inode, iel) * msh.weights (inode, iel) * 
-                                (spp.shape_functions (0, inode, idof, iel) * spv.shape_function_curls (inode, jdof, iel));
+                              V(counter) += jacdet_weights[inode] * 
+                                shpp[idof][inode] * shcv[jdof][inode];
                             }  
                         } // end for inode		  
                       counter++;
@@ -84,7 +123,7 @@ OUTPUT:\n\
             {warning_with_id ("geopdes:zero_measure_element", "op_curlv_p: element %d has 0 area", iel);}
           }  // end for iel, if area > 0
       } // end parallel section
-      mat = SparseMatrix(V, I, J, spp.ndof (), spv.ndof (), true);
+      mat = SparseMatrix(V, I, J, ndof_spp, ndof_spv, true);
       retval(0) = octave_value (mat);
     } // end if !error_state
   return retval;
