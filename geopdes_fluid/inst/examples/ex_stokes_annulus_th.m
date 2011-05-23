@@ -58,7 +58,7 @@ method_data.element_name = 'th';     % Element type for discretization
 method_data.degree       = [ 3  3];  % Degree of the splines
 method_data.regularity   = [ 2  2];  % Regularity of the splines
 method_data.nsub         = [10 10];  % Number of subdivisions
-method_data.nquad        = [ 4  4];  % Points for the Gaussian quadrature rule
+method_data.nquad        = [ 5  5];  % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
 [geometry, msh, space_v, vel, space_p, press] = ...
