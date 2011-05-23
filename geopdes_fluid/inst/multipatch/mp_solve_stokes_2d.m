@@ -77,6 +77,10 @@ for iopt  = 1:numel (data_names)
   eval ([data_names{iopt} '= method_data.(data_names{iopt});']);
 end
 
+if (lower (element_name) = 'rt' || lower (element_name) = 'ndl')
+  error ('mp_solve_stokes_2d: multipatch is not ready for RT and NDL elements')
+end
+
 % Construct geometry structure, and information for interfaces and boundaries
 [geometry, boundaries, interfaces] = mp_geo_load (geo_name);
 npatch = numel (geometry);
