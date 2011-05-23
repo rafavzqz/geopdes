@@ -43,7 +43,11 @@ while (line ~= -1)
   if (line(1) ~= '#')
     vec = str2num(line);
     dim = vec(1);
-    npatches = vec(2);
+    if (numel (vec) > 1)
+      npatches = vec(2);
+    else
+      npatches = 1;
+    end
     break
   end
   line = fgetl (fid);
