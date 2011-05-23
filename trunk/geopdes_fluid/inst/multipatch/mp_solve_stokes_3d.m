@@ -80,6 +80,10 @@ for iopt  = 1:numel (data_names)
   eval ([data_names{iopt} '= method_data.(data_names{iopt});']);
 end
 
+if (lower (element_name) = 'rt' || lower (element_name) = 'ndl')
+  error ('mp_solve_stokes_3d: multipatch is not ready for RT and NDL elements')
+end
+
 % Construct geometry structure, and information for interfaces and boundaries
 [geometry, boundaries, interfaces] = mp_geo_load (geo_name);
 npatch = numel (geometry);
@@ -94,7 +98,7 @@ for iptc = 1:npatch
   rule      = msh_gauss_nodes (nquad);
   [qn, qw]  = msh_set_quad_nodes (knotsv1, rule);
   msh{iptc} = msh_3d_tensor_product (knotsv1, qn, qw);
-  msh{iptc} = msh_push_forward_3d (msh{iptc}, geometry(iptc), 'der2', der2);
+  msh{iptc} = msh_push_forward_3d (msh{iptc}, geometry(iptc));
 
 % Construct space structure
   [spv{iptc}, spp{iptc}] = sp_bspline_fluid_3d_phys (element_name, ...
