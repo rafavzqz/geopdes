@@ -1,4 +1,5 @@
 /* Copyright (C) 2010 Carlo de Falco, Rafael Vazquez
+   Copyright (C) 2011 Rafael Vazquez
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -43,28 +44,54 @@ OUTPUT:\n\
 
   if (!error_state)
     {
-      ColumnVector mat (sp.ndof (), 0.0);
+      const octave_idx_type nel = msh.nel (), ncomp = sp.ncomp (), nqn = msh.nqn ();
+
+     ColumnVector mat (sp.ndof (), 0.0);
+
+      octave_idx_type counter = 0, iel, inode, idof;
+
 #pragma omp parallel default (none) shared (msh, sp, coeff, mat) 
       {
         double local_contribution;
 #pragma omp for
-        for (octave_idx_type iel=0; iel < msh.nel (); iel++) 
+        for ( iel=0; iel < nel; iel++) 
           if (msh.area (iel) > 0)
             {
-              for (octave_idx_type idof(0); idof < sp.nsh (iel); idof++) 
-                {
-                  for ( octave_idx_type inode(0); inode < msh.nqn (); inode++) 
-                    {
-                      if (msh.weights (inode, iel) > 0.0)
-                        {
-                          double ishp_x_n = 
-                            sp.shape_functions (0, inode, idof, iel) * msh.normal (1, inode, iel) -
-                            sp.shape_functions (1, inode, idof, iel) * msh.normal (0, inode, iel);
-                      
-                          local_contribution = msh.jacdet  (inode, iel) * msh.weights (inode, iel) * coeff (inode, iel) * ishp_x_n;
+            const octave_idx_type nsh = sp.nsh (iel);
+            double jacdet_weights[nqn];
 
+            for ( inode = 0; inode < nqn; inode++)
+              {
+                jacdet_weights[inode] = msh.jacdet (inode, iel) *
+                  msh.weights (inode, iel) * coeff (inode, iel);
+              }
+
+            double shp_x_n[nsh][nqn];
+            int conn[nsh];
+
+            for ( idof = 0; idof < nsh; idof++) 
+              {
+                for ( inode = 0; inode < nqn; inode++)
+                  {
+                    shp_x_n[idof][inode] = 
+                                    sp.shape_functions (0, inode, idof, iel)*
+                                    msh.normal (1, inode, iel) -
+                                    sp.shape_functions (1, inode, idof, iel)*
+                                    msh.normal (0, inode, iel);
+                  }
+                conn[idof] = sp.connectivity (idof, iel) - 1;
+              }
+
+            for ( idof = 0; idof < nsh; idof++) 
+              {
+                for ( inode = 0; inode < nqn; inode++)
+                  {
+                    if (msh.weights (inode, iel) > 0.0)
+                      {
+                        local_contribution = jacdet_weights[inode] * 
+                                             shp_x_n[idof][inode];
 #pragma omp critical
-                          {mat(sp.connectivity (idof, iel) - 1) += local_contribution;}
+                          {mat(conn[idof]) += local_contribution;}
                         }  
                     } // end for inode
                 } // end for idof

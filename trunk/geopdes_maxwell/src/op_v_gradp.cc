@@ -1,4 +1,5 @@
 /* Copyright (C) 2009, 2010 Carlo de Falco
+   Copyright (C) 2011 Rafael Vazquez
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -40,45 +41,85 @@ OP_V_GRADP: assemble the matrix B = [b(i,j)], b(i,j) = (epsilon grad p_i, v_j). 
   geopdes_mesh  msh (args(2).map_value ());
   geopdes_space spv (args(0).map_value (), msh);
   geopdes_space spp (args(1).map_value (), msh);
+  Matrix coeff = args(3).matrix_value();
 
   SparseMatrix mat;
 
   if (!error_state)
     {
 
-      dim_vector dims (msh.nel () * spv.nsh_max () * spp.nsh_max (), 1);
+      const octave_idx_type nel = msh.nel (), nqn = msh.nqn (), ncomp = spv.ncomp (), ndof_spp = spp.ndof (), nsh_max_spp = spp.nsh_max (), ndof_spv = spv.ndof (), nsh_max_spv = spv.nsh_max ();
+
+      dim_vector dims (nel * nsh_max_spv * nsh_max_spp, 1);
       Array <octave_idx_type> I (dims, 0);
       Array <octave_idx_type> J (dims, 0);
       Array <double> V (dims, 0.0);
-
-      Matrix coeff   = args(3).matrix_value();
  
 #pragma omp parallel default (none) shared (msh, spp, spv, I, J, V, coeff)
       {      
-      octave_idx_type counter;
+      octave_idx_type counter = 0, iel, inode, idof, jdof, icmp;
 
 #pragma omp for
-      for ( octave_idx_type iel=0; iel < msh.nel (); iel++) 
+      for ( iel=0; iel < nel; iel++) 
         if (msh.area (iel) > 0.0)
 	  {
-	    for ( octave_idx_type idof(0); idof < spp.nsh (iel); idof++) 
+            const octave_idx_type nsh_p = spp.nsh (iel);
+            const octave_idx_type nsh_v = spv.nsh (iel);
+            double jacdet_weights[nqn];
+
+            for ( inode = 0; inode < nqn; inode++)
+              {
+                jacdet_weights[inode] = msh.jacdet (inode, iel) *
+                  msh.weights (inode, iel) * coeff (inode, iel);
+              }
+
+            double shpv[nsh_v][nqn][ncomp];
+            double shgp[nsh_p][nqn][ncomp];
+            int conn_v[nsh_v];
+            int conn_p[nsh_p];
+
+              for ( idof = 0; idof < nsh_p; idof++) 
+		{
+                  for ( inode = 0; inode < nqn; inode++)
+                    {
+                      for ( icmp = 0; icmp < ncomp; icmp++)
+                        {
+                          shgp[idof][inode][icmp] = spp.shape_function_gradients (0, icmp, inode, idof, iel);
+                        }
+                    }
+		  conn_p[idof] = spp.connectivity (idof, iel) - 1;
+	        }
+
+              for ( jdof = 0; jdof < nsh_v; jdof++) 
+		{
+                  for ( inode = 0; inode < nqn; inode++)
+                    {
+                      for ( icmp = 0; icmp < ncomp; icmp++)
+                        {
+                          shpv[jdof][inode][icmp] = spv.shape_functions (icmp, inode, jdof, iel);
+                        }
+                    }
+		  conn_v[jdof] = spv.connectivity (jdof, iel) - 1;
+	        }
+
+
+            for ( idof = 0; idof < nsh_p; idof++) 
 	      {
-	        for ( octave_idx_type jdof(0); jdof < spv.nsh (iel); jdof++) 
+                for ( jdof = 0; jdof < nsh_v; jdof++)
 		  {
-                    counter = jdof + spv.nsh (iel) * (idof + spp.nsh (iel) * iel);                                          
-		    I(counter) = spp.connectivity (idof, iel) - 1;
-		    J(counter) = spv.connectivity (jdof, iel) - 1;
+                    counter = jdof + nsh_v * (idof + nsh_p * iel);
+
+                    I(counter) = conn_p[idof];
+                    J(counter) = conn_v[jdof];
 		    V(counter) = 0.0;
-		    for ( octave_idx_type inode(0); inode < msh.nqn (); inode++)
+                    for ( inode = 0; inode < nqn; inode++)
 		      {
 		        if (msh.weights (inode, iel) > 0.0)
 			  {			
                             double s = 0.0;
-                            for (octave_idx_type idir(0); idir < msh.ndir (); idir++)
-                              s += spp.shape_function_gradients (0, idir, inode, idof, iel) * spv.shape_functions (idir, inode, jdof, iel);
-
-			    V(counter) += msh.jacdet (inode, iel) * 
-                              msh.weights (inode, iel) * coeff (inode, iel) * s;
+                            for ( icmp = 0; icmp < ncomp; icmp++)
+                              s += shgp[idof][inode][icmp] * shpv[jdof][inode][icmp];
+			    V(counter) += jacdet_weights[inode] * s;
 			  }  
 		      } // end for inode		  
 		    counter++;
@@ -89,7 +130,7 @@ OP_V_GRADP: assemble the matrix B = [b(i,j)], b(i,j) = (epsilon grad p_i, v_j). 
           {warning_with_id ("geopdes:zero_measure_element", "op_v_gradp: element %d has 0 area (or volume)", iel);}
         }  // end for iel, if area > 0
       } // end of parallel section
-      mat = SparseMatrix (V, I, J, spp.ndof (), spv.ndof (), true);
+      mat = SparseMatrix (V, I, J, ndof_spp, ndof_spv, true);
       retval(0) = octave_value(mat);
     } // end if !error_state
   return retval;
