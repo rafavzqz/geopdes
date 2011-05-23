@@ -1,4 +1,5 @@
 /* Copyright (C) 2009 Carlo de Falco
+   Copyright (C) 2011 Rafael Vazquez
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -39,34 +40,63 @@ OUTPUT:\n\
 
   geopdes_mesh  msh (args(1).map_value ());
   geopdes_space sp  (args(0).map_value (), msh);
-  dim_vector    idx (sp.ncomp (), msh.nqn (), msh.nel ());
-  NDArray       coeff = args(2).array_value ().reshape (idx);
 
   if (!error_state)
     {
 
+      const octave_idx_type nel = msh.nel (), ncomp = sp.ncomp (), nqn = msh.nqn ();
+
+      dim_vector    idx (ncomp, nqn, nel);
+      NDArray       coeff = args(2).array_value ().reshape (idx);
       ColumnVector mat (sp.ndof (), 0.0);
+
+      octave_idx_type counter = 0, iel, inode, idof, icmp;
 
 #pragma omp parallel default (none) shared (msh, sp, idx, mat, coeff)
       {
         double local_contribution;
 
 #pragma omp for
-      for (octave_idx_type iel=0; iel < msh.nel (); iel++) 
+      for ( iel=0; iel < nel; iel++) 
         if (msh.area (iel) > 0.0)
 	  {
-	    for (octave_idx_type idof(0); idof < sp.nsh (iel); idof++) 
+            const octave_idx_type nsh = sp.nsh (iel);
+            double jacdet_weights[nqn];
+
+            for ( inode = 0; inode < nqn; inode++)
+              {
+                jacdet_weights[inode] = msh.jacdet (inode, iel) *
+                  msh.weights (inode, iel);
+              }
+
+            double shp[nsh][nqn][ncomp];
+            int conn[nsh];
+
+            for ( idof = 0; idof < nsh; idof++) 
+              {
+                for ( inode = 0; inode < nqn; inode++)
+                  {
+                    for ( icmp = 0; icmp < ncomp; icmp++)
+                      {
+                        shp[idof][inode][icmp] = sp.shape_functions (icmp, inode, idof, iel);
+                      }
+                  }
+                conn[idof] = sp.connectivity (idof, iel) - 1;
+              }
+
+
+            for ( idof = 0; idof < nsh; idof++) 
 	      {
-                for ( octave_idx_type inode(0); inode < msh.nqn (); inode++) 
+                for ( inode = 0; inode < nqn; inode++)
                   {
                     if (msh.weights (inode, iel) > 0.0)
                       {
                         double s = 0.0;
-                        for (octave_idx_type icmp(0); icmp < sp.ncomp (); icmp++)
-                            s += sp.shape_functions (icmp, inode, idof, iel) * coeff (icmp, inode, iel);
-                        local_contribution = msh.jacdet  (inode, iel) * msh.weights (inode, iel) * s;
+                        for ( icmp = 0; icmp < ncomp; icmp++)
+                          s += shp[idof][inode][icmp] * coeff (icmp, inode, iel);
+                        local_contribution = jacdet_weights[inode] * s;
 #pragma omp critical
-                        mat(sp.connectivity (idof, iel) - 1) += local_contribution;			  
+                        mat(conn[idof]) += local_contribution;			  
                       }  
                   } // end for inode
 	      } // end for idof
