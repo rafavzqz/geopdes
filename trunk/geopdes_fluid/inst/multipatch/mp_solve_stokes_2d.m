@@ -77,7 +77,7 @@ for iopt  = 1:numel (data_names)
   eval ([data_names{iopt} '= method_data.(data_names{iopt});']);
 end
 
-if (lower (element_name) = 'rt' || lower (element_name) = 'ndl')
+if (lower (element_name) == 'rt' || lower (element_name) == 'ndl')
   error ('mp_solve_stokes_2d: multipatch is not ready for RT and NDL elements')
 end
 
