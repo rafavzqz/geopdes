@@ -22,20 +22,6 @@ iopt = 1;
 while (iopt > 0)
   clc;
   fprintf (1, ...
-           ['GeoPDEs_multipatch examples menu:\n', ...
-            '---------------------------------\n', ...
-            '\n', ...
-            '   (1) Poisson problem. \n \n',...
-            '   (3) Stokes problem (geopdes_fluid must be installed). \n \n']);
-
-  iopt = input ('Please choose a number from above or press <Enter> to return: ');
-  clc;
-
-  if (iopt == 1)
-    iopt2 = 1;
-    while (iopt2 > 0)
-      clc;
-      fprintf (1, ...
         ['GeoPDEs_multipatch examples menu: Poisson problem \n', ...
          '------------------------------------------------- \n', ...
          '\n', ...
@@ -45,56 +31,33 @@ while (iopt > 0)
          '   (2) Unit cube, defined with 2 patches. \n \n',...
          '   (3) Thick L-shaped domain, defined with 3 patches. \n \n']);
 
-      iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
-      if (~isempty(iopt2))
-      switch iopt2
+  iopt = input ('Please choose a number from above or press <Enter> to return: ');
+  clc;
+
+    if (~isempty(iopt))
+      switch iopt
        case 1
         clc;
-        fprintf (1, 'You can have a look at the source file: EX_LAPLACE_BSP_LSHAPED_MP \n \n');
+        fprintf (1, 'You can have a look at the source file: ex_laplace_lshaped_mp \n \n');
         fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
         ex_laplace_Lshaped_mp;
         input ('Press <Enter> to continue: ');
 
        case 2
         clc;
-        fprintf (1, 'You can have a look at the source file: EX_LAPLACE_BSP_CUBE_MP \n \n');
+        fprintf (1, 'You can have a look at the source file: ex_laplace_cube_mp \n \n');
         fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
         ex_laplace_cube_mp;
         input ('Press <Enter> to continue: ');
 
        case 3
         clc;
-        fprintf (1, 'You can have a look at the source file: EX_LAPLACE_BSP_THICK_L_MP \n \n');
+        fprintf (1, 'You can have a look at the source file: ex_laplace_thick_L_mp \n \n');
         fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
         ex_laplace_thick_L_mp;
         input ('Press <Enter> to continue: ');
       end %switch
-      end %if
-    end %while iopt2>0
-
-  elseif (iopt == 3)
-    if (~exist('ex_stokes_mp'))
-      fprintf(1, 'GUARDA IL FILE DEGLI ESEMPI \n\n');
-      fprintf(1, 'You must install geopdes_fluid to run the examples\n\n');
-      iopt2 = -1;
-      input ('Press <Enter> to continue: ');
-    else
-      iopt2 = 1;
-    end
-    while (iopt2 > 0)
-      clc;
-      fprintf (1, ...
-        ['GeoPDEs_multipatch examples menu: Stokes problem \n', ...
-         '------------------------------------------------ \n', ...
-         '\n', ...
-         '2D examples \n \n', ...
-         '   (1) NON HO ANCORA FINITO \n \n',...
-         '3D examples \n \n', ...
-         '   (2) NON HO ANCORA FINITO \n \n']);
-
-      iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
-    end %while iopt2>0
-  end
+    end %if
 
 end %# while (iopt > 0)
 
