@@ -1,4 +1,5 @@
 /* Copyright (C) 2010 Carlo de Falco
+   Copyright (C) 2011 Rafael Vazquez
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -42,39 +43,73 @@ DEFUN_DLD(op_div_v_q, args, nargout,"OP_DIV_V_Q: assemble the matrix B = [b(i,j)
   if (!error_state)
     {
 
-      dim_vector dims (msh.nel () * spv.nsh_max () * spq.nsh_max (), 1);
+      const octave_idx_type nel = msh.nel (), nqn = msh.nqn (), ndof_spq = spq.ndof (), nsh_max_spq = spq.nsh_max (), ndof_spv = spv.ndof (), nsh_max_spv = spv.nsh_max ();
+
+      dim_vector dims (nel * nsh_max_spv * nsh_max_spq, 1);
       Array <octave_idx_type> I (dims, 0);
       Array <octave_idx_type> J (dims, 0);
       Array <double> V (dims, 0.0);    
 
       SparseMatrix mat;
 
+      octave_idx_type counter = 0, iel, inode, idof, jdof;
+
 #pragma omp parallel default (none) shared (msh, spv, spq, I, J, V)
       {
 
-        octave_idx_type counter;
 #pragma omp for
-      for ( octave_idx_type iel=0; iel < msh.nel (); iel++) 
+      for ( iel=0; iel < nel; iel++) 
         if (msh.area (iel) > 0.0)
 	  {
-	    for ( octave_idx_type idof(0); idof < spq.nsh (iel); idof++) 
+            const octave_idx_type nsh_q = spq.nsh (iel);
+            const octave_idx_type nsh_v = spv.nsh (iel);
+            double jacdet_weights[nqn];
+
+            for ( inode = 0; inode < nqn; inode++)
+              {
+                jacdet_weights[inode] = msh.jacdet (inode, iel) *
+                  msh.weights (inode, iel);
+              }
+
+            double shdivv[nsh_v][nqn];
+            double shpq[nsh_q][nqn];
+            int conn_v[nsh_v];
+            int conn_q[nsh_q];
+
+              for ( jdof = 0; jdof < nsh_v; jdof++)
+		{
+                  for ( inode = 0; inode < nqn; inode++)
+                    {
+                      shdivv[jdof][inode] = spv.shape_function_divs (inode, jdof, iel);
+                    }
+		  conn_v[jdof] = spv.connectivity (jdof, iel) - 1;
+	        }
+
+              for ( idof = 0; idof < nsh_q; idof++)
+		{
+                  for ( inode = 0; inode < nqn; inode++)
+                    {
+                      shpq[idof][inode] = spq.shape_functions (0, inode, idof, iel);
+                    }
+		  conn_q[idof] = spq.connectivity (idof, iel) - 1;
+	        }
+
+
+            for ( idof = 0; idof < nsh_q; idof++) 
 	      {
-	        for ( octave_idx_type jdof(0); jdof < spv.nsh (iel); jdof++) 
+                for ( jdof = 0; jdof < nsh_v; jdof++) 
 		  {
+                    counter = jdof + nsh_v * (idof + nsh_q * iel);
                     
-                    counter = jdof + spv.nsh (iel) * (idof + spq.nsh (iel) * iel);
-                    
-		    I(counter) = spq.connectivity (idof, iel) - 1;
-		    J(counter) = spv.connectivity (jdof, iel) - 1;
+                    I(counter) = conn_q[idof];
+                    J(counter) = conn_v[jdof];
 		    V(counter) = 0.0;
-		    for ( octave_idx_type inode(0); inode < msh.nqn (); inode++)
+                    for ( inode = 0; inode < nqn; inode++)
 		      {
 		        if (msh.weights (inode, iel) > 0.0)
 			  {
-			    V(counter) += 
-                              msh.jacdet (inode, iel) * msh.weights (inode, iel) *
-			      spv.shape_function_divs (inode, jdof, iel) * 
-                              spq.shape_functions (0, inode, idof, iel);
+			    V(counter) += jacdet_weights[inode] *
+                              shdivv[jdof][inode] * shpq[idof][inode];
 			  }  
 		      } // end for inode		  
 		  } // end for jdof
@@ -84,7 +119,7 @@ DEFUN_DLD(op_div_v_q, args, nargout,"OP_DIV_V_Q: assemble the matrix B = [b(i,j)
           {warning_with_id ("geopdes:zero_measure_element", "op_div_v_q: element %d has 0 area (or volume)", iel);}
         }  // end for iel, if area > 0
       } // end of parallel region
-      mat = SparseMatrix (V, I, J, spq.ndof (), spv.ndof (), true);
+      mat = SparseMatrix (V, I, J, ndof_spq, ndof_spv, true);
       retval(0) = octave_value(mat);
     } // end if !error_state
   return retval;
