@@ -10,7 +10,7 @@ problem_data.nmnn_sides   = [1 2 3 4];
 problem_data.drchlt_sides = [5 6];
 
 % Physical parameters
-E  =  1; nu = 0; 
+E  =  1; nu = 0.3;
 problem_data.lam = @(x, y, z) ((nu*E)/((1+nu)*(1-2*nu)) * ones (size (x))); 
 problem_data.mu  = @(x, y, z) (E/(2*(1+nu)) * ones (size (x)));
 
@@ -29,7 +29,7 @@ problem_data.h = @(x, y, z, ind) zeros (3, size (x, 1), size (x, 2));
 clear method_data
 method_data.degree     = [3 3 3];     % Degree of the bsplines
 method_data.regularity = [2 2 2];     % Regularity of the splines
-method_data.nsub       = [0 0 0];     % Number of subdivisions
+method_data.nsub       = [1 1 1];     % Number of subdivisions
 method_data.nquad      = [4 4 4];     % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
