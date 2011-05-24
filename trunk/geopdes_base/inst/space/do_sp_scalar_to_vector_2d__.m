@@ -1,6 +1,7 @@
 % DO_SP_SCALAR_TO_VECTOR_2D__: * INTERNAL UNDOCUMENTED FUNCTION *
 %
 % Copyright (C) 2010 Carlo de Falco
+% Copyright (C) 2011 Rafael Vazquez
 % 
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -60,6 +61,9 @@ sp.comp_dofs{2} = ndofx+(1:ndofy);
 sp.connectivity = [spx.connectivity; spy.connectivity+spx.ndof];
 sp.ncomp = 2;
 
+if (isfield (spx, 'ndof_dir') && isfield (spy, 'ndof_dir'))
+  sp.ndof_dir   = [spx.ndof_dir; spy.ndof_dir];
+end
 
 sp.shape_functions = zeros (2, msh.nqn, sp.nsh_max, msh.nel);
 sp.shape_functions(1,:,1:spx.nsh_max,:)              = spx.shape_functions;
