@@ -1,6 +1,7 @@
 % OP_V_GRADP: assemble the matrix B = [b(i,j)], b(i,j) = (epsilon grad p_i, v_j).
 %
 %   mat = op_v_gradp (spv, spp, msh, epsilon);
+%   [rows, cols, values] = op_v_gradp (spv, spp, msh, epsilon);
 %
 % INPUT:
 %    
@@ -11,7 +12,10 @@
 %
 % OUTPUT:
 %
-%   mat: assembled matrix
+%   mat:    assembled matrix
+%   rows:   row indices of the nonzero entries
+%   cols:   column indices of the nonzero entries
+%   values: values of the nonzero entries
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
@@ -29,7 +33,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function mat = op_v_gradp (spv, spp, msh, coeff)
+function varargout = op_v_gradp (spv, spp, msh, coeff)
 
   ndir = size (spp.shape_function_gradients, 1);
 
@@ -64,7 +68,15 @@ function mat = op_v_gradp (spv, spp, msh, coeff)
     end
   end
 
-  mat = sparse (rows, cols, values, spp.ndof, spv.ndof);
+  if (nargout == 1)
+    varargout{1} = sparse (rows, cols, values, spv.ndof, spu.ndof);
+  elseif (nargout == 3)
+    varargout{1} = rows;
+    varargout{2} = cols;
+    varargout{3} = values;
+  else
+    error ('op_v_gradp: wrong number of output arguments')
+  end
 
 end
 

@@ -1,6 +1,7 @@
 % OP_UXN_VXN_3D: assemble the matrix M = [m(i,j)], m(i,j) = (mu u_j x n, v_i x n), with n the exterior normal vector.
 %
 %   mat = op_uxn_vxn_3d (spu, spv, msh, coeff);
+%   [rows, cols, values] = op_uxn_vxn_3d (spu, spv, msh, coeff);
 %
 % INPUT:
 %   
@@ -11,7 +12,10 @@
 %
 % OUTPUT:
 %
-%  mat: assembled matrix
+%  mat:    assembled matrix
+%  rows:   row indices of the nonzero entries
+%  cols:   column indices of the nonzero entries
+%  values: values of the nonzero entries
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco, Rafael Vazquez
 % Copyright (C) 2011 Rafael Vazquez
@@ -29,7 +33,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function mat = op_uxn_vxn_3d (spu, spv, msh, coeff)
+function varargout = op_uxn_vxn_3d (spu, spv, msh, coeff)
   
   ncounter = 0;
   for iel = 1:msh.nel
@@ -68,7 +72,15 @@ function mat = op_uxn_vxn_3d (spu, spv, msh, coeff)
     end
   end
 
-  mat = sparse (rows, cols, values, spv.ndof, spu.ndof);
+  if (nargout == 1)
+    varargout{1} = sparse (rows, cols, values, spv.ndof, spu.ndof);
+  elseif (nargout == 3)
+    varargout{1} = rows;
+    varargout{2} = cols;
+    varargout{3} = values;
+  else
+    error ('op_uxn_vxn_3d: wrong number of output arguments')
+  end
 
 end
 
