@@ -1,6 +1,7 @@
 % OP_GRADU_GRADV: assemble the stiffness matrix A = [a(i,j)], a(i,j) = (epsilon grad u_j, grad v_i).
 %
 %   mat = op_gradu_gradv (spu, spv, msh, epsilon);
+%   [rows, cols, values] = op_gradu_gradv (spu, spv, msh, epsilon);
 %
 % INPUT:
 %    
@@ -12,6 +13,9 @@
 % OUTPUT:
 %
 %   mat: assembled stiffness matrix
+%   rows:   row indices of the nonzero entries
+%   cols:   column indices of the nonzero entries
+%   values: values of the nonzero entries
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011, Rafael Vazquez
@@ -29,7 +33,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function mat = op_gradu_gradv (spu, spv, msh, coeff)
+function varargout = op_gradu_gradv (spu, spv, msh, coeff)
   
   gradu = reshape (spu.shape_function_gradients, spu.ncomp, [], msh.nqn, spu.nsh_max, msh.nel);
   gradv = reshape (spv.shape_function_gradients, spv.ncomp, [], msh.nqn, spv.nsh_max, msh.nel);
@@ -48,11 +52,11 @@ function mat = op_gradu_gradv (spu, spv, msh, coeff)
       jacdet_weights = repmat (jacdet_weights, [1,spu.nsh(iel)]);
 
       gradu_iel = permute (gradu(:, :, :, 1:spu.nsh(iel), iel), [1 2 4 3]);
-      gradu_iel = reshape (gradu_iel, spu.ncomp * ndir, spu.nsh(iel), []);
+      gradu_iel = reshape (gradu_iel, spu.ncomp * ndir, spu.nsh(iel), msh.nqn);
       gradu_iel = permute (gradu_iel, [1 3 2]);
 
       gradv_iel = permute (gradv(:, :, :, 1:spv.nsh(iel), iel), [1 2 4 3]);
-      gradv_iel = reshape (gradv_iel, spv.ncomp * ndir, spv.nsh(iel), []);
+      gradv_iel = reshape (gradv_iel, spv.ncomp * ndir, spv.nsh(iel), msh.nqn);
       gradv_iel = permute (gradv_iel, [1 3 2]);
 
       for idof = 1:spv.nsh(iel)
@@ -70,6 +74,14 @@ function mat = op_gradu_gradv (spu, spv, msh, coeff)
     end
   end
 
-  mat = sparse (rows, cols, values, spv.ndof, spu.ndof);
+  if (nargout == 1)
+    varargout{1} = sparse (rows, cols, values, spv.ndof, spu.ndof);
+  elseif (nargout == 3)
+    varargout{1} = rows;
+    varargout{2} = cols;
+    varargout{3} = values;
+  else
+    error ('op_gradu_gradv: wrong number of output arguments')
+  end
 
 end
