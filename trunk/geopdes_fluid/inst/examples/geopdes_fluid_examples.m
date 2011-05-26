@@ -142,7 +142,7 @@ while (iopt > 0)
     clc;
     if (~exist('mp_interface_vector_2d'))
       fprintf(1, 'Unable to find the file ''mp_interface_vector_2d''.\n');
-      fprintf(1, 'Be sure to install the latest version of geopdes_multipatch to run this example\n\n');
+      fprintf(1, 'Be sure to install the latest version of geopdes_multipatch to run these examples\n\n');
       input ('Press <Enter> to continue: ');
     else
       iopt2 = 1; 
