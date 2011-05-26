@@ -1,6 +1,7 @@
 % OP_SU_EV: assemble the matrix A = [a(i,j)], a(i,j) = 1/2 (sigma (u_j), epsilon (v_i)).
 %
 %   mat = op_su_ev (spu, spv, msh, lambda, mu);
+%   [rows, cols, values] = op_su_ev (spu, spv, msh, lambda, mu);
 %
 % INPUT:
 %    
@@ -11,7 +12,10 @@
 %
 % OUTPUT:
 %
-%   mat: assembled matrix
+%   mat:    assembled matrix
+%   rows:   row indices of the nonzero entries
+%   cols:   column indices of the nonzero entries
+%   values: values of the nonzero entries
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
@@ -29,7 +33,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function mat = op_su_ev (spu, spv, msh, lambda, mu)
+function varargout = op_su_ev (spu, spv, msh, lambda, mu)
   
   gradu = reshape (spu.shape_function_gradients, spu.ncomp, [], msh.nqn, spu.nsh_max, msh.nel);
   gradv = reshape (spv.shape_function_gradients, spv.ncomp, [], msh.nqn, spv.nsh_max, msh.nel);
@@ -49,12 +53,12 @@ function mat = op_su_ev (spu, spv, msh, lambda, mu)
 
       gradu_iel = permute (gradu(:, :, :, 1:spu.nsh(iel), iel), [1 2 4 3]);
       epsu_iel = (gradu_iel + permute (gradu_iel, [2 1 3 4]))/2;
-      epsu_iel = reshape (epsu_iel, spu.ncomp * ndir, spu.nsh(iel), []);
+      epsu_iel = reshape (epsu_iel, spu.ncomp * ndir, spu.nsh(iel), msh.nqn);
       epsu_iel = permute (epsu_iel, [1 3 2]);
 
       gradv_iel = permute (gradv(:, :, :, 1:spv.nsh(iel), iel), [1 2 4 3]);
       epsv_iel = (gradv_iel + permute (gradv_iel, [2 1 3 4]))/2;
-      epsv_iel = reshape (epsv_iel, spv.ncomp * ndir, spv.nsh(iel), []);
+      epsv_iel = reshape (epsv_iel, spv.ncomp * ndir, spv.nsh(iel), msh.nqn);
       epsv_iel = permute (epsv_iel, [1 3 2]);
 
       divu_iel = spu.shape_function_divs(:,:,iel);
@@ -78,6 +82,14 @@ function mat = op_su_ev (spu, spv, msh, lambda, mu)
     end
   end
 
-  mat = sparse (rows, cols, values, spv.ndof, spu.ndof);
+  if (nargout == 1)
+    varargout{1} = sparse (rows, cols, values, spv.ndof, spu.ndof);
+  elseif (nargout == 3)
+    varargout{1} = rows;
+    varargout{2} = cols;
+    varargout{3} = values;
+  else
+    error ('op_su_ev: wrong number of output arguments')
+  end
 
 end
