@@ -1,6 +1,7 @@
 % OP_DIV_V_Q: assemble the matrix B = [b(i,j)], b(i,j) = (q_i, div v_j).
 %
 %   mat = op_div_v_q (spv, spq, msh);
+%   [rows, cols, values] = op_div_v_q (spv, spq, msh);
 %
 % INPUT: 
 %
@@ -10,7 +11,10 @@
 %
 % OUTPUT: 
 %
-%   mat: assembled matrix 
+%   mat:    assembled matrix 
+%   rows:   row indices of the nonzero entries
+%   cols:   column indices of the nonzero entries
+%   values: values of the nonzero entries
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
@@ -28,7 +32,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function mat = op_div_v_q (spv, spq, msh)
+function varargout = op_div_v_q (spv, spq, msh)
   
   rows = zeros (msh.nel * spq.nsh_max * spv.nsh_max, 1);
   cols = zeros (msh.nel * spq.nsh_max * spv.nsh_max, 1);
@@ -58,5 +62,14 @@ function mat = op_div_v_q (spv, spq, msh)
     end
   end
 
-  mat = sparse (rows, cols, values, spq.ndof, spv.ndof);
+  if (nargout == 1)
+    varargout{1} = sparse (rows, cols, values, spv.ndof, spu.ndof);
+  elseif (nargout == 3)
+    varargout{1} = rows;
+    varargout{2} = cols;
+    varargout{3} = values;
+  else
+    error ('op_div_v_q: wrong number of output arguments')
+  end
+
 end
