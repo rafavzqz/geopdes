@@ -15,7 +15,8 @@
 %            map_der: a function handle to evaluate the derivatives of the parametrization
 %            nurbs:   a structure compatible with the NURBS toolbox
 %
-% Copyright (C) 2009 Carlo de Falco, 2010 Rafael Vazquez
+% Copyright (C) 2009 Carlo de Falco
+% Copyright (C) 2010, 2011 Rafael Vazquez
 % 
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by

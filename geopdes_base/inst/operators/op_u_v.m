@@ -1,6 +1,7 @@
 % OP_U_V: assemble the mass matrix M = [m(i,j)], m(i,j) = (mu u_j, v_i).
 %
 %   mat = op_u_v (spu, spv, msh, coeff);
+%   [rows, cols, values] = op_u_v (spu, spv, msh, coeff);
 %
 % INPUT:
 %   
@@ -11,7 +12,10 @@
 %
 % OUTPUT:
 %
-%  mat: assembled mass matrix
+%  mat:    assembled mass matrix
+%  rows:   row indices of the nonzero entries
+%  cols:   column indices of the nonzero entries
+%  values: values of the nonzero entries
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011, Rafael Vazquez
@@ -29,7 +33,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function mat = op_u_v (spu, spv, msh, coeff)
+function varargout = op_u_v (spu, spv, msh, coeff)
   
   shpu = reshape (spu.shape_functions, spu.ncomp, msh.nqn, spu.nsh_max, msh.nel);
   shpv = reshape (spv.shape_functions, spv.ncomp, msh.nqn, spv.nsh_max, msh.nel);
@@ -63,7 +67,15 @@ function mat = op_u_v (spu, spv, msh, coeff)
     end
   end
 
-  mat = sparse (rows, cols, values, spv.ndof, spu.ndof);
+  if (nargout == 1)
+    varargout{1} = sparse (rows, cols, values, spv.ndof, spu.ndof);
+  elseif (nargout == 3)
+    varargout{1} = rows;
+    varargout{2} = cols;
+    varargout{3} = values;
+  else
+    error ('op_u_v: wrong number of output arguments')
+  end
 
 end
 
