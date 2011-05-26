@@ -1,6 +1,7 @@
 % OP_CURLU_CURLV_2D: assemble the matrix A = [a(i,j)], a(i,j) = (coeff curl u_j, curl v_i), with scalar-valued curl.
 %
 %   mat = op_curlu_curlv_2d (spu, spv, msh, epsilon);
+%   [rows, cols, values] = op_curlu_curlv_2d (spu, spv, msh, epsilon);
 %
 % INPUT:
 %
@@ -11,7 +12,10 @@
 %
 % OUTPUT:
 %
-%   mat: assembled matrix
+%   mat:    assembled matrix
+%   rows:   row indices of the nonzero entries
+%   cols:   column indices of the nonzero entries
+%   values: values of the nonzero entries
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
@@ -30,7 +34,7 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-function mat = op_curlu_curlv_2d (spu, spv, msh, coeff)
+function varargout = op_curlu_curlv_2d (spu, spv, msh, coeff)
   
   rows = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
   cols = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
@@ -64,7 +68,15 @@ function mat = op_curlu_curlv_2d (spu, spv, msh, coeff)
     end
   end
 
-  mat = sparse (rows, cols, values, spv.ndof, spu.ndof);
+  if (nargout == 1)
+    varargout{1} = sparse (rows, cols, values, spv.ndof, spu.ndof);
+  elseif (nargout == 3)
+    varargout{1} = rows;
+    varargout{2} = cols;
+    varargout{3} = values;
+  else
+    error ('op_curlu_curlv_2d: wrong number of output arguments')
+  end
 
 end
 

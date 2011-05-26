@@ -226,7 +226,7 @@ while (iopt > 0)
   elseif (iopt == 5)
     if (~exist('mp_geo_load'))
       fprintf(1, 'Unable to find the file ''mp_geo_load''.\n');
-      fprintf(1, 'Be sure to install the latest version of geopdes_multipatch to run this example\n\n');
+      fprintf(1, 'Be sure to install the latest version of geopdes_multipatch to run these examples\n\n');
       iopt2 = -1;
       input ('Press <Enter> to continue: ');
     else

@@ -1,6 +1,7 @@
 % OP_CURLV_P: assemble the matrix B = [b(i,j)], b(i,j) = (coeff p_i, curl v_j).
 %
 %   mat = op_curlv_p (spu, spv, msh, coeff);
+%   [rows, cols, values] = op_curlv_p (spu, spv, msh, coeff);
 %
 % INPUT:
 %   
@@ -11,7 +12,10 @@
 %
 % OUTPUT:
 %
-%  mat: assembled mass matrix
+%  mat:    assembled mass matrix
+%  rows:   row indices of the nonzero entries
+%  cols:   column indices of the nonzero entries
+%  values: values of the nonzero entries
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
@@ -29,7 +33,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function mat = op_curlv_p (spv, spp, msh, coeff)
+function varargout = op_curlv_p (spv, spp, msh, coeff)
   
   rows = zeros (msh.nel * spp.nsh_max * spv.nsh_max, 1);
   cols = zeros (msh.nel * spp.nsh_max * spv.nsh_max, 1);
@@ -63,7 +67,15 @@ function mat = op_curlv_p (spv, spp, msh, coeff)
     end
   end
 
-  mat = sparse (rows, cols, values, spp.ndof, spv.ndof);
+  if (nargout == 1)
+    varargout{1} = sparse (rows, cols, values, spv.ndof, spu.ndof);
+  elseif (nargout == 3)
+    varargout{1} = rows;
+    varargout{2} = cols;
+    varargout{3} = values;
+  else
+    error ('op_curlv_p: wrong number of output arguments')
+  end
 
 end
 
