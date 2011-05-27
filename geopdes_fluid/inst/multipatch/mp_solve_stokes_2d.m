@@ -77,7 +77,7 @@ for iopt  = 1:numel (data_names)
   eval ([data_names{iopt} '= method_data.(data_names{iopt});']);
 end
 
-if (lower (element_name) == 'rt' || lower (element_name) == 'ndl')
+if (strcmp (lower (element_name), 'rt') || strcmp (lower (element_name), 'ndl'))
   error ('mp_solve_stokes_2d: multipatch is not ready for RT and NDL elements')
 end
 
@@ -107,9 +107,18 @@ end
 [gnump, ndofp] = mp_interface_2d (interfaces, spp);
 
 % Compute and assemble the matrices
-A = spalloc (ndof, ndof, ndof);
-M = spalloc (ndofp, ndofp, ndofp);
-B = spalloc (ndofp, ndof, ndofp);
+nent = sum (cellfun (@(x, y, z) x.nel * y.nsh_max * z.nsh_max, msh, spv, spv));
+rows_A = zeros (nent, 1); cols_A = zeros (nent, 1); vals_A = zeros (nent, 1);
+ncounterA = 0;
+
+nent = sum (cellfun (@(x, y, z) x.nel * y.nsh_max * z.nsh_max, msh, spp, spp));
+rows_M = zeros (nent, 1); cols_M = zeros (nent, 1); vals_M = zeros (nent, 1);
+ncounterM = 0;
+
+nent = sum (cellfun (@(x, y, z) x.nel * y.nsh_max * z.nsh_max, msh, spv, spp));
+rows_B = zeros (nent, 1); cols_B = zeros (nent, 1); vals_B = zeros (nent, 1);
+ncounterB = 0;
+
 F = zeros (ndof, 1);
 
 for iptc = 1:npatch
@@ -118,16 +127,30 @@ for iptc = 1:npatch
   visc = reshape (viscosity (x, y), msh{iptc}.nqn, msh{iptc}.nel);
   fval = reshape (f (x, y), 2, msh{iptc}.nqn, msh{iptc}.nel);
 
-  A_loc = op_gradu_gradv (spv{iptc}, spv{iptc}, msh{iptc}, visc); 
-  B_loc = op_div_v_q (spv{iptc}, spp{iptc}, msh{iptc}); 
-  M_loc = op_u_v (spp{iptc}, spp{iptc}, msh{iptc}, ones (msh{iptc}.nqn, msh{iptc}.nel)); 
-  F_loc = op_f_v (spv{iptc}, msh{iptc}, fval);
+  [rs, cs, vs] = op_gradu_gradv (spv{iptc}, spv{iptc}, msh{iptc}, visc); 
+  rows_A(ncounterA+(1:numel (rs))) = gnum{iptc}(rs);
+  cols_A(ncounterA+(1:numel (rs))) = gnum{iptc}(cs);
+  vals_A(ncounterA+(1:numel (rs))) = vs;
+  ncounterA = ncounterA + numel (rs);
 
-  A(gnum{iptc},gnum{iptc})   = A(gnum{iptc},gnum{iptc}) + A_loc;
-  M(gnump{iptc},gnump{iptc}) = M(gnump{iptc},gnump{iptc}) + M_loc;
-  B(gnump{iptc},gnum{iptc})  = B(gnump{iptc},gnum{iptc}) + B_loc;
+  [rs, cs, vs] = op_div_v_q (spv{iptc}, spp{iptc}, msh{iptc}); 
+  rows_B(ncounterB+(1:numel (rs))) = gnump{iptc}(rs);
+  cols_B(ncounterB+(1:numel (rs))) = gnum{iptc}(cs);
+  vals_B(ncounterB+(1:numel (rs))) = vs;
+  ncounterB = ncounterB + numel (rs);
+
+  [rs, cs, vs] = op_u_v (spp{iptc}, spp{iptc}, msh{iptc}, ones (msh{iptc}.nqn, msh{iptc}.nel)); 
+  rows_M(ncounterM+(1:numel (rs))) = gnump{iptc}(rs);
+  cols_M(ncounterM+(1:numel (rs))) = gnump{iptc}(cs);
+  vals_M(ncounterM+(1:numel (rs))) = vs;
+  ncounterM = ncounterM + numel (rs);
+
+  F_loc = op_f_v (spv{iptc}, msh{iptc}, fval);
   F(gnum{iptc}) = F(gnum{iptc}) + F_loc;
 end
+A = sparse (rows_A, cols_A, vals_A, ndof, ndof);
+B = sparse (rows_B, cols_B, vals_B, ndofp, ndof);
+M = sparse (rows_M, cols_M, vals_M, ndofp, ndofp);
 E = sum (M, 1) / sum (sum (M));
 
 vel   = zeros (ndof, 1);
