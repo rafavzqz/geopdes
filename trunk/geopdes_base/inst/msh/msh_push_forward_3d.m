@@ -40,7 +40,7 @@
 
 function msh = msh_push_forward_3d (msh, geo)
 
-  if (isfield (msh, 'qn'))
+  if (isfield (msh, 'qn') && isfield (geo, 'nurbs'))
     qn = msh.qn;
     F   = feval (geo.map, {qn{1}(:)', qn{2}(:)' qn{3}(:)'});
     F = reshape (F, [3, msh.nqnu, msh.nelu, msh.nqnv, msh.nelv, msh.nqnw, msh.nelw]);
