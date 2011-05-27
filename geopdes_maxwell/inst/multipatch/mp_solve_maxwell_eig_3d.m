@@ -94,9 +94,13 @@ end
 
 [gnum, ndof, dofs_ornt] = mp_interface_hcurl_3d (interfaces, sp);
 
-stiff_mat = spalloc (ndof, ndof, ndof);
-mass_mat  = spalloc (ndof, ndof, ndof);
+nent = sum (cellfun (@(x, y, z) x.nel * y.nsh_max * z.nsh_max, msh, sp, sp));
+rows = zeros (nent, 1);
+cols = zeros (nent, 1);
+vals_stiff = zeros (nent, 1);
+vals_mass  = zeros (nent, 1);
 
+ncounter = 0;
 for iptc = 1:npatch
 
 % Precompute the coefficients
@@ -107,18 +111,21 @@ for iptc = 1:npatch
   epsilon = reshape (c_elec_perm (x, y, z), msh{iptc}.nqn, msh{iptc}.nel);
   mu      = reshape (c_magn_perm (x, y, z), msh{iptc}.nqn, msh{iptc}.nel);
 
-% Assemble the matrices
-  stiff_loc = op_curlu_curlv_3d (sp{iptc}, sp{iptc}, msh{iptc}, 1./mu);
-  mass_loc  = op_u_v (sp{iptc}, sp{iptc}, msh{iptc}, epsilon);
+% Assemble the matrices setting the orientation
+  [rs, cs, vs] = op_curlu_curlv_3d (sp{iptc}, sp{iptc}, msh{iptc}, 1./mu);
+  rows(ncounter+(1:numel (rs))) = gnum{iptc}(rs);
+  cols(ncounter+(1:numel (rs))) = gnum{iptc}(cs);
+  vs = dofs_ornt{iptc}(rs)' .* vs .* dofs_ornt{iptc}(cs)';
+  vals_stiff(ncounter+(1:numel (rs))) = vs;
 
-% Set the orientation
-  ornt_matrix = spdiags (dofs_ornt{iptc}', 0, sp{iptc}.ndof, sp{iptc}.ndof);
-  stiff_loc = ornt_matrix * stiff_loc * ornt_matrix;
-  mass_loc = ornt_matrix * mass_loc * ornt_matrix;
-
-  stiff_mat(gnum{iptc},gnum{iptc}) = stiff_mat(gnum{iptc},gnum{iptc}) + stiff_loc;
-  mass_mat(gnum{iptc},gnum{iptc}) = mass_mat(gnum{iptc},gnum{iptc}) + mass_loc;
+  [rs, cs, vs] = op_u_v (sp{iptc}, sp{iptc}, msh{iptc}, epsilon);
+  vs = dofs_ornt{iptc}(rs)' .* vs .* dofs_ornt{iptc}(cs)';
+  vals_mass(ncounter+(1:numel (rs))) = vs;
+  ncounter = ncounter + numel (rs);
 end
+
+stiff_mat = sparse (rows, cols, vals_stiff, ndof, ndof);
+mass_mat  = sparse (rows, cols, vals_mass, ndof, ndof);
 
 % Apply homogeneous Dirichlet boundary conditions
 drchlt_dofs = [];

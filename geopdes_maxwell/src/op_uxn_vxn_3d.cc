@@ -57,9 +57,10 @@ OUTPUT:\n\
       Array <octave_idx_type> J (dims, 0);
       Array <double> V (dims, 0.0);
 
+      octave_idx_type counter = 0, iel, inode, idof, jdof, icmp;
+
 #pragma omp parallel default (none) shared (msh, spu, spv, I, J, V, coeff)
       {
-        octave_idx_type counter = 0, iel, inode, idof, jdof, icmp;
 #pragma omp for
         for ( iel=0; iel < nel; iel++) 
           if (msh.area (iel) > 0.0)
@@ -167,8 +168,24 @@ OUTPUT:\n\
             {warning_with_id ("geopdes:zero_measure_element", "op_uxn_vxn_3d: element %d has 0 area", iel);}
           }  // end for iel, if area > 0
       } // end of parallel section
-      mat = SparseMatrix (V, I, J, ndof_spv, ndof_spu, true);
-      retval (0) = octave_value (mat);
+
+      if (nargout == 1) 
+        {
+          mat = SparseMatrix (V, I, J, ndof_spv, ndof_spu, true);
+          retval(0) = octave_value (mat);
+        } 
+      else if (nargout == 3)
+	{
+          for ( icmp = 0; icmp <= counter; icmp++) 
+            {
+              I(icmp)++;
+              J(icmp)++;
+            }
+          retval(0) = octave_value (I);
+          retval(1) = octave_value (J);
+          retval(2) = octave_value (V);
+        }
+
     } // end if !error_state
   return retval;
 }
