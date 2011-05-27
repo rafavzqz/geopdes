@@ -16,6 +16,7 @@
 %          
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
+% Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -39,9 +40,16 @@ function varargout = geo_2d_nurbs (nurbs, pts, ders)
     case 1
       deriv = nrbderiv (nurbs);
       [F, jac] = nrbdeval (nurbs, deriv, pts);
-      map_jac = zeros (2, 2, size (pts, 2));
-      map_jac(1:2, 1, :) = reshape (jac{1}(1:2, :), 2, 1, size (pts, 2));
-      map_jac(1:2, 2, :) = reshape (jac{2}(1:2, :), 2, 1, size (pts, 2));
+      if (iscell (pts))
+        npts = prod (cellfun (@numel, pts));
+        map_jac = zeros (2, 2, npts);
+        map_jac(1:2, 1, :) = reshape (jac{1}(1:2,:,:), 2, 1, npts);
+        map_jac(1:2, 2, :) = reshape (jac{2}(1:2,:,:), 2, 1, npts);
+      else
+        map_jac = zeros (2, 2, size (pts, 2));
+        map_jac(1:2, 1, :) = reshape (jac{1}(1:2, :), 2, 1, size (pts, 2));
+        map_jac(1:2, 2, :) = reshape (jac{2}(1:2, :), 2, 1, size (pts, 2));
+      end
       varargout{1} = map_jac;
     case 2
       dF = nrbsurfderiveval (nurbs, pts, ders);
@@ -52,6 +60,6 @@ function varargout = geo_2d_nurbs (nurbs, pts, ders)
       varargout{1} = hess;
     otherwise
       error ('geo_2d_nurbs: number of derivatives limited to two')
-    end
+  end
 
 end

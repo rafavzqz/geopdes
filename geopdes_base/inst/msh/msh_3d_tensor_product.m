@@ -27,6 +27,7 @@
 % For more details, see the documentation
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
+% Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -62,7 +63,10 @@ function msh = msh_3d_tensor_product (breaks, qn, qw, opts)
   nel  = nelu * nelv * nelw;
   msh.nel  = nel;
   msh.nqn  = nqnu * nqnv * nqnw;
-  
+
+  msh.nelu = nelu; msh.nelv = nelv; msh.nelw = nelw;
+  msh.nqnu = nqnu; msh.nqnv = nqnv; msh.nqnw = nqnw;
+
   quad_nodes_u = reshape (qnu, nqnu, 1, 1, nelu, 1, 1);
   quad_nodes_u = repmat  (quad_nodes_u, [1, nqnv, nqnw, 1, nelv, nelw]);
   quad_nodes_u = reshape (quad_nodes_u, [], nel);
