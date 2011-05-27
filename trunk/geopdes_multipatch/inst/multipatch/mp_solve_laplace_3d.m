@@ -94,8 +94,14 @@ end
 [gnum, ndof] = mp_interface_3d (interfaces, sp);
 
 % Compute and assemble the matrices 
-stiff_mat = spalloc (ndof, ndof, ndof);
 rhs = zeros (ndof, 1);
+
+nent = sum (cellfun (@(x, y, z) x.nel * y.nsh_max * z.nsh_max, msh, sp, sp));
+rows = zeros (nent, 1);
+cols = zeros (nent, 1);
+vals = zeros (nent, 1);
+
+ncounter = 0;
 for iptc = 1:npatch
 
   x = squeeze (msh{iptc}.geo_map (1,:,:));
@@ -105,12 +111,17 @@ for iptc = 1:npatch
   epsilon = reshape (c_diff (x, y, z), msh{iptc}.nqn, msh{iptc}.nel);
   fval    = reshape (f(x, y, z), msh{iptc}.nqn, msh{iptc}.nel);
 
-  A_loc   = op_gradu_gradv (sp{iptc}, sp{iptc}, msh{iptc}, epsilon);
-  rhs_loc = op_f_v (sp{iptc}, msh{iptc}, fval);
+  [rs, cs, vs] = op_gradu_gradv (sp{iptc}, sp{iptc}, msh{iptc}, epsilon);
+  rows(ncounter+(1:numel (rs))) = gnum{iptc}(rs);
+  cols(ncounter+(1:numel (rs))) = gnum{iptc}(cs);
+  vals(ncounter+(1:numel (rs))) = vs;
+  ncounter = ncounter + numel (rs);
 
-  stiff_mat(gnum{iptc},gnum{iptc}) = stiff_mat(gnum{iptc},gnum{iptc}) + A_loc;
+  rhs_loc = op_f_v (sp{iptc}, msh{iptc}, fval);
   rhs(gnum{iptc}) = rhs(gnum{iptc}) + rhs_loc;
 end
+
+stiff_mat = sparse (rows, cols, vals, ndof, ndof);
 
 for iref = nmnn_sides
   for bnd_side = 1:boundaries(iref).nsides
