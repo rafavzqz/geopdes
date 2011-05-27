@@ -62,7 +62,7 @@ if (~isempty (varargin))
   end
 end
 
-if (isfield (msh, 'qn'))
+if (isfield (msh, 'qn') && isfield (geo, 'nurbs'))
   qn = msh.qn;
   F = feval (geo.map, {qn{1}(:)', qn{2}(:)'});
   F = reshape (F, [2, msh.nqnu, msh.nelu, msh.nqnv, msh.nelv]);
@@ -89,6 +89,8 @@ end
 
 if (der2)
   if (isfield (geo, 'map_der2'))
+    qnu = msh.quad_nodes(1,:,:);
+    qnv = msh.quad_nodes(2,:,:);
     msh.geo_map_der2 = reshape (feval (geo.map_der2, [qnu(:), qnv(:)]'), 2, 2, 2, msh.nqn, msh.nel);
   else 
     error ('msh_push_forward_2d: a function to compute second order derivatives has not been provided')
