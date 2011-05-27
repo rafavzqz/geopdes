@@ -54,11 +54,11 @@ OP_V_GRADP: assemble the matrix B = [b(i,j)], b(i,j) = (epsilon grad p_i, v_j). 
       Array <octave_idx_type> I (dims, 0);
       Array <octave_idx_type> J (dims, 0);
       Array <double> V (dims, 0.0);
+
+      octave_idx_type counter = 0, iel, inode, idof, jdof, icmp;
  
 #pragma omp parallel default (none) shared (msh, spp, spv, I, J, V, coeff)
       {      
-      octave_idx_type counter = 0, iel, inode, idof, jdof, icmp;
-
 #pragma omp for
       for ( iel=0; iel < nel; iel++) 
         if (msh.area (iel) > 0.0)
@@ -130,8 +130,24 @@ OP_V_GRADP: assemble the matrix B = [b(i,j)], b(i,j) = (epsilon grad p_i, v_j). 
           {warning_with_id ("geopdes:zero_measure_element", "op_v_gradp: element %d has 0 area (or volume)", iel);}
         }  // end for iel, if area > 0
       } // end of parallel section
-      mat = SparseMatrix (V, I, J, ndof_spp, ndof_spv, true);
-      retval(0) = octave_value(mat);
+
+      if (nargout == 1) 
+        {
+          mat = SparseMatrix (V, I, J, ndof_spp, ndof_spv, true);
+          retval(0) = octave_value (mat);
+        } 
+      else if (nargout == 3)
+	{
+          for ( icmp = 0; icmp <= counter; icmp++) 
+            {
+              I(icmp)++;
+              J(icmp)++;
+            }
+          retval(0) = octave_value (I);
+          retval(1) = octave_value (J);
+          retval(2) = octave_value (V);
+        }
+
     } // end if !error_state
   return retval;
 }
