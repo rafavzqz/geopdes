@@ -15,6 +15,7 @@
 %
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
+% Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -37,15 +38,23 @@ function varargout = geo_3d_nurbs (nurbs, pts, ders)
       F = nrbeval (nurbs, pts);
       varargout{1} = F;
     case 1
-      deriv = nrbderiv(nurbs);
+      deriv = nrbderiv (nurbs);
       [F, jac] = nrbdeval (nurbs, deriv, pts);
-      map_jac = zeros (3, 3, size (pts, 2));
-      map_jac(1:3, 1, :) = reshape (jac{1}(1:3, :), 3, 1, size (pts, 2));
-      map_jac(1:3, 2, :) = reshape (jac{2}(1:3, :), 3, 1, size (pts, 2));
-      map_jac(1:3, 3, :) = reshape (jac{3}(1:3, :), 3, 1, size (pts, 2));
+      if (iscell (pts))
+        npts = prod (cellfun (@numel, pts));
+        map_jac = zeros (3, 3, npts);
+        map_jac(1:3, 1, :) = reshape (jac{1}, 3, 1, npts);
+        map_jac(1:3, 2, :) = reshape (jac{2}, 3, 1, npts);
+        map_jac(1:3, 3, :) = reshape (jac{3}, 3, 1, npts);
+      else
+        map_jac = zeros (3, 3, size (pts, 2));
+        map_jac(1:3, 1, :) = reshape (jac{1}(1:3, :), 3, 1, size (pts, 2));
+        map_jac(1:3, 2, :) = reshape (jac{2}(1:3, :), 3, 1, size (pts, 2));
+        map_jac(1:3, 3, :) = reshape (jac{3}(1:3, :), 3, 1, size (pts, 2));
+      end
       varargout{1} = map_jac;
     otherwise
       error ('geo_3d_nurbs: number of derivatives limited to 1 (until now)')
-    end
+  end
 
 end

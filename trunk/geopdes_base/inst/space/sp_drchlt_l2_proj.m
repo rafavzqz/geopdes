@@ -33,9 +33,14 @@
 function [u, dofs] = sp_drchlt_l2_proj (sp, msh, h, sides)
 
   dofs = unique ([sp.boundary(sides).dofs]);
-  M    = spalloc (sp.ndof, sp.ndof, sp.ndof);
-  rhs  = spalloc (sp.ndof, 1, numel (dofs));
+  rhs  = zeros (sp.ndof, 1);
+
+  nent = sum ([msh.boundary(sides).nel] .* [sp.boundary(sides).nsh_max].^2);
+  rows = zeros (nent, 1);
+  cols = zeros (nent, 1);
+  vals = zeros (nent, 1);
   
+  ncounter = 0;
   for iside = sides
     
     msh_bnd = msh.boundary(iside);
@@ -55,14 +60,20 @@ function [u, dofs] = sp_drchlt_l2_proj (sp, msh, h, sides)
       hval = reshape (h (x, y, z, iside), sp_bnd.ncomp, msh_bnd.nqn, msh_bnd.nel);
     end
 
-    M_side = op_u_v (sp_bnd, sp_bnd, msh_bnd, ones (msh_bnd.nqn, msh_bnd.nel));
-    M(sp_bnd.dofs, sp_bnd.dofs) = M(sp_bnd.dofs, sp_bnd.dofs) + M_side;
+    [rs, cs, vs] = ...
+             op_u_v (sp_bnd, sp_bnd, msh_bnd, ones (msh_bnd.nqn, msh_bnd.nel));
+
+    rows(ncounter+(1:numel(rs))) = sp_bnd.dofs(rs);
+    cols(ncounter+(1:numel(rs))) = sp_bnd.dofs(cs);
+    vals(ncounter+(1:numel(rs))) = vs;
+    ncounter = ncounter + numel (rs);
 
     rhs_side = op_f_v (sp_bnd, msh_bnd, hval);
     rhs(sp_bnd.dofs) = rhs(sp_bnd.dofs) + rhs_side;
 
   end
 
-  u = M(dofs, dofs) \ full (rhs(dofs, 1));
+  M = sparse (rows, cols, vals);
+  u = M(dofs, dofs) \ rhs(dofs, 1);
 
 end

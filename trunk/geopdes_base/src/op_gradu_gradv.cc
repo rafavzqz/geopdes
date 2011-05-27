@@ -146,8 +146,22 @@ OUTPUT: \n\
           }  // end for iel, if area > 0
       } // end of openmp parallel section
 
-      mat = SparseMatrix (V, I, J, ndof_spv, ndof_spu, true);
-      retval(0) = octave_value (mat);
+      if (nargout == 1) 
+        {
+          mat = SparseMatrix (V, I, J, ndof_spv, ndof_spu, true);
+          retval(0) = octave_value (mat);
+        } 
+      else if (nargout == 3)
+	{
+          for ( icmp = 0; icmp <= counter; icmp++) 
+            {
+              I(icmp)++;
+              J(icmp)++;
+            }
+          retval(0) = octave_value (I);
+          retval(1) = octave_value (J);
+          retval(2) = octave_value (V);
+        }
 
     } // end if !error_state
   return retval;

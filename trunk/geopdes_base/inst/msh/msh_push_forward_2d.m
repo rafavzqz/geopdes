@@ -31,6 +31,7 @@
 %  For more details, see the documentation
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
+% Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -61,10 +62,30 @@ if (~isempty (varargin))
   end
 end
 
-qnu = msh.quad_nodes(1,:,:);
-qnv = msh.quad_nodes(2,:,:);
-F   = feval (geo.map, [qnu(:), qnv(:)]');
-jac = feval (geo.map_der, [qnu(:), qnv(:)]');
+if (isfield (msh, 'qn'))
+  qn = msh.qn;
+  F = feval (geo.map, {qn{1}(:)', qn{2}(:)'});
+  F = reshape (F, [2, msh.nqnu, msh.nelu, msh.nqnv, msh.nelv]);
+  F = permute (F, [1 2 4 3 5]);
+  msh.geo_map = reshape (F, [2, msh.nqn, msh.nel]);
+  
+  jac = feval (geo.map_der, {qn{1}(:)', qn{2}(:)'});
+  jac = reshape (jac, [2, 2, msh.nqnu, msh.nelu, msh.nqnv, msh.nelv]);
+  jac = permute (jac, [1 2 3 5 4 6]);
+  msh.geo_map_jac = reshape (jac, 2, 2, msh.nqn, msh.nel);
+  msh.jacdet = abs (geopdes_det__ (msh.geo_map_jac));
+  msh.jacdet = reshape (msh.jacdet, [msh.nqn, msh.nel]);
+else
+  qnu = msh.quad_nodes(1,:,:);
+  qnv = msh.quad_nodes(2,:,:);
+  F   = feval (geo.map, [qnu(:), qnv(:)]');
+  jac = feval (geo.map_der, [qnu(:), qnv(:)]');
+
+  msh.geo_map = reshape (F, size (msh.quad_nodes));
+  msh.geo_map_jac = reshape (jac, 2, 2, msh.nqn, msh.nel);
+  msh.jacdet = abs (geopdes_det__ (msh.geo_map_jac));
+  msh.jacdet = reshape (msh.jacdet, [msh.nqn, msh.nel]);
+end
 
 if (der2)
   if (isfield (geo, 'map_der2'))
@@ -73,11 +94,6 @@ if (der2)
     error ('msh_push_forward_2d: a function to compute second order derivatives has not been provided')
   end
 end
-
-msh.geo_map = reshape (F, size (msh.quad_nodes));
-msh.geo_map_jac = reshape (jac, 2, 2, msh.nqn, msh.nel);
-msh.jacdet = abs (geopdes_det__ (msh.geo_map_jac));
-msh.jacdet = reshape (msh.jacdet, [msh.nqn, msh.nel]);
 
 
 if (isfield (msh, 'boundary'))

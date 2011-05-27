@@ -23,6 +23,7 @@
 %  For more details, see the documentation
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
+% Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -39,16 +40,31 @@
 
 function msh = msh_push_forward_3d (msh, geo)
 
-  qnu = msh.quad_nodes(1,:,:);
-  qnv = msh.quad_nodes(2,:,:);
-  qnw = msh.quad_nodes(3,:,:);
-  F   = feval (geo.map, [qnu(:), qnv(:) qnw(:)]');
-  jac = feval (geo.map_der, [qnu(:), qnv(:) qnw(:)]');
+  if (isfield (msh, 'qn'))
+    qn = msh.qn;
+    F   = feval (geo.map, {qn{1}(:)', qn{2}(:)' qn{3}(:)'});
+    F = reshape (F, [3, msh.nqnu, msh.nelu, msh.nqnv, msh.nelv, msh.nqnw, msh.nelw]);
+    F = permute (F, [1 2 4 6 3 5 7]);
+    msh.geo_map = reshape (F, [3, msh.nqn, msh.nel]);
 
-  msh.geo_map = reshape (F, size (msh.quad_nodes));
-  msh.geo_map_jac = reshape (jac, 3, 3, msh.nqn, msh.nel);
-  msh.jacdet = abs (geopdes_det__ (msh.geo_map_jac));
-  msh.jacdet = reshape (msh.jacdet, [msh.nqn, msh.nel]);
+    jac = feval (geo.map_der, {qn{1}(:)', qn{2}(:)' qn{3}(:)'});
+    jac = reshape (jac, [3, 3, msh.nqnu, msh.nelu, msh.nqnv, msh.nelv, msh.nqnw, msh.nelw]);
+    jac = permute (jac, [1 2 3 5 7 4 6 8]);
+    msh.geo_map_jac = reshape (jac, 3, 3, msh.nqn, msh.nel);
+    msh.jacdet = abs (geopdes_det__ (msh.geo_map_jac));
+    msh.jacdet = reshape (msh.jacdet, [msh.nqn, msh.nel]);
+  else
+    qnu = msh.quad_nodes(1,:,:);
+    qnv = msh.quad_nodes(2,:,:);
+    qnw = msh.quad_nodes(3,:,:);
+    F   = feval (geo.map, [qnu(:), qnv(:) qnw(:)]');
+    jac = feval (geo.map_der, [qnu(:), qnv(:) qnw(:)]');
+
+    msh.geo_map = reshape (F, size (msh.quad_nodes));
+    msh.geo_map_jac = reshape (jac, 3, 3, msh.nqn, msh.nel);
+    msh.jacdet = abs (geopdes_det__ (msh.geo_map_jac));
+    msh.jacdet = reshape (msh.jacdet, [msh.nqn, msh.nel]);
+ end
 
   if (isfield (msh, 'boundary'))
     for iside = 1:6
