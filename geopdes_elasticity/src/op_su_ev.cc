@@ -79,7 +79,6 @@ DEFUN_DLD(op_su_ev, args, nargout,"\n\
 
 #pragma omp parallel default (none) shared (msh, spu, spv, I, J, V, mu, lambda)
       {
-      octave_idx_type counter;
 
 #pragma omp for
       for ( iel=0; iel < nel; iel++) 
@@ -177,8 +176,24 @@ DEFUN_DLD(op_su_ev, args, nargout,"\n\
           {warning_with_id ("geopdes:zero_measure_element", "op_su_ev: element %d has 0 measure", iel);}
         }// end for iel
       }// end of parallel region
-      mat = SparseMatrix (V, I, J, ndof_spv, ndof_spu, true);
-      retval(0) = octave_value (mat);
+
+      if (nargout == 1) 
+        {
+          mat = SparseMatrix (V, I, J, ndof_spv, ndof_spu, true);
+          retval(0) = octave_value (mat);
+        } 
+      else if (nargout == 3)
+	{
+          for ( icmp = 0; icmp <= counter; icmp++) 
+            {
+              I(icmp)++;
+              J(icmp)++;
+            }
+          retval(0) = octave_value (I);
+          retval(1) = octave_value (J);
+          retval(2) = octave_value (V);
+        }
+
     } // end if !error_state
   return retval;
 }
