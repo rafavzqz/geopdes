@@ -59,7 +59,6 @@ OUTPUT: \n\
 
 #pragma omp parallel default (none) shared (msh, spu, spv, I, J, V, coeff)
       {      
-      octave_idx_type counter;
 #pragma omp for
       for ( iel=0; iel < nel; iel++) 
         if (msh.area (iel) > 0.0)
