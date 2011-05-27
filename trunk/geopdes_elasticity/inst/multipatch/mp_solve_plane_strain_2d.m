@@ -104,7 +104,7 @@ end
 % Compute and assemble the matrices
 rhs = zeros (ndof, 1);
 
-nent = sum (cellfun (@(x, y) x.nel * y.nsh_max, msh, sp));
+nent = sum (cellfun (@(x, y, z) x.nel * y.nsh_max * z.nsh_max, msh, sp, sp));
 rows = zeros (nent, 1);
 cols = zeros (nent, 1);
 vals = zeros (nent, 1);
