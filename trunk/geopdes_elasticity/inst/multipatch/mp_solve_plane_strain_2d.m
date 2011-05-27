@@ -102,9 +102,14 @@ end
 [gnum, ndof] = mp_interface_vector_2d (interfaces, sp);
 
 % Compute and assemble the matrices
-mat = spalloc (ndof, ndof, ndof);
 rhs = zeros (ndof, 1);
 
+nent = sum (cellfun (@(x, y) x.nel * y.nsh_max, msh, sp));
+rows = zeros (nent, 1);
+cols = zeros (nent, 1);
+vals = zeros (nent, 1);
+
+ncounter = 0;
 for iptc = 1:npatch
   x = squeeze (msh{iptc}.geo_map(1,:,:));
   y = squeeze (msh{iptc}.geo_map(2,:,:));
@@ -112,12 +117,18 @@ for iptc = 1:npatch
   coeff_mu  = reshape (mu (x, y), msh{iptc}.nqn, msh{iptc}.nel);
   fval      = reshape (f (x, y), 2, msh{iptc}.nqn, msh{iptc}.nel);
 
-  mat_loc = op_su_ev (sp{iptc}, sp{iptc}, msh{iptc}, coeff_lam, coeff_mu);
-  rhs_loc = op_f_v (sp{iptc}, msh{iptc}, fval);
+  [rs, cs, vs] = op_su_ev (sp{iptc}, sp{iptc}, msh{iptc}, coeff_lam, coeff_mu);
 
-  mat(gnum{iptc},gnum{iptc}) = mat(gnum{iptc},gnum{iptc}) + mat_loc;
+  rows(ncounter+(1:numel (rs))) = gnum{iptc}(rs);
+  cols(ncounter+(1:numel (rs))) = gnum{iptc}(cs);
+  vals(ncounter+(1:numel (rs))) = vs;
+  ncounter = ncounter + numel (rs);
+
+  rhs_loc = op_f_v (sp{iptc}, msh{iptc}, fval);
   rhs(gnum{iptc}) = rhs(gnum{iptc}) + rhs_loc;
 end
+
+mat = sparse (rows, cols, vals, ndof, ndof);
 
 % Apply Neumann boundary conditions
 for iref = nmnn_sides
