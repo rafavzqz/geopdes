@@ -50,7 +50,7 @@ OUTPUT:\n\
       NDArray       coeff = args(2).array_value ().reshape (idx);
       ColumnVector mat (sp.ndof (), 0.0);
 
-      octave_idx_type counter = 0, iel, inode, idof, icmp;
+      octave_idx_type iel, inode, idof, icmp;
 
 #pragma omp parallel default (none) shared (msh, sp, idx, mat, coeff)
       {

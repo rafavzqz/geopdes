@@ -55,10 +55,11 @@ OUTPUT: \n\
      
       SparseMatrix mat;
 
-      octave_idx_type counter = 0, iel, inode, idof, jdof, icmp, idir;
+      octave_idx_type iel, inode, idof, jdof, icmp, idir;
         
 #pragma omp parallel default (none) shared (msh, spu, spv, I, J, V, coeff)
       {
+        octave_idx_type counter = 0;
 #pragma omp for
         for ( iel=0; iel < nel; iel++) 
           if (msh.area (iel) > 0.0)
@@ -153,7 +154,7 @@ OUTPUT: \n\
         } 
       else if (nargout == 3)
 	{
-          for ( icmp = 0; icmp <= counter; icmp++) 
+          for ( icmp = 0; icmp < I.length(); icmp++) 
             {
               I(icmp)++;
               J(icmp)++;
