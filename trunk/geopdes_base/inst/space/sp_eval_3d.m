@@ -32,8 +32,6 @@
 %
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-%
-% Author: Carlo de Falco <cdf AT users.sourceforge.net>
 
 function [eu, F] = sp_eval_3d (u, space, varargin);
 
@@ -57,16 +55,14 @@ function [eu, F] = sp_eval_3d (u, space, varargin);
     msh = msh_push_forward_3d (msh, geometry);
     sp  = feval (space.spfun, msh);
   elseif (length (varargin) == 1)
-    msh   = varargin{1};
+    msh = varargin{1};
     sp  = space;
   elseif (ischar(varargin{2}) && strcmpi(varargin{2}, 'recompute'))
-    msh   = varargin{1};
+    msh = varargin{1};
     sp  = feval (space.spfun, msh);
   else
     error ('sp_eval_3d: wrong input parameters')
   end
-
-  sp  = feval (space.spfun, msh);
 
   uc = zeros (size (sp.connectivity));
   c  = sp.connectivity~=0;  uc(c) = u(sp.connectivity(c)); 
