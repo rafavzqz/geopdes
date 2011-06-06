@@ -1,6 +1,6 @@
-% GEO_DEFORMED: create the geometry structure for a deformed NURBS entity
+% GEO_DEFORM: create the geometry structure for a deformed NURBS entity.
 %
-%   new_geometry = geo_deformed (u, space, geometry);
+%   new_geometry = geo_deform (u, space, geometry);
 %
 % INPUT:
 %     
@@ -28,10 +28,10 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function new_geom = geo_deformed (u, space, geometry);
+function new_geom = geo_deform (u, space, geometry);
 
   if (~isfield (geometry, 'nurbs'))
-    error ('geo_deformed: only NURBS-based geometries are allowed')
+    error ('geo_deform: only NURBS-based geometries are allowed')
   end
 
   if (space.ncomp == 2)
@@ -40,9 +40,10 @@ function new_geom = geo_deformed (u, space, geometry);
 
     u1 = reshape (u(1:ndof_comp(1)), [1, space.ndof_dir(1,:)]);
     u2 = reshape (u(ndof_comp(1)+[1:ndof_comp(2)]), [1, space.ndof_dir(2,:)]);
+    weights = nurbs.coefs(4,:,:);
 
-    nurbs.coefs(1,:,:) = nurbs.coefs(1,:,:) + u1.*nurbs.coefs(4,:,:);
-    nurbs.coefs(2,:,:) = nurbs.coefs(2,:,:) + u2.*nurbs.coefs(4,:,:);
+    nurbs.coefs(1,:,:) = nurbs.coefs(1,:,:) + u1 .* weights;
+    nurbs.coefs(2,:,:) = nurbs.coefs(2,:,:) + u2 .* weights;
 
     new_geom.nurbs = nurbs;
 
@@ -57,15 +58,16 @@ function new_geom = geo_deformed (u, space, geometry);
     u1 = reshape (u(1:ndof_comp(1)), [1, space.ndof_dir(1,:)]);
     u2 = reshape (u(ndof_comp(1)+[1:ndof_comp(2)]), [1, space.ndof_dir(2,:)]);
     u3 = reshape (u(ndof_comp(1)+ndof_comp(2)+[1:ndof_comp(3)]), [1, space.ndof_dir(3,:)]);
+    weights = nurbs.coefs(4,:,:,:);
 
-    nurbs.coefs(1,:,:,:) = nurbs.coefs(1,:,:,:) + u1.*nurbs.coefs(4,:,:,:);
-    nurbs.coefs(2,:,:,:) = nurbs.coefs(2,:,:,:) + u2.*nurbs.coefs(4,:,:,:);
-    nurbs.coefs(3,:,:,:) = nurbs.coefs(3,:,:,:) + u3.*nurbs.coefs(4,:,:,:);
+    nurbs.coefs(1,:,:,:) = nurbs.coefs(1,:,:,:) + u1 .* weights;
+    nurbs.coefs(2,:,:,:) = nurbs.coefs(2,:,:,:) + u2 .* weights;
+    nurbs.coefs(3,:,:,:) = nurbs.coefs(3,:,:,:) + u3 .* weights;
 
     new_geom.nurbs = nurbs;
 
-    new_geom.map      = @(PTS) geo_3d_nurbs (new_geom.nurbs, PTS, 0);
-    new_geom.map_der  = @(PTS) geo_3d_nurbs (new_geom.nurbs, PTS, 1);
+    new_geom.map     = @(PTS) geo_3d_nurbs (new_geom.nurbs, PTS, 0);
+    new_geom.map_der = @(PTS) geo_3d_nurbs (new_geom.nurbs, PTS, 1);
 
   end
 
