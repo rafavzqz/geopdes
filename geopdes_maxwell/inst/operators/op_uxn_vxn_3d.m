@@ -35,6 +35,10 @@
 
 function varargout = op_uxn_vxn_3d (spu, spv, msh, coeff)
   
+  rows = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
+  cols = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
+  values = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
+
   ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:, iel)))
