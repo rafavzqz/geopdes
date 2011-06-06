@@ -17,32 +17,27 @@
 # February 3rd 2011
 #
 #
-# The first line after the header consist of four integer values
+# The first line after the header consists of four integer values
 #   N Np Ni Ns     (4 integer values)
 #
 #  N : dimension of the geometry
 #  Np: number of patches to construct the geometry
 #  Ni: total number of interfaces, each one connecting two patches
 #  Ns: total number of subdomains, formed by the union of patches
-#
 3 3 2 2
 #
 # Then follows the information for each patch. This consists of the following:
 #
 # The name of the patch (string)
-#
 PATCH 1
 #
 # p(i): the degree in each Cartesian direction (N integers)
-#
 1 1 1
 #
 # ncp(i): the number of control points in each direction (N integers)
-#
 2 2 2
 #
-# knots{i}: knot sequence in the Cartesian direction (ncp(i)+p(i)+1 integers)
-#
+# knots{i}: knot sequence in the Cartesian direction (ncp(i)+p(i)+1 floats)
 0.00000   0.00000   1.00000   1.00000
 0.00000   0.00000   1.00000   1.00000
 0.00000   0.00000   1.00000   1.00000
@@ -54,14 +49,12 @@ PATCH 1
 # The control points are numbered in a reverse lexicographic order: starting
 #  from the origin, we first increase the parametric coordinate x_1 and then 
 #  the parametric coordinate x_2 (and for 3D cases, then the coordinate x_3).
-#
 -1.0000   0.00000  -1.00000   0.00000  -1.00000   0.00000  -1.00000   0.00000
 -1.0000  -1.00000   0.00000   0.00000  -1.00000  -1.00000   0.00000   0.00000
 0.00000   0.00000   0.00000   0.00000   1.00000   1.00000   1.00000   1.00000
 #
 # weights: weight associated to each basis function (or control point)
 #          (prod(ncp ) float values)
-#
 1.00000   1.00000   1.00000   1.00000   1.00000   1.00000   1.00000   1.00000
 #
 # An analogous description is given for the other patches
@@ -233,7 +226,7 @@ BOUNDARY 8
 #
 #
 #
-# EXPLANATION OF THE GEOMETRY OF THIS EXAMPLE
+# GEOMETRY OF THIS EXAMPLE
 #
 #  The geometry is a three-dimensional thick L-shaped domain, with coordinates
 #
