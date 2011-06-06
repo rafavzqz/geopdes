@@ -17,7 +17,7 @@ problem_data.mu  = @(x, y, z) (E/(2*(1+nu)) * ones (size (x)));
 % Source and boundary terms
 fx = @(x, y, z) zeros (size (x));
 fy = fx;
-fz = @(x, y, z) ones (size (x));
+fz = @(x, y, z) 0.1 * ones (size (x));
 problem_data.f = @(x, y, z) cat(1, ...
                    reshape (fx (x,y,z), [1, size(x)]), ...
                    reshape (fy (x,y,z), [1, size(x)]), ...
@@ -42,3 +42,9 @@ vtk_pts = {linspace(0, 1, 5), linspace(0, 1, 5), linspace(0, 1, 40)};
 fprintf ('results being saved in: %s_displacement\n \n', output_file)
 sp_to_vtk_3d (u, space, geometry, vtk_pts, sprintf ('%s_displacement', output_file), 'displacement')
 
+% Plot in Matlab
+figure
+def_geom = geo_deform (u, space, geometry);
+nrbplot (def_geom.nurbs, [40 40 40], 'light', 'on')
+axis equal tight
+title ('Deformed configuration')

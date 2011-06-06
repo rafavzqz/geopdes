@@ -6,7 +6,7 @@ Solve
  solve_plane_strain_2d
  solve_linear_elasticity_3d
 Geometry
- geo_deformed
+ geo_deform
 Examples
  ex_plane_strain_square
  ex_plane_strain_square_mixed_bc

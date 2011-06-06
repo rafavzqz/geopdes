@@ -19,7 +19,7 @@ problem_data.mu  = @(x, y) (E/(2*(1+nu)) * ones (size (x)));
 % Source and boundary terms
 problem_data.f = @(x, y) zeros (2, size (x, 1), size (x, 2));
 problem_data.h = @(x, y, ind) zeros (2, size (x, 1), size (x, 2));
-problem_data.p = @(x, y, ind) ones (size (x));
+problem_data.p = @(x, y, ind) 0.3 * ones (size (x));
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
@@ -44,8 +44,16 @@ sp_to_vtk_2d (u, space, geometry, vtk_pts, sprintf ('%s_displacement.vts', outpu
 [X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
 
 figure
+subplot (1, 2, 1)
 quiver (X, Y, squeeze(eu(1,:,:)), squeeze(eu(2,:,:)))
 axis equal tight
+title ('Computed solution')
+
+subplot (1, 2, 2)
+def_geom = geo_deform (u, space, geometry);
+nrbplot (def_geom.nurbs, [20 20], 'light', 'on')
+view(2)
+title ('Deformed configuration')
 
 %!demo
 %! ex_plane_strain_square_mixed_bc
