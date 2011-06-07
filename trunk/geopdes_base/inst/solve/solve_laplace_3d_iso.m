@@ -1,4 +1,4 @@
-% SOLVE_LAPLACE_3D_NURBS: Solve a 3d Laplace problem with a NURBS discretization (isoparametric approach). 
+% SOLVE_LAPLACE_3D_ISO: Solve a 3d Laplace problem with a NURBS discretization (isoparametric approach). 
 %
 % The function solves the diffusion problem
 %
