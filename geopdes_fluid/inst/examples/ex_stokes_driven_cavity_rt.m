@@ -23,7 +23,7 @@ clear method_data
 method_data.element_name = 'rt';   % Element type for discretization
 method_data.degree       = [ 3  3];  % Degree of the splines
 method_data.regularity   = [ 2  2];  % Regularity of the splines
-method_data.nsub         = [10 10];  % Number of subdivisions
+method_data.nsub         = [15 15];  % Number of subdivisions
 method_data.nquad        = [ 5  5];  % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
@@ -36,7 +36,7 @@ output_file = 'Driven_cavity_RT_Deg3_Reg2_Sub10';
 
 fprintf ('The result is saved in the files %s \n and %s \n \n', ...
            [output_file '_vel'], [output_file '_press']);
-vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20)};
+vtk_pts = {linspace(0, 1, 40), linspace(0, 1, 40)};
 sp_to_vtk_2d (press, space_p, geometry, vtk_pts, [output_file '_press'], 'press')
 sp_to_vtk_2d (vel,   space_v, geometry, vtk_pts, [output_file '_vel'  ], 'vel')
 
