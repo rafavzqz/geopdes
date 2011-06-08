@@ -1,6 +1,6 @@
 % OP_F_VXN_3D: assemble the vector r = [r(i)], with  r(i) = (f, v_i x n), with n the normal exterior vector.
 %
-%   rhs = op_f_vxn_3d (spv, msh, coeff);
+%   mat = op_f_vxn_3d (spv, msh, coeff);
 %
 % INPUT:
 %     
@@ -10,10 +10,9 @@
 %
 % OUTPUT:
 %
-%   rhs: assembled right-hand side
+%   mat: assembled right-hand side
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco, Rafael Vazquez
-% Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -30,14 +29,12 @@
 
 
 
-function rhs = op_f_vxn_3d (spv, msh, coeff)
+function mat = op_f_vxn_3d (spv, msh, coeff)
   
-  rhs = zeros(spv.ndof, 1);
+  mat = zeros(spv.ndof, 1);
   for iel = 1:msh.nel
     if (all (msh.jacdet(:,iel)))
-      jacdet_weights = msh.jacdet(:, iel) .* msh.quad_weights(:, iel);
-
-      rhs_loc = zeros (spv.nsh(iel), 1);
+      mat_loc = zeros (spv.nsh(iel), 1);
       for idof = 1:spv.nsh(iel)
         ishp = squeeze(spv.shape_functions(:,:,idof,iel));
         ishp_x_n = [ishp(2,:) .* msh.normal(3,:,iel) - ...
@@ -46,12 +43,13 @@ function rhs = op_f_vxn_3d (spv, msh, coeff)
                        ishp(1,:) .* msh.normal(3,:,iel); ...
                     ishp(1,:) .* msh.normal(2,:,iel) - ...
                        ishp(2,:) .* msh.normal(1,:,iel)];
-
-          rhs_loc(idof) = rhs_loc(idof) +  ...
-            sum (jacdet_weights .* sum(ishp_x_n .* coeff(:, :, iel), 1).');
+        %for inode = 1:msh.nqn
+          mat_loc(idof) = mat_loc(idof) +  ...
+            sum (msh.jacdet(:, iel) .* msh.quad_weights(:, iel) .* ...
+            sum(ishp_x_n .* coeff(:, :, iel), 1).');
+        %end  
       end
-
-      rhs(spv.connectivity(1:spv.nsh(iel), iel)) = rhs(spv.connectivity(1:spv.nsh(iel), iel)) + rhs_loc;
+      mat(spv.connectivity(1:spv.nsh(iel), iel)) = mat(spv.connectivity(1:spv.nsh(iel), iel)) + mat_loc;
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_f_vxn_3d: singular map in element number %d', iel)
     end
