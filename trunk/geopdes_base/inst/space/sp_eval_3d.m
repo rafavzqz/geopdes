@@ -1,6 +1,6 @@
 % SP_EVAL_3D:  Evaluate a 3d function at a given set of points.
 %
-%   [eu, F] = sp_eval_3d (u, space, geometry, npts);
+%   [eu, F] = sp_eval_3d (u, space, geometry, pts);
 %   [eu, F] = sp_eval_3d (u, space, msh);
 %   [eu, F] = sp_eval_3d (u, space, msh, opt);
 %
