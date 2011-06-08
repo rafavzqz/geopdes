@@ -1,0 +1,85 @@
+####################################################
+# Explanation of the format for the geometry files #
+####################################################
+#
+# WARNING
+#  This file format is only valid for single patch geometries.
+#  The file format for multipatch geometries is explained in
+#   the geopdes_multipatch package.
+#
+# NOTATION
+#  We use the following notation:
+#
+# N               : dimension of the geometry
+# Np              : number of patches (equal to one in single patch geometries)
+# p(i)            : NURBS (or spline) degree in the Cartesian direction x_i
+# ncp(i)          : number of control points in the Cartesian direction x_i
+# knots{i}        : knot sequence in the Cartesian direction x_i
+# cp_x, cp_y, cp_z: coordinates of the weighted control points
+#                   (see Section 4.2 of The NURBS Book, L. Piegl & W. Tiller)
+# weights         : weight associated to each basis function (or control point)
+#
+# FILE STRUCTURE:
+#
+# The file starts with a header containing information about the file,
+#  formed by an arbitrary number of lines starting with the symbol "#".
+#
+# The first line after the header gives the dimension and the number of patches.
+#
+#   N Np       (2 integer values)
+#
+# And then follow Np records containing the information for each patch.
+#
+#   p          (N integer values)
+#   ncp        (N integer values)
+#   knots{i}   (N lines, each one with  ncp(i)+p(i)+1  float values)
+#   cp_x       (prod_{i=1}^{N} ncp(i) float values)
+#   cp_y       (prod_{i=1}^{N} ncp(i) float values)
+#   cp_z       (prod_{i=1}^{N} ncp(i) float values)
+#   weights    (prod_{i=1}^{N} ncp(i) float values)
+#
+#
+# The control points are numbered in a reverse lexicographic order: starting
+#  from the origin, we first increase the parametric coordinate x_1 and then 
+#  the parametric coordinate x_2 (and for 3D cases, then the coordinate x_3).
+#
+# To impose the boundary conditions, we assign a number to each side of the
+#  parametric domain, which is inherited by the boundaries of the physical one.
+#  The numbers assigned in the parametric domain are the following
+#
+#            2D CASE                        3D CASE
+#    Edge 1, {(u,v) : u = 0}        Face 1, {(u,v,w) : u = 0}
+#    Edge 2, {(u,v) : u = 1}        Face 2, {(u,v,w) : u = 1}
+#    Edge 3, {(u,v) : v = 0}        Face 3, {(u,v,w) : v = 0}
+#    Edge 4, {(u,v) : v = 1}        Face 4, {(u,v,w) : v = 1}
+#                                   Face 5, {(u,v,w) : w = 0}
+#                                   Face 6, {(u,v,w) : w = 1}
+#
+#
+# EXAMPLE
+#
+#  The domain is one quarter of a three-dimensional ring, with coordinates
+#
+#   {(x,y,z) : 1 < x^2 + y^2 < 4; 0 < z < 1}.
+#
+#  The geometry is described using NURBS functions of
+#   degree 2 in one direction (to represent the arc), 
+#   and degree 1 in the two other directions.
+#
+# HEADER
+# file: geo_specs_v06.txt
+# nurbs geometry v.0.6
+# 
+# Example file for one quarter of a thick ring
+# September 20th 2010
+#
+3 1
+1 2 1
+2 3 2
+0.00000   0.00000   1.00000   1.00000
+0.00000   0.00000   0.00000   1.00000   1.00000   1.00000
+0.00000   0.00000   1.00000   1.00000
+1.00000   2.00000   0.707106781186548   1.414213562373095   0.00000   0.00000   1.00000   2.00000   0.707106781186548   1.414213562373095   0.00000   0.00000
+0.00000   0.00000   0.707106781186548   1.414213562373095   1.00000   2.00000   0.00000   0.00000   0.707106781186548   1.414213562373095   1.00000   2.00000
+0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   1.00000   1.00000   0.707106781186548   0.707106781186548   1.00000   1.00000
+1.00000   1.00000   0.707106781186548   0.707106781186548   1.00000   1.00000   1.00000   1.00000   0.707106781186548   0.707106781186548   1.00000   1.00000
