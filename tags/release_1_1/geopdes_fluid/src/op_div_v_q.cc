@@ -54,10 +54,8 @@ DEFUN_DLD(op_div_v_q, args, nargout,"OP_DIV_V_Q: assemble the matrix B = [b(i,j)
 
       octave_idx_type counter = 0, iel, inode, idof, jdof, icmp;
 
-#pragma omp parallel default (none) shared (msh, spv, spq, I, J, V)
       {
 
-#pragma omp for
       for ( iel=0; iel < nel; iel++) 
         if (msh.area (iel) > 0.0)
 	  {
@@ -115,7 +113,6 @@ DEFUN_DLD(op_div_v_q, args, nargout,"OP_DIV_V_Q: assemble the matrix B = [b(i,j)
 		  } // end for jdof
 	      } // end for idof
           } else {
-#pragma omp critical
           {warning_with_id ("geopdes:zero_measure_element", "op_div_v_q: element %d has 0 area (or volume)", iel);}
         }  // end for iel, if area > 0
       } // end of parallel region

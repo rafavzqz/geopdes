@@ -77,10 +77,8 @@ DEFUN_DLD(op_su_ev, args, nargout,"\n\
 
       octave_idx_type counter = 0, iel, inode, idof, jdof, icmp, jcmp;
 
-#pragma omp parallel default (none) shared (msh, spu, spv, I, J, V, mu, lambda)
       {
 
-#pragma omp for
       for ( iel=0; iel < nel; iel++) 
         if (msh.area (iel) > 0.0)
           {
@@ -172,7 +170,6 @@ DEFUN_DLD(op_su_ev, args, nargout,"\n\
                   } // end for jdof
               } // end for idof
           } else {
-#pragma omp critical
           {warning_with_id ("geopdes:zero_measure_element", "op_su_ev: element %d has 0 measure", iel);}
         }// end for iel
       }// end of parallel region
