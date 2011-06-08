@@ -58,10 +58,9 @@ OUTPUT: \n\
 
       octave_idx_type iel, inode, idof, jdof, icmp;
 
-#pragma omp parallel default (none) shared (msh, spu, spv, I, J, V, coeff)
       {
         octave_idx_type counter = 0;
-#pragma omp for
+
         for ( iel=0; iel < nel; iel++)
           if (msh.area (iel) > 0.0)
             {
@@ -130,7 +129,7 @@ OUTPUT: \n\
                   } // end for jdof
               } // end for idof
             } else {
-#pragma omp critical
+
             {warning_with_id ("geopdes:zero_measure_element", "op_u_v: element %d has 0 area (or volume)", iel);}
           }  // end for iel, if area > 0
       } // end of openmp parallel section

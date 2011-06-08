@@ -57,9 +57,7 @@ OP_V_GRADP: assemble the matrix B = [b(i,j)], b(i,j) = (epsilon grad p_i, v_j). 
 
       octave_idx_type counter = 0, iel, inode, idof, jdof, icmp;
  
-#pragma omp parallel default (none) shared (msh, spp, spv, I, J, V, coeff)
       {      
-#pragma omp for
       for ( iel=0; iel < nel; iel++) 
         if (msh.area (iel) > 0.0)
 	  {
@@ -126,7 +124,6 @@ OP_V_GRADP: assemble the matrix B = [b(i,j)], b(i,j) = (epsilon grad p_i, v_j). 
 		  } // end for jdof
 	      } // end for idof
           } else {
-#pragma omp critical
           {warning_with_id ("geopdes:zero_measure_element", "op_v_gradp: element %d has 0 area (or volume)", iel);}
         }  // end for iel, if area > 0
       } // end of parallel section

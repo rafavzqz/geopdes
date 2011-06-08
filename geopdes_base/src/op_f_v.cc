@@ -52,11 +52,9 @@ OUTPUT:\n\
 
       octave_idx_type iel, inode, idof, icmp;
 
-#pragma omp parallel default (none) shared (msh, sp, idx, mat, coeff)
       {
         double local_contribution;
 
-#pragma omp for
       for ( iel=0; iel < nel; iel++) 
         if (msh.area (iel) > 0.0)
 	  {
@@ -95,13 +93,11 @@ OUTPUT:\n\
                         for ( icmp = 0; icmp < ncomp; icmp++)
                           s += shp[idof][inode][icmp] * coeff (icmp, inode, iel);
                         local_contribution = jacdet_weights[inode] * s;
-#pragma omp critical
                         mat(conn[idof]) += local_contribution;			  
                       }  
                   } // end for inode
 	      } // end for idof
           } else {
-#pragma omp critical
           {warning_with_id ("geopdes:zero_measure_element", "op_f_v: element %d has 0 area (or volume)", iel);}
         }  // end for iel, if area > 0
       }  // end for parallel region
