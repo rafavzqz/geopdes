@@ -134,7 +134,7 @@ for iside = symm_sides
 end
 
 % Apply Dirichlet boundary conditions
-[u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj(sp, msh, h, drchlt_sides);
+[u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (sp, msh, h, drchlt_sides);
 u(drchlt_dofs) = u_drchlt;
 
 int_dofs = setdiff (1:sp.ndof, [symm_dofs drchlt_dofs]);

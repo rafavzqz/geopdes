@@ -41,7 +41,7 @@ vp = linspace(0,1,31);
 
 % Plot of the 11th eigenfunction
 subplot(1,2,1)
-[eu, F] = sp_eval_2d (u(:, perm(11)), space, geometry, {up vp});
+[eu, F] = sp_eval (u(:, perm(11)), space, geometry, {up vp});
 surf (squeeze(F(1,:,:)), squeeze(F(2,:,:)), eu)
 title ('Plot of the 11^{th} eigenfunction')
 

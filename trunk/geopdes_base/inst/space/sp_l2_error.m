@@ -28,7 +28,6 @@
 % You should have received a copy of the GNU General Public License
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
-% Author: Carlo de Falco <cdf AT users.sourceforge.net>
 
 function toterr = sp_l2_error (sp, msh, u, uex);
   
