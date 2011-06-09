@@ -33,20 +33,26 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function varargout = op_u_v (spu, spv, msh, coeff)
+function varargout = op_u_v2 (spu, spv, msh, coeff, element_list)
   
-  shpu = reshape (spu.shape_functions, spu.ncomp, msh.nqn, spu.nsh_max, msh.nel);
-  shpv = reshape (spv.shape_functions, spv.ncomp, msh.nqn, spv.nsh_max, msh.nel);
+  if (nargin == 4)
+    element_list = 1:msh.nel;
+  end
+  nel = numel (element_list);
+
+  shpu = reshape (spu.shape_functions, spu.ncomp, msh.nqn, spu.nsh_max, nel);
+  shpv = reshape (spv.shape_functions, spv.ncomp, msh.nqn, spv.nsh_max, nel);
   
-  rows = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
-  cols = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
-  values = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
+  rows = zeros (nel * spu.nsh_max * spv.nsh_max, 1);
+  cols = zeros (nel * spu.nsh_max * spv.nsh_max, 1);
+  values = zeros (nel * spu.nsh_max * spv.nsh_max, 1);
 
   ncounter = 0;
-  for iel = 1:msh.nel
-    if (all (msh.jacdet(:,iel)))
-      jacdet_weights = msh.jacdet(:, iel) .* ...
-                       msh.quad_weights(:, iel) .* coeff(:, iel);
+  for iel = 1:nel
+    iel_glob = element_list (iel);
+    if (all (msh.jacdet(:,iel_glob)))
+      jacdet_weights = msh.jacdet(:, iel_glob) .* ...
+                       msh.quad_weights(:, iel_glob) .* coeff(:, iel_glob);
       jacdet_weights = repmat (jacdet_weights, [1, spu.nsh(iel)]);
 
       shpv_iel = reshape (shpv(:, :, 1:spv.nsh(iel), iel), spv.ncomp, msh.nqn, spv.nsh(iel));

@@ -76,7 +76,6 @@ if (isfield (spx,'dofs') && isfield (spy,'dofs'))
 end
 
 if (gradient)
-
   sp.shape_function_gradients = zeros (2, 2, msh.nqn, sp.nsh_max, msh.nel);
   sp.shape_function_gradients(1,:,:,1:spx.nsh_max,:)             = spx.shape_function_gradients;
   sp.shape_function_gradients(2,:,:, spx.nsh_max+1:sp.nsh_max,:) = spy.shape_function_gradients;

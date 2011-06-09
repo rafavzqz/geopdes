@@ -77,7 +77,7 @@ msh      = msh_2d_tensor_product (zeta, qn, qw);
 msh      = msh_push_forward_2d (msh, geometry);
   
 % Construct space structure
-space    = sp_bspline_2d_phys (knots, degree, msh);
+space    = sp_bspline_2d (knots, degree, msh);
   
 % Precompute the coefficients
 x = squeeze (msh.geo_map(1,:,:));
@@ -87,8 +87,8 @@ epsilon = reshape (c_diff (x, y), msh.nqn, msh.nel);
 mu      = reshape (c_mass (x, y), msh.nqn, msh.nel);
  
 % Assemble the matrices
-stiff_mat = op_gradu_gradv (space, space, msh, epsilon);
-mass_mat  = op_u_v (space, space, msh, mu);
+stiff_mat = op_gradu_gradv_tp (space, space, msh, epsilon);
+mass_mat  = op_u_v_tp (space, space, msh, mu);
 
 % Apply homogeneous Dirichlet boundary conditions
 drchlt_dofs = unique ([space.boundary(drchlt_sides).dofs]);

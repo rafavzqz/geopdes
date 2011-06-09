@@ -78,7 +78,7 @@ msh      = msh_2d_tensor_product (zeta, qn, qw);
 msh      = msh_push_forward_2d (msh, geometry);
   
 % Construct space structure
-space    = sp_bspline_2d_phys (knots, degree, msh);
+space    = sp_bspline_2d (knots, degree, msh);
   
 % Precompute the coefficients
 x = squeeze (msh.geo_map(1,:,:));
@@ -88,8 +88,8 @@ epsilon = reshape (c_diff (x, y), msh.nqn, msh.nel);
 fval    = reshape (f (x, y), msh.nqn, msh.nel) ;
  
 % Assemble the matrices
-stiff_mat = op_gradu_gradv (space, space, msh, epsilon);
-rhs       = op_f_v (space, msh, fval);
+stiff_mat = op_gradu_gradv_tp (space, space, msh, epsilon);
+rhs       = op_f_v_tp (space, msh, fval);
 
 % Apply Neumann boundary conditions
 for iside = nmnn_sides

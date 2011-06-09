@@ -43,7 +43,7 @@ output_file = 'Thick_ring_BSP_Deg2_Reg1_Sub3';
 
 vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20), linspace(0, 1, 20)};
 fprintf ('The result is saved in the file %s \n \n', output_file);
-sp_to_vtk_3d (u, space, geometry, vtk_pts, output_file, 'u')
+sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 
 % 4.2) COMPARISON WITH THE EXACT SOLUTION
 

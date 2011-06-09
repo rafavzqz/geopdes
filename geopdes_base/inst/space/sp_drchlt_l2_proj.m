@@ -32,10 +32,15 @@
 
 function [u, dofs] = sp_drchlt_l2_proj (sp, msh, h, sides)
 
-  dofs = unique ([sp.boundary(sides).dofs]);
   rhs  = zeros (sp.ndof, 1);
 
-  nent = sum ([msh.boundary(sides).nel] .* [sp.boundary(sides).nsh_max].^2);
+  dofs = [];
+  nent = 0;
+  for iside = sides
+    nent = nent + msh.boundary(iside).nel * sp.boundary(iside).nsh_max^2;
+    dofs = unique ([dofs, sp.boundary(iside).dofs]);
+  end
+
   rows = zeros (nent, 1);
   cols = zeros (nent, 1);
   vals = zeros (nent, 1);
@@ -70,7 +75,6 @@ function [u, dofs] = sp_drchlt_l2_proj (sp, msh, h, sides)
 
     rhs_side = op_f_v (sp_bnd, msh_bnd, hval);
     rhs(sp_bnd.dofs) = rhs(sp_bnd.dofs) + rhs_side;
-
   end
 
   M = sparse (rows, cols, vals);

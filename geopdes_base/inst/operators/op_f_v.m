@@ -30,20 +30,27 @@
 
 
 
-function rhs = op_f_v (spv, msh, coeff)
+function rhs = op_f_v2 (spv, msh, coeff, element_list)
   
- rhs   = zeros (spv.ndof, 1);
-
- shpv  = reshape (spv.shape_functions, spv.ncomp, msh.nqn, spv.nsh_max, msh.nel);
  coeff = reshape (coeff, spv.ncomp, msh.nqn, msh.nel);
- for iel = 1:msh.nel
-   if (all (msh.jacdet(:,iel)))
+
+ if (nargin == 3)
+   element_list = 1:msh.nel;
+ end
+ nel = numel (element_list);
+
+ rhs   = zeros (spv.ndof, 1);
+ shpv  = reshape (spv.shape_functions, spv.ncomp, msh.nqn, spv.nsh_max, nel);
+
+ for iel = 1:nel
+   iel_glob = element_list (iel);
+   if (all (msh.jacdet(:,iel_glob)))
      rhs_loc = zeros (spv.nsh(iel), 1);
 
-     jacdet_weights = msh.jacdet(:, iel) .* msh.quad_weights(:, iel);
+     jacdet_weights = msh.jacdet(:, iel_glob) .* msh.quad_weights(:, iel_glob);
      jacdet_weights = repmat (jacdet_weights, [1, spv.nsh(iel)]);
 
-     coeff_iel = repmat (coeff(:, :, iel), [1, 1, spv.nsh(iel)]);
+     coeff_iel = repmat (coeff(:, :, iel_glob), [1, 1, spv.nsh(iel)]);
 
      shpv_iel = reshape (shpv(:, :, 1:spv.nsh(iel), iel), spv.ncomp, msh.nqn, spv.nsh(iel));
 
