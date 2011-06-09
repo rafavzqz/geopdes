@@ -1,6 +1,7 @@
 % OP_GRADU_GRADV: assemble the stiffness matrix A = [a(i,j)], a(i,j) = (epsilon grad u_j, grad v_i).
 %
 %   mat = op_gradu_gradv (spu, spv, msh, epsilon);
+%   [rows, cols, values] = op_gradu_gradv (spu, spv, msh, epsilon);
 %
 % INPUT:
 %    
@@ -11,9 +12,13 @@
 %
 % OUTPUT:
 %
-%   mat: assembled stiffness matrix
+%   mat:    assembled stiffness matrix
+%   rows:   row indices of the nonzero entries
+%   cols:   column indices of the nonzero entries
+%   values: values of the nonzero entries
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
+% Copyright (C) 2011, Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -28,34 +33,56 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function mat = op_gradu_gradv (spu, spv, msh, coeff)
-  
-  mat = spalloc (spv.ndof, spu.ndof, 1);
+function varargout = op_gradu_gradv (spu, spv, msh, coeff)
   
   gradu = reshape (spu.shape_function_gradients, spu.ncomp, [], msh.nqn, spu.nsh_max, msh.nel);
   gradv = reshape (spv.shape_function_gradients, spv.ncomp, [], msh.nqn, spv.nsh_max, msh.nel);
 
   ndir = size (gradu, 2);
 
+  rows = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
+  cols = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
+  values = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
+
+  ncounter = 0;
   for iel = 1:msh.nel
-    if (all (msh.jacdet(:,iel)))
-      mat_loc = zeros (spv.nsh(iel), spu.nsh(iel));
+    if (all (msh.jacdet(:, iel)))
+      jacdet_weights = msh.jacdet(:, iel) .* ...
+                       msh.quad_weights(:, iel) .* coeff(:, iel);
+
+      gradu_iel = permute (gradu(:, :, :, :, iel), [1 2 4 3]);
+      gradu_iel = reshape (gradu_iel, spu.ncomp * ndir, spu.nsh_max, []);
+      gradu_iel = permute (gradu_iel, [1 3 2]);
+
+      gradv_iel = permute (gradv(:, :, :, :, iel), [1 2 4 3]);
+      gradv_iel = reshape (gradv_iel, spv.ncomp * ndir, spv.nsh_max, []);
+      gradv_iel = permute (gradv_iel, [1 3 2]);
+
       for idof = 1:spv.nsh(iel)
-        ishg = reshape(gradv(:,:,:,idof,iel),spv.ncomp * ndir, []);
+        ishg = gradv_iel(:, :, idof);
         for jdof = 1:spu.nsh(iel) 
-          jshg = reshape(gradu(:,:,:,jdof,iel),spu.ncomp * ndir, []);
-          %for inode = 1:msh.nqn
-          mat_loc(idof, jdof) = mat_loc(idof, jdof) + ...
-             sum (msh.jacdet(:,iel) .* msh.quad_weights(:, iel) .* ...
-                  sum (ishg .* jshg, 1).' .* coeff(:,iel));
-          %end  
+          ncounter = ncounter + 1;
+          rows(ncounter) = spv.connectivity(idof, iel);
+          cols(ncounter) = spu.connectivity(jdof, iel);
+
+          jshg = gradu_iel(:, :, jdof);
+
+          values(ncounter) = sum (jacdet_weights .* sum (ishg .* jshg, 1).');
         end
       end
-      mat(spv.connectivity(1:spv.nsh(iel), iel), spu.connectivity(1:spu.nsh(iel), iel)) = ...
-        mat(spv.connectivity(1:spv.nsh(iel), iel), spu.connectivity(1:spu.nsh(iel), iel)) + mat_loc;
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_gradu_gradv: singular map in element number %d', iel)
     end
+  end
+
+  if (nargout == 1)
+    varargout{1} = sparse (rows, cols, values, spv.ndof, spu.ndof);
+  elseif (nargout == 3)
+    varargout{1} = rows;
+    varargout{2} = cols;
+    varargout{3} = values;
+  else
+    error ('op_gradu_gradv: wrong number of output arguments')
   end
 
 end

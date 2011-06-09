@@ -1,6 +1,7 @@
 % OP_DIV_V_Q: assemble the matrix B = [b(i,j)], b(i,j) = (q_i, div v_j).
 %
 %   mat = op_div_v_q (spv, spq, msh);
+%   [rows, cols, values] = op_div_v_q (spv, spq, msh);
 %
 % INPUT: 
 %
@@ -10,9 +11,13 @@
 %
 % OUTPUT: 
 %
-%   mat: assembled matrix 
+%   mat:    assembled matrix 
+%   rows:   row indices of the nonzero entries
+%   cols:   column indices of the nonzero entries
+%   values: values of the nonzero entries
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
+% Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -27,28 +32,41 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function mat = op_div_v_q (spv, spq, msh)
+function varargout = op_div_v_q (spv, spq, msh)
   
-  mat = spalloc(spq.ndof, spv.ndof, 1);
-  
+  rows = zeros (msh.nel * spq.nsh_max * spv.nsh_max, 1);
+  cols = zeros (msh.nel * spq.nsh_max * spv.nsh_max, 1);
+  values = zeros (msh.nel * spq.nsh_max * spv.nsh_max, 1);
+
+  ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:, iel)))
-      mat_loc = zeros (spq.nsh(iel), spv.nsh(iel));
+      jacdet_weights = msh.jacdet(:,iel) .* msh.quad_weights(:, iel);
       for idof = 1:spq.nsh(iel)
         ishp = spq.shape_functions(:, idof, iel);
         for jdof = 1:spv.nsh(iel) 
+          ncounter = ncounter + 1;
+          rows(ncounter) = spq.connectivity(idof, iel);
+          cols(ncounter) = spv.connectivity(jdof, iel);
+
           jshd = spv.shape_function_divs(:, jdof, iel);
-          %for inode = 1:msh.nqn
-          mat_loc(idof, jdof) = mat_loc(idof, jdof) + ...
-            sum (msh.jacdet(:,iel) .* msh.quad_weights(:, iel) .* ishp .* jshd);
-          %end  
+
+          values(ncounter) = sum (jacdet_weights .* ishp .* jshd);
         end
       end
-      mat(spq.connectivity(1:spq.nsh(iel), iel), spv.connectivity(1:spv.nsh(iel), iel)) = ...
-        mat(spq.connectivity(1:spq.nsh(iel), iel), spv.connectivity(1:spv.nsh(iel), iel)) + mat_loc;
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_div_v_q: singular map in element number %d', iel)
     end
+  end
+
+  if (nargout == 1)
+    varargout{1} = sparse (rows, cols, values, spq.ndof, spv.ndof);
+  elseif (nargout == 3)
+    varargout{1} = rows;
+    varargout{2} = cols;
+    varargout{3} = values;
+  else
+    error ('op_div_v_q: wrong number of output arguments')
   end
 
 end

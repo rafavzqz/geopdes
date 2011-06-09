@@ -1,6 +1,6 @@
 % OP_F_VXN_2D: assemble the vector r = [r(i)], with  r(i) = (f, v_i x n), with n the normal exterior vector.
 %
-%   mat = op_f_vxn_2d (spv, msh, coeff);
+%   rhs = op_f_vxn_2d (spv, msh, coeff);
 %
 % INPUT:
 %     
@@ -10,9 +10,10 @@
 %
 % OUTPUT:
 %
-%   mat: assembled right-hand side
+%   rhs: assembled right-hand side
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco, Rafael Vazquez
+% Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -28,22 +29,21 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-function mat = op_f_vxn_2d (spv, msh, coeff)
+function rhs = op_f_vxn_2d (spv, msh, coeff)
   
-  mat = zeros(spv.ndof, 1);
+  rhs = zeros(spv.ndof, 1);
   for iel = 1:msh.nel
     if (all (msh.jacdet(:,iel)))
-      mat_loc = zeros (spv.nsh(iel), 1);
+      jacdet_weights = msh.jacdet(:, iel) .* ...
+                      msh.quad_weights(:, iel) .* coeff(:, iel);
+      rhs_loc = zeros (spv.nsh(iel), 1);
       for idof = 1:spv.nsh(iel)
-        ishp = squeeze(spv.shape_functions(:,:,idof,iel));
-        ishp_x_n = (ishp(1,:) .* msh.normal(2,:,iel) - ...
-                    ishp(2,:) .* msh.normal(1,:,iel))';
-        %for inode = 1:msh.nqn
-          mat_loc(idof) = mat_loc(idof) +  ...
-            sum (msh.jacdet(:, iel) .* msh.quad_weights(:, iel) .* ishp_x_n .* coeff(:, iel));
-        %end  
+        ishp = squeeze(spv.shape_functions(:, :, idof, iel));
+        ishp_x_n = (ishp(1, :) .* msh.normal(2, :, iel) - ...
+                    ishp(2, :) .* msh.normal(1, :, iel))';
+        rhs_loc(idof) = rhs_loc(idof) + sum (jacdet_weights .* ishp_x_n);
       end
-      mat(spv.connectivity(1:spv.nsh(iel), iel)) = mat(spv.connectivity(1:spv.nsh(iel), iel)) + mat_loc;
+      rhs(spv.connectivity(1:spv.nsh(iel), iel)) = rhs(spv.connectivity(1:spv.nsh(iel), iel)) + rhs_loc;
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_f_vxn_2d: singular map in element number %d', iel)
     end

@@ -1,6 +1,7 @@
 % OP_V_GRADP: assemble the matrix B = [b(i,j)], b(i,j) = (epsilon grad p_i, v_j).
 %
 %   mat = op_v_gradp (spv, spp, msh, epsilon);
+%   [rows, cols, values] = op_v_gradp (spv, spp, msh, epsilon);
 %
 % INPUT:
 %    
@@ -11,9 +12,13 @@
 %
 % OUTPUT:
 %
-%   mat: assembled matrix
+%   mat:    assembled matrix
+%   rows:   row indices of the nonzero entries
+%   cols:   column indices of the nonzero entries
+%   values: values of the nonzero entries
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
+% Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -28,29 +33,44 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function mat = op_v_gradp (spv, spp, msh, coeff)
+function varargout = op_v_gradp (spv, spp, msh, coeff)
 
-  mat = spalloc(spp.ndof, spv.ndof, 1);
   ndir = size (spp.shape_function_gradients, 1);
+
+  rows = zeros (msh.nel * spp.nsh_max * spv.nsh_max, 1);
+  cols = zeros (msh.nel * spp.nsh_max * spv.nsh_max, 1);
+  values = zeros (msh.nel * spp.nsh_max * spv.nsh_max, 1);
+
+  ncounter = 0;
   for iel = 1:msh.nel
-    if (all (msh.jacdet(:,iel)))
-      mat_loc = zeros (spp.nsh(iel), spv.nsh(iel));
+    if (all (msh.jacdet(:, iel)))
+      jacdet_weights = msh.jacdet(:, iel) .* ...
+                       msh.quad_weights(:, iel) .* coeff(:, iel);
       for idof = 1:spp.nsh(iel)
-        ishg = reshape(spp.shape_function_gradients(:,:,idof,iel),ndir,[]);
+        ishg = reshape (spp.shape_function_gradients(:, :, idof, iel), ndir, []);
         for jdof = 1:spv.nsh(iel)
-          jshg = reshape(spv.shape_functions(:,:,jdof,iel),ndir,[]);
-          %for inode = 1:msh.nqn
-            mat_loc(idof, jdof) = mat_loc(idof, jdof) + ...
-             sum (msh.jacdet(:, iel) .* msh.quad_weights(:, iel) .* ...
-             sum (ishg .* jshg, 1).' .* coeff(:, iel));
-          %end  
+          ncounter = ncounter + 1;
+          rows(ncounter) = spp.connectivity(idof, iel);
+          cols(ncounter) = spv.connectivity(jdof, iel);
+
+          jshg = reshape (spv.shape_functions(:, :, jdof, iel), ndir, []);
+
+          values(ncounter) = sum (jacdet_weights .* sum (ishg .* jshg, 1).');
         end
       end
-      mat(spp.connectivity(1:spp.nsh(iel), iel), spv.connectivity(1:spv.nsh(iel), iel)) = ...
-        mat(spp.connectivity(1:spp.nsh(iel), iel), spv.connectivity(1:spv.nsh(iel), iel)) + mat_loc;
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_v_gradp: singular map in element number %d', iel)
     end
+  end
+
+  if (nargout == 1)
+    varargout{1} = sparse (rows, cols, values, spp.ndof, spv.ndof);
+  elseif (nargout == 3)
+    varargout{1} = rows;
+    varargout{2} = cols;
+    varargout{3} = values;
+  else
+    error ('op_v_gradp: wrong number of output arguments')
   end
 
 end
