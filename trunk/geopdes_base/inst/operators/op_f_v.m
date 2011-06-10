@@ -28,9 +28,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
-function rhs = op_f_v2 (spv, msh, coeff, element_list)
+function rhs = op_f_v (spv, msh, coeff, element_list)
   
  coeff = reshape (coeff, spv.ncomp, msh.nqn, msh.nel);
 

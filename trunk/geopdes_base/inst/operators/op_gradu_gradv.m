@@ -33,7 +33,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function varargout = op_gradu_gradv2 (spu, spv, msh, coeff, element_list)
+function varargout = op_gradu_gradv (spu, spv, msh, coeff, element_list)
 
   if (nargin == 4)
     element_list = 1:msh.nel;

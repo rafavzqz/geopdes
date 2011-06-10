@@ -33,7 +33,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function varargout = op_u_v2 (spu, spv, msh, coeff, element_list)
+function varargout = op_u_v (spu, spv, msh, coeff, element_list)
   
   if (nargin == 4)
     element_list = 1:msh.nel;
