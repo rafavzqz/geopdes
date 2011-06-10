@@ -91,7 +91,10 @@ stiff_mat = op_gradu_gradv_tp (space, space, msh, epsilon);
 mass_mat  = op_u_v_tp (space, space, msh, mu);
 
 % Apply homogeneous Dirichlet boundary conditions
-drchlt_dofs = unique ([space.boundary(drchlt_sides).dofs]);
+drchlt_dofs = [];
+for iside = 1:numel (drchlt_sides)
+  drchlt_dofs = unique ([drchlt_dofs space.boundary(drchlt_sides(iside)).dofs]);
+end
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
 
 % Solve the eigenvalue problem
