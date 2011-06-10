@@ -34,53 +34,13 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [eu, F] = sp_eval (u, space, varargin);
-
-  recompute = false;
-
-  if (~rem (length (varargin), 2) == 0)
-    method = 'msh';
-  else
-    method = 'points';
-  end
-
-  if (strcmp (method, 'points'))
-    geometry = varargin {1};
-    pts      = varargin {2};
-
-    for jj = 1:2
-      pts{jj} = pts{jj}(:)';
-      if (numel (pts{jj}) > 1)
-        brk{jj} = [0, pts{jj}(1:end-1) + diff(pts{jj})/2, 1]; 
-      else
-        brk{jj} = [0 1];
-      end
-    end
-    
-    warn = warning ('query');
-    warning off
-    msh = msh_2d_tensor_product ({brk{1}, brk{2}}, pts, [], 'no boundary');
-    warning(warn);
-    msh = msh_push_forward_2d (msh, geometry);
-
-    sp  = space.constructor (msh);
-
-  elseif (strcmp (method, 'msh'))
-    msh = varargin {1};
-    if (recompute)
-      sp  = space.constructor (msh);
-    else
-      sp = space;
-    end
-  else
-    error ('sp_eval: wrong number of input parameters')
-  end
+function [eu, F] = sp_eval_msh (u, space, msh);
 
   F  = msh.geo_map;
-  eu = zeros (sp.ncomp, msh.nqn, msh.nel);
+  eu = zeros (msh.nqn, msh.nel);
 
   for iel = 1:msh.nelu
-    [sp_col, elem_list] = sp_evaluate_col (sp, msh, iel, 'gradient', false);
+    [sp_col, elem_list] = sp_evaluate_col (space, msh, iel, 'gradient', false);
 
     uc_iel = zeros (size (sp_col.connectivity));
     uc_iel(sp_col.connectivity~=0) = ...
@@ -88,15 +48,7 @@ function [eu, F] = sp_eval (u, space, varargin);
     weight = repmat (reshape (uc_iel, [1, sp_col.nsh_max, msh.nelv]), ...
                                   [msh.nqn, 1, 1]);
 
-    eu(1, :, elem_list) = sum (weight .* reshape (sp_col.shape_functions(1,:,:,:), ...
-                                  msh.nqn, sp_col.nsh_max, msh.nelv), 2);
-    eu(2, :, elem_list) = sum (weight .* reshape (sp_col.shape_functions(2,:,:,:), ...
-                                  msh.nqn, sp_col.nsh_max, msh.nelv), 2);
-  end
-
-  if (strcmp (method, 'points'))
-    eu = reshape (eu, sp.ncomp, numel (pts{1}), numel (pts{2}));
-    F  = reshape (F, 2, numel (pts{1}), numel (pts{2}));
+    eu(:, elem_list) = squeeze (sum (weight .* sp_col.shape_functions, 2));
   end
 
 end
