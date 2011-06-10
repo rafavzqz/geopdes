@@ -97,19 +97,8 @@ function sp = sp_vector_2d (sp1, sp2, msh)
     sp.boundary = [];
   end
 
-% And some function handles to rebuild the functions in different meshes
-  if (isa (sp1, 'sp_bspline_2d'))
-    sp.comp1 = @(MSH) sp_bspline_2d (sp1.knots, sp1.degree, MSH);
-  elseif (isa (sp1, 'sp_nurbs_2d'))
-    sp.comp1 = @(MSH) sp_nurbs_2d (sp1.knots, sp1.degree, sp1.weights, MSH);
-  end
-
-  if (isa (sp2, 'sp_bspline_2d'))
-    sp.comp2 = @(MSH) sp_bspline_2d (sp2.knots, sp2.degree, MSH);
-  elseif (isa (sp2, 'sp_nurbs_2d'))
-    sp.comp2 = @(MSH) sp_nurbs_2d (sp2.knots, sp2.degree, sp2.weights, MSH);
-  end
-
+  sp.constructor = @(MSH) sp_vector_2d (sp1.constructor (MSH), ...
+                                        sp2.constructor (MSH), MSH);
   sp = class (sp, 'sp_vector_2d');
 
 end

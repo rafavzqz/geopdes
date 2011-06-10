@@ -94,8 +94,8 @@ msh      = msh_2d_tensor_product (geometry.nurbs.knots, qn, qw);
 msh      = msh_push_forward_2d (msh, geometry);
 
 % Construct space structure
-sp_scalar = sp_nurbs_2d_phys (nurbs, msh);
-sp = sp_scalar_to_vector_2d (sp_scalar, sp_scalar, msh, 'divergence', true);
+sp_scalar = sp_nurbs_2d (nurbs, msh);
+sp = sp_vector_2d (sp_scalar, sp_scalar, msh);
 
 % Assemble the matrices
 [x, y]    = deal (squeeze (msh.geo_map(1,:,:)), squeeze (msh.geo_map(2,:,:)));
@@ -103,8 +103,8 @@ coeff_lam = reshape (lam (x, y), msh.nqn, msh.nel);
 coeff_mu  = reshape (mu (x, y), msh.nqn, msh.nel);
 fval      = reshape (f (x, y), 2, msh.nqn, msh.nel);
 
-mat       = op_su_ev (sp, sp, msh, coeff_lam, coeff_mu); 
-rhs       = op_f_v (sp, msh, fval);
+mat       = op_su_ev_tp (sp, sp, msh, coeff_lam, coeff_mu); 
+rhs       = op_f_v_tp (sp, msh, fval);
 
 % Apply Neumann boundary conditions
 for iside = nmnn_sides

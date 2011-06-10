@@ -33,23 +33,29 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function varargout = op_su_ev (spu, spv, msh, lambda, mu)
-  
-  gradu = reshape (spu.shape_function_gradients, spu.ncomp, [], msh.nqn, spu.nsh_max, msh.nel);
-  gradv = reshape (spv.shape_function_gradients, spv.ncomp, [], msh.nqn, spv.nsh_max, msh.nel);
+function varargout = op_su_ev (spu, spv, msh, lambda, mu, element_list)
+
+  if (nargin == 5)
+    element_list = 1:nel;
+  end
+  nel = numel (element_list);
+
+  gradu = reshape (spu.shape_function_gradients, spu.ncomp, [], msh.nqn, spu.nsh_max, nel);
+  gradv = reshape (spv.shape_function_gradients, spv.ncomp, [], msh.nqn, spv.nsh_max, nel);
 
   ndir = size (gradu, 2);
 
-  rows = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
-  cols = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
-  values = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
+  rows = zeros (nel * spu.nsh_max * spv.nsh_max, 1);
+  cols = zeros (nel * spu.nsh_max * spv.nsh_max, 1);
+  values = zeros (nel * spu.nsh_max * spv.nsh_max, 1);
 
   ncounter = 0;
-  for iel = 1:msh.nel
-    if (all (msh.jacdet(:, iel)))
-      jacdet_weights = msh.jacdet(:, iel) .* msh.quad_weights(:, iel);
-      jacdet_weights_mu = repmat (jacdet_weights .* mu(:, iel), [1,spu.nsh(iel)]);
-      jacdet_weights_lambda = repmat (jacdet_weights .* lambda(:, iel), [1,spu.nsh(iel)]);
+  for iel = 1:nel
+    iel_glob = element_list (iel);
+    if (all (msh.jacdet(:, iel_glob)))
+      jacdet_weights = msh.jacdet(:, iel_glob) .* msh.quad_weights(:, iel_glob);
+      jacdet_weights_mu = repmat (jacdet_weights .* mu(:, iel_glob), [1,spu.nsh(iel)]);
+      jacdet_weights_lambda = repmat (jacdet_weights .* lambda(:, iel_glob), [1,spu.nsh(iel)]);
 
       gradu_iel = permute (gradu(:, :, :, 1:spu.nsh(iel), iel), [1 2 4 3]);
       epsu_iel = (gradu_iel + permute (gradu_iel, [2 1 3 4]))/2;

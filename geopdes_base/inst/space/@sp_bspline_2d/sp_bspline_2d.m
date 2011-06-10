@@ -103,9 +103,7 @@ clear conn_u conn_v
     sp.boundary = [];
   end
 
-%  sp.spfun = @(MSH) sp_bspline_2d (knots, degree, MSH);
-%  sp.spcol = @(MSH, COL) sp_bspline_2d_col (sp, MSH, COL, varargin);
-%  sp.sprow = @(MSH, ROW) sp_bspline_2d_row (sp, MSH, ROW, varargin);
+  sp.constructor = @(MSH) sp_bspline_2d (sp.knots, sp.degree, MSH);
   sp = class (sp, 'sp_bspline_2d');
 
 end
