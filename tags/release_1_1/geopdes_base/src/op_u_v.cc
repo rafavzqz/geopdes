@@ -1,4 +1,4 @@
-/* Copyright (C) 2009 Carlo de Falco
+/* Copyright (C) 2009, 2010, 2011 Carlo de Falco
    Copyright (C) 2011 Rafael Vazquez
 
    This program is free software; you can redistribute it and/or modify
@@ -38,7 +38,6 @@ OUTPUT: \n\
 {
   
   octave_value_list retval;
-
   geopdes_mesh  msh (args(2).map_value ());
   geopdes_space spu (args(0).map_value (), msh);
   geopdes_space spv (args(1).map_value (), msh);
@@ -48,7 +47,21 @@ OUTPUT: \n\
   if (!error_state)
     {      
 
-      const octave_idx_type nel = msh.nel (), ncomp = spu.ncomp (), nqn = msh.nqn (), ndof_spu = spu.ndof (), nsh_max_spu = spu.nsh_max (), ndof_spv = spv.ndof (), nsh_max_spv = spv.nsh_max ();
+      octave_idx_type iel, inode, idof, jdof, icmp;
+      octave_idx_type nel = msh.nel ();
+      
+      const octave_idx_type ncomp = spu.ncomp (), nqn = msh.nqn (),
+        ndof_spu = spu.ndof (), nsh_max_spu = spu.nsh_max (), ndof_spv = spv.ndof (), 
+        nsh_max_spv = spv.nsh_max ();
+
+      octave_idx_type nsh_u = spu.nsh_max ();
+      octave_idx_type nsh_v = spv.nsh_max ();
+      double jacdet_weights[nqn];
+      double shpv[nsh_v][nqn][ncomp];
+      double shpu[nsh_u][nqn][ncomp];
+      int conn_v[nsh_v];
+      int conn_u[nsh_u];
+
       dim_vector dims (nel * nsh_max_spv * nsh_max_spu, 1);
       Array <octave_idx_type> I (dims, 0);
       Array <octave_idx_type> J (dims, 0);
@@ -56,82 +69,56 @@ OUTPUT: \n\
 
       SparseMatrix mat;
 
-      octave_idx_type iel, inode, idof, jdof, icmp;
-
       {
         octave_idx_type counter = 0;
-
-        for ( iel=0; iel < nel; iel++)
-          if (msh.area (iel) > 0.0)
-            {
-              const octave_idx_type nsh_u = spu.nsh (iel);
-              const octave_idx_type nsh_v = spv.nsh (iel);
-              double jacdet_weights[nqn];
-
-              for ( inode = 0; inode < nqn; inode++)
-                {
-                  jacdet_weights[inode] = msh.jacdet (inode, iel) *
-                    msh.weights (inode, iel) * coeff (inode, iel);
-                }
-
-              double shpv[nsh_v][nqn][ncomp];
-              double shpu[nsh_u][nqn][ncomp];
-              int conn_v[nsh_v];
-              int conn_u[nsh_u];
-
-              for ( idof = 0; idof < nsh_v; idof++) 
-		{
-                  for ( inode = 0; inode < nqn; inode++)
-                    {
-                      for ( icmp = 0; icmp < ncomp; icmp++)
-                        {
-                          shpv[idof][inode][icmp] = spv.shape_functions (icmp, inode, idof, iel);
-                        }
-                    }
-		  conn_v[idof] = spv.connectivity (idof, iel) - 1;
-	        }
-
-              for ( jdof = 0; jdof < nsh_u; jdof++) 
-                {
+        for (iel=0; iel < nel; iel++)
+          {
+            if (msh.area (iel) > 0.0)
+              {
                 for ( inode = 0; inode < nqn; inode++)
                   {
-                  for ( icmp = 0; icmp < ncomp; icmp++)
-                    {
-                      shpu[jdof][inode][icmp] = spu.shape_functions (icmp, inode, jdof, iel);
-                    }
+                    jacdet_weights[inode] = msh.jacdet (inode, iel) *
+                      msh.weights (inode, iel) * coeff (inode, iel);
                   }
-		  conn_u[jdof] = spu.connectivity (jdof, iel) - 1;
-                }
 
+                // Cache element data to speed-up memory access
+                spv.cache_element_shape_functions (iel, (double*)shpv);
+                spu.cache_element_shape_functions (iel, (double*)shpu);
 
-             for ( idof = 0; idof < nsh_v; idof++) 
-              {
+                for ( idof = 0; idof < nsh_v; idof++) 
+		  conn_v[idof] = spv.connectivity (idof, iel) - 1;
+
                 for ( jdof = 0; jdof < nsh_u; jdof++) 
+                  conn_u[jdof] = spu.connectivity (jdof, iel) - 1;
+
+                for ( idof = 0; idof < nsh_v; idof++) 
                   {
-                    counter = jdof + nsh_u * (idof + nsh_v * iel);
-
-                    I(counter) = conn_v[idof];
-                    J(counter) = conn_u[jdof];
-                    V(counter) = 0.0;
-                    for ( inode = 0; inode < nqn; inode++)
+                    for ( jdof = 0; jdof < nsh_u; jdof++) 
                       {
-                        if (msh.weights (inode, iel) > 0.0)
+                        counter = jdof + nsh_u * (idof + nsh_v * iel);
+
+                        I(counter) = conn_v[idof];
+                        J(counter) = conn_u[jdof];
+                        V(counter) = 0.0;
+                        for ( inode = 0; inode < nqn; inode++)
                           {
-                            double s = 0.0;
-                            for ( icmp = 0; icmp < ncomp; icmp++)
-                              s += shpv[idof][inode][icmp] * 
-                                     shpu[jdof][inode][icmp];
+                            if (msh.weights (inode, iel) > 0.0)
+                              {
+                                double s = 0.0;
+                                for ( icmp = 0; icmp < ncomp; icmp++)
+                                  s += shpv[idof][inode][icmp] * 
+                                    shpu[jdof][inode][icmp];
                               
-                            V(counter) += s * jacdet_weights[inode];
+                                V(counter) += s * jacdet_weights[inode];
 
-                          }  
-                      } // end for inode
-                  } // end for jdof
-              } // end for idof
-            } else {
-
-            {warning_with_id ("geopdes:zero_measure_element", "op_u_v: element %d has 0 area (or volume)", iel);}
-          }  // end for iel, if area > 0
+                              }  
+                          } // end for inode
+                      } // end for jdof
+                  } // end for idof
+              } else {
+              {warning_with_id ("geopdes:zero_measure_element", "op_u_v: element %d has 0 area (or volume)", iel);}
+            }  // end for iel
+          }  // end if area > 0
       } // end of openmp parallel section
 
       if (nargout == 1) 
@@ -146,9 +133,9 @@ OUTPUT: \n\
               I(icmp)++;
               J(icmp)++;
             }
-          retval(0) = octave_value (I);
-          retval(1) = octave_value (J);
           retval(2) = octave_value (V);
+          retval(1) = octave_value (J);
+          retval(0) = octave_value (I);
         }
 
     } // end if !error_state
