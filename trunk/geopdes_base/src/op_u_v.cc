@@ -1,4 +1,4 @@
-/* Copyright (C) 2009 Carlo de Falco
+/* Copyright (C) 2009, 2010, 2011 Carlo de Falco
    Copyright (C) 2011 Rafael Vazquez
 
    This program is free software; you can redistribute it and/or modify
