@@ -102,7 +102,7 @@ public:
 class geopdes_space: public geopdes_space_base, protected geopdes_mesh
 {
 protected:
-  Octave_map * sp;
+  const Octave_map * sp;
   double * shape_functions_rep, 
     * shape_function_gradients_rep, 
     * shape_function_curls_rep, 
@@ -112,16 +112,20 @@ protected:
 public:
   geopdes_space (const Octave_map& refsp, const geopdes_mesh& msh): geopdes_mesh (msh) 
   { 
-    sp = new Octave_map (refsp); 
+
+    sp = &refsp; 
     ndof_rep    = sp->contents ("ndof")(0).int_value (); 
     nsh_max_rep = sp->contents ("nsh_max")(0).int_value (); 
     ncomp_rep   = sp->contents ("ncomp")(0).int_value (); 
     nsh_rep             = sp->contents ("nsh")(0).array_value (); 
     connectivity_rep    = sp->contents ("connectivity")(0).array_value ();
 
-    shape_functions_rep = (double *) (sp->contents ("shape_functions")(0).array_value ()).data (); 
+    shape_functions_rep = NULL;
+    if (sp->contains ("shape_functions"))
+      shape_functions_rep = (double *) (sp->contents ("shape_functions")(0).array_value ()).data (); 
+
     shape_function_gradients_rep = NULL;
-    if (sp->contains ("shape_function_gradients"))
+    if (sp->contains ("shape_function_gradients")) 
       shape_function_gradients_rep = (double *) (sp->contents ("shape_function_gradients")(0).array_value ()).data (); 
 
     shape_function_curls_rep = NULL;
@@ -145,6 +149,11 @@ public:
     return shape_functions_rep[i + ncomp () * (j + nqn () * (k + nsh_max () * m))];
   }
 
+  void cache_element_shape_functions (octave_idx_type iel, double *cache) {
+    octave_idx_type s = ncomp () * nqn () * nsh_max ();
+    double * start = & (shape_functions_rep[s * iel]);
+    memcpy (cache, start, s * sizeof (double));
+  }
 
   inline double shape_function_curls (octave_idx_type i, octave_idx_type j, octave_idx_type k, octave_idx_type m) const {
     double res = (shape_function_curls_rep != NULL) ? shape_function_curls_rep [i + ncomp () * (j + nqn () * (k + nsh_max () * m))] : octave_NaN;
@@ -165,6 +174,12 @@ public:
   inline double shape_function_gradients (octave_idx_type i, octave_idx_type j, octave_idx_type k, octave_idx_type m, octave_idx_type n) const {
     double res =  (shape_function_gradients_rep != NULL) ? shape_function_gradients_rep[i + ncomp () * (j + ndir () * (k + nqn () * (m + nsh_max () * n)))] : octave_NaN;
     return res;
+  }
+
+  void cache_element_shape_function_gradients (octave_idx_type iel, double *cache) {
+    octave_idx_type s = ncomp () * ndir () * nqn () * nsh_max ();
+    double * start = & (shape_function_gradients_rep[s * iel]);
+    memcpy (cache, start, s * sizeof (double));
   }
 
   inline double shape_function_hessians (octave_idx_type c, octave_idx_type i, octave_idx_type j, octave_idx_type k, octave_idx_type m, octave_idx_type n) const {
