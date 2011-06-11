@@ -71,7 +71,7 @@ protected:
 public:
   geopdes_mesh (const Octave_map& refmsh)   
   { 
-    msh      = new Octave_map (refmsh); 
+    msh      = &refmsh; 
     nqn_rep  = msh->contents  ("nqn")(0).int_value ();
     nel_rep  = msh->contents  ("nel")(0).int_value ();
     ndir_rep = msh->contents  ("quad_nodes")(0).array_value ().rows (); 
