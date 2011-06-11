@@ -65,7 +65,7 @@ public:
 class geopdes_mesh: public geopdes_mesh_base
 {
 protected:
-  Octave_map * msh;
+  const Octave_map * msh;
   Matrix jacdet_rep, weights_rep;
 
 public:
