@@ -33,7 +33,7 @@ method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
 
 % 4) POST-PROCESSING. 
 % 4.1) Export to Paraview
-output_file = 'plane_strain_plate_Deg3_Reg2_Sub7';
+output_file = 'plane_strain_plate_Deg3_Reg2_Sub8';
 
 vtk_pts = {linspace(0, 1, 21), linspace(0, 1, 21)};
 fprintf ('results being saved in: %s_displacement\n \n', output_file)
