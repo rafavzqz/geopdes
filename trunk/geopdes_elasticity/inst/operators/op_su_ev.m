@@ -36,7 +36,7 @@
 function varargout = op_su_ev (spu, spv, msh, lambda, mu, element_list)
 
   if (nargin == 5)
-    element_list = 1:nel;
+    element_list = 1:msh.nel;
   end
   nel = numel (element_list);
 
