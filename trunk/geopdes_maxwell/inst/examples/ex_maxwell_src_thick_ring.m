@@ -43,7 +43,7 @@ method_data.nquad      = [3 3 3];     % Points for the Gaussian quadrature rule
 
 % 4) POST-PROCESSING
 % 4.1) EXPORT TO PARAVIEW
-output_file = 'maxwell_thick_ring_Deg2_Reg1_Sub2';
+output_file = 'maxwell_thick_ring_Deg2_Reg1_Sub3';
 
 vtk_pts = {linspace(0, 1, 15), linspace(0, 1, 15), linspace(0, 1, 15)};
 fprintf ('The result is saved in the file %s \n \n', output_file);

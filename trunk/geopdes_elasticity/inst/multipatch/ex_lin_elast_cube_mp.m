@@ -55,7 +55,7 @@ method_data.nquad      = [3 3 3];     % Points for the Gaussian quadrature rule
 
 % 4) POST-PROCESSING. 
 % 4.1) EXPORT TO PARAVIEW
-output_file = 'lin_elast_cube_mp_Deg2_Reg1_Sub1';
+output_file = 'lin_elast_cube_mp_Deg2_Reg1_Sub2';
 
 vtk_pts = {linspace(0, 1, 10), linspace(0, 1, 10), linspace(0, 1, 10)};
 fprintf ('results being saved in: %s_displacement.pvd\n \n', output_file)
