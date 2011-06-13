@@ -1,11 +1,12 @@
-% SP_VECTOR_2D: Construct the class of a two-dimensional vectorial space, using a component-wise mapping.
+% SP_VECTOR: Construct the class of general vectorial space.
 %
-%     sp = sp_vector_2d (sp1, sp2)
+%     sp = sp_vector (sp1, sp2)
+%     sp = sp_vector (sp1, sp2, sp3)
 %
 % INPUTS:
 %
 %    sp1: space class of the first component (see sp_bspline_2d and sp_nurbs_2d)
-%    sp2: space class of the second component (see sp_bspline_2d and sp_nurbs_2d)
+%    sp2: space class of the second component (see sp_bspline_2d and sp_nurbs_2d%    sp3: space class of the third component (see sp_bspline_3d and sp_nurbs_3d)
 %
 % OUTPUT:
 %
@@ -55,45 +56,31 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp = sp_vector_2d (sp1, sp2, msh)
+function sp = sp_vector (varargin)
 
-  spvec = sp_vector (sp1, sp2);
+  if (nargin == 2) % Two-dimensional space
+    sp.sp1 = varargin{1};
+    sp.sp2 = varargin{2};
 
-  sp.nsh_max      = sp1.nsh_max + sp2.nsh_max;
-  sp.connectivity = [sp1.connectivity; sp2.connectivity+sp1.ndof];
+    sp.ncomp = 2;
+    sp.ndof         = sp.sp1.ndof + sp.sp2.ndof;
+    sp.comp_dofs{1} = 1:sp.sp1.ndof;
+    sp.comp_dofs{2} = sp.sp1.ndof+(1:sp.sp2.ndof);
+    sp.ndof_dir     = [sp.sp1.ndof_dir; sp.sp2.ndof_dir];
 
-% For the boundary we still store everything
-  if (isfield (msh, 'boundary'))
-    for iside = 1:numel(msh.boundary)
-      sp_bnd1 = sp1.boundary(iside);
-      sp_bnd2 = sp2.boundary(iside);
+  elseif (nargin == 3) % Three-dimensional space
+    sp.sp1 = varargin{1};
+    sp.sp2 = varargin{2};
+    sp.sp3 = varargin{3};
 
-      boundary.ncomp = 2;
-      boundary.nsh_max      = sp_bnd1.nsh_max + sp_bnd2.nsh_max;
-      boundary.nsh          = sp_bnd1.nsh + sp_bnd2.nsh;
-      boundary.ndof         = sp_bnd1.ndof + sp_bnd2.ndof;
-      boundary.dofs         = [sp_bnd1.dofs, sp_bnd2.dofs+sp1.ndof];
-
-      boundary.comp_dofs{1} = sp_bnd1.dofs;
-      boundary.comp_dofs{2} = sp1.ndof + sp_bnd2.dofs;
-      boundary.connectivity = [sp_bnd1.connectivity; sp_bnd2.connectivity+sp_bnd1.ndof];
-
-      boundary.shape_functions = zeros (2, msh.boundary(iside).nqn, ...
-                             boundary.nsh_max, msh.boundary(iside).nel);
-      boundary.shape_functions(1,:,1:sp_bnd1.nsh_max,:) = ...
-                                             sp_bnd1.shape_functions;
-      boundary.shape_functions(2,:, sp_bnd1.nsh_max+(1:sp_bnd2.nsh_max),:) = ...
-                                             sp_bnd2.shape_functions;
-
-      sp.boundary(iside) = boundary;
-    end
-  else
-    sp.boundary = [];
+    sp.ncomp = 3;
+    sp.ndof         = sp.sp1.ndof + sp.sp2.ndof + sp.sp3.ndof;
+    sp.comp_dofs{1} = 1:sp.sp1.ndof;
+    sp.comp_dofs{2} = sp.sp1.ndof + (1:sp.sp2.ndof);
+    sp.comp_dofs{3} = sp.sp1.ndof + sp.sp2.ndof + (1:sp.sp3.ndof);
+    sp.ndof_dir     = [sp.sp1.ndof_dir; sp.sp2.ndof_dir; sp.sp3.ndof_dir];
   end
 
-  sp.constructor = @(MSH) sp_vector_2d (sp1.constructor (MSH), ...
-                                        sp2.constructor (MSH), MSH);
-
-  sp = class (sp, 'sp_vector_2d', spvec);
+  sp = class (sp, 'sp_vector');
 
 end
