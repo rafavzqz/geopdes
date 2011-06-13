@@ -42,7 +42,7 @@ method_data.nquad        = [4 4 4];  % Points for the Gaussian quadrature rule
 
 % 4) POST-PROCESSING
 % 4.1) EXPORT TO PARAVIEW
-output_file  = 'DrivenCavity_3D_MP_Deg2_Reg1_Sub3';
+output_file  = 'DrivenCavity_3D_MP_Deg2_Reg1_Sub2';
 vtk_pts = {linspace(0, 1, 10), linspace(0, 1, 10), linspace(0, 1, 10)};
 
 fprintf ('results being saved in: %s_vel.pvd and %s_press.pvd\n', output_file, output_file)
