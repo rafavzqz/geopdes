@@ -1,6 +1,6 @@
-% SP_EVALUATE_COL: compute the basis functions in one column of the mesh.
+% SP_EVALUATE_COL_PARAM: compute the basis functions, in the parametric domain, in one column of the mesh.
 %
-%     sp = sp_evaluate_col (space, msh, colnum, 'option1', value1, ...)
+%     sp = sp_evaluate_col_param (space, msh, colnum, 'option1', value1, ...)
 %
 % INPUTS:
 %     
@@ -51,24 +51,21 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [sp, elem_list] = sp_onecol_param (space, msh, colnum, varargin)
+function [sp, elem_list] = sp_evaluate_col_param (space, msh, colnum, varargin)
 
 value = true;
 gradient = true;
-hessian = false;
 if (~isempty (varargin))
   if (~rem (length (varargin), 2) == 0)
-    error ('sp_evaluate_col: options must be passed in the [option, value] format');
+    error ('sp_evaluate_col_param: options must be passed in the [option, value] format');
   end
   for ii=1:2:length(varargin)-1
     if (strcmpi (varargin {ii}, 'value'))
       value = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'gradient'))
       gradient = varargin {ii+1};
-    elseif (strcmpi (varargin {ii}, 'hessian'))
-      hessian = varargin {ii+1};
     else
-      error ('sp_evaluate_col: unknown option %s', varargin {ii});
+      error ('sp_evaluate_col_param: unknown option %s', varargin {ii});
     end
   end
 end
@@ -94,15 +91,21 @@ shp_v = reshape (spv.shape_functions, 1, msh.nqnv, 1, spv.nsh_max, msh.nelv);
 shp_v = repmat  (shp_v, [msh.nqnu, 1, spu.nsh_max, 1, 1]);
 shp_v = reshape (shp_v, msh.nqn, space.nsh_max, msh.nelv);
 
+% Multiply each function by the weight and compute the denominator
+W = space.weights (connectivity);
+W = repmat (reshape (W, 1, space.nsh_max, msh.nelv), [msh.nqn, 1, 1]);
+shape_functions = W.* shp_u .* shp_v ;
+D = repmat (reshape (sum (shape_functions, 2), msh.nqn, 1, msh.nelv), [1, space.nsh_max, 1]);
+shape_functions = shape_functions ./ D;
+
 sp = struct('nsh_max', space.nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
             'ndof_dir', ndof_dir, 'connectivity', connectivity, ...
             'ncomp', 1);
-
 if (value)
-  sp.shape_functions = shp_u .* shp_v ;
+  sp.shape_functions = shape_functions;
 end
 
-if (gradient || hessian)
+if (gradient)
   shg_u = reshape (spu.shape_function_gradients(:,:,colnum), ...
                    msh.nqnu, 1, spu.nsh_max, 1, 1);  %% one column only
   shg_u = repmat  (shg_u, [1, msh.nqnv, 1, spv.nsh_max, msh.nelv]);
@@ -113,29 +116,20 @@ if (gradient || hessian)
   shg_v = repmat  (shg_v, [msh.nqnu, 1, spu.nsh_max, 1, 1]);
   shg_v = reshape (shg_v, msh.nqn, space.nsh_max, msh.nelv);
   
-  sp.shape_function_gradients(1,:,:,:) = shg_u .* shp_v ;
-  sp.shape_function_gradients(2,:,:,:) = shp_u .* shg_v ;
+  Bu = W .* shg_u .* shp_v;
+  Bv = W .* shp_u .* shg_v;
 
-  if (hessian && isfield (msh, 'geo_map_der2'))
-    shh_uu = reshape (spu.shape_function_hessians, msh.nqnu, 1, spu.nsh_max, 1, 1);
-    shh_uu = repmat  (shh_uu, [1, msh.nqnv, 1, spv.nsh_max, msh.nelv]);
-    shh_uu = reshape (shh_uu, msh.nqn, sp.nsh_max, msh.nelv);
+  Du = repmat (reshape (sum (Bu, 2), msh.nqn, 1, msh.nelv), [1, sp.nsh_max, 1]);
+  Dv = repmat (reshape (sum (Bv, 2), msh.nqn, 1, msh.nelv), [1, sp.nsh_max, 1]);
 
-    shh_vv = reshape (spv.shape_function_hessians, 1, msh.nqnv, 1, spv.nsh_max, msh.nelv);
-    shh_vv = repmat  (shh_vv, [msh.nqnu, 1, spu.nsh_max, 1, 1]);
-    shh_vv = reshape (shh_vv, msh.nqn, sp.nsh_max, msh.nelv);
-    
-    shape_function_hessians(1,1,:,:,:) = shh_uu .* shp_v ;
-    shape_function_hessians(1,2,:,:,:) = shg_u  .* shg_v ;
-    shape_function_hessians(2,1,:,:,:) = shape_function_hessians(1,2,:,:,:);
-    shape_function_hessians(2,2,:,:,:) = shp_u .* shh_vv ;
-    sp.shape_function_hessians = shape_function_hessians;
+  shape_fun_grads(1,:,:,:) = (Bu - shape_functions .* Du)./D;
+  shape_fun_grads(2,:,:,:) = (Bv - shape_functions .* Dv)./D;
 
-    clear shh_uu shh_vv shape_function_hessians
-  end
-  clear shg_u shg_v
+  sp.shape_function_gradients = shape_fun_grads;
+
+  clear shg_u shg_v shape_fun_grads Bu Bv Du Dv
 end
 
-clear shp_u shp_v
+clear shp_u shp_v shape_functions
 
 end

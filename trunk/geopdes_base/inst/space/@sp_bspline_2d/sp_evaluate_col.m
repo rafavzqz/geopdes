@@ -4,11 +4,11 @@
 %
 % INPUTS:
 %     
-%     sp:     class defining the space of discrete functions (see sp_bspline_2d)
+%     space:  class defining the space of discrete functions (see sp_bspline_2d)
 %     msh:    msh structure containing (in the field msh.qn) the points 
 %              along each parametric direction in the parametric 
 %              domain at which to evaluate, i.e. quadrature points 
-%              or points for visualization
+%              or points for visualization (see msh_2d/msh_evaluate_col)
 %     colnum: number of the fixed element in the first parametric direction
 %    'option', value: additional optional parameters, currently available options are:
 %            
@@ -73,72 +73,18 @@ if (~isempty (varargin))
   end
 end
 
+sp = sp_evaluate_col_param (space, msh, colnum, varargin{:});
+
 elem_list = colnum + msh.nelu*(0:msh.nelv-1);
 
-spu = space.spu;
-spv = space.spv;
-
-nsh  = spu.nsh(colnum) * spv.nsh;
-nsh  = nsh(:)';
-ndof = spu.ndof * spv.ndof;
-ndof_dir = [spu.ndof, spv.ndof];
-
-connectivity = space.connectivity(:,elem_list);
-
-shp_u = reshape (spu.shape_functions(:, :, colnum), ...
-                 msh.nqnu, 1, spu.nsh_max, 1, 1);  %% one column only
-shp_u = repmat  (shp_u, [1, msh.nqnv, 1, spv.nsh_max, msh.nelv]);
-shp_u = reshape (shp_u, msh.nqn, space.nsh_max, msh.nelv);
-
-shp_v = reshape (spv.shape_functions, 1, msh.nqnv, 1, spv.nsh_max, msh.nelv);
-shp_v = repmat  (shp_v, [msh.nqnu, 1, spu.nsh_max, 1, 1]);
-shp_v = reshape (shp_v, msh.nqn, space.nsh_max, msh.nelv);
-
-sp = struct('nsh_max', space.nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
-            'ndof_dir', ndof_dir, 'connectivity', connectivity, ...
-            'ncomp', 1);
-
-if (value)
-  sp.shape_functions = shp_u .* shp_v ;
-end
-
 if (gradient || hessian)
-  shg_u = reshape (spu.shape_function_gradients(:,:,colnum), ...
-                   msh.nqnu, 1, spu.nsh_max, 1, 1);  %% one column only
-  shg_u = repmat  (shg_u, [1, msh.nqnv, 1, spv.nsh_max, msh.nelv]);
-  shg_u = reshape (shg_u, msh.nqn, space.nsh_max, msh.nelv);
-  
-  shg_v = reshape (spv.shape_function_gradients, ...
-                   1, msh.nqnv, 1, spv.nsh_max, msh.nelv);
-  shg_v = repmat  (shg_v, [msh.nqnu, 1, spu.nsh_max, 1, 1]);
-  shg_v = reshape (shg_v, msh.nqn, space.nsh_max, msh.nelv);
-  
   if (gradient)
-    shape_fun_grads(1,:,:,:) = shg_u .* shp_v ;
-    shape_fun_grads(2,:,:,:) = shp_u .* shg_v ;
-
     JinvT = geopdes_invT__ (msh.geo_map_jac(:,:,:,elem_list));
     JinvT = reshape (JinvT, [2, 2, msh.nqn, msh.nelv]);
-    shape_fun_grads = reshape (shape_fun_grads, ...
-                              [2, msh.nqn, sp.nsh_max, msh.nelv]);
-    sp.shape_function_gradients = geopdes_prod__ (JinvT, shape_fun_grads);
+    sp.shape_function_gradients = geopdes_prod__ (JinvT, sp.shape_function_gradients);
   end
 
   if (hessian && isfield (msh, 'geo_map_der2'))
-    shh_uu = reshape (spu.shape_function_hessians, msh.nqnu, 1, spu.nsh_max, 1, 1);
-    shh_uu = repmat  (shh_uu, [1, msh.nqnv, 1, spv.nsh_max, msh.nelv]);
-    shh_uu = reshape (shh_uu, msh.nqn, sp.nsh_max, msh.nelv);
-
-    shh_vv = reshape (spv.shape_function_hessians, 1, msh.nqnv, 1, spv.nsh_max, msh.nelv);
-    shh_vv = repmat  (shh_vv, [msh.nqnu, 1, spu.nsh_max, 1, 1]);
-    shh_vv = reshape (shh_vv, msh.nqn, sp.nsh_max, msh.nelv);
-    
-    shape_function_hessians(1,1,:,:,:) = shh_uu .* shp_v ;
-    shape_function_hessians(1,2,:,:,:) = shg_u  .* shg_v ;
-    shape_function_hessians(2,1,:,:,:) = shape_function_hessians(1,2,:,:,:);
-    shape_function_hessians(2,2,:,:,:) = shp_u .* shh_vv ;
-    sp.shape_function_hessians = shape_function_hessians;
-
     xu = squeeze (msh.geo_map_jac(1,1,:,elem_list));
     xv = squeeze (msh.geo_map_jac(1,2,:,elem_list)); 
     yu = squeeze (msh.geo_map_jac(2,1,:,elem_list)); 
@@ -171,11 +117,11 @@ if (gradient || hessian)
     end  
     sp.shape_function_hessians = shape_function_hessians;
     
-    clear shh_uu shh_vv shape_function_hessians
+    clear shape_function_hessians
     clear bu bv buu buv bvv xu xv yu yv xuu xuv xvv yuu yuv yvv ...
              uxx uxy uyy vxx vxy vyy bxx bxy byy
   end
-  clear shg_u shg_v shape_fun_grads
+  clear shg_u shg_v
 end
 
 clear shp_u shp_v

@@ -4,11 +4,11 @@
 %
 % INPUT:
 %
-%     sp:     class defining the space of discrete functions (see sp_bspline_2d)
-%     msh:      structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)
-%     u:        vector of dof weights
-%     uex:      function handle to evaluate the exact solution
-%     graduex:  function handle to evaluate the gradient of the exact solution
+%    space:   class defining the space of discrete functions (see sp_bspline_2d)
+%    msh:     class defining the domain partition and the quadrature rule (see msh_2d)
+%    u:       vector of dof weights
+%    uex:     function handle to evaluate the exact solution
+%    graduex: function handle to evaluate the gradient of the exact solution
 %
 % OUTPUT:
 %

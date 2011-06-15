@@ -4,11 +4,11 @@
 %
 % INPUTS:
 %     
-%     sp:     class defining the space of discrete functions (see sp_bspline_2d)
+%     space:  class defining the space of discrete functions (see sp_bspline_2d)
 %     msh:    msh structure containing (in the field msh.qn) the points 
 %              along each parametric direction in the parametric 
 %              domain at which to evaluate, i.e. quadrature points 
-%              or points for visualization
+%              or points for visualization (see msh_2d/msh_evaluate_col)
 %     colnum: number of the fixed element in the first parametric direction
 %    'option', value: additional optional parameters, currently available options are:
 %            
@@ -16,13 +16,12 @@
 %           ------------+-----------------+----------------------------------
 %            value      |      true       |  compute shape_functions
 %            gradient   |      true       |  compute shape_function_gradients
-%            hessian    |      false      |  compute shape_function_hessians
 %
 % OUTPUT:
 %
 %    sp: struct representing the discrete function space, with the following fields:
 %
-%    FIELD_NAME      (SIZE)                      DESCRIPTION
+%    FIELD_NAME      (SIZE)                            DESCRIPTION
 %    ncomp           (scalar)                          number of components of the functions of the space (actually, 1)
 %    ndof            (scalar)                          total number of degrees of freedom
 %    ndof_dir        (1 x 2 vector)                    degrees of freedom along each direction
@@ -70,68 +69,14 @@ if (~isempty (varargin))
   end
 end
 
+sp = sp_evaluate_col_param (space, msh, colnum, varargin{:});
+
 elem_list = colnum + msh.nelu*(0:msh.nelv-1);
 
-spu = space.spu;
-spv = space.spv;
-
-nsh  = spu.nsh(colnum) * spv.nsh;
-nsh  = nsh(:)';
-ndof = spu.ndof * spv.ndof;
-ndof_dir = [spu.ndof, spv.ndof];
-
-connectivity = space.connectivity(:,elem_list);
-
-shp_u = reshape (spu.shape_functions(:, :, colnum), ...
-                 msh.nqnu, 1, spu.nsh_max, 1, 1);  %% one column only
-shp_u = repmat  (shp_u, [1, msh.nqnv, 1, spv.nsh_max, msh.nelv]);
-shp_u = reshape (shp_u, msh.nqn, space.nsh_max, msh.nelv);
-
-shp_v = reshape (spv.shape_functions, 1, msh.nqnv, 1, spv.nsh_max, msh.nelv);
-shp_v = repmat  (shp_v, [msh.nqnu, 1, spu.nsh_max, 1, 1]);
-shp_v = reshape (shp_v, msh.nqn, space.nsh_max, msh.nelv);
-
-% Multiply each function by the weight and compute the denominator
-W = space.weights (connectivity);
-W = repmat (reshape (W, 1, space.nsh_max, msh.nelv), [msh.nqn, 1, 1]);
-shape_functions = W.* shp_u .* shp_v ;
-D = repmat (reshape (sum (shape_functions, 2), msh.nqn, 1, msh.nelv), [1, space.nsh_max, 1]);
-shape_functions = shape_functions ./ D;
-
-sp = struct('nsh_max', space.nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
-            'ndof_dir', ndof_dir, 'connectivity', connectivity, ...
-            'ncomp', 1);
-if (value)
-  sp.shape_functions = shape_functions;
-end
-
 if (gradient)
-  shg_u = reshape (spu.shape_function_gradients(:,:,colnum), ...
-                   msh.nqnu, 1, spu.nsh_max, 1, 1);  %% one column only
-  shg_u = repmat  (shg_u, [1, msh.nqnv, 1, spv.nsh_max, msh.nelv]);
-  shg_u = reshape (shg_u, msh.nqn, space.nsh_max, msh.nelv);
-  
-  shg_v = reshape (spv.shape_function_gradients, ...
-                   1, msh.nqnv, 1, spv.nsh_max, msh.nelv);
-  shg_v = repmat  (shg_v, [msh.nqnu, 1, spu.nsh_max, 1, 1]);
-  shg_v = reshape (shg_v, msh.nqn, space.nsh_max, msh.nelv);
-  
-  Bu = W .* shg_u .* shp_v;
-  Bv = W .* shp_u .* shg_v;
-
-  Du = repmat (reshape (sum (Bu, 2), msh.nqn, 1, msh.nelv), [1, sp.nsh_max, 1]);
-  Dv = repmat (reshape (sum (Bv, 2), msh.nqn, 1, msh.nelv), [1, sp.nsh_max, 1]);
-
-  shape_fun_grads(1,:,:,:) = (Bu - shape_functions .* Du)./D;
-  shape_fun_grads(2,:,:,:) = (Bv - shape_functions .* Dv)./D;
-
   JinvT = geopdes_invT__ (msh.geo_map_jac(:,:,:,elem_list));
   JinvT = reshape (JinvT, [2, 2, msh.nqn, msh.nelv]);
-  shape_fun_grads = reshape (shape_fun_grads, ...
-                            [2, msh.nqn, sp.nsh_max, msh.nelv]);
-  sp.shape_function_gradients = geopdes_prod__ (JinvT, shape_fun_grads);
-
-  clear shg_u shg_v shape_fun_grads Bu Bv Du Dv
+  sp.shape_function_gradients = geopdes_prod__ (JinvT, sp.shape_function_gradients);
 end
 
 clear shp_u shp_v shape_functions
