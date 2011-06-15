@@ -39,7 +39,7 @@ method_data.nquad      = [3 3 3];       % Points for Gaussian quadrature rule
 % 4) POST-PROCESSING
 % 4.1) EXPORT TO PARAVIEW
 
-output_file = 'Thick_ring_NRB_Deg2_Reg1_Sub3';
+output_file = 'Thick_ring_NRB_Deg2_Reg1_Sub4';
 
 vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20), linspace(0, 1, 20)};
 fprintf ('The result is saved in the file %s \n \n', output_file);
