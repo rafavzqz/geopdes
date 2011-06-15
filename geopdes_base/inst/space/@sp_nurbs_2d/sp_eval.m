@@ -7,10 +7,10 @@
 % INPUT:
 %     
 %     u:         vector of dof weights
-%     space:     class defining the space (see sp_bspline_2d)
+%     space:     class defining the space (see sp_nurbs_2d)
 %     geometry:  geometry structure (see geo_load)
 %     pts:       coordinates of points along each parametric direction
-%     msh:       msh structure
+%     msh:       msh class (see msh_2d)
 %     opt:       if the option 'recompute' is added, the values of the shape functions in the space structure are recomputed. By default the option is off.
 %
 % OUTPUT:

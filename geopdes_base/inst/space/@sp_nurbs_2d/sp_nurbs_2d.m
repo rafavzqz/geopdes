@@ -6,13 +6,13 @@
 % INPUTS:
 %     
 %     nurbs:     nurbs structure representing a surface
-%     msh:       msh structure containing (in the field msh.qn) the points 
+%     msh:       msh class containing (in the field msh.qn) the points 
 %                along each parametric direction in the parametric 
 %                domain at which to evaluate, i.e. quadrature points 
-%                or points for visualization
+%                or points for visualization (see msh_2d)
 %     knots:     open knot vector
 %     degree:    nurbs polynomial degree (order minus one)
-%     weigths:   weights associated to the basis functions
+%     weights:   weights associated to the basis functions
 %
 % OUTPUT:
 %
@@ -38,9 +38,6 @@
 %       sp_to_vtk:      export a function, given by its dofs, in the vtk format.
 %       sp_h1_error:    evaluate the error in H^1 norm.
 %       sp_l2_error:    evaluate the error in L^2 norm.
-%       op_u_v:         compute the mass matrix.
-%       op_gradu_gradv: compute the stifness matrix.
-%       op_f_v:         compute the right-hand side.
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez

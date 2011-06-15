@@ -6,10 +6,10 @@
 %     
 %     knots:     open knot vector    
 %     degree:    b-spline polynomial degree
-%     msh:       msh structure containing (in the field msh.qn) the points 
+%     msh:       msh class containing (in the field msh.qn) the points 
 %                along each parametric direction in the parametric 
 %                domain at which to evaluate, i.e. quadrature points 
-%                or points for visualization
+%                or points for visualization (see msh_2d)
 %
 % OUTPUT:
 %
