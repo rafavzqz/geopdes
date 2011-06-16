@@ -35,7 +35,7 @@
 
 function sp_to_vtk (u, space, geometry, npts, filename, fieldname)
 
-  [eu, F] = sp_eval_pts (u, space, geometry, npts);
+  [eu, F] = sp_eval (u, space, geometry, npts);
 
   msh_to_vtk (F, eu, filename, fieldname);
 
