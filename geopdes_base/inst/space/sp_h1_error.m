@@ -4,11 +4,11 @@
 %
 % INPUT:
 %
-%     space:    structure representing the space of discrete functions (see sp_bspline_3d_phys)
-%     msh:      structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)
-%     u:        vector of dof weights
-%     uex:      function handle to evaluate the exact solution
-%     graduex:  function handle to evaluate the gradient of the exact solution
+%    space:   class defining the space of discrete functions (see sp_bspline_2d)
+%    msh:     class defining the domain partition and the quadrature rule (see msh_2d)
+%    u:       vector of dof weights
+%    uex:     function handle to evaluate the exact solution
+%    graduex: function handle to evaluate the gradient of the exact solution
 %
 % OUTPUT:
 %
@@ -16,6 +16,7 @@
 %     errl2:  error in L^2 norm
 %
 % Copyright (C) 2010 Carlo de Falco
+% Copyright (C) 2011 Rafael Vazquez
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -31,44 +32,57 @@
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
 
-function [toterr, errl2] = sp_h1_error (sp, msh, u, uex, graduex);
+function [errh1, errl2] = sp_h1_error (sp, msh, u, uex, graduex);
 
-  ndir = size (msh.geo_map, 1);
+  ndim = numel (msh.qn);
 
-  gradients = reshape (sp.shape_function_gradients, sp.ncomp, ndir, msh.nqn, sp.nsh_max, msh.nel);
-  grad_num  = zeros (sp.ncomp, ndir, msh.nqn, msh.nel);
-  for idir = 1:ndir
-    for ish=1:sp.nsh_max
-      for icmp=1:sp.ncomp
-        grad_num(icmp, idir, :, :) = reshape (grad_num(icmp, idir, :, :), [msh.nqn, msh.nel]) + ...
-          reshape (gradients (icmp, idir, :, ish, :), [msh.nqn, msh.nel]) .* ...
-          repmat (u(sp.connectivity(ish,:)), 1, msh.nqn).';
+  errl2 = 0;
+  errh1s = 0;
+
+  valu = zeros (sp.ncomp, msh.nqn, msh.nelcol);
+  grad_valu = zeros (sp.ncomp, ndim, msh.nqn, msh.nelcol);
+  for iel = 1:msh.nelu
+    msh_col = msh_evaluate_col (msh, iel);
+    sp_col  = sp_evaluate_col (sp, msh_col);
+
+    uc_iel = zeros (size (sp_col.connectivity));
+    uc_iel(sp_col.connectivity~=0) = ...
+          u(sp_col.connectivity(sp_col.connectivity~=0));
+
+    weight = repmat (reshape (uc_iel, [1, sp_col.nsh_max, msh_col.nel]), ...
+                                  [msh.nqn, 1, 1]);
+
+    sp_col.shape_functions = reshape (sp_col.shape_functions, ...
+           sp.ncomp, msh_col.nqn, sp_col.nsh_max, msh_col.nel);
+    sp_col.shape_function_gradients = reshape (sp_col.shape_function_gradients, ...
+           sp.ncomp, ndim, msh_col.nqn, sp_col.nsh_max, msh_col.nel);
+
+    for icmp = 1:sp.ncomp
+      for idim = 1:ndim
+        grad_valu(icmp,idim,:,:) = sum (weight .* reshape (sp_col.shape_function_gradients(icmp,idim,:,:,:), ...
+                            msh_col.nqn, sp_col.nsh_max, msh_col.nel), 2);
       end
+      valu(icmp,:,:) = sum (weight .* reshape (sp_col.shape_functions(icmp,:,:), ...
+                            msh_col.nqn, sp_col.nsh_max, msh_col.nel), 2);
     end
+
+    for idim = 1:ndim
+      x{idim} = msh_col.geo_map(idim, :, :);
+    end
+    w = msh_col.quad_weights .* msh_col.jacdet;
+
+    valex  = reshape (feval (uex, x{:}), sp.ncomp, msh_col.nqn, msh_col.nel);
+    grad_valex  = reshape (feval (graduex, x{:}), sp.ncomp, ndim, msh_col.nqn, msh_col.nel);
+
+    errh1s = errh1s + sum (sum (reshape (sum (sum ...
+       ((grad_valu - grad_valex).^2, 1), 2), [msh_col.nqn, msh_col.nel]) .* w));
+
+    errl2  = errl2 + sum (w(:) .* (valu(:) - valex(:)).^2);
+
   end
 
-  
-  for idir = 1:ndir
-    x{idir} = reshape (msh.geo_map(idir,:,:), msh.nqn*msh.nel, 1);
-  end
-  grad_valex  = reshape (feval (graduex, x{:}), sp.ncomp, ndir, msh.nqn, msh.nel);
-
-  w = msh.quad_weights .* msh.jacdet;
-  errh1s = sum (sum (reshape (sum (sum ((grad_num - grad_valex).^2, 1), 2), [msh.nqn, msh.nel]) .* w));
-  
-  errl2  = sp_l2_error (sp, msh, u, uex);
-  toterr = sqrt (errl2^2 + errh1s);
+  errh1 = sqrt (errl2 + errh1s);
+  errl2 = sqrt (errl2);
   
 end
 
-%!test
-%! geometry = geo_load ({(@(PTS) PTS), (@(PTS) repmat (eye(2), [1, 1, size(PTS,2)]))});
-%! knots = {[0 0 0 .5 1 1 1], [0 0 0 .33 .66 1 1 1]};
-%! [qn, qw] = msh_set_quad_nodes (knots, msh_gauss_nodes ([3 3]));
-%! msh = msh_2d_tensor_product (knots, qn, qw); 
-%! msh = msh_push_forward_2d (msh, geometry);
-%! sp  = sp_bspline_2d_phys (knots, [2 2], msh); 
-%! u   = zeros (sp.ndof, 1);
-%! uex     = @(x, y) zeros (size (x));
-%! graduex = @(x, y) cat (1, zeros (size (x)), zeros (size (x)));
-%! assert (sp_h1_error (sp, msh, u, uex, graduex), 0, eps);

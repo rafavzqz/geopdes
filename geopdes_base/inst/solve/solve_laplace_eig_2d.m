@@ -73,22 +73,14 @@ geometry  = geo_load (geo_name);
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (zeta, rule);
-msh      = msh_2d_tensor_product (zeta, qn, qw);
-msh      = msh_push_forward_2d (msh, geometry);
+msh      = msh_2d (zeta, qn, qw, geometry);
   
 % Construct space structure
 space    = sp_bspline_2d (knots, degree, msh);
   
-% Precompute the coefficients
-x = squeeze (msh.geo_map(1,:,:));
-y = squeeze (msh.geo_map(2,:,:));
-  
-epsilon = reshape (c_diff (x, y), msh.nqn, msh.nel);
-mu      = reshape (c_mass (x, y), msh.nqn, msh.nel);
- 
 % Assemble the matrices
-stiff_mat = op_gradu_gradv_tp (space, space, msh, epsilon);
-mass_mat  = op_u_v_tp (space, space, msh, mu);
+stiff_mat = op_gradu_gradv_tp (space, space, msh, c_diff);
+mass_mat  = op_u_v_tp (space, space, msh, c_mass);
 
 % Apply homogeneous Dirichlet boundary conditions
 drchlt_dofs = [];

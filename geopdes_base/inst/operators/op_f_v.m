@@ -28,27 +28,21 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function rhs = op_f_v (spv, msh, coeff, element_list)
+function rhs = op_f_v (spv, msh, coeff)
   
  coeff = reshape (coeff, spv.ncomp, msh.nqn, msh.nel);
 
- if (nargin == 3)
-   element_list = 1:msh.nel;
- end
- nel = numel (element_list);
-
  rhs   = zeros (spv.ndof, 1);
- shpv  = reshape (spv.shape_functions, spv.ncomp, msh.nqn, spv.nsh_max, nel);
+ shpv  = reshape (spv.shape_functions, spv.ncomp, msh.nqn, spv.nsh_max, msh.nel);
 
- for iel = 1:nel
-   iel_glob = element_list (iel);
-   if (all (msh.jacdet(:,iel_glob)))
+ for iel = 1:msh.nel
+   if (all (msh.jacdet(:,iel)))
      rhs_loc = zeros (spv.nsh(iel), 1);
 
-     jacdet_weights = msh.jacdet(:, iel_glob) .* msh.quad_weights(:, iel_glob);
+     jacdet_weights = msh.jacdet(:, iel) .* msh.quad_weights(:, iel);
      jacdet_weights = repmat (jacdet_weights, [1, spv.nsh(iel)]);
 
-     coeff_iel = repmat (coeff(:, :, iel_glob), [1, 1, spv.nsh(iel)]);
+     coeff_iel = repmat (coeff(:, :, iel), [1, 1, spv.nsh(iel)]);
 
      shpv_iel = reshape (shpv(:, :, 1:spv.nsh(iel), iel), spv.ncomp, msh.nqn, spv.nsh(iel));
 

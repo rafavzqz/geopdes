@@ -7,8 +7,8 @@
 %
 %   spu:     class representing the space of trial functions (see sp_bspline_2d)
 %   spv:     class representing the space of test functions (see sp_bspline_2d)
-%   msh:     structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)
-%   epsilon: diffusion coefficient
+%   msh:     class defining the domain partition and the quadrature rule (see msh_2d)
+%   epsilon: function handle to compute the diffusion coefficient
 %
 % OUTPUT:
 %
@@ -17,8 +17,7 @@
 %   cols:   column indices of the nonzero entries
 %   values: values of the nonzero entries
 % 
-% Copyright (C) 2009, 2010, 2011 Carlo de Falco
-% Copyright (C) 2011, Rafael Vazquez
+% Copyright (C) 2011, Carlo de Falco, Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -37,11 +36,18 @@ function varargout = op_gradu_gradv_tp (space1, space2, msh, coeff)
 
   A = spalloc (space2.ndof, space1.ndof, 3*space1.ndof);
 
-  for iel = 1:msh.nelu
-    [sp1, element_list] = sp_evaluate_col (space1, msh, iel, 'value', false);
-    sp2 = sp_evaluate_col (space2, msh, iel, 'value', false);
+  ndim = numel (msh.qn);
 
-    A = A + op_gradu_gradv (sp1, sp2, msh, coeff, element_list);
+  for iel = 1:msh.nelu
+    msh_col = msh_evaluate_col (msh, iel);
+    sp1_col = sp_evaluate_col (space1, msh_col, 'value', false);
+    sp2_col = sp_evaluate_col (space2, msh_col, 'value', false);
+
+    for idim = 1:ndim
+      x{idim} = msh_col.geo_map(idim,:,:);
+    end
+
+    A = A + op_gradu_gradv (sp1_col, sp2_col, msh_col, coeff (x{:}));
   end
 
   if (nargout == 1)

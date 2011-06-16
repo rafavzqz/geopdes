@@ -105,7 +105,7 @@ clear conn_u conn_v conn_w connectivity
   ucp = sp.ndof_dir(1);
   vcp = sp.ndof_dir(2); 
   wcp = sp.ndof_dir(3);
-  if (isfield (msh, 'boundary'))
+  if (~isempty (msh.boundary))
     msh_bnd = msh.boundary;
     w_bnd{1} = sp.weights(1,:,:);
     w_bnd{2} = sp.weights(end,:,:);

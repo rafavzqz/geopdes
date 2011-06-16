@@ -91,7 +91,7 @@ clear conn_u conn_v conn_w connectivity
   ucp = sp.ndof_dir(1);
   vcp = sp.ndof_dir(2); 
   wcp = sp.ndof_dir(3);
-  if (isfield (msh, 'boundary'))
+  if (~isempty (msh.boundary))
     msh_bnd = msh.boundary;
     for iside = 1:numel(msh_bnd)
       switch (iside)

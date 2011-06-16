@@ -5,14 +5,13 @@
 % INPUT:
 %     
 %   spv:   class representing the function space (see sp_bspline_2d)
-%   msh:   structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)
-%   coeff: source function evaluated at the quadrature points
+%   msh:   class defining the domain partition and the quadrature rule (see msh_2d)
+%   coeff: function handle to compute the source function
 %
 % OUTPUT:
 %
 %   rhs: assembled right-hand side
 % 
-% Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
@@ -31,9 +30,18 @@
 function rhs = op_f_v_tp (space, msh, coeff)
 
   rhs = zeros (space.ndof, 1);
+
+  ndim = numel (msh.qn);
+
   for iel = 1:msh.nelu
-    [sp, elem_list] = sp_evaluate_col (space, msh, iel, 'gradient', false);
-    rhs = rhs + op_f_v (sp, msh, coeff, elem_list);
+    msh_col = msh_evaluate_col (msh, iel);
+    sp_col  = sp_evaluate_col (space, msh_col, 'gradient', false);
+
+    for idim = 1:ndim
+      x{idim} = msh_col.geo_map(idim,:,:);
+    end
+
+    rhs = rhs + op_f_v (sp_col, msh_col, coeff (x{:}));
   end
 
 end

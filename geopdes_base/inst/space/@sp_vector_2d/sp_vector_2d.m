@@ -62,7 +62,7 @@ function sp = sp_vector_2d (sp1, sp2, msh)
   sp.connectivity = [sp1.connectivity; sp2.connectivity+sp1.ndof];
 
 % For the boundary we still store everything
-  if (isfield (msh, 'boundary'))
+  if (~isempty (msh.boundary))
     for iside = 1:numel(msh.boundary)
       sp_bnd1 = sp1.boundary(iside);
       sp_bnd2 = sp2.boundary(iside);
