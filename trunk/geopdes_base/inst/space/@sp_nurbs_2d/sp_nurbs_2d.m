@@ -100,7 +100,7 @@ clear conn_u conn_v
 
   mcp = sp.ndof_dir(1);
   ncp = sp.ndof_dir(2); 
-  if (isfield (msh, 'boundary'))
+  if (~isempty (msh.boundary))
     w_bnd{1} = sp.weights(1,:);
     w_bnd{2} = sp.weights(end,:);
     w_bnd{3} = sp.weights(:,1);

@@ -1,38 +1,36 @@
 % SP_EVALUATE_COL: compute the basis functions in one column of the mesh.
 %
-%     sp = sp_evaluate_col (space, msh, colnum, 'option1', value1, ...)
+%     sp = sp_evaluate_col (space, msh_col, 'option1', value1, ...)
 %
 % INPUTS:
 %     
-%     space:  class defining the space of discrete functions (see sp_bspline_2d)
-%     msh:    msh structure containing (in the field msh.qn) the points 
+%    space:   class defining the space of discrete functions (see sp_bspline_2d)
+%    msh_col: msh structure containing (in the field msh.qn) the points 
 %              along each parametric direction in the parametric 
 %              domain at which to evaluate, i.e. quadrature points 
 %              or points for visualization (see msh_2d/msh_evaluate_col)
-%     colnum: number of the fixed element in the first parametric direction
-%    'option', value: additional optional parameters, currently available options are:
+%   'option', value: additional optional parameters, currently available options are:
 %            
 %              Name     |   Default value |  Meaning
 %           ------------+-----------------+----------------------------------
 %            value      |      true       |  compute shape_functions
 %            gradient   |      true       |  compute shape_function_gradients
+%            hessian    |      false      |  compute shape_function_hessians
 %
 % OUTPUT:
 %
 %    sp: struct representing the discrete function space, with the following fields:
 %
-%    FIELD_NAME      (SIZE)                            DESCRIPTION
-%    ncomp           (scalar)                          number of components of the functions of the space (actually, 1)
-%    ndof            (scalar)                          total number of degrees of freedom
-%    ndof_dir        (1 x 2 vector)                    degrees of freedom along each direction
-%    nsh_max         (scalar)                          maximum number of shape functions per element
-%    nsh             (1 x msh.nelv vector)             actual number of shape functions per each element
-%    connectivity    (nsh_max x msh.nelv vector)       indices of basis functions that do not vanish in each element
-%    shape_functions (msh.nqn x nsh_max x msh.nelv)    basis functions evaluated at each quadrature node in each element
+%    FIELD_NAME      (SIZE)                             DESCRIPTION
+%    ncomp           (scalar)                           number of components of the functions of the space (actually, 1)
+%    ndof            (scalar)                           total number of degrees of freedom
+%    ndof_dir        (1 x 2 vector)                     degrees of freedom along each direction
+%    nsh_max         (scalar)                           maximum number of shape functions per element
+%    nsh             (1 x msh_col.nel vector)           actual number of shape functions per each element
+%    connectivity    (nsh_max x msh_col.nel vector)     indices of basis functions that do not vanish in each element
+%    shape_functions (msh.nqn x nsh_max x msh_col.nel)  basis functions evaluated at each quadrature node in each element
 %    shape_function_gradients
-%                        (2 x msh.nqn x nsh_max x msh.nelv) basis function gradients evaluated at each quadrature node in each element
-%    shape_function_hessians
-%                        (2 x 2 x msh.nqn x nsh_max x msh.nelv) basis function hessians evaluated at each quadrature node in each element
+%                 (2 x msh.nqn x nsh_max x msh_col.nel) basis function gradients evaluated at each quadrature node in each element
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
@@ -50,7 +48,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [sp, elem_list] = sp_evaluate_col (space, msh, colnum, varargin)
+function sp = sp_evaluate_col (space, msh, varargin)
 
 value = true;
 gradient = true;
@@ -69,13 +67,11 @@ if (~isempty (varargin))
   end
 end
 
-sp = sp_evaluate_col_param (space, msh, colnum, varargin{:});
-
-elem_list = colnum + msh.nelu*(0:msh.nelv-1);
+sp = sp_evaluate_col_param (space, msh, varargin{:});
 
 if (gradient)
-  JinvT = geopdes_invT__ (msh.geo_map_jac(:,:,:,elem_list));
-  JinvT = reshape (JinvT, [2, 2, msh.nqn, msh.nelv]);
+  JinvT = geopdes_invT__ (msh.geo_map_jac);
+  JinvT = reshape (JinvT, [2, 2, msh.nqn, msh.nel]);
   sp.shape_function_gradients = geopdes_prod__ (JinvT, sp.shape_function_gradients);
 end
 

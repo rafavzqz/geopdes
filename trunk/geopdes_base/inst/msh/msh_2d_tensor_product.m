@@ -61,6 +61,7 @@ function msh = msh_2d_tensor_product (breaks, qn, qw, opts)
 
   nel  = nelu * nelv;
   msh.nel  = nel;
+  msh.nelcol = nelv;
   msh.nqn  = nqnu * nqnv;
   
   msh.nelu = nelu; msh.nelv = nelv;

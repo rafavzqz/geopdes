@@ -1,19 +1,20 @@
 % SP_L2_ERROR: Evaluate the error in L^2 norm.
 %
-%   toterr = sp_l2_error (space, msh, u, uex);
+%   errl2 = sp_l2_error (space, msh, u, uex);
 %
 % INPUT:
 %
-%     space:    structure representing the space of discrete functions (see sp_bspline_3d_phys)
-%     msh:      structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)
-%     u:        vector of dof weights
-%     uex:      function handle to evaluate the exact solution
+%   space: class defining the space of discrete functions (see sp_bspline_2d)
+%   msh:   class defining the domain partition and the quadrature rule (see msh_2d)
+%   u:     vector of dof weights
+%   uex:   function handle to evaluate the exact solution
 %
 % OUTPUT:
 %
-%     toterr: error in L^2 norm
+%     errl2:  error in L^2 norm
 %
 % Copyright (C) 2010 Carlo de Falco
+% Copyright (C) 2011 Rafael Vazquez
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -29,25 +30,42 @@
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
 
-function toterr = sp_l2_error (sp, msh, u, uex);
+function errl2 = sp_l2_error (sp, msh, u, uex);
+
+  ndim = numel (msh.qn);
+
+  errl2 = 0;
+
+  valu = zeros (sp.ncomp, msh.nqn, msh.nelcol);
+  for iel = 1:msh.nelu
+    msh_col = msh_evaluate_col (msh, iel);
+    sp_col  = sp_evaluate_col (sp, msh_col, 'gradient', false);
+
+    uc_iel = zeros (size (sp_col.connectivity));
+    uc_iel(sp_col.connectivity~=0) = ...
+          u(sp_col.connectivity(sp_col.connectivity~=0));
+
+    weight = repmat (reshape (uc_iel, [1, sp_col.nsh_max, msh_col.nel]), ...
+                                  [msh_col.nqn, 1, 1]);
+
+    sp_col.shape_functions = reshape (sp_col.shape_functions, ...
+           sp.ncomp, msh_col.nqn, sp_col.nsh_max, msh_col.nel);
+
+    for icmp = 1:sp.ncomp
+      valu(icmp,:,:) = sum (weight .* reshape (sp_col.shape_functions(icmp,:,:), ...
+                            msh_col.nqn, sp_col.nsh_max, msh_col.nel), 2);
+    end
+
+    for idim = 1:ndim
+      x{idim} = msh_col.geo_map(idim, :, :);
+    end
+    w = msh_col.quad_weights .* msh_col.jacdet;
+
+    valex  = reshape (feval (uex, x{:}), sp.ncomp, msh_col.nqn, msh_col.nel);
+    errl2  = errl2 + sum (w(:) .* (valu(:) - valex(:)).^2);
+  end
+
+  errl2 = sqrt (errl2);
   
-  if (size (msh.quad_nodes, 1) == 2)
-    valnum = sp_eval_2d (u, sp, msh);
-  elseif (size (msh.quad_nodes, 1) == 3)
-    valnum = sp_eval_3d (u, sp, msh);
-  end
-
-
-  w = msh.quad_weights(:) .* msh.jacdet(:);
-  for idir = 1:size (msh.geo_map, 1)
-    x{idir} = reshape (msh.geo_map(idir,:,:), msh.nqn*msh.nel, 1);
-  end
-
-  valex = feval (uex, x{:});
-  valnum = reshape (valnum, sp.ncomp, []);
-  valex  = reshape (valex, size (valnum));
-
-  err2 = sum ((valnum - valex).^2, 1);
-  toterr = sqrt (sum (err2(:).*w));
-
 end
+

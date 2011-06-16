@@ -31,23 +31,27 @@
 
 function [eu, F] = sp_eval_msh (u, space, msh);
 
-  F  = msh.geo_map;
+  ndim = numel (msh.qn);
+
+  F  = zeros (ndim, msh.nqn, msh.nel);
   eu = zeros (space.ncomp, msh.nqn, msh.nel);
 
   for iel = 1:msh.nelu
-    [sp_col, elem_list] = sp_evaluate_col (space, msh, iel, 'gradient', false);
+    msh_col = msh_evaluate_col (msh, iel);
+    sp_col  = sp_evaluate_col (space, msh_col, 'gradient', false);
 
     uc_iel = zeros (size (sp_col.connectivity));
     uc_iel(sp_col.connectivity~=0) = ...
           u(sp_col.connectivity(sp_col.connectivity~=0));
-    weight = repmat (reshape (uc_iel, [1, 1, sp_col.nsh_max, msh.nelcol]), ...
-                                  [sp_col.ncomp, msh.nqn, 1, 1]);
+    weight = repmat (reshape (uc_iel, [1, 1, sp_col.nsh_max, msh_col.nel]), ...
+                                  [sp_col.ncomp, msh_col.nqn, 1, 1]);
 
     sp_col.shape_functions = reshape (sp_col.shape_functions, sp_col.ncomp, ...
-                                      msh.nqn, sp_col.nsh_max, msh.nelcol);
-    
-    eu(:,:,elem_list) = reshape (sum (weight .* sp_col.shape_functions, 3), ...
-                             sp_col.ncomp, msh.nqn, msh.nelcol);
+                                      msh_col.nqn, sp_col.nsh_max, msh_col.nel);
+
+    F(:,:,msh_col.elem_list) = msh_col.geo_map;
+    eu(:,:,msh_col.elem_list) = reshape (sum (weight .* sp_col.shape_functions, 3), ...
+                             sp_col.ncomp, msh_col.nqn, msh_col.nel);
   end
 
   if (space.ncomp == 1)

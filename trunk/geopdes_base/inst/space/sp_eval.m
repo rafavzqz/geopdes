@@ -57,16 +57,10 @@ function [eu, F] = sp_eval (u, space, geometry, npts);
     end
   end
 
-  warn = warning ('query');
-  warning off
   if (ndim == 2)
-    msh = msh_2d_tensor_product ({brk{1}, brk{2}}, pts, [], 'no boundary');
-    warning(warn);
-    msh = msh_push_forward_2d (msh, geometry);
+    msh = msh_2d ({brk{1}, brk{2}}, pts, [], geometry, 'no boundary');
   elseif (ndim == 3)
-    msh = msh_3d_tensor_product ({brk{1}, brk{2}, brk{3}}, pts, [], 'no boundary');
-    warning(warn);
-    msh = msh_push_forward_3d (msh, geometry);
+    msh = msh_3d ({brk{1}, brk{2}, brk{3}}, pts, [], geometry, 'no boundary');
   end
   sp  = space.constructor (msh);
 

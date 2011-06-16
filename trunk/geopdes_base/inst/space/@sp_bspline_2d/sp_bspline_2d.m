@@ -84,7 +84,7 @@ clear conn_u conn_v
 
   mcp = sp.ndof_dir(1);
   ncp = sp.ndof_dir(2); 
-  if (isfield (msh, 'boundary'))
+  if (~isempty (msh.boundary))
     for iside = 1:numel(msh.boundary)
       ind = mod (floor ((iside+1)/2), 2) + 1;
       bnodes = reshape (squeeze (msh.boundary(iside).quad_nodes(ind,:,:)), ...

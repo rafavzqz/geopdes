@@ -78,22 +78,14 @@ geometry = geo_load (nurbs);
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (zeta, rule);
-msh      = msh_2d_tensor_product (zeta, qn, qw);
-msh      = msh_push_forward_2d (msh, geometry);
+msh      = msh_2d (zeta, qn, qw, geometry);
   
 % Construct space structure
 space  = sp_nurbs_2d (geometry.nurbs, msh);
   
-% Precompute the coefficients
-x = squeeze (msh.geo_map(1,:,:));
-y = squeeze (msh.geo_map(2,:,:));
-  
-epsilon = reshape (c_diff (x, y), msh.nqn, msh.nel);
-fval    = reshape (f (x, y), msh.nqn, msh.nel) ;
- 
 % Assemble the matrices
-stiff_mat = op_gradu_gradv_tp (space, space, msh, epsilon);
-rhs       = op_f_v_tp (space, msh, fval);
+stiff_mat = op_gradu_gradv_tp (space, space, msh, c_diff);
+rhs       = op_f_v_tp (space, msh, f);
 
 % Apply Neumann boundary conditions
 for iside = nmnn_sides
