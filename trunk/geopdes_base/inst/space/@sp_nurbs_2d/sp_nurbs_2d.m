@@ -25,7 +25,6 @@
 %        ndof_dir        (1 x 2 vector)              degrees of freedom along each direction
 %        nsh_max         (scalar)                    maximum number of shape functions per element
 %        nsh             (1 x msh.nel vector)        actual number of shape functions per each element
-%        connectivity    (nsh_max x msh.nel vector)  indices of basis functions that do not vanish in each element
 %        ncomp           (scalar)                    number of components of the functions of the space (actually, 1)
 %        boundary        (1 x 4 struct array)        struct array representing the space of traces of basis functions on each edge
 %
@@ -81,22 +80,6 @@ function sp = sp_nurbs_2d (varargin)
   sp.ndof     = sp.spu.ndof * sp.spv.ndof;
   sp.ndof_dir = [sp.spu.ndof, sp.spv.ndof];
   sp.ncomp    = 1;
-
-  conn_u = reshape (sp.spu.connectivity, sp.spu.nsh_max, 1, msh.nelu, 1);
-  conn_u = repmat  (conn_u, [1, sp.spv.nsh_max, 1, msh.nelv]);
-  conn_u = reshape (conn_u, [], msh.nel);
-
-  conn_v = reshape (sp.spv.connectivity, 1, sp.spv.nsh_max, 1, msh.nelv);
-  conn_v = repmat  (conn_v, [sp.spu.nsh_max, 1, msh.nelu, 1]);
-  conn_v = reshape (conn_v, [], msh.nel);
-
-  connectivity = zeros (sp.nsh_max, msh.nel);
-  indices = (conn_u ~= 0) & (conn_v ~= 0);
-  connectivity(indices) = ...
-    sub2ind ([sp.spu.ndof, sp.spv.ndof], conn_u(indices), conn_v(indices));
-  sp.connectivity = reshape (connectivity, sp.nsh_max, msh.nel);
-
-clear conn_u conn_v
 
   mcp = sp.ndof_dir(1);
   ncp = sp.ndof_dir(2); 

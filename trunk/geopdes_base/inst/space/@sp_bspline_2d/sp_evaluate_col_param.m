@@ -1,6 +1,6 @@
 % SP_EVALUATE_COL_PARAM: compute the basis functions, in the parametric domain, in one column of the mesh.
 %
-%     sp = sp_evaluate_col_param (space, msh, 'option1', value1, ...)
+%     sp = sp_evaluate_col_param (space, msh_col, 'option1', value1, ...)
 %
 % INPUTS:
 %
@@ -80,18 +80,18 @@ nsh  = nsh(:)';
 ndof = spu.ndof * spv.ndof;
 ndof_dir = [spu.ndof, spv.ndof];
 
-conn_u = reshape (space.spu.connectivity(:,msh.colnum), space.spu.nsh_max, 1, 1);
-conn_u = repmat  (conn_u, [1, space.spv.nsh_max, msh.nel]);
+conn_u = reshape (spu.connectivity(:,msh.colnum), spu.nsh_max, 1, 1);
+conn_u = repmat  (conn_u, [1, spv.nsh_max, msh.nel]);
 conn_u = reshape (conn_u, [], msh.nel);
 
-conn_v = reshape (space.spv.connectivity, 1, space.spv.nsh_max, msh.nelv);
-conn_v = repmat  (conn_v, [space.spu.nsh_max, 1, 1]);
+conn_v = reshape (spv.connectivity, 1, spv.nsh_max, msh.nelv);
+conn_v = repmat  (conn_v, [spu.nsh_max, 1, 1]);
 conn_v = reshape (conn_v, [], msh.nel);
 
 connectivity = zeros (space.nsh_max, msh.nel);
 indices = (conn_u ~= 0) & (conn_v ~= 0);
 connectivity(indices) = ...
-  sub2ind ([space.spu.ndof, space.spv.ndof], conn_u(indices), conn_v(indices));
+  sub2ind ([spu.ndof, spv.ndof], conn_u(indices), conn_v(indices));
 connectivity = reshape (connectivity, space.nsh_max, msh.nel);
 
 shp_u = reshape (spu.shape_functions(:, :, msh.colnum), ...
@@ -125,6 +125,8 @@ if (gradient || hessian)
   sp.shape_function_gradients(1,:,:,:) = shg_u .* shp_v ;
   sp.shape_function_gradients(2,:,:,:) = shp_u .* shg_v ;
 
+  sp.shape_function_gradients = reshape (sp.shape_function_gradients, ...
+                                2, msh.nqn, sp.nsh_max, msh.nel);
   if (hessian && isfield (msh, 'geo_map_der2'))
     shh_uu = reshape (spu.shape_function_hessians(:,:,msh.colnum), ...
                       msh.nqnu, 1, spu.nsh_max, 1, 1);

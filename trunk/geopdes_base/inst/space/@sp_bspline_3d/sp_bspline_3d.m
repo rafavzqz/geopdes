@@ -23,7 +23,6 @@
 %        ndof_dir        (1 x 3 vector)                    degrees of freedom along each direction (only for tensor product spaces)
 %        nsh_max         (scalar)                          maximum number of shape functions per element
 %        nsh             (1 x msh.nel vector)              actual number of shape functions per each element
-%        connectivity    (nsh_max x msh.nel vector)        indices of basis functions that do not vanish in each element
 %        ncomp           (scalar)                    number of components of the functions of the space (actually, 1)
 %        boundary        (1 x 6 struct array)              struct array representing the space of traces of basis functions on each edge
 %
@@ -67,26 +66,6 @@ function sp = sp_bspline_3d (knots, degree, msh)
   sp.ndof     = sp.spu.ndof * sp.spv.ndof * sp.spw.ndof;
   sp.ndof_dir = [sp.spu.ndof, sp.spv.ndof, sp.spw.ndof];
   sp.ncomp    = 1;
-
-  conn_u = reshape (sp.spu.connectivity, sp.spu.nsh_max, 1, 1, msh.nelu, 1, 1);
-  conn_u = repmat  (conn_u, [1, sp.spv.nsh_max, sp.spw.nsh_max, 1, msh.nelv, msh.nelw]);
-  conn_u = reshape (conn_u, [], msh.nel);
-
-  conn_v = reshape (sp.spv.connectivity, 1, sp.spv.nsh_max, 1, 1, msh.nelv, 1);
-  conn_v = repmat  (conn_v, [sp.spu.nsh_max, 1, sp.spw.nsh_max, msh.nelu, 1, msh.nelw]);
-  conn_v = reshape (conn_v, [], msh.nel);
-
-  conn_w = reshape (sp.spw.connectivity, 1, 1, sp.spw.nsh_max, 1, 1, msh.nelw);
-  conn_w = repmat  (conn_w, [sp.spu.nsh_max, sp.spv.nsh_max, 1, msh.nelu, msh.nelv, 1]);
-  conn_w = reshape (conn_w, [], msh.nel);
-
-  connectivity = zeros (sp.nsh_max, msh.nel);
-  indices = (conn_u ~= 0) & (conn_v ~= 0);
-  connectivity(indices) = ...
-     sub2ind ([sp.spu.ndof, sp.spv.ndof, sp.spw.ndof], conn_u(indices), conn_v(indices), conn_w(indices));
-  sp.connectivity = reshape (connectivity, sp.nsh_max, msh.nel);
-
-clear conn_u conn_v conn_w connectivity
 
   ucp = sp.ndof_dir(1);
   vcp = sp.ndof_dir(2); 

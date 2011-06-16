@@ -1,6 +1,6 @@
 % SP_EVALUATE_COL_PARAM: compute the basis functions, in the parametric domain, in one column of the mesh.
 %
-%     sp = sp_evaluate_col_param (space, msh, colnum, 'option1', value1, ...)
+%     sp = sp_evaluate_col_param (space, msh_col, 'option1', value1, ...)
 %
 % INPUTS:
 %
@@ -134,7 +134,8 @@ if (gradient)
   shape_fun_grads(1,:,:,:) = (Bu - shape_functions .* Du)./D;
   shape_fun_grads(2,:,:,:) = (Bv - shape_functions .* Dv)./D;
 
-  sp.shape_function_gradients = shape_fun_grads;
+  sp.shape_function_gradients = reshape (shape_fun_grads, ...
+                                2, msh.nqn, sp.nsh_max, msh.nel);
 
   clear shg_u shg_v shape_fun_grads Bu Bv Du Dv
 end
