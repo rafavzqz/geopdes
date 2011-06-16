@@ -4,11 +4,11 @@
 %
 % INPUTS:
 %     
-%     sp:     class defining the space of discrete functions (see sp_bspline_2d)
-%     msh:    msh structure containing (in the field msh.qn) the points 
+%     sp:     class defining the space of discrete functions (see sp_vector_2d)
+%     msh:    msh structure defining (in the field msh.qn) the points 
 %              along each parametric direction in the parametric 
 %              domain at which to evaluate, i.e. quadrature points 
-%              or points for visualization
+%              or points for visualization (see msh_2d/msh_evaluate_col)
 %     colnum: number of the fixed element in the first parametric direction
 %    'option', value: additional optional parameters, currently available options are:
 %            
@@ -26,7 +26,7 @@
 %    FIELD_NAME      (SIZE)                              DESCRIPTION
 %    ncomp           (scalar)                            number of components of the functions of the space (actually, 2)
 %    ndof            (scalar)                            total number of degrees of freedom
-%    ndof_dir        (2 x 2 vector)                      for each component, number of degrees of freedom along each direction
+%    ndof_dir        (2 x 2 matrix)                      for each component, number of degrees of freedom along each direction
 %    nsh_max         (scalar)                            maximum number of shape functions per element
 %    nsh             (1 x msh.nelv vector)               actual number of shape functions per each element
 %    connectivity    (nsh_max x msh.nelv vector)         indices of basis functions that do not vanish in each element
@@ -78,12 +78,10 @@ if (~isempty (varargin))
 end
 
 first_der = gradient || divergence || curl;
-sp1_col = sp_onecol_param (space.sp1, msh, colnum, 'value', value, 'gradient', first_der);
-sp2_col = sp_onecol_param (space.sp2, msh, colnum, 'value', value, 'gradient', first_der);
+sp1_col = sp_evaluate_col_param (space.sp1, msh, colnum, 'value', value, 'gradient', first_der);
+sp2_col = sp_evaluate_col_param (space.sp2, msh, colnum, 'value', value, 'gradient', first_der);
 
 elem_list = colnum + msh.nelu*(0:msh.nelv-1);
-
-ncomp = 2;
 
 ndof     = sp1_col.ndof + sp2_col.ndof;
 ndof_dir = [sp1_col.ndof_dir; sp2_col.ndof_dir];
@@ -95,7 +93,7 @@ sp = struct('nsh_max', space.nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
             'ndof_dir', ndof_dir, 'connectivity', connectivity, ...
             'ncomp', 2);
 
-% From here it will depend on the transformation
+% From here it depends on the transformation
 if (value)
   sp.shape_functions = zeros (2, msh.nqn, sp.nsh_max, msh.nelv);
   sp.shape_functions(1,:,1:sp1_col.nsh_max,:)            = sp1_col.shape_functions;
@@ -129,8 +127,5 @@ if (gradient || curl || divergence)
                                        msh.nqn, sp.nsh_max, msh.nelv);
   end
 end
-
-
-clear shp_u shp_v
 
 end

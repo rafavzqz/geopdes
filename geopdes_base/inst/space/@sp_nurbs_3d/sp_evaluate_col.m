@@ -67,7 +67,7 @@ if (~isempty (varargin))
   end
 end
 
-sp = sp_onecol_param (space, msh, colnum, varargin{:});
+sp = sp_evaluate_col_param (space, msh, colnum, varargin{:});
 
 nel_col = msh.nelv * msh.nelw;
 indu = colnum * ones(msh.nelv, msh.nelw);
