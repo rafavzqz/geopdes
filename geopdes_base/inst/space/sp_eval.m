@@ -34,21 +34,50 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [eu, F] = sp_eval_msh (u, space, msh);
+function [eu, F] = sp_eval (u, space, geometry, npts);
 
-  F  = msh.geo_map;
-  eu = zeros (msh.nqn, msh.nel);
+  ndim = numel (npts);
 
-  for iel = 1:msh.nelu
-    [sp_col, elem_list] = sp_evaluate_col (space, msh, iel, 'gradient', false);
+  if (iscell (npts))
+    pts = npts;
+  elseif (isvector (npts))
+    if (ndim == 2)
+      pts = {(linspace (0, 1, npts(1))), (linspace (0, 1, npts(2)))};
+    elseif (ndim == 2)
+      pts = {(linspace (0, 1, npts(1))), (linspace (0, 1, npts(2))), (linspace (0, 1, npts(3)))};
+    end
+  end
 
-    uc_iel = zeros (size (sp_col.connectivity));
-    uc_iel(sp_col.connectivity~=0) = ...
-          u(sp_col.connectivity(sp_col.connectivity~=0));
-    weight = repmat (reshape (uc_iel, [1, sp_col.nsh_max, msh.nelv]), ...
-                                  [msh.nqn, 1, 1]);
+  for jj = 1:ndim
+    pts{jj} = pts{jj}(:)';
+    if (numel (pts{jj}) > 1)
+      brk{jj} = [0, pts{jj}(1:end-1) + diff(pts{jj})/2, 1]; 
+    else
+      brk{jj} = [0 1];
+    end
+  end
 
-    eu(:, elem_list) = squeeze (sum (weight .* sp_col.shape_functions, 2));
+  warn = warning ('query');
+  warning off
+  if (ndim == 2)
+    msh = msh_2d_tensor_product ({brk{1}, brk{2}}, pts, [], 'no boundary');
+    warning(warn);
+    msh = msh_push_forward_2d (msh, geometry);
+  elseif (ndim == 3)
+    msh = msh_3d_tensor_product ({brk{1}, brk{2}, brk{3}}, pts, [], 'no boundary');
+    warning(warn);
+    msh = msh_push_forward_3d (msh, geometry);
+  end
+  sp  = space.constructor (msh);
+
+  [eu, F] = sp_eval_msh (u, sp, msh);
+
+  if (ndim == 2)
+    F  = reshape (F, ndim, numel (pts{1}), numel (pts{2}));
+    eu = squeeze (reshape (eu, sp.ncomp, numel (pts{1}), numel (pts{2})));
+  elseif (ndim == 3)
+    F  = reshape (F, ndim, numel (pts{1}), numel (pts{2}), numel (pts{3}));
+    eu = squeeze (reshape (eu, sp.ncomp, numel (pts{1}), numel (pts{2}), numel (pts{3})));
   end
 
 end
