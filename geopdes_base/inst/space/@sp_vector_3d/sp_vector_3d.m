@@ -80,9 +80,11 @@ function sp = sp_vector_3d (sp1, sp2, sp3, msh)
       boundary.dofs         = [sp_bnd1.dofs, sp_bnd2.dofs + sp1.ndof, ...
 			       sp_bnd3.dofs + sp1.ndof + sp2.ndof];
 
+      boundary.ndof_dir     = [sp_bnd1.ndof_dir; sp_bnd2.ndof_dir; sp_bnd3.ndof_dir];
+
       boundary.comp_dofs{1} = sp_bnd1.dofs;
       boundary.comp_dofs{2} = sp1.ndof + sp_bnd2.dofs;
-      boundary.comp_dofs{3} = sp1.ndof + + sp2.ndof + sp_bnd3.dofs;
+      boundary.comp_dofs{3} = sp1.ndof + sp2.ndof + sp_bnd3.dofs;
       boundary.connectivity = [sp_bnd1.connectivity; ...
                                sp_bnd2.connectivity+sp_bnd1.ndof; ...
                                sp_bnd3.connectivity+sp_bnd1.ndof+sp_bnd2.ndof];

@@ -34,8 +34,8 @@ function errl2 = sp_l2_error (sp, msh, u, uex)
 
   errl2 = 0;
 
-  valu = zeros (3, msh.nqn, msh.nelv);
-  nel_col = msh.nelv * msh.nelw;
+  valu = zeros (3, msh.nqn, msh.nelcol);
+
   for iel = 1:msh.nelu
     [sp_col, elem_list] = sp_evaluate_col (sp, msh, iel, 'gradient', false);
 
@@ -47,18 +47,18 @@ function errl2 = sp_l2_error (sp, msh, u, uex)
                                   [msh.nqn, 1, 1]);
 
     valu(1,:,:) = sum (weight .* reshape (sp_col.shape_functions(1,:,:,:), ...
-                          msh.nqn, sp_col.nsh_max, nel_col), 2);
+                          msh.nqn, sp_col.nsh_max, msh.nelcol), 2);
     valu(2,:,:) = sum (weight .* reshape (sp_col.shape_functions(2,:,:,:), ...
-                          msh.nqn, sp_col.nsh_max, nel_col), 2);
+                          msh.nqn, sp_col.nsh_max, msh.nelcol), 2);
     valu(3,:,:) = sum (weight .* reshape (sp_col.shape_functions(3,:,:,:), ...
-                          msh.nqn, sp_col.nsh_max, nel_col), 2);
+                          msh.nqn, sp_col.nsh_max, msh.nelcol), 2);
 
     w = msh.quad_weights(:, elem_list) .* msh.jacdet(:, elem_list);
     x = msh.geo_map(1, :, elem_list);
     y = msh.geo_map(2, :, elem_list);
     z = msh.geo_map(3, :, elem_list);
 
-    valex = reshape (feval (uex, x(:), y(:), z(:)), sp.ncomp, [], nel_col);
+    valex = reshape (feval (uex, x(:), y(:), z(:)), sp.ncomp, [], msh.nelcol);
 
     erraux = sum ((valu - valex).^2, 1);
     errl2  = errl2 + sum (w(:) .* erraux(:));
