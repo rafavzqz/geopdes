@@ -14,9 +14,9 @@
 %
 %        FIELD_NAME      (SIZE)                      DESCRIPTION
 %        sp1             (struct)                    space class for the first component
-%        sp1             (struct)                    space class for the second component
+%        sp2             (struct)                    space class for the second component
 %        ndof            (scalar)                    total number of degrees of freedom
-%        ndof_dir        (2 x 2 vector)              for each component, number of degrees of freedom along each direction
+%        ndof_dir        (2 x 2 matrix)               for each component, number of degrees of freedom along each direction
 %        comp_dofs       (1 x 2 cell array)          indices of the degrees of freedom for each component
 %        nsh_max         (scalar)                    maximum number of shape functions per element
 %        nsh             (1 x msh.nel vector)        actual number of shape functions per each element

@@ -154,6 +154,7 @@ clear conn_u conn_v conn_w connectivity
     sp.boundary = [];
   end
 
+  sp.constructor = @(MSH) sp_nurbs_3d (sp.knots, sp.degree, sp.weights, MSH);
   sp = class (sp, 'sp_nurbs_3d');
 
 end

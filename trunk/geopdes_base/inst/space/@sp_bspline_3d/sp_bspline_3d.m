@@ -132,6 +132,7 @@ clear conn_u conn_v conn_w connectivity
     sp.boundary = [];
   end
 
+  sp.constructor = @(MSH) sp_bspline_3d (sp.knots, sp.degree, MSH);
   sp = class (sp, 'sp_bspline_3d');
 
 end
