@@ -74,23 +74,14 @@ geometry  = geo_load (geo_name);
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (zeta, rule);
-msh      = msh_3d_tensor_product (zeta, qn, qw);
-msh      = msh_push_forward_3d (msh, geometry);
+msh      = msh_3d (zeta, qn, qw, geometry);
   
 % Construct space structure
 space    = sp_bspline_3d (knots, degree, msh);
   
-% Precompute the coefficients
-x = squeeze (msh.geo_map(1,:,:));
-y = squeeze (msh.geo_map(2,:,:));
-z = squeeze (msh.geo_map(3,:,:));
-  
-epsilon = reshape (c_diff (x, y, z), msh.nqn, msh.nel);
-fval    = reshape (f (x, y, z), msh.nqn, msh.nel) ;
- 
 % Assemble the matrices
-stiff_mat = op_gradu_gradv_tp (space, space, msh, epsilon);
-rhs       = op_f_v_tp (space, msh, fval);
+stiff_mat = op_gradu_gradv_tp (space, space, msh, c_diff);
+rhs       = op_f_v_tp (space, msh, f);
 
 % Apply Neumann boundary conditions
 for iside = nmnn_sides

@@ -57,8 +57,8 @@ function msh = msh_2d (breaks, qn, qw, geo, opts)
   msh.qn = qn;
   msh.qw = qw;
 
-  msh.breaks = {unique(breaks{1}), unique(breaks{2})}; % this only for precaution, breaks
-                                                       % should already not have any repetitions
+  % this only for precaution, breaks should already not have any repetitions
+  msh.breaks = {unique(breaks{1}), unique(breaks{2})};
 
   msh.nelu = numel (msh.breaks{1}) - 1;
   msh.nelv = numel (msh.breaks{2}) - 1;
