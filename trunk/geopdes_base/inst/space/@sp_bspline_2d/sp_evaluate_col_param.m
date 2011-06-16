@@ -117,7 +117,8 @@ if (gradient || hessian)
   sp.shape_function_gradients(2,:,:,:) = shp_u .* shg_v ;
 
   if (hessian && isfield (msh, 'geo_map_der2'))
-    shh_uu = reshape (spu.shape_function_hessians, msh.nqnu, 1, spu.nsh_max, 1, 1);
+    shh_uu = reshape (spu.shape_function_hessians(:,:,colnum), ...
+                      msh.nqnu, 1, spu.nsh_max, 1, 1);
     shh_uu = repmat  (shh_uu, [1, msh.nqnv, 1, spv.nsh_max, msh.nelv]);
     shh_uu = reshape (shh_uu, msh.nqn, sp.nsh_max, msh.nelv);
 
