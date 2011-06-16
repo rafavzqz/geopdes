@@ -6,7 +6,7 @@
 % INPUT:
 %     
 %     u:          vector of dof weights
-%     space:      structure representing the space of discrete functions (see sp_bspline_2d_phys)
+%     space:      class representing the space of discrete functions (see sp_bspline_2d)
 %     geometry:   geometry structure (see geo_load)
 %     npts:       number of points along each parametric direction where to evaluate
 %     upts, vpts: points along each parametric direction where to evaluate
@@ -33,7 +33,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp_to_vtk_new (u, space, geometry, npts, filename, fieldname)
+function sp_to_vtk (u, space, geometry, npts, filename, fieldname)
 
   [eu, F] = sp_eval_pts (u, space, geometry, npts);
 
