@@ -38,7 +38,7 @@ function rhs = op_f_v_tp (space, msh, coeff)
     sp_col  = sp_evaluate_col (space, msh_col, 'gradient', false);
 
     for idim = 1:ndim
-      x{idim} = msh_col.geo_map(idim,:,:);
+      x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
     end
 
     rhs = rhs + op_f_v (sp_col, msh_col, coeff (x{:}));

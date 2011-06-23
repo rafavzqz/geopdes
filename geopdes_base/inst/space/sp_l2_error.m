@@ -57,7 +57,7 @@ function errl2 = sp_l2_error (sp, msh, u, uex);
     end
 
     for idim = 1:ndim
-      x{idim} = msh_col.geo_map(idim, :, :);
+      x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
     end
     w = msh_col.quad_weights .* msh_col.jacdet;
 

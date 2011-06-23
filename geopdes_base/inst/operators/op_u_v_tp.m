@@ -44,7 +44,7 @@ function varargout = op_u_v_tp (space1, space2, msh, coeff)
     sp2_col = sp_evaluate_col (space2, msh_col, 'gradient', false);
 
     for idim = 1:ndim
-      x{idim} = msh_col.geo_map(idim,:,:);
+      x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
     end
 
     A = A + op_u_v (sp1_col, sp2_col, msh_col, coeff (x{:}));
