@@ -62,7 +62,8 @@ function errl2 = sp_l2_error (sp, msh, u, uex);
     w = msh_col.quad_weights .* msh_col.jacdet;
 
     valex  = reshape (feval (uex, x{:}), sp.ncomp, msh_col.nqn, msh_col.nel);
-    errl2  = errl2 + sum (w(:) .* (valu(:) - valex(:)).^2);
+    erraux = sum ((valu - valex).^2, 1);
+    errl2  = errl2 + sum (w(:) .* erraux(:));
   end
 
   errl2 = sqrt (errl2);

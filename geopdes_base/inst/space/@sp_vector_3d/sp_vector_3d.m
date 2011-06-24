@@ -22,7 +22,6 @@
 %        comp_dofs       (1 x 3 cell array)          indices of the degrees of freedom for each component
 %        nsh_max         (scalar)                    maximum number of shape functions per element
 %        nsh             (1 x msh.nel vector)        actual number of shape functions per each element
-%        connectivity    (nsh_max x msh.nel vector)  indices of basis functions that do not vanish in each element
 %        ncomp           (scalar)                    number of components of the functions of the space (actually, 3)
 %        boundary        (1 x 6 struct array)        struct array representing the space of traces of basis functions on each edge
 %
@@ -63,8 +62,6 @@ function sp = sp_vector_3d (sp1, sp2, sp3, msh)
   sp.comp_dofs{2} = sp1.ndof + (1:sp2.ndof);
   sp.comp_dofs{3} = sp1.ndof + sp2.ndof + (1:sp3.ndof);
   sp.ndof_dir     = [sp1.ndof_dir; sp2.ndof_dir; sp3.ndof_dir];
-  sp.connectivity = [sp1.connectivity; sp2.connectivity+sp1.ndof; ...
-		     sp3.connectivity + sp1.ndof + sp2.ndof];
 
 % For the boundary we still store everything
   if (~isempty (msh.boundary))
