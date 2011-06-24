@@ -89,13 +89,11 @@ for iptc = 1:npatch
 % Construct msh structure
   rule      = msh_gauss_nodes (nquad);
   [qn, qw]  = msh_set_quad_nodes (geometry(iptc).nurbs.knots, rule);
-  msh{iptc} = msh_3d_tensor_product (geometry(iptc).nurbs.knots, qn, qw);
-  msh{iptc} = msh_push_forward_3d (msh{iptc}, geometry(iptc));
+  msh{iptc} = msh_3d (geometry(iptc).nurbs.knots, qn, qw, geometry(iptc));
 
 % Construct space structure
-  sp_scalar = sp_nurbs_3d_phys (geometry(iptc).nurbs, msh{iptc});
-  sp{iptc} = sp_scalar_to_vector_3d (sp_scalar, sp_scalar, sp_scalar, ...
-                                     msh{iptc}, 'divergence', true);
+  sp_scalar = sp_nurbs_3d (geometry(iptc).nurbs, msh{iptc});
+  sp{iptc} = sp_vector_3d (sp_scalar, sp_scalar, sp_scalar, msh{iptc});
 end
 
 % Create a correspondence between patches on the interfaces
@@ -104,28 +102,16 @@ end
 % Compute and assemble the matrices
 rhs = zeros (ndof, 1);
 
-nent = sum (cellfun (@(x, y, z) x.nel * y.nsh_max * z.nsh_max, msh, sp, sp));
-rows = zeros (nent, 1);
-cols = zeros (nent, 1);
-vals = zeros (nent, 1);
-
 ncounter = 0;
 for iptc = 1:npatch
-  x = squeeze (msh{iptc}.geo_map(1,:,:));
-  y = squeeze (msh{iptc}.geo_map(2,:,:));
-  z = squeeze (msh{iptc}.geo_map(3,:,:));
-  coeff_lam = reshape (lam (x, y, z), msh{iptc}.nqn, msh{iptc}.nel);
-  coeff_mu  = reshape (mu (x, y, z), msh{iptc}.nqn, msh{iptc}.nel);
-  fval      = reshape (f (x, y, z), 3, msh{iptc}.nqn, msh{iptc}.nel);
-  
-  [rs, cs, vs] = op_su_ev (sp{iptc}, sp{iptc}, msh{iptc}, coeff_lam, coeff_mu);
+  [rs, cs, vs] = op_su_ev_tp (sp{iptc}, sp{iptc}, msh{iptc}, lam, mu);
 
   rows(ncounter+(1:numel (rs))) = gnum{iptc}(rs);
   cols(ncounter+(1:numel (rs))) = gnum{iptc}(cs);
   vals(ncounter+(1:numel (rs))) = vs;
   ncounter = ncounter + numel (rs);
 
-  rhs_loc = op_f_v (sp{iptc}, msh{iptc}, fval);
+  rhs_loc = op_f_v_tp (sp{iptc}, msh{iptc}, f);
   rhs(gnum{iptc}) = rhs(gnum{iptc}) + rhs_loc;
 end
 

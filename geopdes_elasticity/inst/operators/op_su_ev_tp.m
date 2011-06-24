@@ -2,13 +2,20 @@ function varargout = op_su_ev_tp (space1, space2, msh, lambda, mu)
 
   A = spalloc (space2.ndof, space1.ndof, 5*space1.ndof);
 
-  for iel = 1:msh.nelu
-    [sp1, element_list] = sp_evaluate_col (space1, msh, iel, 'value', false, ...
-                                        'gradient', true, 'divergence', true);
-    sp2 = sp_evaluate_col (space2, msh, iel, 'value', false, ... 
-                                        'gradient', true, 'divergence', true);
+  ndim = numel (msh.qn);
 
-    A = A + op_su_ev (sp1, sp2, msh, lambda, mu, element_list);
+  for iel = 1:msh.nelu
+    msh_col = msh_evaluate_col (msh, iel);
+    sp1_col = sp_evaluate_col (space1, msh_col, 'value', false, ...
+                               'gradient', true, 'divergence', true);
+    sp2_col = sp_evaluate_col (space2, msh_col, 'value', false, ...
+                               'gradient', true, 'divergence', true);
+
+    for idim = 1:ndim
+      x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
+    end
+
+    A = A + op_su_ev (sp1_col, sp2_col, msh_col, lambda (x{:}), mu (x{:}));
   end
 
   if (nargout == 1)
