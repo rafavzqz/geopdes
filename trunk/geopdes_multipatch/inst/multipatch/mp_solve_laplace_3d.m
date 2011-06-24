@@ -83,11 +83,10 @@ for iptc = 1:npatch
 % Compute the quadrature rule
   rule      = msh_gauss_nodes (nquad);
   [qn, qw]  = msh_set_quad_nodes (zeta{iptc}, rule);
-  msh{iptc} = msh_3d_tensor_product (zeta{iptc}, qn, qw);
-  msh{iptc} = msh_push_forward_3d (msh{iptc}, geometry(iptc));
+  msh{iptc} = msh_3d (zeta{iptc}, qn, qw, geometry(iptc));
 
 % Evaluate the discrete space basis functions in the quadrature points
-  sp{iptc} = sp_bspline_3d_phys (knots{iptc}, degree, msh{iptc});
+  sp{iptc} = sp_bspline_3d (knots{iptc}, degree, msh{iptc});
 end
 
 % Create a correspondence between patches on the interfaces
@@ -96,28 +95,15 @@ end
 % Compute and assemble the matrices 
 rhs = zeros (ndof, 1);
 
-nent = sum (cellfun (@(x, y, z) x.nel * y.nsh_max * z.nsh_max, msh, sp, sp));
-rows = zeros (nent, 1);
-cols = zeros (nent, 1);
-vals = zeros (nent, 1);
-
 ncounter = 0;
 for iptc = 1:npatch
-
-  x = squeeze (msh{iptc}.geo_map (1,:,:));
-  y = squeeze (msh{iptc}.geo_map (2,:,:));
-  z = squeeze (msh{iptc}.geo_map (3,:,:));
-
-  epsilon = reshape (c_diff (x, y, z), msh{iptc}.nqn, msh{iptc}.nel);
-  fval    = reshape (f(x, y, z), msh{iptc}.nqn, msh{iptc}.nel);
-
-  [rs, cs, vs] = op_gradu_gradv (sp{iptc}, sp{iptc}, msh{iptc}, epsilon);
+  [rs, cs, vs] = op_gradu_gradv_tp (sp{iptc}, sp{iptc}, msh{iptc}, c_diff);
   rows(ncounter+(1:numel (rs))) = gnum{iptc}(rs);
   cols(ncounter+(1:numel (rs))) = gnum{iptc}(cs);
   vals(ncounter+(1:numel (rs))) = vs;
   ncounter = ncounter + numel (rs);
 
-  rhs_loc = op_f_v (sp{iptc}, msh{iptc}, fval);
+  rhs_loc = op_f_v_tp (sp{iptc}, msh{iptc}, f);
   rhs(gnum{iptc}) = rhs(gnum{iptc}) + rhs_loc;
 end
 
@@ -141,7 +127,7 @@ end
 
 % Apply Dirichlet boundary conditions
 u = zeros (ndof, 1);
-[u_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj(sp, msh, h, gnum, boundaries, drchlt_sides);
+[u_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj (sp, msh, h, gnum, boundaries, drchlt_sides);
 u(drchlt_dofs) = u_drchlt;
 
 int_dofs = setdiff (1:ndof, drchlt_dofs);
