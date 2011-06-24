@@ -67,16 +67,16 @@ function msh_col = msh_evaluate_col (msh, colnum, varargin)
 
   qnu = msh.qn{1}(:,colnum);  qnv = msh.qn{2}; qnw = msh.qn{3};
 
-  quad_nodes_u = reshape (qnu, msh.nqnu, 1, 1, 1, 1);
-  quad_nodes_u = repmat  (quad_nodes_u, [1, msh.nqnv, msh.nqnw, msh.nelv, msh.nelw]);
+  quad_nodes_u = reshape (qnu, msh.nqnu, 1, 1, 1, 1, 1);
+  quad_nodes_u = repmat  (quad_nodes_u, [1, msh.nqnv, msh.nqnw, 1, msh.nelv, msh.nelw]);
   quad_nodes_u = reshape (quad_nodes_u, [], msh_col.nel);
 
-  quad_nodes_v = reshape (qnv, 1, msh.nqnv, msh.nelv, 1, 1);
-  quad_nodes_v = repmat  (quad_nodes_v, [msh.nqnu, 1, msh.nqnw, 1, msh.nelw]);
+  quad_nodes_v = reshape (qnv, 1, 1, msh.nqnv, msh.nelv, 1, 1);
+  quad_nodes_v = repmat  (quad_nodes_v, [msh.nqnu, 1, msh.nqnw, 1, 1, msh.nelw]);
   quad_nodes_v = reshape (quad_nodes_v, [], msh_col.nel);
-
-  quad_nodes_w = reshape (qnw, 1, 1, 1, msh.nqnw, msh.nelw);
-  quad_nodes_w = repmat  (quad_nodes_w, [msh.nqnu, msh.nqnv, 1, msh.nelv, 1]);
+  
+  quad_nodes_w = reshape (qnw, 1, 1, 1, msh.nqnw, 1, msh.nelw);
+  quad_nodes_w = repmat  (quad_nodes_w, [msh.nqnu, msh.nqnv, 1, 1, msh.nelv, 1]);
   quad_nodes_w = reshape (quad_nodes_w, [], msh_col.nel);
 
   msh_col.quad_nodes(1, :, :) = quad_nodes_u;
@@ -87,16 +87,16 @@ function msh_col = msh_evaluate_col (msh, colnum, varargin)
 
   if (~isempty (msh.qw))
     qwu = msh.qw{1}(:,colnum);  qwv = msh.qw{2}; qww = msh.qw{3};
-    quad_weights_u = reshape (qwu, msh.nqnu, 1, 1, 1, 1);
-    quad_weights_u = repmat  (quad_weights_u, [1, msh.nqnv, msh.nqnw, msh.nelv, msh.nelw]);
+    quad_weights_u = reshape (qwu, msh.nqnu, 1, 1, 1, 1, 1);
+    quad_weights_u = repmat  (quad_weights_u, [1, msh.nqnv, msh.nqnw, 1, msh.nelv, msh.nelw]);
     quad_weights_u = reshape (quad_weights_u, [], msh_col.nel);
 
-    quad_weights_v = reshape (qwv, 1, msh.nqnv, msh.nelv, 1, 1);
-    quad_weights_v = repmat  (quad_weights_v, [msh.nqnu, 1, msh.nqnw, 1, msh.nelw]);
+    quad_weights_v = reshape (qwv, 1, 1, msh.nqnv, msh.nelv, 1, 1);
+    quad_weights_v = repmat  (quad_weights_v, [msh.nqnu, 1, msh.nqnw, 1, 1, msh.nelw]);
     quad_weights_v = reshape (quad_weights_v, [], msh_col.nel);
 
-    quad_weights_w = reshape (qww, 1, 1, msh.nqnw, 1, msh.nelw);
-    quad_weights_w = repmat  (quad_weights_w, [msh.nqnu, msh.nqnv, 1, msh.nelv, 1]);
+    quad_weights_w = reshape (qww, 1, 1, msh.nqnw, 1, 1, msh.nelw);
+    quad_weights_w = repmat  (quad_weights_w, [msh.nqnu, msh.nqnv, 1, 1, msh.nelv, 1]);
     quad_weights_w = reshape (quad_weights_w, [], msh_col.nel);
 
     msh_col.quad_weights = quad_weights_u .* quad_weights_v .* quad_weights_w;
