@@ -52,7 +52,7 @@ output_file = 'plane_strain_Lshaped_mp_Deg3_Reg2_Sub6';
 
 vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20)};
 fprintf ('results being saved in: %s_displacement.pvd\n \n', output_file)
-mp_sp_to_vtk_2d (u, space, geometry, gnum, vtk_pts, sprintf ('%s_displacement', output_file), 'displacement')
+mp_sp_to_vtk (u, space, geometry, gnum, vtk_pts, sprintf ('%s_displacement', output_file), 'displacement')
 
 % 4.2) COMPARISON WITH THE EXACT SOLUTION
 npatch = numel (geometry);

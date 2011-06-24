@@ -37,10 +37,10 @@ output_file = 'plane_strain_plate_Deg3_Reg2_Sub8';
 
 vtk_pts = {linspace(0, 1, 21), linspace(0, 1, 21)};
 fprintf ('results being saved in: %s_displacement\n \n', output_file)
-sp_to_vtk_2d (u, space, geometry, vtk_pts, sprintf ('%s_displacement.vts', output_file), 'displacement')
+sp_to_vtk (u, space, geometry, vtk_pts, sprintf ('%s_displacement.vts', output_file), 'displacement')
 
 % 4.2) Plot in Matlab
-[eu, F] = sp_eval_2d (u, space, geometry, vtk_pts);
+[eu, F] = sp_eval (u, space, geometry, vtk_pts);
 [X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
 
 figure

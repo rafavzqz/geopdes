@@ -39,8 +39,8 @@
 % OUTPUT:
 %
 %  geometry: geometry structure (see geo_load)
-%  msh:      mesh structure (see msh_push_forward_3d)
-%  space:    space structure (see sp_bspline_3d_phys)
+%  msh:      mesh structure (see msh_3d)
+%  space:    space structure (see sp_vector_3d)
 %  u:        the computed degrees of freedom
 %
 % See also EX_LIN_ELAST_HORSESHOE for an example.
@@ -86,22 +86,16 @@ geometry = geo_load (nurbs);
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (geometry.nurbs.knots, rule);
-msh      = msh_3d_tensor_product (geometry.nurbs.knots, qn, qw);
-msh      = msh_push_forward_3d (msh, geometry);
+msh      = msh_3d (geometry.nurbs.knots, qn, qw, geometry);
 
 % Construct space structure
-sp_scalar = sp_nurbs_3d_phys (nurbs, msh);
-sp = sp_scalar_to_vector_3d (sp_scalar, sp_scalar, sp_scalar, msh, 'divergence', true);
+sp_scalar = sp_nurbs_3d (nurbs, msh);
+sp = sp_vector_3d (sp_scalar, sp_scalar, sp_scalar, msh);
 clear sp_scalar
 
 % Assemble the matrices
-[x, y, z] = deal (squeeze (msh.geo_map(1,:,:)), squeeze (msh.geo_map(2,:,:)), squeeze (msh.geo_map(3,:,:)));
-coeff_lam = reshape (lam (x, y, z), msh.nqn, msh.nel);
-coeff_mu  = reshape (mu (x, y, z), msh.nqn, msh.nel);
-fval      = reshape (f (x, y, z), 3, msh.nqn, msh.nel);
-
-mat    = op_su_ev (sp, sp, msh, coeff_lam, coeff_mu); 
-rhs    = op_f_v (sp, msh, fval);
+mat    = op_su_ev_tp (sp, sp, msh, lam, mu); 
+rhs    = op_f_v_tp (sp, msh, f);
 
 % Apply Neumann boundary conditions
 for iside = nmnn_sides
