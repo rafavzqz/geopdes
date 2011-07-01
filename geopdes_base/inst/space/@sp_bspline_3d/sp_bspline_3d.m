@@ -61,50 +61,32 @@ function sp = sp_bspline_3d (knots, degree, msh)
   sp.spu = sp_bspline_1d_param (knots{1}, degree(1), nodes{1}, 'gradient', true, 'hessian', true);
   sp.spv = sp_bspline_1d_param (knots{2}, degree(2), nodes{2}, 'gradient', true, 'hessian', true);
   sp.spw = sp_bspline_1d_param (knots{3}, degree(3), nodes{3}, 'gradient', true, 'hessian', true);
-  
+
   sp.nsh_max  = sp.spu.nsh_max * sp.spv.nsh_max * sp.spw.nsh_max;
+  sp.nsh_dir  = [sp.spu.nsh_max, sp.spv.nsh_max, sp.spw.nsh_max];
   sp.ndof     = sp.spu.ndof * sp.spv.ndof * sp.spw.ndof;
   sp.ndof_dir = [sp.spu.ndof, sp.spv.ndof, sp.spw.ndof];
   sp.ncomp    = 1;
 
-  ucp = sp.ndof_dir(1);
-  vcp = sp.ndof_dir(2); 
-  wcp = sp.ndof_dir(3);
   if (~isempty (msh.boundary))
     msh_bnd = msh.boundary;
     for iside = 1:numel(msh_bnd)
-      switch (iside)
-        case {1}
-          ind = [2, 3];
-          [vidx, widx] = ind2sub ([vcp, wcp], 1:vcp*wcp);
-          uidx = ones (size (vidx));
-        case {2}
-          ind = [2, 3];
-          [vidx, widx] = ind2sub ([vcp, wcp], 1:vcp*wcp);
-          uidx = ucp * ones (size (vidx));
-        case {3}
-          ind = [1, 3];
-          [uidx, widx] = ind2sub ([ucp, wcp], 1:ucp*wcp);
-          vidx = ones (size (uidx));
-        case {4}
-          ind = [1, 3];
-          [uidx, widx] = ind2sub ([ucp, wcp], 1:ucp*wcp);
-          vidx = vcp * ones (size (uidx));
-        case {5}
-          ind = [1, 2];
-          [uidx, vidx] = ind2sub ([ucp, vcp], 1:ucp*vcp);
-          widx = ones (size (vidx));
-        case {6}
-          ind = [1, 2];
-          [uidx, vidx] = ind2sub ([ucp, vcp], 1:ucp*vcp);
-          widx = wcp * ones (size (vidx));
+      ind = setdiff (1:3, ceil(iside/2)); %ind=[2 3; 2 3; 1 3; 1 3; 1 2; 1 2]
+      ind2 = floor ((iside+1)/2); % ind2 = [1 1 2 2 3 3];
+ 
+      boundary.ndof_dir = sp.ndof_dir(ind);
+      boundary.ndof = prod (boundary.ndof_dir);
+      boundary.nsh_dir = prod (sp.nsh_dir(ind));
+      boundary.nsh_max = prod (boundary.nsh_dir);
+      boundary.ncomp = 1;
+
+      idx = ones (3, boundary.ndof);
+      [idx(ind(1),:), idx(ind(2),:)] = ind2sub ([boundary.ndof_dir], 1:boundary.ndof);
+      if (rem (iside, 2) == 0)
+        idx(ind2,:) = sp.ndof_dir(ind2);
       end
-      bnd_iside = ...
-        sp_bspline_2d_param (knots(ind), degree(ind), msh_bnd(iside));
 
-      boundary      = rmfield (bnd_iside, 'shape_function_gradients');
-      boundary.dofs = sub2ind ([ucp, vcp, wcp], uidx, vidx, widx);
-
+      boundary.dofs = sub2ind (sp.ndof_dir, idx(1,:), idx(2,:), idx(3,:));
       sp.boundary(iside) = boundary;
     end 
   else

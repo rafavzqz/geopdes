@@ -90,18 +90,19 @@ rhs       = op_f_v_tp (space, msh, f);
 % Apply Neumann boundary conditions
 for iside = nmnn_sides
   msh_side = msh_eval_boundary_side (msh, iside);
+  sp_side  = sp_eval_boundary_side (space, msh_side);
+
   x = squeeze (msh_side.geo_map(1,:,:));
   y = squeeze (msh_side.geo_map(2,:,:));
   z = squeeze (msh_side.geo_map(3,:,:));
   gval = reshape (g (x, y, z, iside), msh_side.nqn, msh_side.nel);
 
-  rhs(space.boundary(iside).dofs) = rhs(space.boundary(iside).dofs) + ...
-      op_f_v (space.boundary(iside), msh_side, gval);
+  rhs(sp_side.dofs) = rhs(sp_side.dofs) + op_f_v (sp_side, msh_side, gval);
 end
 
 % Apply Dirichlet boundary conditions
 u = zeros (space.ndof, 1);
-[u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj(space, msh, h, drchlt_sides);
+[u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space, msh, h, drchlt_sides);
 u(drchlt_dofs) = u_drchlt;
 
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);

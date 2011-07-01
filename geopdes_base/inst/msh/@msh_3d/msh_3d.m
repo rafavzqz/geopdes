@@ -77,6 +77,7 @@ function msh = msh_3d (breaks, qn, qw, geo, opts)
 %%    ind =[2 3; 2 3; 1 3; 1 3; 1 2; 1 2]
       ind = setdiff (1:3, ceil(iside/2)); 
 
+      boundary.side_number = iside;
       boundary.qn = {qn{ind}};
       boundary.qw = {qw{ind}};
 

@@ -46,11 +46,12 @@ rhs = zeros (space.ndof, 1);
 
 for iside = nmnn_sides
   msh_side = msh_eval_boundary_side (msh, iside);
+  sp_side  = sp_eval_boundary_side (space, msh_side);
   x = squeeze (msh_side.geo_map(1,:,:));
   y = squeeze (msh_side.geo_map(2,:,:));
   gval = - exp(x) .* cos(y);
-  rhs_loc = op_f_v (space.boundary(iside), msh_side, gval);
-  rhs(space.boundary(iside).dofs) = rhs(space.boundary(iside).dofs) + rhs_loc;
+  rhs_loc = op_f_v (sp_side, msh_side, gval);
+  rhs(sp_side.dofs) = rhs(sp_side.dofs) + rhs_loc;
 end
 
 drchlt_dofs = [];
@@ -62,8 +63,9 @@ M_drchlt = spalloc (space.ndof, space.ndof, space.ndof);
 rhs_drchlt = zeros (space.ndof, 1);
 
 for iside = drchlt_sides
-  sp_bnd  = space.boundary(iside);
   msh_bnd = msh_eval_boundary_side (msh, iside);
+  sp_bnd  = sp_eval_boundary_side (space, msh_bnd);
+
   x = squeeze (msh_bnd.geo_map(1,:,:));
   y = squeeze (msh_bnd.geo_map(2,:,:));
   hval = exp(x) .* sin(y);
