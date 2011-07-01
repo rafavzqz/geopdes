@@ -38,7 +38,7 @@ function varargout = op_gradu_gradv_tp (space1, space2, msh, coeff)
 
   ndim = numel (msh.qn);
 
-  for iel = 1:msh.nelu
+  for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
     sp1_col = sp_evaluate_col (space1, msh_col, 'value', false);
     sp2_col = sp_evaluate_col (space2, msh_col, 'value', false);

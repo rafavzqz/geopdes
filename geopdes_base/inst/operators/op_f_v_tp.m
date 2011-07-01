@@ -33,7 +33,7 @@ function rhs = op_f_v_tp (space, msh, coeff)
 
   ndim = numel (msh.qn);
 
-  for iel = 1:msh.nelu
+  for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
     sp_col  = sp_evaluate_col (space, msh_col, 'gradient', false);
 

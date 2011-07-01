@@ -82,16 +82,16 @@ function sp = sp_nurbs_3d (varargin)
   sp.ndof_dir = [sp.spu.ndof, sp.spv.ndof, sp.spw.ndof];
   sp.ncomp    = 1;
 
-  conn_u = reshape (sp.spu.connectivity, sp.spu.nsh_max, 1, 1, msh.nelu, 1, 1);
-  conn_u = repmat  (conn_u, [1, sp.spv.nsh_max, sp.spw.nsh_max, 1, msh.nelv, msh.nelw]);
+  conn_u = reshape (sp.spu.connectivity, sp.spu.nsh_max, 1, 1, msh.nel_dir(1), 1, 1);
+  conn_u = repmat  (conn_u, [1, sp.spv.nsh_max, sp.spw.nsh_max, 1, msh.nel_dir(2), msh.nel_dir(3)]);
   conn_u = reshape (conn_u, [], msh.nel);
 
-  conn_v = reshape (sp.spv.connectivity, 1, sp.spv.nsh_max, 1, 1, msh.nelv, 1);
-  conn_v = repmat  (conn_v, [sp.spu.nsh_max, 1, sp.spw.nsh_max, msh.nelu, 1, msh.nelw]);
+  conn_v = reshape (sp.spv.connectivity, 1, sp.spv.nsh_max, 1, 1, msh.nel_dir(2), 1);
+  conn_v = repmat  (conn_v, [sp.spu.nsh_max, 1, sp.spw.nsh_max, msh.nel_dir(1), 1, msh.nel_dir(3)]);
   conn_v = reshape (conn_v, [], msh.nel);
 
-  conn_w = reshape (sp.spw.connectivity, 1, 1, sp.spw.nsh_max, 1, 1, msh.nelw);
-  conn_w = repmat  (conn_w, [sp.spu.nsh_max, sp.spv.nsh_max, 1, msh.nelu, msh.nelv, 1]);
+  conn_w = reshape (sp.spw.connectivity, 1, 1, sp.spw.nsh_max, 1, 1, msh.nel_dir(3));
+  conn_w = repmat  (conn_w, [sp.spu.nsh_max, sp.spv.nsh_max, 1, msh.nel_dir(1), msh.nel_dir(2), 1]);
   conn_w = reshape (conn_w, [], msh.nel);
 
   connectivity = zeros (sp.nsh_max, msh.nel);

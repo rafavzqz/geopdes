@@ -16,12 +16,10 @@
 %
 %     FIELD_NAME    (SIZE)                  DESCRIPTION
 %     nel           (scalar)                number of elements of the partition
-%     nelu          (scalar)                number of elements in the first parametric direction
-%     nelv          (scalar)                number of elements in the second parametric direction
-%     nelcol        (scalar)                number of elements in one "column" of the mesh (actually, nelv)
+%     nel_dir       (1 x 2 vector)          number of elements in each parametric direction
+%     nelcol        (scalar)                number of elements in one "column" of the mesh (actually, nel_dir(2))
 %     nqn           (scalar)                number of quadrature nodes per element
-%     nqnu          (scalar)                number of quadrature nodes per element in the first parametric direction
-%     nqnv          (scalar)                number of quadrature nodes per element in the second parametric direction
+%     nqn_dir       (1 x 2 vector)          number of quadrature nodes per element in each parametric direction
 %     breaks        (1 x 2 cell-array)      unique(breaks)
 %     qn            (1 x 2 cell-array)      quadrature nodes along each direction in parametric domain
 %     qw            (1 x 2 cell-array)      quadrature weights along each direction in parametric space
@@ -31,6 +29,8 @@
 %     msh_evaluate_col: computes the parameterization (and its derivatives) of
 %                       the quadrature points in one column of the mesh, i.e.,
 %                       fixing the element in the first parametric direction.
+%     msh_eval_boundary_side: computes the parameterization in one boundary side
+%                       of the domain.
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
@@ -60,52 +60,22 @@ function msh = msh_2d (breaks, qn, qw, geo, opts)
   % this only for precaution, breaks should already not have any repetitions
   msh.breaks = {unique(breaks{1}), unique(breaks{2})};
 
-  msh.nelu = numel (msh.breaks{1}) - 1;
-  msh.nelv = numel (msh.breaks{2}) - 1;
-  msh.nel = msh.nelu * msh.nelv;
-  msh.nelcol = msh.nelv;
+  msh.nel_dir(1) = numel (msh.breaks{1}) - 1;
+  msh.nel_dir(2) = numel (msh.breaks{2}) - 1;
+  msh.nel = msh.nel_dir(1) * msh.nel_dir(2);
+  msh.nelcol = msh.nel_dir(2);
 
   qnu = qn{1};  qnv = qn{2};
-  msh.nqnu = size (qnu,1); 
-  msh.nqnv = size (qnv,1);
-  msh.nqn  = msh.nqnu * msh.nqnv;
+  msh.nqn_dir(1) = size (qn{1},1); 
+  msh.nqn_dir(2) = size (qn{2},1);
+  msh.nqn  = prod (msh.nqn_dir);
   
   if (~strcmpi (opts, 'no boundary'))
     for iside = 1:4
       ind = mod (floor ((iside+1)/2), 2) + 1;  %ind = [2 2 1 1];
-      ind2 = floor ((iside+1)/2);              %ind2 = [1 1 2 2];
-      boundary.breaks = msh.breaks{ind};
-      boundary.nel = numel (msh.breaks{ind}) - 1;
-      boundary.nqn = size (qn{ind},1);
-      boundary.quad_weights = qw{ind};
-      boundary.quad_nodes = zeros ([2, size(qn{ind})]);
-      boundary.quad_nodes(ind,:,:) = qn{ind};
-      if (iside == 2 || iside == 4)
-        boundary.quad_nodes(ind2,:,:) = 1;
-      end
-
-      qn1 = boundary.quad_nodes(1,:,:);
-      qn2 = boundary.quad_nodes(2,:,:);
-      F   = feval (geo.map, [qn1(:), qn2(:)]');
-      jac = feval (geo.map_der, [qn1(:), qn2(:)]');
-
-      boundary.geo_map = reshape (F, size (boundary.quad_nodes));
-      boundary.geo_map_jac = reshape(jac, 2, 2, boundary.nqn, boundary.nel);
-      boundary.jacdet = geopdes_norm__ (squeeze (boundary.geo_map_jac(:,ind,:,:)));
-
-      normal = zeros (2, boundary.nqn, boundary.nel);
-      normal(ind2,:,:) = (-1)^iside;
-
-      [JinvT, jacdet] = geopdes_invT__ (boundary.geo_map_jac);
-      JinvT = reshape (JinvT, [2, 2, boundary.nqn, boundary.nel]);
-
-      normal = reshape (normal, [2, boundary.nqn, 1, boundary.nel]);
-      normal = geopdes_prod__ (JinvT, normal);
-      normal = reshape (normal, [2, boundary.nqn, boundary.nel]);
-      norms = repmat (reshape (geopdes_norm__ (normal), [1, boundary.nqn, boundary.nel]), [2 1 1]);
-      boundary.normal = normal ./ norms;
-
-      msh.boundary(iside) = boundary;
+      msh.boundary(iside).breaks = msh.breaks{ind};
+      msh.boundary(iside).nel = size (qn{ind},2);
+      msh.boundary(iside).nqn = size (qn{ind},1);
     end
   else
     msh.boundary = [];    

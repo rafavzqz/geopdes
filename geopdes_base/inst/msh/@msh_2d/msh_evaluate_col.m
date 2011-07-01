@@ -1,11 +1,11 @@
 % MSH_EVALUATE_COL: evaluate the parameterization in one column of the mesh.
 %
-%     msh = msh_evaluate_col (msh, geo, 'option1', value1, ...)
+%     msh_col = msh_evaluate_col (msh, colnum, 'option1', value1, ...)
 %
 % INPUTS:
 %
-%     msh:  mesh class (see msh_2d)
-%     geo:  structure representing the geometrical mapping
+%    msh:    mesh class (see msh_2d)
+%    colnum: number of the "column", i.e., the element in the first parametric direction.
 %     'option', value: additional optional parameters, currently available options are:
 %            
 %              Name     |   Default value |  Meaning
@@ -15,16 +15,15 @@
 %
 % OUTPUT:
 %
-%     msh: structure containing the quadrature rule in one column of the physical domain, which contains the following fields
+%     msh_col: structure containing the quadrature rule in one column of the physical domain, which contains the following fields
 %
 %     FIELD_NAME    (SIZE)                  DESCRIPTION
 %     colnum        (scalar)                number of the column
 %     nel           (scalar)                number of elements in the column
-%     nelu          (scalar)                number of elements in the first parametric direction for the entire mesh
-%     nelv          (scalar)                number of elements in the second parametric direction for the entire mesh
+%     elem_list     (nel vector)            indices of the elements in the column
+%     nel_dir       (1 x 2 vector)          number of elements in each parametric direction for the entire mesh
 %     nqn           (scalar)                number of quadrature nodes per element
-%     nqnu          (scalar)                number of quadrature nodes per element in the first parametric direction
-%     nqnv          (scalar)                number of quadrature nodes per element in the second parametric direction
+%     nqn_dir       (1 x 2 vector)          number of quadrature nodes per element in each parametric direction
 %     quad_nodes    (2 x nqn x nel vector)  coordinates of the quadrature nodes in parametric space
 %     quad_weights  (nqn x nel vector)      weights associated to the quadrature nodes
 %     geo_map       (2 x nqn x nel vector)  physical coordinates of the quadrature nodes
@@ -66,25 +65,23 @@ if (~isempty (varargin))
 end
 
   msh_col.colnum = colnum;
-  msh_col.elem_list = colnum + msh.nelu*(0:msh.nelv-1);
+  msh_col.elem_list = colnum + msh.nel_dir(1)*(0:msh.nel_dir(2)-1);
 
-  msh_col.nelu = msh.nelu;
-  msh_col.nelv = msh.nelv;
+  msh_col.nel_dir = msh.nel_dir;
   msh_col.nel  = msh.nelcol;
 
-  msh_col.nqnu = msh.nqnu;
-  msh_col.nqnv = msh.nqnv;
-  msh_col.nqn  = msh.nqn;
+  msh_col.nqn     = msh.nqn;
+  msh_col.nqn_dir = msh.nqn_dir;
 
   qnu = msh.qn{1}(:,colnum);  qnv = msh.qn{2};
 
-  quad_nodes_u = reshape (qnu, msh.nqnu, 1, 1);
-  quad_nodes_u = repmat  (quad_nodes_u, [1, msh.nqnv, msh.nelv]);
-  quad_nodes_u = reshape (quad_nodes_u, [], msh.nelv);
+  quad_nodes_u = reshape (qnu, msh.nqn_dir(1), 1, 1);
+  quad_nodes_u = repmat  (quad_nodes_u, [1, msh.nqn_dir(2), msh.nel_dir(2)]);
+  quad_nodes_u = reshape (quad_nodes_u, [], msh.nel_dir(2));
 
-  quad_nodes_v = reshape (qnv, 1, msh.nqnv, msh.nelv);
-  quad_nodes_v = repmat  (quad_nodes_v, [msh.nqnu, 1, 1]);
-  quad_nodes_v = reshape (quad_nodes_v, [], msh.nelv);
+  quad_nodes_v = reshape (qnv, 1, msh.nqn_dir(2), msh.nel_dir(2));
+  quad_nodes_v = repmat  (quad_nodes_v, [msh.nqn_dir(1), 1, 1]);
+  quad_nodes_v = reshape (quad_nodes_v, [], msh.nel_dir(2));
 
   msh_col.quad_nodes(1, :, :) = quad_nodes_u;
   msh_col.quad_nodes(2, :, :) = quad_nodes_v;
@@ -93,13 +90,13 @@ end
 
   if (~isempty (msh.qw))
     qwu = msh.qw{1}(:,colnum);  qwv = msh.qw{2};
-    quad_weights_u = reshape (qwu, msh.nqnu, 1, 1);
-    quad_weights_u = repmat  (quad_weights_u, [1, msh.nqnv, msh.nelv]);
-    quad_weights_u = reshape (quad_weights_u, [], msh.nelv);
+    quad_weights_u = reshape (qwu, msh.nqn_dir(1), 1, 1);
+    quad_weights_u = repmat  (quad_weights_u, [1, msh.nqn_dir(2), msh.nel_dir(2)]);
+    quad_weights_u = reshape (quad_weights_u, [], msh.nel_dir(2));
 
-    quad_weights_v = reshape (qwv, 1, msh.nqnv, msh.nelv);
-    quad_weights_v = repmat  (quad_weights_v, [msh.nqnu, 1, 1]);
-    quad_weights_v = reshape (quad_weights_v, [], msh.nelv);
+    quad_weights_v = reshape (qwv, 1, msh.nqn_dir(2), msh.nel_dir(2));
+    quad_weights_v = repmat  (quad_weights_v, [msh.nqn_dir(1), 1, 1]);
+    quad_weights_v = reshape (quad_weights_v, [], msh.nel_dir(2));
 
     msh_col.quad_weights = quad_weights_u .* quad_weights_v;
 
@@ -107,12 +104,12 @@ end
   end
 
   F = feval (msh.map, {qnu(:)', qnv(:)'});
-  msh_col.geo_map = reshape (F, [2, msh.nqn, msh.nelv]);
+  msh_col.geo_map = reshape (F, [2, msh.nqn, msh.nel_dir(2)]);
   
   jac = feval (msh.map_der, {qnu(:)', qnv(:)'});
-  msh_col.geo_map_jac = reshape (jac, 2, 2, msh.nqn, msh.nelv);
+  msh_col.geo_map_jac = reshape (jac, 2, 2, msh.nqn, msh.nel_dir(2));
   msh_col.jacdet = abs (geopdes_det__ (msh_col.geo_map_jac));
-  msh_col.jacdet = reshape (msh_col.jacdet, [msh.nqn, msh.nelv]);
+  msh_col.jacdet = reshape (msh_col.jacdet, [msh.nqn, msh.nel_dir(2)]);
 
 
 %if (der2)
