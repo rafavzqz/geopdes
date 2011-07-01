@@ -114,12 +114,14 @@ for iref = nmnn_sides
   for bnd_side = 1:boundaries(iref).nsides
     iptc = boundaries(iref).patches(bnd_side); 
     iside = boundaries(iref).faces(bnd_side);
-    x = squeeze (msh{iptc}.boundary(iside).geo_map(1,:,:));
-    y = squeeze (msh{iptc}.boundary(iside).geo_map(2,:,:)); 
-    gval = reshape (g (x, y, iref), ...
-           msh{iptc}.boundary(iside).nqn, msh{iptc}.boundary(iside).nel);
-    rhs_nmnn = ...
-           op_f_v (sp{iptc}.boundary(iside), msh{iptc}.boundary(iside), gval);
+    msh_side = msh_eval_boundary_side (msh{iptc}, iside);
+
+    x = squeeze (msh_side.geo_map(1,:,:));
+    y = squeeze (msh_side.geo_map(2,:,:)); 
+
+    gval = reshape (g (x, y, iref), msh_side.nqn, msh_side.nel);
+    rhs_nmnn = op_f_v (sp{iptc}.boundary(iside), msh_side, gval);
+
     global_dofs = gnum{iptc}(sp{iptc}.boundary(iside).dofs);
     rhs(global_dofs) = rhs(global_dofs) + rhs_nmnn;
   end

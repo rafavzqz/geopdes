@@ -17,6 +17,7 @@
 %  dofs: global numbering of the corresponding basis functions
 %
 % Copyright (C) 2010 Carlo de Falco, Rafael Vazquez
+% Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -43,7 +44,7 @@ function [u, dofs] = mp_sp_drchlt_l2_proj (sp, msh, h, gnum, boundaries, refs)
       iptc = boundaries(iref).patches(bnd_side);
       iside = boundaries(iref).faces(bnd_side);
 
-      msh_bnd = msh{iptc}.boundary(iside);
+      msh_bnd = msh_eval_boundary_side (msh{iptc}, iside);
       sp_bnd = sp{iptc}.boundary(iside);
 
       global_dofs = gnum{iptc}(sp_bnd.dofs);
