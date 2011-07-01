@@ -15,6 +15,7 @@
 % GeoPDEs: a research tool for IsoGeometric Analysis of PDEs
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
+% Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -36,31 +37,33 @@ geometry = geo_load ('ring_refined.mat');
 knots = geometry.nurbs.knots;
 
 [qn, qw] = msh_set_quad_nodes (knots, msh_gauss_nodes (geometry.nurbs.order));
-msh = msh_2d_tensor_product (knots, qn, qw); 
-msh = msh_push_forward_2d (msh, geometry);
+msh = msh_2d (knots, qn, qw, geometry);
 
-space  = sp_nurbs_2d_phys (geometry.nurbs, msh);
+space  = sp_nurbs_2d (geometry.nurbs, msh);
 
-[x, y] = deal (squeeze (msh.geo_map(1,:,:)), squeeze (msh.geo_map(2,:,:)));
-mat = op_gradu_gradv (space, space, msh, ones (size (x))); 
+mat = op_gradu_gradv_tp (space, space, msh, @(x, y) ones (size (x))); 
 rhs = zeros (space.ndof, 1);
 
 for iside = nmnn_sides
-  x = squeeze (msh.boundary(iside).geo_map(1,:,:));
-  y = squeeze (msh.boundary(iside).geo_map(2,:,:));
+  msh_side = msh_eval_boundary_side (msh, iside);
+  x = squeeze (msh_side.geo_map(1,:,:));
+  y = squeeze (msh_side.geo_map(2,:,:));
   gval = - exp(x) .* cos(y);
-  rhs_loc = op_f_v (space.boundary(iside), msh.boundary(iside), gval);
+  rhs_loc = op_f_v (space.boundary(iside), msh_side, gval);
   rhs(space.boundary(iside).dofs) = rhs(space.boundary(iside).dofs) + rhs_loc;
 end
 
-drchlt_dofs = unique ([space.boundary(drchlt_sides).dofs]);
+drchlt_dofs = [];
+for iside = 1:numel (drchlt_sides)
+  drchlt_dofs = unique ([drchlt_dofs space.boundary(drchlt_sides(iside)).dofs]);
+end
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
 M_drchlt = spalloc (space.ndof, space.ndof, space.ndof);
 rhs_drchlt = zeros (space.ndof, 1);
 
 for iside = drchlt_sides
   sp_bnd  = space.boundary(iside);
-  msh_bnd = msh.boundary(iside);
+  msh_bnd = msh_eval_boundary_side (msh, iside);
   x = squeeze (msh_bnd.geo_map(1,:,:));
   y = squeeze (msh_bnd.geo_map(2,:,:));
   hval = exp(x) .* sin(y);
@@ -77,7 +80,7 @@ rhs(int_dofs) = rhs(int_dofs) - mat(int_dofs, drchlt_dofs) * ...
 
 u(int_dofs) = mat(int_dofs, int_dofs) \ rhs(int_dofs);
 
-sp_to_vtk_2d (u, space, geometry, [20 20], 'laplace_solution.vts', 'u')
+sp_to_vtk (u, space, geometry, [20 20], 'laplace_solution.vts', 'u')
 err = sp_l2_error (space, msh, u, @(x,y) exp(x) .* sin(y))
 
 %!demo
