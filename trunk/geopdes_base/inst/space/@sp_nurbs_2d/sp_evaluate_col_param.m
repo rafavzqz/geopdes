@@ -81,7 +81,7 @@ conn_u = reshape (space.spu.connectivity(:,msh.colnum), space.spu.nsh_max, 1, 1)
 conn_u = repmat  (conn_u, [1, space.spv.nsh_max, msh.nel]);
 conn_u = reshape (conn_u, [], msh.nel);
 
-conn_v = reshape (space.spv.connectivity, 1, space.spv.nsh_max, msh.nelv);
+conn_v = reshape (space.spv.connectivity, 1, space.spv.nsh_max, msh.nel_dir(2));
 conn_v = repmat  (conn_v, [space.spu.nsh_max, 1, 1]);
 conn_v = reshape (conn_v, [], msh.nel);
 
@@ -92,12 +92,12 @@ connectivity(indices) = ...
 connectivity = reshape (connectivity, space.nsh_max, msh.nel);
 
 shp_u = reshape (spu.shape_functions(:, :, msh.colnum), ...
-                 msh.nqnu, 1, spu.nsh_max, 1, 1);  %% one column only
-shp_u = repmat  (shp_u, [1, msh.nqnv, 1, spv.nsh_max, msh.nel]);
+                 msh.nqn_dir(1), 1, spu.nsh_max, 1, 1);  %% one column only
+shp_u = repmat  (shp_u, [1, msh.nqn_dir(2), 1, spv.nsh_max, msh.nel]);
 shp_u = reshape (shp_u, msh.nqn, space.nsh_max, msh.nel);
 
-shp_v = reshape (spv.shape_functions, 1, msh.nqnv, 1, spv.nsh_max, msh.nel);
-shp_v = repmat  (shp_v, [msh.nqnu, 1, spu.nsh_max, 1, 1]);
+shp_v = reshape (spv.shape_functions, 1, msh.nqn_dir(2), 1, spv.nsh_max, msh.nel);
+shp_v = repmat  (shp_v, [msh.nqn_dir(1), 1, spu.nsh_max, 1, 1]);
 shp_v = reshape (shp_v, msh.nqn, space.nsh_max, msh.nel);
 
 % Multiply each function by the weight and compute the denominator
@@ -116,20 +116,20 @@ end
 
 if (gradient)
   shg_u = reshape (spu.shape_function_gradients(:,:,msh.colnum), ...
-                   msh.nqnu, 1, spu.nsh_max, 1, 1);  %% one column only
-  shg_u = repmat  (shg_u, [1, msh.nqnv, 1, spv.nsh_max, msh.nel]);
+                   msh.nqn_dir(1), 1, spu.nsh_max, 1, 1);  %% one column only
+  shg_u = repmat  (shg_u, [1, msh.nqn_dir(2), 1, spv.nsh_max, msh.nel]);
   shg_u = reshape (shg_u, msh.nqn, space.nsh_max, msh.nel);
   
   shg_v = reshape (spv.shape_function_gradients, ...
-                   1, msh.nqnv, 1, spv.nsh_max, msh.nel);
-  shg_v = repmat  (shg_v, [msh.nqnu, 1, spu.nsh_max, 1, 1]);
+                   1, msh.nqn_dir(2), 1, spv.nsh_max, msh.nel);
+  shg_v = repmat  (shg_v, [msh.nqn_dir(1), 1, spu.nsh_max, 1, 1]);
   shg_v = reshape (shg_v, msh.nqn, space.nsh_max, msh.nel);
   
   Bu = W .* shg_u .* shp_v;
   Bv = W .* shp_u .* shg_v;
 
-  Du = repmat (reshape (sum (Bu, 2), msh.nqn, 1, msh.nelv), [1, sp.nsh_max, 1]);
-  Dv = repmat (reshape (sum (Bv, 2), msh.nqn, 1, msh.nelv), [1, sp.nsh_max, 1]);
+  Du = repmat (reshape (sum (Bu, 2), msh.nqn, 1, msh.nel_dir(2)), [1, sp.nsh_max, 1]);
+  Dv = repmat (reshape (sum (Bv, 2), msh.nqn, 1, msh.nel_dir(2)), [1, sp.nsh_max, 1]);
 
   shape_fun_grads(1,:,:,:) = (Bu - shape_functions .* Du)./D;
   shape_fun_grads(2,:,:,:) = (Bv - shape_functions .* Dv)./D;

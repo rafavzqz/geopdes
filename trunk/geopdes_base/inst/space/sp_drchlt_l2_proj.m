@@ -48,7 +48,7 @@ function [u, dofs] = sp_drchlt_l2_proj (sp, msh, h, sides)
   ncounter = 0;
   for iside = sides
     
-    msh_bnd = msh.boundary(iside);
+    msh_bnd = msh_eval_boundary_side (msh, iside);
     sp_bnd  = sp.boundary(iside);
 
     if (size (msh_bnd.geo_map, 1) == 2)

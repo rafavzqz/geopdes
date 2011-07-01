@@ -91,11 +91,11 @@ function sp = sp_nurbs_2d (varargin)
 
     for iside = 1:numel(msh.boundary)
       ind = mod (floor ((iside+1)/2), 2) + 1;
-      bnodes = reshape (squeeze (msh.boundary(iside).quad_nodes(ind,:,:)), ...
-                        msh.boundary(iside).nqn, []);
+      msh_side = msh_eval_boundary_side (msh, iside);
+      bnodes = reshape (squeeze (msh_side.quad_nodes(ind,:,:)), msh_side.nqn, []);
       bnd_iside = sp_bspline_1d_param (sp.knots{ind}, sp.degree(ind), bnodes);
       boundary(iside) = rmfield (bnd_iside, 'shape_function_gradients');
-      boundary(iside) = bsp_2_nrb_1d__ (boundary(iside), msh.boundary(iside), w_bnd{iside});
+      boundary(iside) = bsp_2_nrb_1d__ (boundary(iside), msh_side, w_bnd{iside});
     end
     
     boundary(1).dofs = sub2ind ([mcp, ncp], ones(1,ncp), 1:ncp);

@@ -36,7 +36,7 @@ function [eu, F] = sp_eval_msh (u, space, msh);
   F  = zeros (ndim, msh.nqn, msh.nel);
   eu = zeros (space.ncomp, msh.nqn, msh.nel);
 
-  for iel = 1:msh.nelu
+  for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
     sp_col  = sp_evaluate_col (space, msh_col, 'gradient', false);
 

@@ -70,8 +70,10 @@ function sp = sp_bspline_2d (knots, degree, msh)
   if (~isempty (msh.boundary))
     for iside = 1:numel(msh.boundary)
       ind = mod (floor ((iside+1)/2), 2) + 1;
-      bnodes = reshape (squeeze (msh.boundary(iside).quad_nodes(ind,:,:)), ...
-                        msh.boundary(iside).nqn, []);
+
+      msh_side = msh_eval_boundary_side (msh, iside);
+
+      bnodes = reshape (squeeze (msh_side.quad_nodes(ind,:,:)), msh_side.nqn, []);
       bnd_iside = sp_bspline_1d_param (knots{ind}, degree(ind), bnodes);
       boundary(iside) = rmfield (bnd_iside, 'shape_function_gradients');
     end

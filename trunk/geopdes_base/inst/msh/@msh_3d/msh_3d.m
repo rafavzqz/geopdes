@@ -16,10 +16,8 @@
 %
 %     FIELD_NAME    (SIZE)                  DESCRIPTION
 %     nel           (scalar)                number of elements of the partition
-%     nelu          (scalar)                number of elements in the first parametric direction
-%     nelv          (scalar)                number of elements in the second parametric direction
-%     nelw          (scalar)                number of elements in the third parametric direction
-%     nelcol        (scalar)                number of elements in one "column" of the mesh (actually, nelv*nelw)
+%     nel_dir       (1 x 3 vector)          number of elements in each parametric direction
+%     nelcol        (scalar)                number of elements in one "column" of the mesh (actually, nel_dir(2)*nel_dir(3))
 %     nqn           (scalar)                number of quadrature nodes per element
 %     nqnu          (scalar)                number of quadrature nodes per element in the first parametric direction
 %     nqnv          (scalar)                number of quadrature nodes per element in the second parametric direction
@@ -62,71 +60,30 @@ function msh = msh_3d (breaks, qn, qw, geo, opts)
   % this only for precaution, breaks should already not have any repetitions
   msh.breaks = {unique(breaks{1}), unique(breaks{2}), unique(breaks{3})};
 
-  msh.nelu = numel (msh.breaks{1}) - 1;
-  msh.nelv = numel (msh.breaks{2}) - 1;
-  msh.nelw = numel (msh.breaks{3}) - 1;
-  msh.nel = msh.nelu * msh.nelv * msh.nelw;
-  msh.nelcol = msh.nelv * msh.nelw;
+  msh.nel_dir(1) = numel (msh.breaks{1}) - 1;
+  msh.nel_dir(2) = numel (msh.breaks{2}) - 1;
+  msh.nel_dir(3) = numel (msh.breaks{3}) - 1;
+  msh.nel = prod (msh.nel_dir);
+  msh.nelcol = msh.nel_dir(2) * msh.nel_dir(3);
 
   qnu = qn{1};  qnv = qn{2}; qnw = qn{3};
-  msh.nqnu = size (qnu,1); 
-  msh.nqnv = size (qnv,1);
-  msh.nqnw = size (qnw,1);
-  msh.nqn  = msh.nqnu * msh.nqnv * msh.nqnw;
+  msh.nqn_dir(1) = size (qnu,1); 
+  msh.nqn_dir(2) = size (qnv,1);
+  msh.nqn_dir(3) = size (qnw,1);
+  msh.nqn  = prod (msh.nqn_dir);
   
   if (~strcmpi (opts, 'no boundary'))
-    warning ('Ricordati di cambiare il bordo 3d')
     for iside = 1:6
 %%    ind =[2 3; 2 3; 1 3; 1 3; 1 2; 1 2]
       ind = setdiff (1:3, ceil(iside/2)); 
-%%    ind2 = [1 1 2 2 3 3];
-      ind2 = floor ((iside+1)/2);
 
-      bnd_aux = msh_2d_tensor_product (msh.breaks(ind), msh.qn(ind), qw(ind), 'no boundary');
+      boundary.qn = {qn{ind}};
+      boundary.qw = {qw{ind}};
 
-      boundary = bnd_aux;
-
-      if (mod (iside, 2) == 1)
-        boundary.quad_nodes = zeros ([3, bnd_aux.nqn bnd_aux.nel]);
-      else
-        boundary.quad_nodes = ones ([3, bnd_aux.nqn bnd_aux.nel]);
-      end
-      boundary.quad_nodes(ind,:,:) = bnd_aux.quad_nodes;
-
-      boundary.geo_map = boundary.quad_nodes;
-      boundary.geo_map_jac = zeros (3, 3, boundary.nqn, boundary.nel);
-      boundary.geo_map_jac (1, 1, : , :) = 1;
-      boundary.geo_map_jac (2, 2, : , :) = 1;
-      boundary.geo_map_jac (3, 3, : , :) = 1;
-      boundary.jacdet = ones(boundary.nqn, boundary.nel);
-
-      boundary.normal = zeros (3, boundary.nqn, boundary.nel);
-      boundary.normal(ind2,:,:) = (-1)^iside;
-
-      qnu = boundary.quad_nodes(1,:,:);
-      qnv = boundary.quad_nodes(2,:,:);
-      qnw = boundary.quad_nodes(3,:,:);
-      F   = feval (geo.map, [qnu(:), qnv(:), qnw(:)]');
-      jac = feval (geo.map_der, [qnu(:), qnv(:), qnw(:)]');
-
-      boundary.geo_map = ...
-           reshape (F, size (boundary.quad_nodes));
-      boundary.geo_map_jac = ...
-           reshape(jac, 3, 3, boundary.nqn, boundary.nel);
-
-      jacdet = ...
-        geopdes_norm__ (cross (squeeze (boundary.geo_map_jac(:,ind(1),:,:)), ...
-                  squeeze (boundary.geo_map_jac(:,ind(2),:,:))));
-      boundary.jacdet = reshape (jacdet, boundary.nqn, boundary.nel);
-
-      [JinvT, jacdet] = geopdes_invT__ (boundary.geo_map_jac);
-      JinvT = reshape (JinvT, [3, 3, boundary.nqn, boundary.nel]);
-
-      normal = reshape (boundary.normal, [3, boundary.nqn, 1, boundary.nel]);
-      normal = geopdes_prod__ (JinvT, normal);
-      normal = reshape (normal, [3, boundary.nqn, boundary.nel]);
-      norms = repmat (reshape (geopdes_norm__ (normal), [1, boundary.nqn, boundary.nel]), [3 1 1]);
-      boundary.normal = normal ./ norms;
+      boundary.nel_dir = msh.nel_dir(ind);
+      boundary.nel = prod (boundary.nel_dir);
+      boundary.nqn_dir = msh.nqn_dir(ind);
+      boundary.nqn = prod (boundary.nqn_dir);
 
       msh.boundary(iside) = boundary;
     end

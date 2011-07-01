@@ -84,7 +84,7 @@ conn_u = reshape (spu.connectivity(:,msh.colnum), spu.nsh_max, 1, 1);
 conn_u = repmat  (conn_u, [1, spv.nsh_max, msh.nel]);
 conn_u = reshape (conn_u, [], msh.nel);
 
-conn_v = reshape (spv.connectivity, 1, spv.nsh_max, msh.nelv);
+conn_v = reshape (spv.connectivity, 1, spv.nsh_max, msh.nel_dir(2));
 conn_v = repmat  (conn_v, [spu.nsh_max, 1, 1]);
 conn_v = reshape (conn_v, [], msh.nel);
 
@@ -95,12 +95,12 @@ connectivity(indices) = ...
 connectivity = reshape (connectivity, space.nsh_max, msh.nel);
 
 shp_u = reshape (spu.shape_functions(:, :, msh.colnum), ...
-                 msh.nqnu, 1, spu.nsh_max, 1, 1);  %% one column only
-shp_u = repmat  (shp_u, [1, msh.nqnv, 1, spv.nsh_max, msh.nel]);
+                 msh.nqn_dir(1), 1, spu.nsh_max, 1, 1);  %% one column only
+shp_u = repmat  (shp_u, [1, msh.nqn_dir(2), 1, spv.nsh_max, msh.nel]);
 shp_u = reshape (shp_u, msh.nqn, space.nsh_max, msh.nel);
 
-shp_v = reshape (spv.shape_functions, 1, msh.nqnv, 1, spv.nsh_max, msh.nel);
-shp_v = repmat  (shp_v, [msh.nqnu, 1, spu.nsh_max, 1, 1]);
+shp_v = reshape (spv.shape_functions, 1, msh.nqn_dir(2), 1, spv.nsh_max, msh.nel);
+shp_v = repmat  (shp_v, [msh.nqn_dir(1), 1, spu.nsh_max, 1, 1]);
 shp_v = reshape (shp_v, msh.nqn, space.nsh_max, msh.nel);
 
 sp = struct('nsh_max', space.nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
@@ -113,13 +113,13 @@ end
 
 if (gradient || hessian)
   shg_u = reshape (spu.shape_function_gradients(:,:,msh.colnum), ...
-                   msh.nqnu, 1, spu.nsh_max, 1, 1);  %% one column only
-  shg_u = repmat  (shg_u, [1, msh.nqnv, 1, spv.nsh_max, msh.nel]);
+                   msh.nqn_dir(1), 1, spu.nsh_max, 1, 1);  %% one column only
+  shg_u = repmat  (shg_u, [1, msh.nqn_dir(2), 1, spv.nsh_max, msh.nel]);
   shg_u = reshape (shg_u, msh.nqn, space.nsh_max, msh.nel);
 
   shg_v = reshape (spv.shape_function_gradients, ...
-                   1, msh.nqnv, 1, spv.nsh_max, msh.nel);
-  shg_v = repmat  (shg_v, [msh.nqnu, 1, spu.nsh_max, 1, 1]);
+                   1, msh.nqn_dir(2), 1, spv.nsh_max, msh.nel);
+  shg_v = repmat  (shg_v, [msh.nqn_dir(1), 1, spu.nsh_max, 1, 1]);
   shg_v = reshape (shg_v, msh.nqn, space.nsh_max, msh.nel);
 
   sp.shape_function_gradients(1,:,:,:) = shg_u .* shp_v ;
@@ -129,12 +129,12 @@ if (gradient || hessian)
                                 2, msh.nqn, sp.nsh_max, msh.nel);
   if (hessian && isfield (msh, 'geo_map_der2'))
     shh_uu = reshape (spu.shape_function_hessians(:,:,msh.colnum), ...
-                      msh.nqnu, 1, spu.nsh_max, 1, 1);
-    shh_uu = repmat  (shh_uu, [1, msh.nqnv, 1, spv.nsh_max, msh.nel]);
+                      msh.nqn_dir(1), 1, spu.nsh_max, 1, 1);
+    shh_uu = repmat  (shh_uu, [1, msh.nqn_dir(2), 1, spv.nsh_max, msh.nel]);
     shh_uu = reshape (shh_uu, msh.nqn, sp.nsh_max, msh.nel);
 
-    shh_vv = reshape (spv.shape_function_hessians, 1, msh.nqnv, 1, spv.nsh_max, msh.nel);
-    shh_vv = repmat  (shh_vv, [msh.nqnu, 1, spu.nsh_max, 1, 1]);
+    shh_vv = reshape (spv.shape_function_hessians, 1, msh.nqn_dir(2), 1, spv.nsh_max, msh.nel);
+    shh_vv = repmat  (shh_vv, [msh.nqn_dir(1), 1, spu.nsh_max, 1, 1]);
     shh_vv = reshape (shh_vv, msh.nqn, sp.nsh_max, msh.nel);
 
     shape_function_hessians(1,1,:,:,:) = shh_uu .* shp_v ;

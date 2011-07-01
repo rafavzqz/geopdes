@@ -37,7 +37,7 @@ function errl2 = sp_l2_error (sp, msh, u, uex);
   errl2 = 0;
 
   valu = zeros (sp.ncomp, msh.nqn, msh.nelcol);
-  for iel = 1:msh.nelu
+  for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
     sp_col  = sp_evaluate_col (sp, msh_col, 'gradient', false);
 
