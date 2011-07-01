@@ -99,10 +99,13 @@ rhs    = op_f_v_tp (sp, msh, f);
 
 % Apply Neumann boundary conditions
 for iside = nmnn_sides
-  x = squeeze (msh.boundary(iside).geo_map(1,:,:));
-  y = squeeze (msh.boundary(iside).geo_map(2,:,:));
-  z = squeeze (msh.boundary(iside).geo_map(3,:,:));
-  rhs(sp.boundary(iside).dofs) = rhs(sp.boundary(iside).dofs) + op_f_v (sp.boundary(iside), msh.boundary(iside), g (x, y, z, iside));
+  msh_side = msh_eval_boundary_side (msh, iside);
+
+  x = squeeze (msh_side.geo_map(1,:,:));
+  y = squeeze (msh_side.geo_map(2,:,:));
+  z = squeeze (msh_side.geo_map(3,:,:));
+  gval = reshape (g (x, y, z, iside), 3, msh_side.nqn, msh_side.nel);
+  rhs(sp.boundary(iside).dofs) = rhs(sp.boundary(iside).dofs) + op_f_v (sp.boundary(iside), msh_side, gval);
 end
 
 % Apply Dirichlet boundary conditions
