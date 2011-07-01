@@ -49,7 +49,7 @@ function [u, dofs] = sp_drchlt_l2_proj (sp, msh, h, sides)
   for iside = sides
     
     msh_bnd = msh_eval_boundary_side (msh, iside);
-    sp_bnd  = sp.boundary(iside);
+    sp_bnd  = sp_eval_boundary_side (sp, msh_bnd);
 
     if (size (msh_bnd.geo_map, 1) == 2)
       [x, y] = deal (squeeze (msh_bnd.geo_map(1,:,:)), ...

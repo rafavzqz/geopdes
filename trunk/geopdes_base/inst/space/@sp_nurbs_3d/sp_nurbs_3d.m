@@ -78,76 +78,30 @@ function sp = sp_nurbs_3d (varargin)
   sp.spw = sp_bspline_1d_param (sp.knots{3}, sp.degree(3), nodes{3}, 'gradient', true, 'hessian', true);
   
   sp.nsh_max  = sp.spu.nsh_max * sp.spv.nsh_max * sp.spw.nsh_max;
+  sp.nsh_dir  = [sp.spu.nsh_max, sp.spv.nsh_max, sp.spw.nsh_max];
   sp.ndof     = sp.spu.ndof * sp.spv.ndof * sp.spw.ndof;
   sp.ndof_dir = [sp.spu.ndof, sp.spv.ndof, sp.spw.ndof];
   sp.ncomp    = 1;
 
-  conn_u = reshape (sp.spu.connectivity, sp.spu.nsh_max, 1, 1, msh.nel_dir(1), 1, 1);
-  conn_u = repmat  (conn_u, [1, sp.spv.nsh_max, sp.spw.nsh_max, 1, msh.nel_dir(2), msh.nel_dir(3)]);
-  conn_u = reshape (conn_u, [], msh.nel);
-
-  conn_v = reshape (sp.spv.connectivity, 1, sp.spv.nsh_max, 1, 1, msh.nel_dir(2), 1);
-  conn_v = repmat  (conn_v, [sp.spu.nsh_max, 1, sp.spw.nsh_max, msh.nel_dir(1), 1, msh.nel_dir(3)]);
-  conn_v = reshape (conn_v, [], msh.nel);
-
-  conn_w = reshape (sp.spw.connectivity, 1, 1, sp.spw.nsh_max, 1, 1, msh.nel_dir(3));
-  conn_w = repmat  (conn_w, [sp.spu.nsh_max, sp.spv.nsh_max, 1, msh.nel_dir(1), msh.nel_dir(2), 1]);
-  conn_w = reshape (conn_w, [], msh.nel);
-
-  connectivity = zeros (sp.nsh_max, msh.nel);
-  indices = (conn_u ~= 0) & (conn_v ~= 0);
-  connectivity(indices) = ...
-     sub2ind ([sp.spu.ndof, sp.spv.ndof, sp.spw.ndof], conn_u(indices), conn_v(indices), conn_w(indices));
-  sp.connectivity = reshape (connectivity, sp.nsh_max, msh.nel);
-
-clear conn_u conn_v conn_w connectivity
-
-  ucp = sp.ndof_dir(1);
-  vcp = sp.ndof_dir(2); 
-  wcp = sp.ndof_dir(3);
   if (~isempty (msh.boundary))
     msh_bnd = msh.boundary;
-    w_bnd{1} = sp.weights(1,:,:);
-    w_bnd{2} = sp.weights(end,:,:);
-    w_bnd{3} = sp.weights(:,1,:);
-    w_bnd{4} = sp.weights(:,end,:);
-    w_bnd{5} = sp.weights(:,:,1);
-    w_bnd{6} = sp.weights(:,:,end);
     for iside = 1:numel(msh_bnd)
-      switch (iside)
-        case {1}
-          ind = [2, 3];
-          [vidx, widx] = ind2sub ([vcp, wcp], 1:vcp*wcp);
-          uidx = ones (size (vidx));
-        case {2}
-          ind = [2, 3];
-          [vidx, widx] = ind2sub ([vcp, wcp], 1:vcp*wcp);
-          uidx = ucp * ones (size (vidx));
-        case {3}
-          ind = [1, 3];
-          [uidx, widx] = ind2sub ([ucp, wcp], 1:ucp*wcp);
-          vidx = ones (size (uidx));
-        case {4}
-          ind = [1, 3];
-          [uidx, widx] = ind2sub ([ucp, wcp], 1:ucp*wcp);
-          vidx = vcp * ones (size (uidx));
-        case {5}
-          ind = [1, 2];
-          [uidx, vidx] = ind2sub ([ucp, vcp], 1:ucp*vcp);
-          widx = ones (size (vidx));
-        case {6}
-          ind = [1, 2];
-          [uidx, vidx] = ind2sub ([ucp, vcp], 1:ucp*vcp);
-          widx = wcp * ones (size (vidx));
+      ind = setdiff (1:3, ceil(iside/2)); %ind=[2 3; 2 3; 1 3; 1 3; 1 2; 1 2]
+      ind2 = floor ((iside+1)/2); % ind2 = [1 1 2 2 3 3];
+
+      boundary.ndof_dir = sp.ndof_dir(ind);
+      boundary.ndof = prod (boundary.ndof_dir);
+      boundary.nsh_dir = prod (sp.nsh_dir(ind));
+      boundary.nsh_max = prod (boundary.nsh_dir);
+      boundary.ncomp = 1;
+
+      idx = ones (3, boundary.ndof);
+      [idx(ind(1),:), idx(ind(2),:)] = ind2sub ([boundary.ndof_dir], 1:boundary.ndof);
+      if (rem (iside, 2) == 0)
+        idx(ind2,:) = sp.ndof_dir(ind2);
       end
-      bnd_iside = ...
-        sp_bspline_2d_param (sp.knots(ind), sp.degree(ind), msh_bnd(iside));
 
-      boundary = rmfield (bnd_iside, 'shape_function_gradients');
-      boundary = bsp_2_nrb_2d__ (boundary, msh.boundary(iside), w_bnd{iside});
-
-      boundary.dofs = sub2ind ([ucp, vcp, wcp], uidx, vidx, widx);
-
+      boundary.dofs = sub2ind (sp.ndof_dir, idx(1,:), idx(2,:), idx(3,:));
       sp.boundary(iside) = boundary;
     end 
   else
