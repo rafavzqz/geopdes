@@ -14,6 +14,7 @@
 % GeoPDEs: a research tool for IsoGeometric Analysis of PDEs
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
+% Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -33,22 +34,23 @@ geometry = geo_load ({@ring_polar_map, @ring_polar_map_der});
 
 knots = kntuniform ([9 9], [4 4], [3 3]);
 [qn, qw] = msh_set_quad_nodes (knots, msh_gauss_nodes ([5 5]));
-msh = msh_2d_tensor_product (knots, qn, qw); 
-msh = msh_push_forward_2d (msh, geometry);
+msh = msh_2d (knots, qn, qw, geometry);
 
-space = sp_bspline_2d_phys (knots, [4 4], msh);
+space = sp_bspline_2d (knots, [4 4], msh);
 
-[x, y] = deal (squeeze (msh.geo_map(1,:,:)), squeeze (msh.geo_map(2,:,:)));
-mat = op_gradu_gradv (space, space, msh, ones (size (x))); 
-rhs = op_f_v (space, msh, (8-9*sqrt(x.^2+y.^2)).*sin(2*atan(y./x))./(x.^2+y.^2));
+mat = op_gradu_gradv_tp (space, space, msh, @(x, y) ones (size (x))); 
+rhs = op_f_v_tp (space, msh, @(x, y) (8-9*sqrt(x.^2+y.^2)).*sin(2*atan(y./x))./(x.^2+y.^2));
 
-drchlt_dofs = unique ([space.boundary(:).dofs]);
+drchlt_dofs = [];
+for iside = 1:4
+  drchlt_dofs = unique ([drchlt_dofs space.boundary(iside).dofs]);
+end
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
 
 u = zeros (space.ndof, 1);
 u(int_dofs) = mat(int_dofs, int_dofs) \ rhs(int_dofs);
 
-sp_to_vtk_2d (u, space, geometry, [20 20], 'laplace_solution.vts', 'u')
+sp_to_vtk (u, space, geometry, [20 20], 'laplace_solution.vts', 'u')
 err = sp_l2_error (space, msh, u, @(x,y)(x.^2+y.^2-3*sqrt(x.^2+y.^2)+2).*sin(2.*atan(y./x)))
 
 %!demo
