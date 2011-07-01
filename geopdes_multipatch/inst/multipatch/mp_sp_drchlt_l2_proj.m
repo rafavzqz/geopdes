@@ -45,7 +45,7 @@ function [u, dofs] = mp_sp_drchlt_l2_proj (sp, msh, h, gnum, boundaries, refs)
       iside = boundaries(iref).faces(bnd_side);
 
       msh_bnd = msh_eval_boundary_side (msh{iptc}, iside);
-      sp_bnd = sp{iptc}.boundary(iside);
+      sp_bnd  = sp_eval_boundary_side (sp{iptc}, msh_bnd);
 
       global_dofs = gnum{iptc}(sp_bnd.dofs);
       dofs = [dofs global_dofs];
