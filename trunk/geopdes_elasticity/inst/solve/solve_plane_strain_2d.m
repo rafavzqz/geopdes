@@ -103,25 +103,30 @@ rhs       = op_f_v_tp (sp, msh, f);
 
 % Apply Neumann boundary conditions
 for iside = nmnn_sides
-  x = squeeze (msh.boundary(iside).geo_map(1,:,:));
-  y = squeeze (msh.boundary(iside).geo_map(2,:,:));
-  rhs(sp.boundary(iside).dofs) = rhs(sp.boundary(iside).dofs) + op_f_v (sp.boundary(iside), msh.boundary(iside), g (x, y, iside));
+  msh_side = msh_eval_boundary_side (msh, iside);
+  x = squeeze (msh_side.geo_map(1,:,:));
+  y = squeeze (msh_side.geo_map(2,:,:));
+  gval = reshape (g (x, y, iside), 2, msh_side.nqn, msh_side.nel);
+  rhs(sp.boundary(iside).dofs) = rhs(sp.boundary(iside).dofs) + op_f_v (sp.boundary(iside), msh_side, gval);
 end
 
 % Apply pressure conditions
 for iside = press_sides
-  x = squeeze (msh.boundary(iside).geo_map(1,:,:));
-  y = squeeze (msh.boundary(iside).geo_map(2,:,:));
-  rhs(sp.boundary(iside).dofs) = rhs(sp.boundary(iside).dofs) - op_pn_v (sp.boundary(iside), msh.boundary(iside), p (x, y, iside));
+  msh_side = msh_eval_boundary_side (msh, iside);
+  x = squeeze (msh_side.geo_map(1,:,:));
+  y = squeeze (msh_side.geo_map(2,:,:));
+  pval = reshape (p (x, y, iside), msh_side.nqn, msh_side.nel);
+  rhs(sp.boundary(iside).dofs) = rhs(sp.boundary(iside).dofs) - op_pn_v (sp.boundary(iside), msh_side, pval);
 end
 
 % Apply symmetry conditions
 u = zeros (sp.ndof, 1);
 symm_dofs = [];
 for iside = symm_sides
-  if (all (abs (msh.boundary(iside).normal(1,:,:)) < 1e-10))
+  msh_side = msh_eval_boundary_side (msh, iside);
+  if (all (abs (msh_side.normal(1,:,:)) < 1e-10))
     symm_dofs = unique ([symm_dofs sp.boundary(iside).comp_dofs{2}]);
-  elseif (all (abs (msh.boundary(iside).normal(2,:,:)) < 1e-10))
+  elseif (all (abs (msh_side.normal(2,:,:)) < 1e-10))
     symm_dofs = unique ([symm_dofs sp.boundary(iside).comp_dofs{1}]);
   else
     error ('ex_nurbs_plane_strain_2d: We have only implemented the symmetry condition for boundaries parallel to the axes')
