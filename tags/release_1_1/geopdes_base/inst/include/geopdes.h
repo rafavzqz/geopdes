@@ -53,9 +53,19 @@ public:
 
   virtual octave_idx_type nsh (octave_idx_type iel) const = 0; 
   virtual octave_idx_type connectivity (octave_idx_type ish, octave_idx_type iel) const = 0;
+  virtual void cache_element_connectivity (octave_idx_type iel, octave_idx_type *cache) const
+  {
+    for (octave_idx_type ii = 0; ii < nsh (iel); ii++)
+      cache [ii] = connectivity (ii, iel);
+  };
 
   virtual double shape_functions (octave_idx_type i, octave_idx_type j, octave_idx_type k, octave_idx_type m) const = 0;
+  virtual void cache_element_shape_functions (octave_idx_type iel, double *cache) const {  };
+
+
   virtual double shape_function_gradients (octave_idx_type i, octave_idx_type j, octave_idx_type k, octave_idx_type m, octave_idx_type n) const {return octave_NaN;};
+  virtual void cache_element_shape_function_gradients (octave_idx_type iel, double *cache) const {  };
+
   virtual double shape_function_curls (octave_idx_type i, octave_idx_type j, octave_idx_type k, octave_idx_type m) const {return octave_NaN;};
   virtual double shape_function_divs  (octave_idx_type i, octave_idx_type j, octave_idx_type k, octave_idx_type m) const {return octave_NaN;};
 };
@@ -65,18 +75,19 @@ public:
 class geopdes_mesh: public geopdes_mesh_base
 {
 protected:
-  const Octave_map * msh;
   Matrix jacdet_rep, weights_rep;
+  octave_scalar_map msh;
 
 public:
-  geopdes_mesh (const Octave_map& refmsh)   
+  geopdes_mesh (const octave_scalar_map& refmsh)   
   { 
-    msh      = &refmsh; 
-    nqn_rep  = msh->contents  ("nqn")(0).int_value ();
-    nel_rep  = msh->contents  ("nel")(0).int_value ();
-    ndir_rep = msh->contents  ("quad_nodes")(0).array_value ().rows (); 
-    jacdet_rep  = msh->contents ("jacdet")(0).matrix_value (); 
-    weights_rep = msh->contents ("quad_weights")(0).matrix_value (); 
+    msh = refmsh;
+
+    nqn_rep  = msh.contents  ("nqn").int_value ();
+    nel_rep  = msh.contents  ("nel").int_value ();
+    ndir_rep = msh.contents  ("quad_nodes").array_value ().rows (); 
+    jacdet_rep  = msh.contents ("jacdet").matrix_value (); 
+    weights_rep = msh.contents ("quad_weights").matrix_value (); 
   }
 
   double jacdet  (octave_idx_type inode, octave_idx_type iel) const { return jacdet_rep  (inode, iel); }
@@ -90,9 +101,9 @@ protected:
   NDArray normal_rep;
 
 public:
-  geopdes_mesh_normal (const Octave_map& refmsh): geopdes_mesh (refmsh)
+  geopdes_mesh_normal (const octave_scalar_map& msh): geopdes_mesh (msh)
   {
-    normal_rep = msh->contents ("normal")(0).array_value ();
+    normal_rep = msh.contents ("normal").array_value ();
   }
 
   double normal (octave_idx_type i, octave_idx_type inode, octave_idx_type iel) const {return normal_rep (i, inode, iel); }
@@ -102,54 +113,68 @@ public:
 class geopdes_space: public geopdes_space_base, protected geopdes_mesh
 {
 protected:
-  const Octave_map * sp;
+
   double * shape_functions_rep, 
     * shape_function_gradients_rep, 
     * shape_function_curls_rep, 
     * shape_function_divs_rep, 
     * shape_function_hessians_rep;
-  Array<octave_idx_type> nsh_rep, connectivity_rep;
-public:
-  geopdes_space (const Octave_map& refsp, const geopdes_mesh& msh): geopdes_mesh (msh) 
-  { 
+  octave_idx_type *nsh_rep, *connectivity_rep;
 
-    sp = &refsp; 
-    ndof_rep    = sp->contents ("ndof")(0).int_value (); 
-    nsh_max_rep = sp->contents ("nsh_max")(0).int_value (); 
-    ncomp_rep   = sp->contents ("ncomp")(0).int_value (); 
-    nsh_rep             = sp->contents ("nsh")(0).array_value (); 
-    connectivity_rep    = sp->contents ("connectivity")(0).array_value ();
+  Array<octave_idx_type> nsh_rep_v, connectivity_rep_v;
+  octave_scalar_map sp;
+
+public:
+  geopdes_space (const octave_scalar_map& refsp, const geopdes_mesh& msh): geopdes_mesh (msh) 
+  { 
+    sp = refsp;
+
+    ndof_rep    = sp.contents ("ndof").int_value (); 
+    nsh_max_rep = sp.contents ("nsh_max").int_value (); 
+    ncomp_rep   = sp.contents ("ncomp").int_value (); 
+
+    nsh_rep_v           = (sp.contents ("nsh").octave_idx_type_vector_value ()); 
+    nsh_rep             = (octave_idx_type *) nsh_rep_v.data (); 
+
+    connectivity_rep_v  = (sp.contents ("connectivity").octave_idx_type_vector_value (false, false, true)); 
+    connectivity_rep    = (octave_idx_type *) connectivity_rep_v.data ();
 
     shape_functions_rep = NULL;
-    if (sp->contains ("shape_functions"))
-      shape_functions_rep = (double *) (sp->contents ("shape_functions")(0).array_value ()).data (); 
+    if (sp.contains ("shape_functions"))
+      shape_functions_rep = (double *) (sp.contents ("shape_functions").array_value ()).data (); 
 
     shape_function_gradients_rep = NULL;
-    if (sp->contains ("shape_function_gradients")) 
-      shape_function_gradients_rep = (double *) (sp->contents ("shape_function_gradients")(0).array_value ()).data (); 
+    if (sp.contains ("shape_function_gradients")) 
+      shape_function_gradients_rep = (double *) (sp.contents ("shape_function_gradients").array_value ()).data (); 
 
     shape_function_curls_rep = NULL;
-    if (sp->contains ("shape_function_curls"))
-      shape_function_curls_rep = (double *) (sp->contents ("shape_function_curls")(0).array_value ()).data (); 
+    if (sp.contains ("shape_function_curls"))
+      shape_function_curls_rep = (double *) (sp.contents ("shape_function_curls").array_value ()).data (); 
 
     shape_function_divs_rep = NULL;
-    if (sp->contains ("shape_function_divs"))
-      shape_function_divs_rep = (double *) (sp->contents ("shape_function_divs")(0).array_value ()).data ();         
+    if (sp.contains ("shape_function_divs"))
+      shape_function_divs_rep = (double *) (sp.contents ("shape_function_divs").array_value ()).data ();         
 
     shape_function_hessians_rep = NULL;
-    if (sp->contains ("shape_function_hessians"))
-      shape_function_hessians_rep = (double *) (sp->contents ("shape_function_hessians")(0).array_value ()).data ();         
+    if (sp.contains ("shape_function_hessians"))
+      shape_function_hessians_rep = (double *) (sp.contents ("shape_function_hessians").array_value ()).data ();         
 
   }
 
-  octave_idx_type nsh (octave_idx_type iel) const { return nsh_rep (iel); }
-  octave_idx_type connectivity (octave_idx_type ish, octave_idx_type iel) const { return connectivity_rep (ish, iel); }
+  inline octave_idx_type nsh (octave_idx_type iel) const { return nsh_rep[iel]; }
+  inline octave_idx_type connectivity (octave_idx_type ish, octave_idx_type iel) const { return connectivity_rep[ish + nsh_max () * iel]; }
+
+  void cache_element_connectivity (octave_idx_type iel, octave_idx_type *cache) const {
+    octave_idx_type s  = nsh_max ();
+    octave_idx_type * start = & (connectivity_rep[s * iel]);
+    memcpy (cache, start, s * sizeof (octave_idx_type));
+  }
 
   inline double shape_functions (octave_idx_type i, octave_idx_type j, octave_idx_type k, octave_idx_type m) const {
     return shape_functions_rep[i + ncomp () * (j + nqn () * (k + nsh_max () * m))];
   }
 
-  void cache_element_shape_functions (octave_idx_type iel, double *cache) {
+  void cache_element_shape_functions (octave_idx_type iel, double *cache) const {
     octave_idx_type s = ncomp () * nqn () * nsh_max ();
     double * start = & (shape_functions_rep[s * iel]);
     memcpy (cache, start, s * sizeof (double));
@@ -176,7 +201,7 @@ public:
     return res;
   }
 
-  void cache_element_shape_function_gradients (octave_idx_type iel, double *cache) {
+  void cache_element_shape_function_gradients (octave_idx_type iel, double *cache) const {
     octave_idx_type s = ncomp () * ndir () * nqn () * nsh_max ();
     double * start = & (shape_function_gradients_rep[s * iel]);
     memcpy (cache, start, s * sizeof (double));
