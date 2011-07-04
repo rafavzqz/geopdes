@@ -1,4 +1,4 @@
-% OP_F_V_TP: assemble the right-hand side vector r = [r(i)], with  r(i) = (f, v_i), using the tensor product structure.
+% OP_F_V_TP: assemble the right-hand side vector r = [r(i)], with  r(i) = (f, v_i), exploiting the tensor product structure.
 %
 %   rhs = op_f_v_tp (spv, msh, coeff);
 %

@@ -1,4 +1,4 @@
-% OP_U_V_TP: assemble the mass matrix M = [m(i,j)], m(i,j) = (mu u_j, v_i), using the tensor product structure.
+% OP_U_V_TP: assemble the mass matrix M = [m(i,j)], m(i,j) = (mu u_j, v_i), exploiting the tensor product structure.
 %
 %   mat = op_u_v_tp (spu, spv, msh, coeff);
 %   [rows, cols, values] = op_u_v_tp (spu, spv, msh, coeff);
