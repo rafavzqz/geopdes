@@ -27,11 +27,7 @@
 %
 %       METHOD_NAME
 %       sp_evaluate_col: compute the basis functions in one column of the mesh (that is, fixing the element in the first parametric direction).
-%
-%       sp_eval:        evaluate a function, given by its dofs, at a given set of points.
-%       sp_to_vtk:      export a function, given by its dofs, in the vtk format.
-%       sp_h1_error:    evaluate the error in H^1 norm.
-%       sp_l2_error:    evaluate the error in L^2 norm.
+%       sp_eval_boundary_side: evaluate the basis functions in one side of the boundary.
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez

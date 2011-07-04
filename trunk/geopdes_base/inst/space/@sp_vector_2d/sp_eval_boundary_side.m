@@ -1,12 +1,25 @@
 % SP_EVAL_BOUNDARY_SIDE: Construct the space structure of one side of the boundary.
 %
-%     sp = sp_eval_boundary_side (sp, msh, iside)
+%     sp_side = sp_eval_boundary_side (sp, msh_side)
 %
 % INPUTS:
-%     
+%
+%     sp:       space class (see sp_vector_2d)
+%     msh_side: mesh structure containing the information of the quadrature
+%               rule on the boundary edge (see msh_2d/msh_eval_boundary_side)
 %
 % OUTPUT:
 %
+%     sp_side: structure that contains the following fields
+%              (see the article for a detailed description)
+%
+%     FIELD_NAME      (SIZE)                                       DESCRIPTION
+%     ncomp           (scalar)                                     number of components of the functions of the space (actually, 2)
+%     nsh_max         (scalar)                                     maximum number of shape functions per element
+%     nsh             (1 x msh_side.nel vector)                    actual number of shape functions per each element
+%     ndof            (scalar)                                     total number of degrees of freedom
+%     connectivity    (nsh_max x msh_side.nel vector)              indices of basis functions that do not vanish in each element
+%     shape_functions (2 x msh_side.nqn x nsh_max x msh_side.nel)  basis functions evaluated at each quadrature node in each element
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez

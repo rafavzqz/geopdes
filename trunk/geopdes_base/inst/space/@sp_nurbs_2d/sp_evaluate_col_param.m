@@ -4,7 +4,7 @@
 %
 % INPUTS:
 %
-%    space:   class defining the space of discrete functions (see sp_bspline_2d)
+%    space:   class defining the space of discrete functions (see sp_nurbs_2d)
 %    msh_col: msh structure containing (in the field msh.qn) the points 
 %              along each parametric direction in the parametric 
 %              domain at which to evaluate, i.e. quadrature points 
@@ -15,24 +15,22 @@
 %           ------------+-----------------+----------------------------------
 %            value      |      true       |  compute shape_functions
 %            gradient   |      true       |  compute shape_function_gradients
-%            hessian    |      false      |  compute shape_function_hessians
 %
 % OUTPUT:
 %
 %    sp: struct representing the discrete function space, with the following fields:
+%              (see the article for a detailed description)
 %
 %    FIELD_NAME      (SIZE)                            DESCRIPTION
-%    ncomp           (scalar)                          number of components of the functions of the space (actually, 1)
-%    ndof            (scalar)                          total number of degrees of freedom
-%    ndof_dir        (1 x 2 vector)                    degrees of freedom along each direction
-%    nsh_max         (scalar)                          maximum number of shape functions per element
-%    nsh             (1 x msh.nelv vector)             actual number of shape functions per each element
-%    connectivity    (nsh_max x msh.nelv vector)       indices of basis functions that do not vanish in each element
-%    shape_functions (msh.nqn x nsh_max x msh.nelv)    basis functions evaluated at each quadrature node in each element
+%    ncomp           (scalar)                               number of components of the functions of the space (actually, 1)
+%    ndof            (scalar)                               total number of degrees of freedom
+%    ndof_dir        (1 x 2 vector)                         degrees of freedom along each direction
+%    nsh_max         (scalar)                               maximum number of shape functions per element
+%    nsh             (1 x msh_col.nel vector)               actual number of shape functions per each element
+%    connectivity    (nsh_max x msh_col.nel vector)         indices of basis functions that do not vanish in each element
+%    shape_functions (msh_col.nqn x nsh_max x msh_col.nel)  basis functions evaluated at each quadrature node in each element
 %    shape_function_gradients
-%                        (2 x msh.nqn x nsh_max x msh.nelv) basis function gradients evaluated at each quadrature node in each element
-%    shape_function_hessians
-%                        (2 x 2 x msh.nqn x nsh_max x msh.nelv) basis function hessians evaluated at each quadrature node in each element
+%                (2 x msh_col.nqn x nsh_max x msh_col.nel)  basis function gradients evaluated at each quadrature node in each element
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez

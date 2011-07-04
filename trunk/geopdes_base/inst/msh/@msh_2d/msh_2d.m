@@ -23,7 +23,9 @@
 %     breaks        (1 x 2 cell-array)      unique(breaks)
 %     qn            (1 x 2 cell-array)      quadrature nodes along each direction in parametric domain
 %     qw            (1 x 2 cell-array)      quadrature weights along each direction in parametric space
-%     boundary      (1 x 4 struct-array)    it contains a one-dimensional 'msh' structure for each edge of the boundary 
+%     boundary      (1 x 4 struct-array)    it contains a one-dimensional 'msh' structure for each edge of the boundary
+%     map           (function handle)       a copy of the map handle of the geometry structure
+%     map_der       (function handle)       a copy of the map_der handle of the geometry structure
 %
 %     METHOD NAME
 %     msh_evaluate_col: computes the parameterization (and its derivatives) of

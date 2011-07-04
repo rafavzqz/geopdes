@@ -16,7 +16,7 @@
 %        sp1             (struct)                    space class for the first component
 %        sp2             (struct)                    space class for the second component
 %        ndof            (scalar)                    total number of degrees of freedom
-%        ndof_dir        (2 x 2 matrix)               for each component, number of degrees of freedom along each direction
+%        ndof_dir        (2 x 2 matrix)              for each component, number of degrees of freedom along each direction
 %        comp_dofs       (1 x 2 cell array)          indices of the degrees of freedom for each component
 %        nsh_max         (scalar)                    maximum number of shape functions per element
 %        nsh             (1 x msh.nel vector)        actual number of shape functions per each element
@@ -25,11 +25,7 @@
 %
 %       METHOD_NAME
 %       sp_evaluate_col: compute the basis functions in one column of the mesh (that is, fixing the element in the first parametric direction).
-%
-%       sp_eval:        evaluate a function, given by its dofs, at a given set of points.
-%       sp_to_vtk:      export a function, given by its dofs, in the vtk format.
-%       sp_h1_error:    evaluate the error in H^1 norm.
-%       sp_l2_error:    evaluate the error in L^2 norm.
+%       sp_eval_boundary_side: evaluate the basis functions in one side of the boundary.
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
