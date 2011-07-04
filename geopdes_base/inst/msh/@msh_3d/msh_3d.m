@@ -19,18 +19,20 @@
 %     nel_dir       (1 x 3 vector)          number of elements in each parametric direction
 %     nelcol        (scalar)                number of elements in one "column" of the mesh (actually, nel_dir(2)*nel_dir(3))
 %     nqn           (scalar)                number of quadrature nodes per element
-%     nqnu          (scalar)                number of quadrature nodes per element in the first parametric direction
-%     nqnv          (scalar)                number of quadrature nodes per element in the second parametric direction
-%     nqnw          (scalar)                number of quadrature nodes per element in the third parametric direction
+%     nqn_dir       (1 x 3 vector)          number of quadrature nodes per element in each parametric direction
 %     breaks        (1 x 3 cell-array)      unique(breaks)
 %     qn            (1 x 3 cell-array)      quadrature nodes along each direction in parametric domain
 %     qw            (1 x 3 cell-array)      quadrature weights along each direction in parametric space
 %     boundary      (1 x 6 struct-array)    it contains a one-dimensional 'msh' structure for each face of the boundary 
+%     map           (function handle)       a copy of the map handle of the geometry structure
+%     map_der       (function handle)       a copy of the map_der handle of the geometry structure
 %
 %     METHOD NAME
 %     msh_evaluate_col: computes the parameterization (and its derivatives) of
 %                       the quadrature points in one column of the mesh, i.e.,
 %                       fixing the element in the first parametric direction.
+%     msh_eval_boundary_side: computes the parameterization in one boundary side
+%                       of the domain.
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez

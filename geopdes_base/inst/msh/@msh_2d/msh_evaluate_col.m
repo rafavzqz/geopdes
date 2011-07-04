@@ -6,7 +6,7 @@
 %
 %    msh:    mesh class (see msh_2d)
 %    colnum: number of the "column", i.e., the element in the first parametric direction.
-%     'option', value: additional optional parameters, currently available options are:
+%   'option', value: additional optional parameters, currently available options are:
 %            
 %              Name     |   Default value |  Meaning
 %           ------------+-----------------+-----------

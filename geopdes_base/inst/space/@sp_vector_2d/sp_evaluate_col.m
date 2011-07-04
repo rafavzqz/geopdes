@@ -21,19 +21,20 @@
 % OUTPUT:
 %
 %    sp: struct representing the discrete function space, with the following fields:
+%              (see the article for a detailed description)
 %
-%    FIELD_NAME      (SIZE)                                 DESCRIPTION
-%    ncomp           (scalar)                               number of components of the functions of the space (actually, 2)
-%    ndof            (scalar)                               total number of degrees of freedom
-%    ndof_dir        (2 x 2 matrix)                         for each component, number of degrees of freedom along each direction
-%    nsh_max         (scalar)                               maximum number of shape functions per element
-%    nsh             (1 x msh_col.nel vector)               actual number of shape functions per each element
-%    connectivity    (nsh_max x msh_col.nel vector)         indices of basis functions that do not vanish in each element
-%    shape_functions (msh.nqn x nsh_max x msh_col.nel)      basis functions evaluated at each quadrature node in each element
+%    FIELD_NAME      (SIZE)                                     DESCRIPTION
+%    ncomp           (scalar)                                   number of components of the functions of the space (actually, 2)
+%    ndof            (scalar)                                   total number of degrees of freedom
+%    ndof_dir        (2 x 2 matrix)                             for each component, number of degrees of freedom along each direction
+%    nsh_max         (scalar)                                   maximum number of shape functions per element
+%    nsh             (1 x msh_col.nel vector)                   actual number of shape functions per each element
+%    connectivity    (nsh_max x msh_col.nel vector)             indices of basis functions that do not vanish in each element
+%    shape_functions (msh_col.nqn x nsh_max x msh_col.nel)      basis functions evaluated at each quadrature node in each element
 %    shape_function_gradients
-%               (2 x 2 x msh.nqn x nsh_max x msh_col.nel)   basis function gradients evaluated at each quadrature node in each element
-%    shape_function_divs (msh.nqn x nsh_max x msh_col.nel)  basis function gradients evaluated at each quadrature node in each element
-%    shape_function_curls (msh.nqn x nsh_max x msh_col.nel) basis function gradients evaluated at each quadrature node in each element
+%               (2 x 2 x msh_col.nqn x nsh_max x msh_col.nel)   basis function gradients evaluated at each quadrature node in each element
+%    shape_function_divs (msh_col.nqn x nsh_max x msh_col.nel)  basis function gradients evaluated at each quadrature node in each element
+%    shape_function_curls (msh_col.nqn x nsh_max x msh_col.nel) basis function gradients evaluated at each quadrature node in each element
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
