@@ -66,21 +66,12 @@ function sp = sp_vector_2d (sp1, sp2, msh)
       sp_bnd2 = sp2.boundary(iside);
 
       boundary.ncomp = 2;
-      boundary.nsh_max      = sp_bnd1.nsh_max + sp_bnd2.nsh_max;
-      boundary.nsh          = sp_bnd1.nsh + sp_bnd2.nsh;
-      boundary.ndof         = sp_bnd1.ndof + sp_bnd2.ndof;
-      boundary.dofs         = [sp_bnd1.dofs, sp_bnd2.dofs+sp1.ndof];
+      boundary.nsh_max = sp_bnd1.nsh_max + sp_bnd2.nsh_max;
+      boundary.ndof    = sp_bnd1.ndof + sp_bnd2.ndof;
 
+      boundary.dofs         = [sp_bnd1.dofs, sp_bnd2.dofs+sp1.ndof];
       boundary.comp_dofs{1} = sp_bnd1.dofs;
       boundary.comp_dofs{2} = sp1.ndof + sp_bnd2.dofs;
-      boundary.connectivity = [sp_bnd1.connectivity; sp_bnd2.connectivity+sp_bnd1.ndof];
-
-      boundary.shape_functions = zeros (2, msh.boundary(iside).nqn, ...
-                             boundary.nsh_max, msh.boundary(iside).nel);
-      boundary.shape_functions(1,:,1:sp_bnd1.nsh_max,:) = ...
-                                             sp_bnd1.shape_functions;
-      boundary.shape_functions(2,:, sp_bnd1.nsh_max+(1:sp_bnd2.nsh_max),:) = ...
-                                             sp_bnd2.shape_functions;
 
       sp.boundary(iside) = boundary;
     end
