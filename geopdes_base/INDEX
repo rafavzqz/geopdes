@@ -7,33 +7,57 @@ Geometry
 Mesh
  msh_gauss_nodes
  msh_set_quad_nodes
- msh_2d_tensor_product
- msh_3d_tensor_product
- msh_push_forward_2d
- msh_push_forward_3d
+ @msh_2d
+  msh_2d
+  msh_eval_boundary_side
+  msh_evaluate_col
+ @msh_3d
+  msh_3d
+  msh_eval_boundary_side
+  msh_evaluate_col
 Space
+ @sp_bspline_2d
+  sp_bspline_2d
+  sp_eval_boundary_side
+  sp_evaluate_col
+  sp_evaluate_col_param
+ @sp_bspline_3d
+  sp_bspline_3d
+  sp_eval_boundary_side
+  sp_evaluate_col
+  sp_evaluate_col_param
+ @sp_nurbs_2d
+  sp_nurbs_2d
+  sp_eval_boundary_side
+  sp_evaluate_col
+  sp_evaluate_col_param
+ @sp_nurbs_3d
+  sp_nurbs_3d
+  sp_eval_boundary_side
+  sp_evaluate_col
+  sp_evaluate_col_param
+ @sp_vector_2d
+  sp_vector_2d
+  sp_eval_boundary_side
+  sp_evaluate_col
+ @sp_vector_3d
+  sp_vector_3d
+  sp_eval_boundary_side
+  sp_evaluate_col  
  sp_bspline_1d_param
- sp_bspline_2d_param
- sp_bspline_2d_phys
- sp_bspline_3d_param
- sp_bspline_3d_phys
- sp_nurbs_2d_param
- sp_nurbs_2d_phys
- sp_nurbs_3d_param
- sp_nurbs_3d_phys
- sp_eval_2d
- sp_eval_3d
+ sp_eval
+ sp_eval_msh
  sp_h1_error
  sp_l2_error
- sp_to_vtk_2d
- sp_to_vtk_3d
+ sp_to_vtk
  sp_drchlt_l2_proj
- sp_scalar_to_vector_2d
- sp_scalar_to_vector_3d
 Operators
  op_f_v
+ op_f_v_tp
  op_gradu_gradv
+ op_gradu_gradv_tp
  op_u_v
+ op_u_v_tp
 Solve
  solve_laplace_2d
  solve_laplace_2d_iso
