@@ -1,6 +1,7 @@
 geopdes_elasticity >> Iso-Geometric Analysis for Linear Elasticity Problems
 Operators
  op_su_ev
+ op_su_ev_tp
  op_pn_v
 Solve
  solve_plane_strain_2d
