@@ -1,7 +1,7 @@
 % SP_TO_VTK: Export to VTK format for plotting.
 %
 %  sp_to_vtk (u, space, geometry, npts, filename, fieldname)
-%  sp_to_vtk (u, space, geometry, {upts, vpts}, filename, fieldname)
+%  sp_to_vtk (u, space, geometry, pts, filename, fieldname)
 %
 % INPUT:
 %     
@@ -9,7 +9,7 @@
 %     space:      class representing the space of discrete functions (see sp_bspline_2d)
 %     geometry:   geometry structure (see geo_load)
 %     npts:       number of points along each parametric direction where to evaluate
-%     upts, vpts: points along each parametric direction where to evaluate
+%     pts:        cell array with the coordinates along each parametric direction of the points where to evaluate
 %     filename:   name of the output file. 
 %     fieldname:  how to name the saved variable in the vtk file
 %

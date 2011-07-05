@@ -1,17 +1,15 @@
 % SP_EVAL: Evaluate a function, given by its degrees of freedom, at a given set of points.
 %
 %   [eu, F] = sp_eval (u, space, geometry, pts);
-%   [eu, F] = sp_eval (u, space, msh);
-%   [eu, F] = sp_eval (u, space, msh, opt);
+%   [eu, F] = sp_eval (u, space, geometry, npts);
 %
 % INPUT:
 %     
 %     u:         vector of dof weights
 %     space:     class defining the space (see sp_bspline_2d)
 %     geometry:  geometry structure (see geo_load)
-%     pts:       coordinates of points along each parametric direction
-%     msh:       msh structure
-%     opt:       if the option 'recompute' is added, the values of the shape functions in the space structure are recomputed. By default the option is off.
+%     pts:       cell array with coordinates of points along each parametric direction
+%     npts:      number of points along each parametric direction
 %
 % OUTPUT:
 %
@@ -43,7 +41,7 @@ function [eu, F] = sp_eval (u, space, geometry, npts);
   elseif (isvector (npts))
     if (ndim == 2)
       pts = {(linspace (0, 1, npts(1))), (linspace (0, 1, npts(2)))};
-    elseif (ndim == 2)
+    elseif (ndim == 3)
       pts = {(linspace (0, 1, npts(1))), (linspace (0, 1, npts(2))), (linspace (0, 1, npts(3)))};
     end
   end

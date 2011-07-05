@@ -1,4 +1,4 @@
-% OP_GRADU_GRADV_TP: assemble the stiffness matrix A = [a(i,j)], a(i,j) = (epsilon grad u_j, grad v_i), exploiting the tensor product space.
+% OP_GRADU_GRADV_TP: assemble the stiffness matrix A = [a(i,j)], a(i,j) = (epsilon grad u_j, grad v_i), exploiting the tensor product structure.
 %
 %   mat = op_gradu_gradv_tp (spu, spv, msh, epsilon);
 %   [rows, cols, values] = op_gradu_gradv_tp (spu, spv, msh, epsilon);
