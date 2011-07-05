@@ -1,6 +1,6 @@
 % SP_H1_ERROR: Evaluate the error in H^1 norm.
 %
-%   [toterr, errl2] = sp_h1_error (space, msh, u, uex, graduex);
+%   [toterr, errl2] = sp_h1_error (space, msh, u, uex, graduex)
 %
 % INPUT:
 %
@@ -32,7 +32,7 @@
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
 
-function [errh1, errl2] = sp_h1_error (sp, msh, u, uex, graduex);
+function [errh1, errl2] = sp_h1_error (sp, msh, u, uex, graduex)
 
   ndim = numel (msh.qn);
 
@@ -77,7 +77,8 @@ function [errh1, errl2] = sp_h1_error (sp, msh, u, uex, graduex);
     errh1s = errh1s + sum (sum (reshape (sum (sum ...
        ((grad_valu - grad_valex).^2, 1), 2), [msh_col.nqn, msh_col.nel]) .* w));
 
-    errl2  = errl2 + sum (w(:) .* (valu(:) - valex(:)).^2);
+    erraux = sum ((valu - valex).^2, 1);
+    errl2  = errl2 + sum (w(:) .* erraux(:));
 
   end
 
