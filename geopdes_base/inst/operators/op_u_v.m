@@ -4,7 +4,7 @@
 %   [rows, cols, values] = op_u_v (spu, spv, msh, coeff);
 %
 % INPUT:
-%   
+%
 %  spu:   structure representing the space of trial functions (see sp_bspline_2d_phys)
 %  spv:   structure representing the space of test functions  (see sp_bspline_2d_phys)
 %  msh:   structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)
