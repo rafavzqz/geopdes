@@ -5,10 +5,10 @@
 %
 % INPUT:
 %    
-%   spu:        structure representing the space of trial functions (see sp_bspline_2d_phys)
-%   spv:        structure representing the space of test functions  (see sp_bspline_2d_phys)
-%   msh:        structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)
-%   lambda, mu: Lame' coefficients
+%   spu:   structure representing the space of trial functions (see sp_bspline_2d/sp_evaluate_col)
+%   spv:   structure representing the space of test functions (see sp_bspline_2d/sp_evaluate_col)
+%   msh:   structure containing the domain partition and the quadrature rule (see msh_2d/msh_evaluate_col)
+%   lambda, mu: Lame' coefficients evaluated at the quadrature points
 %
 % OUTPUT:
 %
