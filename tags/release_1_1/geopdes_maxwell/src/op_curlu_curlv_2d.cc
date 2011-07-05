@@ -50,84 +50,67 @@ OUTPUT: \n\
 
       dim_vector dims (nel * nsh_max_spv * nsh_max_spu, 1);
       Array <octave_idx_type> I (dims, 0);
+      octave_idx_type* Iptr = I.fortran_vec ();
+
       Array <octave_idx_type> J (dims, 0);
+      octave_idx_type* Jptr = J.fortran_vec ();
+
       Array <double> V (dims, 0.0);
+      double* Vptr = V.fortran_vec ();
       
       SparseMatrix mat;
 
       octave_idx_type counter = 0, iel, inode, idof, jdof, icmp;
 
-#pragma omp parallel default (none) shared (msh, spu, spv, I, J, V, coeff)
-      {      
-#pragma omp for
-      for ( iel=0; iel < nel; iel++) 
+      for (iel=0; iel < nel; iel++) 
         if (msh.area (iel) > 0.0)
-	  {
+          {
             const octave_idx_type nsh_u = spu.nsh (iel);
             const octave_idx_type nsh_v = spv.nsh (iel);
             double jacdet_weights[nqn];
 
-            for ( inode = 0; inode < nqn; inode++)
-              {
-                jacdet_weights[inode] = msh.jacdet (inode, iel) *
-                  msh.weights (inode, iel) * coeff (inode, iel);
-              }
+            for (inode = 0; inode < nqn; inode++)
+              jacdet_weights[inode] = msh.jacdet (inode, iel) *
+                msh.weights (inode, iel) * coeff (inode, iel);
+            
 
             double shcv[nsh_v][nqn];
             double shcu[nsh_u][nqn];
-            int conn_v[nsh_v];
-            int conn_u[nsh_u];
+            octave_idx_type conn_v[nsh_max_spv];
+            octave_idx_type conn_u[nsh_max_spu];
 
-              for ( idof = 0; idof < nsh_v; idof++) 
-		{
-                  for ( inode = 0; inode < nqn; inode++)
-                    {
-                      shcv[idof][inode] = spv.shape_function_curls (inode, idof, iel);
-                    }
-		  conn_v[idof] = spv.connectivity (idof, iel) - 1;
-	        }
+            for (idof = 0; idof < nsh_v; idof++) 
+              for (inode = 0; inode < nqn; inode++)
+                shcv[idof][inode] = spv.shape_function_curls (inode, idof, iel);
 
-              for ( jdof = 0; jdof < nsh_u; jdof++) 
-		{
-                  for ( inode = 0; inode < nqn; inode++)
-                    {
-                      shcu[jdof][inode] = spu.shape_function_curls (inode, jdof, iel);
-                    }
-		  conn_u[jdof] = spu.connectivity (jdof, iel) - 1;
-	        }
+            for (jdof = 0; jdof < nsh_u; jdof++) 
+              for (inode = 0; inode < nqn; inode++)
+                shcu[jdof][inode] = spu.shape_function_curls (inode, jdof, iel);
 
-            for ( idof = 0; idof < nsh_v; idof++) 
-	      {
-                for ( jdof = 0; jdof < nsh_u; jdof++) 
-		  {
-                    counter = jdof + nsh_u * (idof + nsh_v * iel);
-                    
-                    I(counter) = conn_v[idof];
-                    J(counter) = conn_u[jdof];
-		    V(counter) = 0.0;
-                    for ( inode = 0; inode < nqn; inode++)
-		      {
-		        if (msh.weights (inode, iel) > 0.0)
-			  {			  
-			    V(counter) += jacdet_weights[inode] * 
-			      shcv[idof][inode] * shcu[jdof][inode];
-			  }  
-		      } // end for inode		  
-//		    if (idof != jdof) // copy upper triangular part to lower
-//		      { 
-//		        I(counter) = J(counter-1);
-//		        J(counter) = I(counter-1);
-//		        V(counter) = V(counter-1);
-//		        counter++;
-//		      } 
-		  } // end for jdof
-	      } // end for idof
-          } else {
-#pragma omp critical
-          {warning_with_id ("geopdes:zero_measure_element", "op_curlu_curlv_2d: element %d has 0 area", iel);}
-        }  // end for iel, if area > 0
-      } // end of parallel section
+            spu.cache_element_connectivity (iel, (octave_idx_type*)conn_u);
+            spv.cache_element_connectivity (iel, (octave_idx_type*)conn_v);
 
+            for (idof = 0; idof < nsh_v; idof++) 
+              for (jdof = 0; jdof < nsh_u; jdof++) 
+                {
+                  counter = jdof + nsh_u * (idof + nsh_v * iel);
+                  
+                  Iptr[counter] = conn_v[idof] - 1;
+                  Jptr[counter] = conn_u[jdof] - 1;
+                  Vptr[counter] = 0.0;
+                  
+                  for (inode = 0; inode < nqn; inode++)
+                    if (msh.weights (inode, iel) > 0.0)
+                      Vptr[counter] += jacdet_weights[inode] * 
+                        shcv[idof][inode] * shcu[jdof][inode]; 
+                  
+                } // end for idof, for jdof
+          } 
+        else
+          {
+            warning_with_id ("geopdes:zero_measure_element", "op_curlu_curlv_2d: element %d has 0 area", iel);
+          }  // end for iel, if area > 0
+      
       if (nargout == 1) 
         {
           mat = SparseMatrix (V, I, J, ndof_spv, ndof_spu, true);
@@ -135,10 +118,10 @@ OUTPUT: \n\
         } 
       else if (nargout == 3)
 	{
-          for ( icmp = 0; icmp <= counter; icmp++) 
+          for (icmp = 0; icmp <= counter; icmp++) 
             {
-              I(icmp)++;
-              J(icmp)++;
+              Iptr[icmp]++;
+              Jptr[icmp]++;
             }
           retval(0) = octave_value (I);
           retval(1) = octave_value (J);

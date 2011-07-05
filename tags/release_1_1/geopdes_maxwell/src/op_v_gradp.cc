@@ -48,84 +48,80 @@ OP_V_GRADP: assemble the matrix B = [b(i,j)], b(i,j) = (epsilon grad p_i, v_j). 
   if (!error_state)
     {
 
-      const octave_idx_type nel = msh.nel (), nqn = msh.nqn (), ncomp = spv.ncomp (), ndof_spp = spp.ndof (), nsh_max_spp = spp.nsh_max (), ndof_spv = spv.ndof (), nsh_max_spv = spv.nsh_max ();
+      const octave_idx_type nel = msh.nel (), nqn = msh.nqn (), ncomp = spv.ncomp (), ndof_spp = spp.ndof (), 
+        nsh_max_spp = spp.nsh_max (), ndof_spv = spv.ndof (), nsh_max_spv = spv.nsh_max ();
 
       dim_vector dims (nel * nsh_max_spv * nsh_max_spp, 1);
       Array <octave_idx_type> I (dims, 0);
+      octave_idx_type* Iptr = I.fortran_vec ();
+
       Array <octave_idx_type> J (dims, 0);
-      Array <double> V (dims, 0.0);
+      octave_idx_type* Jptr = J.fortran_vec ();
+
+      Array <double> V (dims, 0.0);    
+      double* Vptr = V.fortran_vec ();
 
       octave_idx_type counter = 0, iel, inode, idof, jdof, icmp;
  
       {      
-      for ( iel=0; iel < nel; iel++) 
-        if (msh.area (iel) > 0.0)
-	  {
-            const octave_idx_type nsh_p = spp.nsh (iel);
-            const octave_idx_type nsh_v = spv.nsh (iel);
-            double jacdet_weights[nqn];
+        for ( iel=0; iel < nel; iel++) 
+          if (msh.area (iel) > 0.0)
+            {
+              const octave_idx_type nsh_p = spp.nsh (iel);
+              const octave_idx_type nsh_v = spv.nsh (iel);
+              double jacdet_weights[nqn];
 
-            for ( inode = 0; inode < nqn; inode++)
-              {
-                jacdet_weights[inode] = msh.jacdet (inode, iel) *
-                  msh.weights (inode, iel) * coeff (inode, iel);
-              }
+              for ( inode = 0; inode < nqn; inode++)
+                {
+                  jacdet_weights[inode] = msh.jacdet (inode, iel) *
+                    msh.weights (inode, iel) * coeff (inode, iel);
+                }
 
-            double shpv[nsh_v][nqn][ncomp];
-            double shgp[nsh_p][nqn][ncomp];
-            int conn_v[nsh_v];
-            int conn_p[nsh_p];
+              double shpv[nsh_v][nqn][ncomp];
+              double shgp[nsh_p][nqn][ncomp];
+              octave_idx_type conn_v[nsh_max_spv];
+              octave_idx_type conn_p[nsh_max_spp];
 
               for ( idof = 0; idof < nsh_p; idof++) 
-		{
-                  for ( inode = 0; inode < nqn; inode++)
-                    {
-                      for ( icmp = 0; icmp < ncomp; icmp++)
-                        {
-                          shgp[idof][inode][icmp] = spp.shape_function_gradients (0, icmp, inode, idof, iel);
-                        }
-                    }
-		  conn_p[idof] = spp.connectivity (idof, iel) - 1;
-	        }
+                for ( inode = 0; inode < nqn; inode++)
+                  for ( icmp = 0; icmp < ncomp; icmp++)
+                    shgp[idof][inode][icmp] = spp.shape_function_gradients (0, icmp, inode, idof, iel);
 
               for ( jdof = 0; jdof < nsh_v; jdof++) 
-		{
-                  for ( inode = 0; inode < nqn; inode++)
+                for ( inode = 0; inode < nqn; inode++)
+                  for ( icmp = 0; icmp < ncomp; icmp++)
+                    shpv[jdof][inode][icmp] = spv.shape_functions (icmp, inode, jdof, iel);
+
+              // Cache element data to speed-up memory access
+              spp.cache_element_connectivity (iel, (octave_idx_type*)conn_p);
+              spv.cache_element_connectivity (iel, (octave_idx_type*)conn_v);
+
+
+              for ( idof = 0; idof < nsh_p; idof++) 
+                {
+                  for ( jdof = 0; jdof < nsh_v; jdof++)
                     {
-                      for ( icmp = 0; icmp < ncomp; icmp++)
+                      counter = jdof + nsh_v * (idof + nsh_p * iel);
+
+                      Iptr[counter] = conn_p[idof] - 1;
+                      Jptr[counter] = conn_v[jdof] - 1;
+                      Vptr[counter] = 0.0;
+                      for ( inode = 0; inode < nqn; inode++)
                         {
-                          shpv[jdof][inode][icmp] = spv.shape_functions (icmp, inode, jdof, iel);
-                        }
-                    }
-		  conn_v[jdof] = spv.connectivity (jdof, iel) - 1;
-	        }
-
-
-            for ( idof = 0; idof < nsh_p; idof++) 
-	      {
-                for ( jdof = 0; jdof < nsh_v; jdof++)
-		  {
-                    counter = jdof + nsh_v * (idof + nsh_p * iel);
-
-                    I(counter) = conn_p[idof];
-                    J(counter) = conn_v[jdof];
-		    V(counter) = 0.0;
-                    for ( inode = 0; inode < nqn; inode++)
-		      {
-		        if (msh.weights (inode, iel) > 0.0)
-			  {			
-                            double s = 0.0;
-                            for ( icmp = 0; icmp < ncomp; icmp++)
-                              s += shgp[idof][inode][icmp] * shpv[jdof][inode][icmp];
-			    V(counter) += jacdet_weights[inode] * s;
-			  }  
-		      } // end for inode		  
-		    counter++;
-		  } // end for jdof
-	      } // end for idof
-          } else {
-          {warning_with_id ("geopdes:zero_measure_element", "op_v_gradp: element %d has 0 area (or volume)", iel);}
-        }  // end for iel, if area > 0
+                          if (msh.weights (inode, iel) > 0.0)
+                            {			
+                              double s = 0.0;
+                              for ( icmp = 0; icmp < ncomp; icmp++)
+                                s += shgp[idof][inode][icmp] * shpv[jdof][inode][icmp];
+                              Vptr[counter] += jacdet_weights[inode] * s;
+                            }  
+                        } // end for inode		  
+                      counter++;
+                    } // end for jdof
+                } // end for idof
+            } else {
+            {warning_with_id ("geopdes:zero_measure_element", "op_v_gradp: element %d has 0 area (or volume)", iel);}
+          }  // end for iel, if area > 0
       } // end of parallel section
 
       if (nargout == 1) 
@@ -137,8 +133,8 @@ OP_V_GRADP: assemble the matrix B = [b(i,j)], b(i,j) = (epsilon grad p_i, v_j). 
 	{
           for ( icmp = 0; icmp <= counter; icmp++) 
             {
-              I(icmp)++;
-              J(icmp)++;
+              Iptr[icmp]++;
+              Jptr[icmp]++;
             }
           retval(0) = octave_value (I);
           retval(1) = octave_value (J);
