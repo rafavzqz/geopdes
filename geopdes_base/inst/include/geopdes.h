@@ -61,13 +61,17 @@ public:
 
   virtual double shape_functions (octave_idx_type i, octave_idx_type j, octave_idx_type k, octave_idx_type m) const = 0;
   virtual void cache_element_shape_functions (octave_idx_type iel, double *cache) const {  };
-
+  
 
   virtual double shape_function_gradients (octave_idx_type i, octave_idx_type j, octave_idx_type k, octave_idx_type m, octave_idx_type n) const {return octave_NaN;};
   virtual void cache_element_shape_function_gradients (octave_idx_type iel, double *cache) const {  };
 
   virtual double shape_function_curls (octave_idx_type i, octave_idx_type j, octave_idx_type k, octave_idx_type m) const {return octave_NaN;};
+  virtual void cache_element_shape_function_curls (octave_idx_type iel, double *cache) const { };
+
   virtual double shape_function_divs  (octave_idx_type i, octave_idx_type j, octave_idx_type k, octave_idx_type m) const {return octave_NaN;};
+  virtual void cache_element_shape_function_divs (octave_idx_type iel, double *cache) const { };
+
 };
 
 // PRELOADED MSH AND SPACE CLASSES
@@ -196,6 +200,12 @@ public:
     return res;
   }
   
+  void cache_element_shape_function_divs (octave_idx_type iel, double *cache) const {
+    octave_idx_type s = nqn () * nsh_max ();
+    double * start = & (shape_function_divs_rep[s * iel]);
+    memcpy (cache, start, s * sizeof (double));
+  }
+
   inline double shape_function_gradients (octave_idx_type i, octave_idx_type j, octave_idx_type k, octave_idx_type m, octave_idx_type n) const {
     double res =  (shape_function_gradients_rep != NULL) ? shape_function_gradients_rep[i + ncomp () * (j + ndir () * (k + nqn () * (m + nsh_max () * n)))] : octave_NaN;
     return res;

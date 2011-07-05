@@ -91,10 +91,10 @@ OUTPUT: \n\
             spu.cache_element_connectivity (iel, (octave_idx_type*)conn_u);
             spv.cache_element_connectivity (iel, (octave_idx_type*)conn_v);
 
-            for (idof = 0; idof < nsh_v; idof++) 
-              for (jdof = 0; jdof < nsh_u; jdof++) 
+            for (idof = 0; idof < spv.nsh (iel); idof++) 
+              for (jdof = 0; jdof < spu.nsh (iel); jdof++) 
                 {
-                  counter = jdof + nsh_u * (idof + nsh_v * iel);
+                  counter = jdof + spu.nsh (iel) * (idof + spv.nsh (iel) * iel);
                     
                   Iptr[counter] = conn_v[idof] - 1;
                   Jptr[counter] = conn_u[jdof] - 1;
