@@ -1,6 +1,6 @@
 % SP_L2_ERROR: Evaluate the error in L^2 norm.
 %
-%   errl2 = sp_l2_error (space, msh, u, uex);
+%   errl2 = sp_l2_error (space, msh, u, uex)
 %
 % INPUT:
 %
@@ -30,7 +30,7 @@
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
 
-function errl2 = sp_l2_error (sp, msh, u, uex);
+function errl2 = sp_l2_error (sp, msh, u, uex)
 
   ndim = numel (msh.qn);
 
