@@ -94,7 +94,7 @@ OUTPUT: \n\
             for (idof = 0; idof < spv.nsh (iel); idof++) 
               for (jdof = 0; jdof < spu.nsh (iel); jdof++) 
                 {
-                  counter = jdof + spu.nsh (iel) * (idof + spv.nsh (iel) * iel);
+                  counter = jdof + nsh_u * (idof + nsh_v * iel);
                     
                   Iptr[counter] = conn_v[idof] - 1;
                   Jptr[counter] = conn_u[jdof] - 1;

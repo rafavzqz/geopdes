@@ -85,7 +85,7 @@ DEFUN_DLD(op_div_v_q, args, nargout,"OP_DIV_V_Q: assemble the matrix B = [b(i,j)
             for ( idof = 0; idof <  spq.nsh (iel); idof++) 
               for ( jdof = 0; jdof < spv.nsh (iel); jdof++) 
                 {
-                  counter = jdof + spv.nsh (iel) * (idof + spq.nsh (iel) * iel);
+                  counter = jdof + nsh_max_spv * (idof + nsh_max_spq * iel);
                   
                   Iptr[counter] = conn_q[idof] - 1;
                   Jptr[counter] = conn_v[jdof] - 1;
