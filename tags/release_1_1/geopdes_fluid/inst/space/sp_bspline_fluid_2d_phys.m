@@ -68,7 +68,7 @@ switch (lower (element_name))
   case {'rt'}
     spv = do_spv_piola_transform_2d__ (knotsv1, degreev1, knotsv2, degreev2, msh);
     spv.spfun = @(MSH) do_spv_piola_transform_2d__ (knotsv1, degreev1, knotsv2, degreev2, MSH);
-    PI = b2nst_odd__ (spp, knotsp, degreep, msh);
+    PI = b2nst__ (spp, knotsp, degreep, msh);
 
   otherwise
     error ('sp_bspline_fluid_2d_phys: unknown element type')
