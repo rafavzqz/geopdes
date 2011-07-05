@@ -76,18 +76,18 @@ class geopdes_mesh: public geopdes_mesh_base
 {
 protected:
   Matrix jacdet_rep, weights_rep;
-  octave_scalar_map msh;
+  Octave_map msh;
 
 public:
-  geopdes_mesh (const octave_scalar_map& refmsh)   
+  geopdes_mesh (const Octave_map& refmsh)   
   { 
     msh = refmsh;
 
-    nqn_rep  = msh.contents  ("nqn").int_value ();
-    nel_rep  = msh.contents  ("nel").int_value ();
-    ndir_rep = msh.contents  ("quad_nodes").array_value ().rows (); 
-    jacdet_rep  = msh.contents ("jacdet").matrix_value (); 
-    weights_rep = msh.contents ("quad_weights").matrix_value (); 
+    nqn_rep  = msh.contents  ("nqn")(0).int_value ();
+    nel_rep  = msh.contents  ("nel")(0).int_value ();
+    ndir_rep = msh.contents  ("quad_nodes")(0).array_value ().rows (); 
+    jacdet_rep  = msh.contents ("jacdet")(0).matrix_value (); 
+    weights_rep = msh.contents ("quad_weights")(0).matrix_value (); 
   }
 
   double jacdet  (octave_idx_type inode, octave_idx_type iel) const { return jacdet_rep  (inode, iel); }
@@ -101,9 +101,9 @@ protected:
   NDArray normal_rep;
 
 public:
-  geopdes_mesh_normal (const octave_scalar_map& msh): geopdes_mesh (msh)
+  geopdes_mesh_normal (const Octave_map& msh): geopdes_mesh (msh)
   {
-    normal_rep = msh.contents ("normal").array_value ();
+    normal_rep = msh.contents ("normal")(0).array_value ();
   }
 
   double normal (octave_idx_type i, octave_idx_type inode, octave_idx_type iel) const {return normal_rep (i, inode, iel); }
@@ -122,42 +122,42 @@ protected:
   octave_idx_type *nsh_rep, *connectivity_rep;
 
   Array<octave_idx_type> nsh_rep_v, connectivity_rep_v;
-  octave_scalar_map sp;
+  Octave_map sp;
 
 public:
-  geopdes_space (const octave_scalar_map& refsp, const geopdes_mesh& msh): geopdes_mesh (msh) 
+  geopdes_space (const Octave_map& refsp, const geopdes_mesh& msh): geopdes_mesh (msh) 
   { 
     sp = refsp;
 
-    ndof_rep    = sp.contents ("ndof").int_value (); 
-    nsh_max_rep = sp.contents ("nsh_max").int_value (); 
-    ncomp_rep   = sp.contents ("ncomp").int_value (); 
+    ndof_rep    = sp.contents ("ndof")(0).int_value (); 
+    nsh_max_rep = sp.contents ("nsh_max")(0).int_value (); 
+    ncomp_rep   = sp.contents ("ncomp")(0).int_value (); 
 
-    nsh_rep_v           = (sp.contents ("nsh").octave_idx_type_vector_value ()); 
+    nsh_rep_v           = (sp.contents ("nsh")(0).octave_idx_type_vector_value ()); 
     nsh_rep             = (octave_idx_type *) nsh_rep_v.data (); 
 
-    connectivity_rep_v  = (sp.contents ("connectivity").octave_idx_type_vector_value (false, false, true)); 
+    connectivity_rep_v  = (sp.contents ("connectivity")(0).octave_idx_type_vector_value (false, false, true)); 
     connectivity_rep    = (octave_idx_type *) connectivity_rep_v.data ();
 
     shape_functions_rep = NULL;
     if (sp.contains ("shape_functions"))
-      shape_functions_rep = (double *) (sp.contents ("shape_functions").array_value ()).data (); 
+      shape_functions_rep = (double *) (sp.contents ("shape_functions")(0).array_value ()).data (); 
 
     shape_function_gradients_rep = NULL;
     if (sp.contains ("shape_function_gradients")) 
-      shape_function_gradients_rep = (double *) (sp.contents ("shape_function_gradients").array_value ()).data (); 
+      shape_function_gradients_rep = (double *) (sp.contents ("shape_function_gradients")(0).array_value ()).data (); 
 
     shape_function_curls_rep = NULL;
     if (sp.contains ("shape_function_curls"))
-      shape_function_curls_rep = (double *) (sp.contents ("shape_function_curls").array_value ()).data (); 
+      shape_function_curls_rep = (double *) (sp.contents ("shape_function_curls")(0).array_value ()).data (); 
 
     shape_function_divs_rep = NULL;
     if (sp.contains ("shape_function_divs"))
-      shape_function_divs_rep = (double *) (sp.contents ("shape_function_divs").array_value ()).data ();         
+      shape_function_divs_rep = (double *) (sp.contents ("shape_function_divs")(0).array_value ()).data ();         
 
     shape_function_hessians_rep = NULL;
     if (sp.contains ("shape_function_hessians"))
-      shape_function_hessians_rep = (double *) (sp.contents ("shape_function_hessians").array_value ()).data ();         
+      shape_function_hessians_rep = (double *) (sp.contents ("shape_function_hessians")(0).array_value ()).data ();         
 
   }
 
