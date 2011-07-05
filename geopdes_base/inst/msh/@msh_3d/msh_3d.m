@@ -1,6 +1,6 @@
 % MSH_3D: constructor of the class for 3d tensor product meshes.
 %
-%     msh = msh_3d (breaks, qn, qw, geometry, opts);
+%     msh = msh_3d (breaks, qn, qw, geometry, 'option1', value1, ...);
 %
 % INPUTS:
 %     
@@ -8,7 +8,12 @@
 %     qn:       quadrature nodes along each direction in parametric space
 %     qw:       quadrature weights along each direction in parametric space
 %     geometry: structure representing the geometrical mapping
-%     opts:     if opts == 'no boundary', the boundary terms are not computed
+%    'option', value: additional optional parameters, currently available options are:
+%            
+%              Name     |   Default value |  Meaning
+%           ------------+-----------------+-----------
+%             boundary  |      true       |  compute the quadrature rule
+%                       |                 |   also on the boundary
 %   
 % OUTPUT:
 %
@@ -23,7 +28,7 @@
 %     breaks        (1 x 3 cell-array)      unique(breaks)
 %     qn            (1 x 3 cell-array)      quadrature nodes along each direction in parametric domain
 %     qw            (1 x 3 cell-array)      quadrature weights along each direction in parametric space
-%     boundary      (1 x 6 struct-array)    it contains a one-dimensional 'msh' structure for each face of the boundary 
+%     boundary      (1 x 6 struct-array)    it contains a one-dimensional 'msh' structure for each edge of the boundary (only when boundary is set to true)
 %     map           (function handle)       a copy of the map handle of the geometry structure
 %     map_der       (function handle)       a copy of the map_der handle of the geometry structure
 %
@@ -50,10 +55,20 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function msh = msh_3d (breaks, qn, qw, geo, opts)
+function msh = msh_3d (breaks, qn, qw, geo, varargin)
 
-  if (nargin < 5) 
-    opts = '';
+  boundary = true;
+  if (~isempty (varargin))
+    if (~rem (length (varargin), 2) == 0)
+      error ('msh_3d: options must be passed in the [option, value] format');
+    end
+    for ii=1:2:length(varargin)-1
+      if (strcmpi (varargin {ii}, 'boundary'))
+        boundary = varargin {ii+1};
+      else
+        error ('msh_3d: unknown option %s', varargin {ii});
+      end
+    end
   end
 
   msh.qn = qn;
@@ -74,21 +89,21 @@ function msh = msh_3d (breaks, qn, qw, geo, opts)
   msh.nqn_dir(3) = size (qnw,1);
   msh.nqn  = prod (msh.nqn_dir);
   
-  if (~strcmpi (opts, 'no boundary'))
+  if (boundary)
     for iside = 1:6
 %%    ind =[2 3; 2 3; 1 3; 1 3; 1 2; 1 2]
       ind = setdiff (1:3, ceil(iside/2)); 
 
-      boundary.side_number = iside;
-      boundary.qn = {qn{ind}};
-      boundary.qw = {qw{ind}};
+      bndry.side_number = iside;
+      bndry.qn = {qn{ind}};
+      bndry.qw = {qw{ind}};
 
-      boundary.nel_dir = msh.nel_dir(ind);
-      boundary.nel = prod (boundary.nel_dir);
-      boundary.nqn_dir = msh.nqn_dir(ind);
-      boundary.nqn = prod (boundary.nqn_dir);
+      bndry.nel_dir = msh.nel_dir(ind);
+      bndry.nel = prod (bndry.nel_dir);
+      bndry.nqn_dir = msh.nqn_dir(ind);
+      bndry.nqn = prod (bndry.nqn_dir);
 
-      msh.boundary(iside) = boundary;
+      msh.boundary(iside) = bndry;
     end
   else
     msh.boundary = [];    
@@ -96,6 +111,7 @@ function msh = msh_3d (breaks, qn, qw, geo, opts)
 
   msh.map = geo.map;
   msh.map_der = geo.map_der;
+
   msh = class (msh, 'msh_3d');
 
 end

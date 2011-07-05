@@ -48,21 +48,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function msh_col = msh_evaluate_col (msh, colnum, varargin)
-
-der2 = false;
-if (~isempty (varargin))
-  if (~rem (length (varargin), 2) == 0)
-    error ('msh_evaluate_col: options must be passed in the [option, value] format');
-  end
-  for ii=1:2:length(varargin)-1
-    if (strcmpi (varargin {ii}, 'der2'))
-      der2 = varargin {ii+1};
-    else
-      error ('msh_evaluate_col: unknown option %s', varargin {ii});
-    end
-  end
-end
+function msh_col = msh_evaluate_col (msh, colnum)
 
   msh_col.colnum = colnum;
   msh_col.elem_list = colnum + msh.nel_dir(1)*(0:msh.nel_dir(2)-1);
@@ -112,14 +98,10 @@ end
   msh_col.jacdet = reshape (msh_col.jacdet, [msh.nqn, msh.nel_dir(2)]);
 
 
-%if (der2)
-%  if (isfield (geo, 'map_der2'))
-%    qnu = msh.quad_nodes(1,:,:);
-%    qnv = msh.quad_nodes(2,:,:);
-%    msh.geo_map_der2 = reshape (feval (geo.map_der2, [qnu(:), qnv(:)]'), 2, 2, 2, msh.nqn, msh.nel);
-%  else 
-%    error ('msh_push_forward_2d: a function to compute second order derivatives has not been provided')
-%  end
-%end
+  if (msh.der2)
+    qnu = msh.quad_nodes(1,:,:);
+    qnv = msh.quad_nodes(2,:,:);
+    msh_col.geo_map_der2 = reshape (feval (msh.map_der2, [qnu(:), qnv(:)]'), 2, 2, 2, msh.nqn, msh.nel);
+  end
 
 end
