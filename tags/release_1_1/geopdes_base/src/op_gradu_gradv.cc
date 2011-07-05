@@ -37,9 +37,9 @@ OUTPUT: \n\
 {
 
   octave_value_list retval;
-  geopdes_mesh  msh (args(2).scalar_map_value ());
-  geopdes_space spu (args(0).scalar_map_value (), msh);
-  geopdes_space spv (args(1).scalar_map_value (), msh);
+  geopdes_mesh  msh (args(2).map_value ());
+  geopdes_space spu (args(0).map_value (), msh);
+  geopdes_space spv (args(1).map_value (), msh);
 
   Matrix coeff = args(3).matrix_value();
 
