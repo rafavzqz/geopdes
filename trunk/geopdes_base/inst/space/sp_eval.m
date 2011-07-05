@@ -56,9 +56,9 @@ function [eu, F] = sp_eval (u, space, geometry, npts);
   end
 
   if (ndim == 2)
-    msh = msh_2d ({brk{1}, brk{2}}, pts, [], geometry, 'no boundary');
+    msh = msh_2d ({brk{1}, brk{2}}, pts, [], geometry, 'boundary', false);
   elseif (ndim == 3)
-    msh = msh_3d ({brk{1}, brk{2}, brk{3}}, pts, [], geometry, 'no boundary');
+    msh = msh_3d ({brk{1}, brk{2}, brk{3}}, pts, [], geometry, 'boundary', false);
   end
   sp  = space.constructor (msh);
 
