@@ -64,23 +64,38 @@ function PI = b2nst__ (space, knots, degree, msh)
   %% remove basis functions to be removed
   P(:, rmshp) = [];
 
-  uv = [reshape(msh.quad_nodes(1, :, :),[],1), reshape(msh.quad_nodes(2, :, :),[],1)]';
+ % uv = [reshape(msh.quad_nodes(1, :, :),[],1), reshape(msh.quad_nodes(2, :, :),[],1)]';
   ns = 0;
   for jj = 1:dV+1
-    ns=ns+1; fun(:,ns) = tbasisfun (uv, [dU, dV], ...
+    ns=ns+1; fun{ns} = @(pts) tbasisfun (pts, [dU, dV], ...
                  {U(ucenter+[0:dU+1]), VT(jj+[0:dV+1])});
-    ns=ns+1; fun(:,ns) = tbasisfun (uv, [dU, dV], ...
+    ns=ns+1; fun{ns} = @(pts) tbasisfun (pts, [dU, dV], ...
                  {U(ucenter+[0:dU+1]), VT(end+1-jj-[dV+1:-1:0])});
-    ns=ns+1; fun(:,ns) = tbasisfun (uv, [dU, dV], ...
+    ns=ns+1; fun{ns} = @(pts) tbasisfun (pts, [dU, dV], ...
                  {U(end-ucenter+1-[dU+1:-1:0]), VT(jj+[0:dV+1])});
-    ns=ns+1; fun(:,ns) = tbasisfun (uv, [dU, dV], ...
+    ns=ns+1; fun{ns} = @(pts) tbasisfun (pts, [dU, dV], ...
                  {U(end-ucenter+1-[dU+1:-1:0]), VT(end+1-jj-[dV+1:-1:0])});
   end
-  
+
+% Computation of the projection
+%  We cannot use the op_f_v_tp operator, because our function handles fun{jj}
+%  are for points in the parametric domain, not in the physical domain
   M = op_u_v_tp (space, space, msh, @(x, y) ones (size(x)));
 
+  rhs = zeros (space.ndof, ns);
+  for iel = 1:msh.nel_dir(1)
+    msh_col = msh_evaluate_col (msh, iel);
+    sp_col  = sp_evaluate_col (space, msh_col, 'gradient', false);
+    uv = [reshape(msh_col.quad_nodes(1,:,:),[],1), reshape(msh_col.quad_nodes(2,:,:),[],1)]';
+    for jj = 1:ns
+      rhs(:,jj) = rhs(:,jj) + op_f_v (sp_col, msh_col, ...
+                               reshape (fun{jj}(uv), msh_col.nqn, msh_col.nel));
+    end
+  end
+
   for jj = 1:ns
-    PI(:, jj) = M \ op_f_v_tp (space, msh, reshape (fun(:,jj), size (msh.quad_weights)));
+    PI(:, jj) = M \ rhs(:,jj);
+%    PI(:, jj) = M \ op_f_v_tp (space, msh, reshape (fun(:,jj), size (msh.quad_weights)));
   end
 
   PI = [P PI];
