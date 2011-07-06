@@ -39,10 +39,10 @@
 % OUTPUT:
 %
 %  geometry: geometry structure (see geo_load)
-%  msh:      mesh structure (see msh_push_forward_2d)
-%  space_v:  space structure for the velocity (see sp_bspline_2d_phys)
+%  msh:      mesh structure (see msh_2d)
+%  space_v:  space structure for the velocity (see sp_vector_2d, sp_vector_2d_piola_transform)
 %  vel:      the computed coeficcients of the velocity
-%  space_p:  space structure for the pressure 
+%  space_p:  space structure for the pressure (see sp_bspline_2d)
 %  press:    the computed coeficcients of the pressure
 %
 % See also EX_STOKES_SQUARE_* EX_STOKES_ANNULUS_* for some examples.
@@ -84,27 +84,34 @@ geometry    = geo_load (geo_name);
 % Compute the mesh structure using the finest mesh
 rule        = msh_gauss_nodes (nquad);
 [qn, qw]    = msh_set_quad_nodes (knotsv1, rule);
-msh         = msh_2d_tensor_product (knotsv1, qn, qw);
-msh         = msh_push_forward_2d (msh, geometry, 'der2', der2);
+msh         = msh_2d (knotsv1, qn, qw, geometry, 'der2', der2);
 
 % Compute the space structures
 [space_v, space_p, PI] = sp_bspline_fluid_2d_phys (element_name, ...
           knotsv1, degreev1, knotsv2, degreev2, knotsp, degree, msh);
 
 % Assemble the matrices
-x           = squeeze (msh.geo_map(1,:,:));
-y           = squeeze (msh.geo_map(2,:,:));
-visc        = reshape (viscosity (x, y), msh.nqn, msh.nel);
-fval        = reshape (f (x, y), 2, msh.nqn, msh.nel);
+A = op_gradu_gradv_tp (space_v, space_v, msh, viscosity); 
+B = PI' * op_div_v_q_tp (space_v, space_p, msh);
+M = op_u_v_tp (space_p, space_p, msh, @(x,y) ones (size (x))); 
+E = sum (M, 1) * PI / sum (sum (M)); 
+F = op_f_v_tp (space_v, msh, f);
 
-A           = op_gradu_gradv (space_v, space_v, msh, visc); 
-B           = PI' * op_div_v_q (space_v, space_p, msh);
-M           = op_u_v (space_p, space_p, msh, ones (msh.nqn, msh.nel)); 
-E           = sum (M, 1) * PI / sum (sum (M)); 
-F           = op_f_v (space_v, msh, fval); 
+vel   = zeros (space_v.ndof, 1);
+press = zeros (space_p.ndof, 1);
 
-vel         = zeros (space_v.ndof, 1);
-press       = zeros (space_p.ndof, 1);
+% Apply Neumann boundary conditions
+rhs_nmnn = zeros(space_v.ndof,1);
+for iside = nmnn_sides
+  msh_side = msh_eval_boundary_side (msh, iside);
+  sp_side  = sp_eval_boundary_side (space_v, msh_side);
+
+  x = squeeze (msh_side.geo_map(1,:,:));
+  y = squeeze (msh_side.geo_map(2,:,:));
+  gval = reshape (g (x, y, iside), 2, msh_side.nqn, msh_side.nel);
+
+  rhs_nmnn(sp_side.dofs) = rhs_nmnn(sp_side.dofs) + op_f_v (sp_side, msh_side, gval);
+end
 
 % Apply Dirichlet  boundary conditions
 [vel_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space_v, msh, h, drchlt_sides);
@@ -113,22 +120,11 @@ int_dofs = setdiff (1:space_v.ndof, drchlt_dofs);
 nintdofs = numel (int_dofs);
 rhs_dir  = -A(int_dofs, drchlt_dofs)*vel(drchlt_dofs);
 
-% Apply Neumann boundary conditions
-rhs_nmnn = zeros(space_v.ndof,1);
-for iside = nmnn_sides
-  x = squeeze (msh.boundary(iside).geo_map(1,:,:));
-  y = squeeze (msh.boundary(iside).geo_map(2,:,:));
-  gval = reshape (g (x, y, iside), 2, msh.boundary(iside).nqn, msh.boundary(iside).nel);
-
-  rhs_nmnn(space_v.boundary(iside).dofs) = rhs_nmnn(space_v.boundary(iside).dofs) + op_f_v(space_v.boundary(iside), msh.boundary(iside), gval);
-end
-rhs_nmnn = rhs_nmnn(int_dofs);
-
 % Solve the linear system
 mat = [ A(int_dofs, int_dofs), -B(:,int_dofs).',            sparse(nintdofs, 1);
        -B(:,int_dofs),          sparse(size (B,1), size(B,1)), E';
         sparse(1, nintdofs),    E,                          0];
-rhs = [F(int_dofs) + rhs_dir + rhs_nmnn; 
+rhs = [F(int_dofs) + rhs_dir + rhs_nmnn(int_dofs); 
        B(:, drchlt_dofs)*vel(drchlt_dofs);
        0];
 sol = mat \ rhs;
@@ -136,4 +132,3 @@ vel(int_dofs) = sol(1:nintdofs);
 press = PI * sol(1+nintdofs:end-1);
 
 end
- 

@@ -1,13 +1,13 @@
-% OP_DIV_V_Q_TP: assemble the matrix B = [b(i,j)], b(i,j) = (q_i, div v_j).
+% OP_DIV_V_Q_TP: assemble the matrix B = [b(i,j)], b(i,j) = (q_i, div v_j), exploiting the tensor product structure.
 %
-%   mat = op_div_v_q (spv, spq, msh);
-%   [rows, cols, values] = op_div_v_q (spv, spq, msh);
+%   mat = op_div_v_q_tp (spv, spq, msh);
+%   [rows, cols, values] = op_div_v_q_tp (spv, spq, msh);
 %
 % INPUT: 
 %
-%   spv:     structure representing the space of trial functions for the velocity (see sp_bspline_2d_phys) 
-%   spq:     structure representing the space of test functions for the pressure (see sp_bspline_2d_phys) 
-%   msh:     structure containing the domain partition and the quadrature rule (see msh_push_forward_2d) 
+%   spv:     class representing the space of trial functions for the velocity (see sp_vector_2d, sp_vector_2d_piola)
+%   spq:     class representing the space of test functions for the pressure (see sp_bspline_2d)
+%   msh:     class defining the domain partition and the quadrature rule (see msh_2d)
 %
 % OUTPUT: 
 %
@@ -17,7 +17,7 @@
 %   values: values of the nonzero entries
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011 Rafael Vazquez, Andrea Bressan
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -32,16 +32,17 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function varargout = op_div_v_q_tp (space1, space2, msh)
+function varargout = op_div_v_q_tp (spv, spq, msh)
 
-  A = spalloc (space2.ndof, space1.ndof, 3*space1.ndof);
+  A = spalloc (spq.ndof, spv.ndof, 3*spv.ndof);
 
-  for iel = 1:msh.nelu
+  for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
-    sp1_col = sp_evaluate_col (space1, msh_col, 'divergence', true);
-    sp2_col = sp_evaluate_col (space2, msh_col, 'gradient', false);
+    spv_col = sp_evaluate_col (spv, msh_col, 'divergence', true, ...
+			       'value', false, 'gradient', false);
+    spq_col = sp_evaluate_col (spq, msh_col, 'gradient', false);
 
-    A = A + op_div_v_q (sp1_col, sp2_col, msh_col);
+    A = A + op_div_v_q (spv_col, spq_col, msh_col);
   end
 
   if (nargout == 1)

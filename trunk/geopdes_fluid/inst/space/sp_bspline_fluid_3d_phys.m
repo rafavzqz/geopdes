@@ -22,15 +22,17 @@
 %               the velocity along each parametric direction
 %   knotsp:    knot vector of the pressure space along each parametric direction
 %   degreep:   degree of the pressure space along each parametric direction
-%   msh:       structure containing the domain partition and the quadrature rule (see msh_push_forward_3d)
+%   msh:       msh class containing (in the field msh.qn) the points 
+%                along each parametric direction in the parametric 
+%                domain at which to evaluate, i.e. quadrature points 
+%                or points for visualization (see msh_3d)
 %
 % OUTPUT:
 %
-%   spv: structure representing the discrete velocity function space
-%   spp: structure representing the discrete pressure function space
-%         see sp_bspline_3d_phys for more details
+%   spv: class representing the discrete velocity function space (see sp_vector_3d)
+%   spp: class representing the discrete pressure function space (see sp_bspline_3d)
 %   PI:  a projection matrix for the application of boundary conditions
-%         for Raviart-Thomas spaces
+%         for Raviart-Thomas spaces. The identity matrix in all other cases.
 %
 %   For more details, see:
 %      A.Buffa, C.de Falco, G. Sangalli, 
@@ -57,14 +59,15 @@ function [spv, spp, PI] = sp_bspline_fluid_3d_phys (element_name, ...
               knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, ...
               knotsp, degreep, msh)
 
-spp = sp_bspline_3d_phys (knotsp, degreep, msh, 'gradient', false);
+spp = sp_bspline_3d (knotsp, degreep, msh);
 
 switch (lower (element_name))
   case {'th', 'sg'}
-    spv = do_spv_component_wise_3d__ ( ...
-                knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, msh);
-    spv.spfun = @(MSH) do_spv_component_wise_3d__ ( ...
-                knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, MSH);
+    sp1 = sp_bspline_3d (knotsv1, degreev1, msh);
+    sp2 = sp_bspline_3d (knotsv2, degreev2, msh);
+    sp3 = sp_bspline_3d (knotsv3, degreev3, msh);
+    spv = sp_vector_3d (sp1, sp2, sp3, msh);
+
     PI = speye (spp.ndof);
   case {'ndl', 'rt'}
     error ('NDL and RT elements have not been implemented in 3D yet')
@@ -73,4 +76,3 @@ switch (lower (element_name))
 end
 
 end
-

@@ -20,7 +20,7 @@ problem_data.h  = @test_stokes_3d_symdrivcav_h_drchlt;
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
-method_data.element_name = 'th';        % Element type for discretization
+method_data.element_name = 'th';       % Element type for discretization
 method_data.degree       = [2  2  2];  % Degree of the splines
 method_data.regularity   = [1  1  1];  % Regularity of the splines
 method_data.nsub         = [5  5  5];  % Number of subdivisions
@@ -37,6 +37,6 @@ output_file = 'Driven_cavity_3d_TH_Deg2_Reg1_Sub5';
 fprintf ('The result is saved in the files %s \n and %s \n \n', ...
            [output_file '_vel'], [output_file '_press']);
 vtk_pts = {linspace(0, 1, 15), linspace(0, 1, 15), linspace(0, 1, 15)};
-sp_to_vtk_3d (press, space_p, geometry, vtk_pts, [output_file '_press'], 'press')
-sp_to_vtk_3d (vel,   space_v, geometry, vtk_pts, [output_file '_vel'  ], 'vel')
+sp_to_vtk (press, space_p, geometry, vtk_pts, [output_file '_press'], 'press')
+sp_to_vtk (vel,   space_v, geometry, vtk_pts, [output_file '_vel'  ], 'vel')
 

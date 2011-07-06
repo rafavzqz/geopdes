@@ -1,6 +1,7 @@
 % -*- INTERNAL UNDOCUMENTED FUNCTION -*-
 %
 % Copyright (C) 2010 Carlo de Falco
+% Copyright (C) 2011 Rafael Vazquez
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -16,37 +17,45 @@
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
 
-function PI = b2nst__ (U, V, dU, dV, msh, space)
+function PI = b2nst__ (space, knots, degree, msh)
 
-  %% FIXME only order 3 supported at the moment
-  if ([dU dV] ~= [3 3])
-   error ('b2nst__: only order 3 supported at the moment')
+  U = knots{1};
+  V = knots{2};
+  dU = degree(1);
+  dV = degree(2);
+
+  %% FIXME only odd degree supported at the moment
+  if (mod (dU, 2) == 0 || mod (dV, 2) == 0)
+   error ('b2nst__: only odd degree supported at the moment')
   end
   
-  mcp = numel (U) - dU - 2;
-  ncp = numel (V) - dV - 2;
+  mcp = numel (U) - dU - 1;
+  ncp = numel (V) - dV - 1;
   UT = U;
   VT = V;
-  UT([5 end-4]) = [];
-  VT([5 end-4]) = [];
+  UT([dU+2 end-dV-1]) = [];
+  VT([dV+2 end-dV-1]) = [];
 
   %% get numbers of shape functions to replace
+  ucenter = (dU+1)/2+1;
+  vcenter = (dV+1)/2+1;
+  aux = setdiff (1:dV+2, vcenter);
   ns = 0;
-  for jj = [1 2 4 5]
-    ns=ns+1; rmshp(ns) = sub2ind ([mcp+1, ncp+1], 3, jj);
-    ns=ns+1; rmshp(ns) = sub2ind ([mcp+1, ncp+1], mcp-1, jj);
+  for jj = aux
+    ns=ns+1; rmshp(ns) = sub2ind ([mcp, ncp], ucenter, jj);
+    ns=ns+1; rmshp(ns) = sub2ind ([mcp, ncp], mcp+1-ucenter, jj);
   end
   
-  for jj = ncp+2-[1 2 4 5];
-    ns=ns+1; rmshp(ns) = sub2ind ([mcp+1, ncp+1], 3,   jj);
-    ns=ns+1; rmshp(ns) = sub2ind ([mcp+1, ncp+1], mcp-1, jj);
+  for jj = ncp+1-aux;
+    ns=ns+1; rmshp(ns) = sub2ind ([mcp, ncp], ucenter, jj);
+    ns=ns+1; rmshp(ns) = sub2ind ([mcp, ncp], mcp+1-ucenter, jj);
   end
 
   %% get numbers of shape functions to remove
-  ns=ns+1; rmshp(ns) = sub2ind ([mcp+1, ncp+1], 3,     3);
-  ns=ns+1; rmshp(ns) = sub2ind ([mcp+1, ncp+1], 3,     ncp-1);
-  ns=ns+1; rmshp(ns) = sub2ind ([mcp+1, ncp+1], mcp-1, ncp-1);
-  ns=ns+1; rmshp(ns) = sub2ind ([mcp+1, ncp+1], mcp-1, 3);
+  ns=ns+1; rmshp(ns) = sub2ind ([mcp, ncp], ucenter, vcenter);
+  ns=ns+1; rmshp(ns) = sub2ind ([mcp, ncp], ucenter, ncp+1-vcenter);
+  ns=ns+1; rmshp(ns) = sub2ind ([mcp, ncp], mcp+1-ucenter, ncp+1-vcenter);
+  ns=ns+1; rmshp(ns) = sub2ind ([mcp, ncp], mcp+1-ucenter, vcenter);
 
   nrmshp = numel (rmshp);
 
@@ -57,17 +66,21 @@ function PI = b2nst__ (U, V, dU, dV, msh, space)
 
   uv = [reshape(msh.quad_nodes(1, :, :),[],1), reshape(msh.quad_nodes(2, :, :),[],1)]';
   ns = 0;
-  for jj = [1 2 3 4]
-    ns=ns+1; fun(:,ns) = tbasisfun (uv, [3, 3], {U(3+[0:4]), VT(jj+[0:4])});
-    ns=ns+1; fun(:,ns) = tbasisfun (uv, [3, 3], {U(3+[0:4]), VT(end+1-jj-[4:-1:0])});
-    ns=ns+1; fun(:,ns) = tbasisfun (uv, [3, 3], {U(end-2-[4:-1:0]), VT(jj+[0:4])});
-    ns=ns+1; fun(:,ns) = tbasisfun (uv, [3, 3], {U(end-2-[4:-1:0]), VT(end+1-jj-[4:-1:0])});
+  for jj = 1:dV+1
+    ns=ns+1; fun(:,ns) = tbasisfun (uv, [dU, dV], ...
+                 {U(ucenter+[0:dU+1]), VT(jj+[0:dV+1])});
+    ns=ns+1; fun(:,ns) = tbasisfun (uv, [dU, dV], ...
+                 {U(ucenter+[0:dU+1]), VT(end+1-jj-[dV+1:-1:0])});
+    ns=ns+1; fun(:,ns) = tbasisfun (uv, [dU, dV], ...
+                 {U(end-ucenter+1-[dU+1:-1:0]), VT(jj+[0:dV+1])});
+    ns=ns+1; fun(:,ns) = tbasisfun (uv, [dU, dV], ...
+                 {U(end-ucenter+1-[dU+1:-1:0]), VT(end+1-jj-[dV+1:-1:0])});
   end
   
-  M = op_u_v (space, space, msh, ones (size (msh.quad_weights)));
+  M = op_u_v_tp (space, space, msh, @(x, y) ones (size(x)));
 
   for jj = 1:ns
-    PI(:, jj) = M \ op_f_v (space, msh, reshape (fun(:,jj), size (msh.quad_weights)));
+    PI(:, jj) = M \ op_f_v_tp (space, msh, reshape (fun(:,jj), size (msh.quad_weights)));
   end
 
   PI = [P PI];
