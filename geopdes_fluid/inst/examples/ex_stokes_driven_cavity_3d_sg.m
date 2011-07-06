@@ -37,6 +37,6 @@ output_file = 'Driven_cavity_3d_SG_Deg2_Reg1_Sub2';
 fprintf ('The result is saved in the files %s \n and %s \n \n', ...
            [output_file '_vel'], [output_file '_press']);
 vtk_pts = {linspace(0, 1, 15), linspace(0, 1, 15), linspace(0, 1, 15)};
-sp_to_vtk_3d (press, space_p, geometry, vtk_pts, [output_file '_press'], 'press')
-sp_to_vtk_3d (vel,   space_v, geometry, vtk_pts, [output_file '_vel'  ], 'vel')
+sp_to_vtk (press, space_p, geometry, vtk_pts, [output_file '_press'], 'press')
+sp_to_vtk (vel,   space_v, geometry, vtk_pts, [output_file '_vel'  ], 'vel')
 

@@ -18,15 +18,17 @@
 %               the velocity along each parametric direction
 %   knotsp:    knot vector of the pressure space along each parametric direction
 %   degreep:   degree of the pressure space along each parametric direction
-%   msh:       structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)
+%   msh:       msh class containing (in the field msh.qn) the points 
+%                along each parametric direction in the parametric 
+%                domain at which to evaluate, i.e. quadrature points 
+%                or points for visualization (see msh_2d)
 %
 % OUTPUT:
 %
-%   spv: structure representing the discrete velocity function space
-%   spp: structure representing the discrete pressure function space
-%         see sp_bspline_2d_phys for more details
+%   spv: class representing the discrete velocity function space (see sp_vector_2d, sp_vector_2d_piola_transform)
+%   spp: class representing the discrete pressure function space (see sp_bspline_2d)
 %   PI:  a projection matrix for the application of boundary conditions
-%         for Raviart-Thomas spaces
+%         for Raviart-Thomas spaces. The identity matrix in all other cases.
 %
 %   For more details, see:
 %      A.Buffa, C.de Falco, G. Sangalli, 
@@ -52,24 +54,27 @@
 function [spv, spp, PI] = sp_bspline_fluid_2d_phys (element_name, ...
               knotsv1, degreev1, knotsv2, degreev2, knotsp, degreep, msh)
 
-spp = sp_bspline_2d_phys (knotsp, degreep, msh, 'gradient', false);
+spp = sp_bspline_2d (knotsp, degreep, msh);
 
 switch (lower (element_name))
   case {'th', 'sg'}
-    spv = do_spv_component_wise_2d__ (knotsv1, degreev1, knotsv2, degreev2, msh);
-    spv.spfun = @(MSH) do_spv_component_wise_2d__ (knotsv1, degreev1, knotsv2, degreev2, MSH);
-    PI = speye (spp.ndof);
+    sp1 = sp_bspline_2d (knotsv1, degreev1, msh);
+    sp2 = sp_bspline_2d (knotsv2, degreev2, msh);
+    spv = sp_vector_2d (sp1, sp2, msh);
 
+    PI = speye (spp.ndof);
   case {'ndl'}
-    spv = do_spv_piola_transform_2d__ (knotsv1, degreev1, knotsv2, degreev2, msh);
-    spv.spfun = @(MSH) do_spv_piola_transform_2d__ (knotsv1, degreev1, knotsv2, degreev2, MSH);
+    sp1 = sp_bspline_2d (knotsv1, degreev1, msh);
+    sp2 = sp_bspline_2d (knotsv2, degreev2, msh);
+    spv = sp_vector_2d_piola_transform (sp1, sp2, msh);
+
     PI = speye (spp.ndof);
-
   case {'rt'}
-    spv = do_spv_piola_transform_2d__ (knotsv1, degreev1, knotsv2, degreev2, msh);
-    spv.spfun = @(MSH) do_spv_piola_transform_2d__ (knotsv1, degreev1, knotsv2, degreev2, MSH);
-    PI = b2nst_odd__ (spp, knotsp, degreep, msh);
+    sp1 = sp_bspline_2d (knotsv1, degreev1, msh);
+    sp2 = sp_bspline_2d (knotsv2, degreev2, msh);
+    spv = sp_vector_2d_piola_transform (sp1, sp2, msh);
 
+    PI = b2nst__ (spp, knotsp, degreep, msh);
   otherwise
     error ('sp_bspline_fluid_2d_phys: unknown element type')
 end

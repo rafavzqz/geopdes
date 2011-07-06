@@ -1,6 +1,5 @@
 % SP_FLUID_SET_OPTIONS_2D: Construct the knot vectors and set some options for the construction of different pair of spaces for fluid problems.
 %
-% 
 % [knotsp, knotsv1, degreev1, knotsv2, degreev2, der2] = 
 %  sp_fluid_set_options (elem_name, knots, nsub_p, degree_p, regularity_p)
 %
