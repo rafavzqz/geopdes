@@ -4,7 +4,7 @@
 %
 % INPUTS:
 %
-%     sp:       space class (see sp_vector_2d_piola_transform)
+%     sp:       space object (see sp_vector_2d_piola_transform)
 %     msh_side: mesh structure containing the information of the quadrature
 %               rule on the boundary edge (see msh_2d/msh_eval_boundary_side)
 %

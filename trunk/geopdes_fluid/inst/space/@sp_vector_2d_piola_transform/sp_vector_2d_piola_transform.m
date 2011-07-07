@@ -1,20 +1,20 @@
-% SP_VECTOR_2D_PIOLA_TRANSFORM: Construct the class of a two-dimensional vectorial space, using a Piola mapping.
+% SP_VECTOR_2D_PIOLA_TRANSFORM: Constructor of the class of two-dimensional vectorial spaces, mapped to the physical domain with the Piola transform.
 %
 %     sp = sp_vector_2d_piola_transform (sp1, sp2, msh)
 %
 % INPUTS:
 %
-%    sp1: space class of the first component (see sp_bspline_2d)
-%    sp2: space class of the second component (see sp_bspline_2d)
-%    msh: mesh class defining the domain partition and the quadrature rule (see msh_2d)
+%    sp1: space object of the first component of the space (see sp_bspline_2d)
+%    sp1: space object of the second component of the space (see sp_bspline_2d)
+%    msh: mesh object that defines the domain partition and the quadrature rule (see msh_2d)
 %
 % OUTPUT:
 %
-%    sp: class representing the discrete function space of vector-valued functions, with the following fields and methods:
+%    sp: object representing the discrete function space of vector-valued functions, with the following fields and methods:
 %
 %        FIELD_NAME      (SIZE)                      DESCRIPTION
-%        sp1             (struct)                    space class for the first component
-%        sp2             (struct)                    space class for the second component
+%        sp1             (space object)              space class for the first component
+%        sp2             (space object)              space class for the second component
 %        ndof            (scalar)                    total number of degrees of freedom
 %        ndof_dir        (2 x 2 matrix)              for each component, number of degrees of freedom along each direction
 %        comp_dofs       (1 x 2 cell array)          indices of the degrees of freedom for each component in the parametric domain
