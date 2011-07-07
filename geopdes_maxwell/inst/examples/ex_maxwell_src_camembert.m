@@ -25,7 +25,7 @@ problem_data.h = @(x, y, z, ind) zeros ([3, size(x)]);
 problem_data.uex     = @(x, y, z) cat (1, ...
                           singular_function (x, y, k), ...
                           zeros ([1, size(x)]));
-problem_data.curluex = @(x, y, z) zeros (3, size(x));
+problem_data.curluex = @(x, y, z) zeros ([3, size(x)]);
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
