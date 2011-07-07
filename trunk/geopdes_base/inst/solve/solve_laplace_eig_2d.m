@@ -29,8 +29,8 @@
 % OUTPUT:
 %
 %  geometry: geometry structure (see geo_load)
-%  msh:      mesh class that defines the quadrature rule (see msh_2d)
-%  space:    space class that defines the discrete space (see sp_bspline_2d)
+%  msh:      mesh object that defines the quadrature rule (see msh_2d)
+%  space:    space object that defines the discrete space (see sp_bspline_2d)
 %  lambda:   the computed eigenvalues
 %  u:        degrees of freedom of the computed eigenvectors
 %

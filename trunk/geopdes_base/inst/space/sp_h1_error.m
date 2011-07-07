@@ -4,8 +4,8 @@
 %
 % INPUT:
 %
-%    space:   class defining the space of discrete functions (see sp_bspline_2d)
-%    msh:     class defining the domain partition and the quadrature rule (see msh_2d)
+%    space:   object defining the space of discrete functions (see sp_bspline_2d)
+%    msh:     object defining the domain partition and the quadrature rule (see msh_2d)
 %    u:       vector of dof weights
 %    uex:     function handle to evaluate the exact solution
 %    graduex: function handle to evaluate the gradient of the exact solution
@@ -43,7 +43,7 @@ function [errh1, errl2] = sp_h1_error (sp, msh, u, uex, graduex)
   grad_valu = zeros (sp.ncomp, ndim, msh.nqn, msh.nelcol);
   for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
-    sp_col  = sp_evaluate_col (sp, msh_col);
+    sp_col  = sp_evaluate_col (sp, msh_col, 'gradient', true);
 
     uc_iel = zeros (size (sp_col.connectivity));
     uc_iel(sp_col.connectivity~=0) = ...

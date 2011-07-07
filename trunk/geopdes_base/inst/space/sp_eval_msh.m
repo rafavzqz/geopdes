@@ -5,8 +5,8 @@
 % INPUT:
 %     
 %     u:         vector of dof weights
-%     space:     class defining the space (see sp_bspline_3d)
-%     msh:       class defining the points where to evaluate (see msh_3d)
+%     space:     object defining the discrete space (see sp_bspline_3d)
+%     msh:       object defining the points where to evaluate (see msh_3d)
 %
 % OUTPUT:
 %
@@ -38,7 +38,7 @@ function [eu, F] = sp_eval_msh (u, space, msh);
 
   for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
-    sp_col  = sp_evaluate_col (space, msh_col, 'gradient', false);
+    sp_col  = sp_evaluate_col (space, msh_col);
 
     uc_iel = zeros (size (sp_col.connectivity));
     uc_iel(sp_col.connectivity~=0) = ...

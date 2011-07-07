@@ -4,8 +4,8 @@
 %
 % INPUT:
 %
-%  sp:    class defining the space of discrete functions (see sp_bspline_2d)
-%  msh:   class defining the domain partition and the quadrature rule (see msh_2d)
+%  sp:    object defining the space of discrete functions (see sp_bspline_2d)
+%  msh:   object defining the domain partition and the quadrature rule (see msh_2d)
 %  h:     function handle to compute the Dirichlet condition
 %  sides: boundary sides on which a Dirichlet condition is imposed
 %

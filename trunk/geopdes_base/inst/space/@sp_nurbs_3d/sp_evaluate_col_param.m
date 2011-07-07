@@ -14,7 +14,7 @@
 %              Name     |   Default value |  Meaning
 %           ------------+-----------------+----------------------------------
 %            value      |      true       |  compute shape_functions
-%            gradient   |      true       |  compute shape_function_gradients
+%            gradient   |      false      |  compute shape_function_gradients
 %
 % OUTPUT:
 %
@@ -51,7 +51,7 @@
 function sp = sp_evaluate_col_param (space, msh, varargin)
 
 value = true;
-gradient = true;
+gradient = false;
 if (~isempty (varargin))
   if (~rem (length (varargin), 2) == 0)
     error ('sp_evaluate_col_param: options must be passed in the [option, value] format');
