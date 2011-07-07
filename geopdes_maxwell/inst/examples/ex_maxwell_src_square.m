@@ -42,10 +42,10 @@ output_file = 'maxwell_square_Deg3_Reg2_Sub8';
 
 vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20)};
 fprintf ('The result is saved in the file %s \n \n', output_file);
-sp_to_vtk_2d (u, space, geometry, vtk_pts, output_file, 'u')
+sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 
 % 4.2) Plot in Matlab. Comparison with the exact solution
-[eu, F] = sp_eval_2d (u, space, geometry, vtk_pts);
+[eu, F] = sp_eval (u, space, geometry, vtk_pts);
 [X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
 eu2     = problem_data.uex (X, Y);
 

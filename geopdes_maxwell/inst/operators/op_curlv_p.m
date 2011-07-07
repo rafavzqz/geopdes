@@ -1,13 +1,13 @@
 % OP_CURLV_P: assemble the matrix B = [b(i,j)], b(i,j) = (coeff p_i, curl v_j).
 %
-%   mat = op_curlv_p (spu, spv, msh, coeff);
-%   [rows, cols, values] = op_curlv_p (spu, spv, msh, coeff);
+%   mat = op_curlv_p (spv, spp, msh, coeff);
+%   [rows, cols, values] = op_curlv_p (spv, spp, msh, coeff);
 %
 % INPUT:
 %   
-%  spu:   structure representing the space of vectorial trial functions (see sp_bsp_hcurl_2d_phys)
-%  spv:   structure representing the space of scalar test functions  (see sp_bsp_l2_2d_phys)
-%  msh:   structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)
+%  spv:   structure representing the space of vectorial trial functions (see sp_vector_2d_curl_transform/sp_evaluate_col)
+%  spp:   structure representing the space of scalar test functions  (see sp_bspline_2d_3forms/sp_evaluate_col)
+%  msh:   structure containing the domain partition and the quadrature rule (see msh_2d/msh_evaluate_col)
 %  coeff: physical parameter
 %
 % OUTPUT:

@@ -5,9 +5,9 @@
 %
 % INPUT:
 %   
-%  spu:   structure representing the space of trial functions (see sp_bsp_hcurl_2d_phys)
-%  spv:   structure representing the space of test functions  (see sp_bsp_hcurl_2d_phys)
-%  msh:   structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)
+%  spu:   structure representing the space of trial functions (see sp_vector_2d_curl_transform/sp_eval_boundary_side)
+%  spv:   structure representing the space of test functions  (see sp_vector_2d_curl_transform/sp_eval_boundary_side)
+%  msh:   structure containing the domain partition and the quadrature rule (see msh_2d/msh_eval_boundary_side)
 %  coeff: physical parameter
 %
 % OUTPUT:

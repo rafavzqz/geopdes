@@ -4,8 +4,8 @@
 %
 % INPUT:
 %     
-%   spv:   structure representing the function space (see sp_bsp_hcurl_3d_phys)
-%   msh:   structure containing the domain partition and the quadrature rule (see msh_push_forward_3d)
+%   spv:   structure representing the function space (see sp_vector_3d_curl_transform/sp_eval_boundary_side)
+%   msh:   structure containing the domain partition and the quadrature rule (see msh_3d/msh_eval_boundary_side)
 %   coeff: source function evaluated at the quadrature points
 %
 % OUTPUT:
