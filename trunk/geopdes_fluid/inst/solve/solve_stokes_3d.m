@@ -36,11 +36,11 @@
 % OUTPUT:
 %
 %  geometry: geometry structure (see geo_load)
-%  msh:      mesh structure (see msh_3d)
-%  space_v:  space structure for the velocity (see sp_vector_3d)
-%  vel:      the computed coeficcients of the velocity
-%  space_p:  space structure for the pressure (see sp_bspline_3d)
-%  press:    the computed coeficcients of the pressure
+%  msh:      mesh object that defines the quadrature rule (see msh_3d)
+%  space_v:  space object for the velocity (see sp_vector_3d)
+%  vel:      the computed degrees of freedom for the velocity
+%  space_p:  space object for the pressure (see sp_bspline_3d)
+%  press:    the computed degrees of freedom for the pressure
 %
 % See also EX_STOKES_FLOW_3D for an example.
 %
