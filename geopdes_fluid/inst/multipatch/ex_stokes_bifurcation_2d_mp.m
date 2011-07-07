@@ -40,6 +40,6 @@ output_file  = 'bifurcation_2d_mp_deg3_reg2_sub5';
 vtk_pts = {linspace(0, 1, 10), linspace(0, 1, 10)};
 
 fprintf ('results being saved in: %s_vel.pvd and %s_press.pvd\n', output_file, output_file)
-mp_sp_to_vtk_2d (vel, space_v, geometry, gnum, vtk_pts, sprintf ('%s_vel', output_file), 'velocity')
-mp_sp_to_vtk_2d (press, space_p, geometry, gnump, vtk_pts, sprintf ('%s_press', output_file), 'pressure')
+mp_sp_to_vtk (vel, space_v, geometry, gnum, vtk_pts, sprintf ('%s_vel', output_file), 'velocity')
+mp_sp_to_vtk (press, space_p, geometry, gnump, vtk_pts, sprintf ('%s_press', output_file), 'pressure')
 

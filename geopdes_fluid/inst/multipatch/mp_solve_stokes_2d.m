@@ -37,12 +37,12 @@
 % OUTPUT:
 %
 %  geometry: array of geometry structures (see geo_load)
-%  msh:      array of mesh structures (see msh_push_forward_2d)
-%  space_v:  array of space structures for the velocity (see sp_bspline_2d_phys)
-%  vel:      the computed coeficcients of the velocity
+%  msh:      cell array of mesh objects (see msh_2d)
+%  space_v:  cell array of space objects for the velocity (see sp_vector_2d)
+%  vel:      the computed degrees of freedom for the velocity
 %  gnum:     global numbering of the local degrees of freedom on each patch
-%  space_p:  array of space structures for the pressure 
-%  press:    the computed coeficcients of the pressure
+%  space_p:  cell array of space objects for the pressure (see sp_bspline_2d)
+%  press:    the computed degrees of freedom for the pressure
 %  gnump:    global numbering of the local degrees of freedom on each patch
 %             for the pressure
 %
@@ -94,8 +94,7 @@ for iptc = 1:npatch
 % Construct msh structure
   rule      = msh_gauss_nodes (nquad);
   [qn, qw]  = msh_set_quad_nodes (knotsv1, rule);
-  msh{iptc} = msh_2d_tensor_product (knotsv1, qn, qw);
-  msh{iptc} = msh_push_forward_2d (msh{iptc}, geometry(iptc), 'der2', der2);
+  msh{iptc} = msh_2d (knotsv1, qn, qw, geometry(iptc), 'der2', der2);
 
 % Construct space structure
   [spv{iptc}, spp{iptc}] = sp_bspline_fluid_2d_phys (element_name, ...
@@ -106,46 +105,31 @@ end
 [gnum,  ndof]  = mp_interface_vector_2d (interfaces, spv);
 [gnump, ndofp] = mp_interface_2d (interfaces, spp);
 
+
 % Compute and assemble the matrices
-nent = sum (cellfun (@(x, y, z) x.nel * y.nsh_max * z.nsh_max, msh, spv, spv));
-rows_A = zeros (nent, 1); cols_A = zeros (nent, 1); vals_A = zeros (nent, 1);
-ncounterA = 0;
-
-nent = sum (cellfun (@(x, y, z) x.nel * y.nsh_max * z.nsh_max, msh, spp, spp));
-rows_M = zeros (nent, 1); cols_M = zeros (nent, 1); vals_M = zeros (nent, 1);
-ncounterM = 0;
-
-nent = sum (cellfun (@(x, y, z) x.nel * y.nsh_max * z.nsh_max, msh, spv, spp));
-rows_B = zeros (nent, 1); cols_B = zeros (nent, 1); vals_B = zeros (nent, 1);
-ncounterB = 0;
-
+ncounterA = 0; ncounterM = 0; ncounterB = 0;
 F = zeros (ndof, 1);
 
 for iptc = 1:npatch
-  x = squeeze (msh{iptc}.geo_map(1,:,:));
-  y = squeeze (msh{iptc}.geo_map(2,:,:));
-  visc = reshape (viscosity (x, y), msh{iptc}.nqn, msh{iptc}.nel);
-  fval = reshape (f (x, y), 2, msh{iptc}.nqn, msh{iptc}.nel);
-
-  [rs, cs, vs] = op_gradu_gradv (spv{iptc}, spv{iptc}, msh{iptc}, visc); 
+  [rs, cs, vs] = op_gradu_gradv_tp (spv{iptc}, spv{iptc}, msh{iptc}, viscosity); 
   rows_A(ncounterA+(1:numel (rs))) = gnum{iptc}(rs);
   cols_A(ncounterA+(1:numel (rs))) = gnum{iptc}(cs);
   vals_A(ncounterA+(1:numel (rs))) = vs;
   ncounterA = ncounterA + numel (rs);
 
-  [rs, cs, vs] = op_div_v_q (spv{iptc}, spp{iptc}, msh{iptc}); 
+  [rs, cs, vs] = op_div_v_q_tp (spv{iptc}, spp{iptc}, msh{iptc}); 
   rows_B(ncounterB+(1:numel (rs))) = gnump{iptc}(rs);
   cols_B(ncounterB+(1:numel (rs))) = gnum{iptc}(cs);
   vals_B(ncounterB+(1:numel (rs))) = vs;
   ncounterB = ncounterB + numel (rs);
 
-  [rs, cs, vs] = op_u_v (spp{iptc}, spp{iptc}, msh{iptc}, ones (msh{iptc}.nqn, msh{iptc}.nel)); 
+  [rs, cs, vs] = op_u_v_tp (spp{iptc}, spp{iptc}, msh{iptc}, @(x, y) ones (size(x))); 
   rows_M(ncounterM+(1:numel (rs))) = gnump{iptc}(rs);
   cols_M(ncounterM+(1:numel (rs))) = gnump{iptc}(cs);
   vals_M(ncounterM+(1:numel (rs))) = vs;
   ncounterM = ncounterM + numel (rs);
 
-  F_loc = op_f_v (spv{iptc}, msh{iptc}, fval);
+  F_loc = op_f_v_tp (spv{iptc}, msh{iptc}, f);
   F(gnum{iptc}) = F(gnum{iptc}) + F_loc;
 end
 A = sparse (rows_A, cols_A, vals_A, ndof, ndof);
