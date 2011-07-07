@@ -6,7 +6,7 @@
 % INPUT:
 %     
 %     u:         vector of dof weights
-%     space:     class defining the space (see sp_bspline_2d)
+%     space:     object defining the discrete space (see sp_bspline_2d)
 %     geometry:  geometry structure (see geo_load)
 %     pts:       cell array with coordinates of points along each parametric direction
 %     npts:      number of points along each parametric direction

@@ -14,7 +14,7 @@
 %              Name     |   Default value |  Meaning
 %           ------------+-----------------+----------------------------------
 %            value      |      true       |  compute shape_functions
-%            gradient   |      true       |  compute shape_function_gradients
+%            gradient   |      false      |  compute shape_function_gradients
 %            divergence |      false      |  compute shape_function_divs
 %            curl       |      false      |  compute shape_function_curls
 %
@@ -55,7 +55,7 @@
 function sp = sp_evaluate_col (space, msh, varargin)
 
 value = true;
-gradient = true;
+gradient = false;
 divergence = false;
 curl = false;
 if (~isempty (varargin))

@@ -14,7 +14,7 @@
 %              Name     |   Default value |  Meaning
 %           ------------+-----------------+----------------------------------
 %            value      |      true       |  compute shape_functions
-%            gradient   |      true       |  compute shape_function_gradients
+%            gradient   |      false      |  compute shape_function_gradients
 %            hessian    |      false      |  compute shape_function_hessians
 %
 % OUTPUT:
@@ -54,7 +54,7 @@
 function sp = sp_evaluate_col (space, msh, varargin)
 
 value = true;
-gradient = true;
+gradient = false;
 hessian = false;
 if (~isempty (varargin))
   if (~rem (length (varargin), 2) == 0)
