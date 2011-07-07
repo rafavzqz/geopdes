@@ -1,18 +1,27 @@
 geopdes_maxwell >> Iso-Geometric Analysis for Maxwell equations
 Space
- sp_bspline_curl_transform_2d
- sp_bspline_curl_transform_3d
- sp_curl_transform_2d
- sp_curl_transform_3d
- sp_bspline_3_forms
+ @sp_vector_2d_curl_transform
+  sp_vector_2d_curl_transform
+  sp_eval_boundary_side
+  sp_evaluate_col
+ @sp_vector_3d_curl_transform
+  sp_vector_3d_curl_transform
+  sp_eval_boundary_side
+  sp_evaluate_col
+ @sp_bspline_2d_3forms
+  sp_bspline_2d_3forms
+  sp_eval_boundary_side
+  sp_evaluate_col
  sp_hcurl_error
- sp_drchlt_l2_proj_uxn_2d
- sp_drchlt_l2_proj_uxn_3d
+ sp_drchlt_l2_proj_uxn
 Operators
  op_curlu_curlv_2d
  op_curlu_curlv_3d
+ op_curlu_curlv_tp
  op_curlv_p
+ op_curlv_p_tp
  op_v_gradp
+ op_v_gradp_tp
  op_uxn_vxn_2d
  op_uxn_vxn_3d
  op_f_vxn_2d
