@@ -31,8 +31,8 @@
 % OUTPUT:
 %
 %  geometry: geometry structure (see geo_load)
-%  msh:      mesh structure (see msh_push_forward_3d)
-%  space:    space structure (see sp_bspline_3d_phys)
+%  msh:      mesh class that defines the quadrature rule (see msh_3d)
+%  space:    space class that defines the discrete space (see sp_bspline_3d)
 %  u:        the computed degrees of freedom
 %
 % See also EX_LAPLACE_CUBE for an example.

@@ -13,8 +13,8 @@
 %    sp: class representing the discrete function space of vector-valued functions, with the following fields and methods:
 %
 %        FIELD_NAME      (SIZE)                      DESCRIPTION
-%        sp1             (struct)                    space class for the first component
-%        sp2             (struct)                    space class for the second component
+%        sp1             (space object)              space class for the first component
+%        sp2             (space object)              space class for the second component
 %        ndof            (scalar)                    total number of degrees of freedom
 %        ndof_dir        (2 x 2 matrix)              for each component, number of degrees of freedom along each direction
 %        comp_dofs       (1 x 2 cell array)          indices of the degrees of freedom for each component
@@ -55,7 +55,6 @@ function sp = sp_vector_2d (sp1, sp2, msh)
   sp.comp_dofs{2} = sp1.ndof+(1:sp2.ndof);
   sp.ndof_dir     = [sp1.ndof_dir; sp2.ndof_dir];
 
-% For the boundary we still store everything
   if (~isempty (msh.boundary))
     for iside = 1:numel(msh.boundary)
       sp_bnd1 = sp1.boundary(iside);
