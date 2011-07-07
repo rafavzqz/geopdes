@@ -1,17 +1,17 @@
-% SP_VECTOR_3D: Construct the class of a three-dimensional vectorial space, using a component-wise mapping.
+% SP_VECTOR_3D: Constructof of the class of three-dimensional vectorial spaces with a component-wise mapping.
 %
 %     sp = sp_vector_3d (sp1, sp2, sp3, msh)
 %
 % INPUTS:
 %
-%    sp1: space class of the first component (see sp_bspline_3d or sp_nurbs_3d)
-%    sp2: space class of the second component (see sp_bspline_3d or sp_nurbs_3d)
-%    sp3: space class of the third component (see sp_bspline_3d or sp_nurbs_3d)
-%    msh: mesh class defining the domain partition and the quadrature rule (see msh_3d)
+%    sp1: space object of the first component (see sp_bspline_3d or sp_nurbs_3d)
+%    sp2: space object of the second component (see sp_bspline_3d or sp_nurbs_3d)
+%    sp3: space object of the third component (see sp_bspline_3d or sp_nurbs_3d)
+%    msh: mesh object that defines the domain partition and the quadrature rule (see msh_3d)
 %
 % OUTPUT:
 %
-%    sp: class representing the discrete function space of vector-valued functions, with the following fields and methods:
+%    sp: object representing the discrete function space of vector-valued functions, with the following fields and methods:
 %
 %        FIELD_NAME      (SIZE)                      DESCRIPTION
 %        sp1             (space object)              space class for the first component

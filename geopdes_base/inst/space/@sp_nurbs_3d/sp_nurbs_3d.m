@@ -1,4 +1,4 @@
-% SP_NURBS_3D: Construct the class of a tensor-product space of NURBS in 3D.
+% SP_NURBS_3D: Constructor of the class of a tensor-product spaces of NURBS in 3D.
 %
 %     sp = sp_nurbs_3d (nurbs, msh)
 %     sp = sp_nurbs_3d (knots, degree, weights, msh)
@@ -6,17 +6,14 @@
 % INPUTS:
 %
 %     nurbs:     nurbs structure representing a volume
-%     msh:       msh class containing (in the field msh.qn) the points 
-%                along each parametric direction in the parametric 
-%                domain at which to evaluate, i.e. quadrature points 
-%                or points for visualization (see msh_3d)
+%     msh:       msh object that defines the quadrature rule (see msh_3d)
 %     knots:     open knot vector
 %     degree:    nurbs polynomial degree (order minus one)
 %     weights:   weights associated to the basis functions
 %
 % OUTPUT:
 %
-%    sp: class representing the discrete function space, with the following fields:
+%    sp: object representing the discrete function space, with the following fields:
 %
 %        FIELD_NAME      (SIZE)                            DESCRIPTION
 %        spu             (struct)                          space of univariate splines in the first parametric direction

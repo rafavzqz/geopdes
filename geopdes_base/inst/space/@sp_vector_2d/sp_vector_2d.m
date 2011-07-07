@@ -1,16 +1,16 @@
-% SP_VECTOR_2D: Construct the class of a two-dimensional vectorial space, using a component-wise mapping.
+% SP_VECTOR_2D: Constructor of the class of two-dimensional vectorial spaces with a component-wise mapping.
 %
 %     sp = sp_vector_2d (sp1, sp2, msh)
 %
 % INPUTS:
 %
-%    sp1: space class of the first component (see sp_bspline_2d or sp_nurbs_2d)
-%    sp2: space class of the second component (see sp_bspline_2d or sp_nurbs_2d)
-%    msh: mesh class defining the domain partition and the quadrature rule (see msh_2d)
+%    sp1: space object of the first component (see sp_bspline_2d or sp_nurbs_2d)
+%    sp2: space object of the second component (see sp_bspline_2d or sp_nurbs_2d)
+%    msh: mesh object that defines the domain partition and the quadrature rule (see msh_2d)
 %
 % OUTPUT:
 %
-%    sp: class representing the discrete function space of vector-valued functions, with the following fields and methods:
+%    sp: object representing the discrete function space of vector-valued functions, with the following fields and methods:
 %
 %        FIELD_NAME      (SIZE)                      DESCRIPTION
 %        sp1             (space object)              space class for the first component

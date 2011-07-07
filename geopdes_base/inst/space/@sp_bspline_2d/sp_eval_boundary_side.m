@@ -4,7 +4,7 @@
 %
 % INPUTS:
 %
-%     sp:       space class (see sp_bspline_2d)
+%     sp:       space object (see sp_bspline_2d)
 %     msh_side: mesh structure containing the information of the quadrature
 %               rule on the boundary edge (see msh_2d/msh_eval_boundary_side)
 %
