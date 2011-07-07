@@ -41,8 +41,8 @@
 % OUTPUT:
 %
 %  geometry: array of geometry structures (see geo_load)
-%  msh:      array of mesh structures (see msh_push_forward_3d)
-%  space:    array of space structures (see sp_bspline_3d_phys)
+%  msh:      cell array of mesh objects (see msh_3d)
+%  space:    cell array of space object (see sp_vector_3d)
 %  u:        the computed degrees of freedom
 %  gnum:     global numbering of the degrees of freedom
 %

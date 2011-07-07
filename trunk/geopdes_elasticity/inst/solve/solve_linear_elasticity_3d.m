@@ -39,8 +39,8 @@
 % OUTPUT:
 %
 %  geometry: geometry structure (see geo_load)
-%  msh:      mesh structure (see msh_3d)
-%  space:    space structure (see sp_vector_3d)
+%  msh:      mesh object that defines the quadrature rule (see msh_3d)
+%  space:    space object that defines the discrete basis functions (see sp_vector_3d)
 %  u:        the computed degrees of freedom
 %
 % See also EX_LIN_ELAST_HORSESHOE for an example.
