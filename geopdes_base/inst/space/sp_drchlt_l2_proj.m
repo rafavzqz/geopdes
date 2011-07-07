@@ -4,8 +4,8 @@
 %
 % INPUT:
 %
-%  sp:    structure representing the space of trial functions (see sp_bspline_2d_phys)
-%  msh:   structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)
+%  sp:    class defining the space of discrete functions (see sp_bspline_2d)
+%  msh:   class defining the domain partition and the quadrature rule (see msh_2d)
 %  h:     function handle to compute the Dirichlet condition
 %  sides: boundary sides on which a Dirichlet condition is imposed
 %
