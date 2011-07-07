@@ -42,8 +42,8 @@
 % OUTPUT:
 %
 %  geometry: geometry structure (see geo_load)
-%  msh:      mesh structure (see msh_2d)
-%  space:    space structure (see sp_vector_2d)
+%  msh:      mesh object that defines the quadrature rule (see msh_2d)
+%  space:    space object that defines the discrete basis functions (see sp_vector_2d)
 %  u:        the computed degrees of freedom
 %
 % See also EX_PLANE_STRAIN_RING for an example.
