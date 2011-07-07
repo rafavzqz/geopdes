@@ -32,7 +32,7 @@ disp (eigv(1:5))
 
 vtk_pts = {linspace(0,1,30) linspace(0,1,30)};
 figure
-[eu, F] = sp_eval_2d (eigf(:,perm(8)), space, geometry, vtk_pts);
+[eu, F] = sp_eval (eigf(:,perm(8)), space, geometry, vtk_pts);
 quiver (squeeze(F(1,:,:)), squeeze(F(2,:,:)), ...
         squeeze(eu(1,:,:)), squeeze(eu(2,:,:)))
 title ('8^{th} eigenfunction')

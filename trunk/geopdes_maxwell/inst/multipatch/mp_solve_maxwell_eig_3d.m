@@ -32,8 +32,8 @@
 % OUTPUT:
 %
 %  geometry:  array of geometry structures (see mp_geo_load)
-%  msh:       array of mesh structures (see msh_push_forward_3d)
-%  space:     array of space structures (see sp_bspline_curl_transform_3d)
+%  msh:       cell array of mesh objects (see msh_3d)
+%  space:     cell array of space objects (see sp_vector_3d_curl_transform)
 %  eigv:      the computed eigenvalues
 %  eigf:      degrees of freedom of the associated eigenfunctions
 %  gnum:      global numbering of the degrees of freedom, for postprocessing
@@ -84,12 +84,14 @@ for iptc = 1:npatch
 % Construct msh structure
   rule      = msh_gauss_nodes (nquad);
   [qn, qw]  = msh_set_quad_nodes (zeta, rule);
-  msh{iptc} = msh_3d_tensor_product (zeta, qn, qw);
-  msh{iptc} = msh_push_forward_3d (msh{iptc}, geometry(iptc));
+  msh{iptc} = msh_3d (zeta, qn, qw, geometry(iptc));
 
 % Construct space structure
-  sp{iptc} = sp_bspline_curl_transform_3d (knots_u1, knots_u2, knots_u3, ...
-                                       degree1, degree2, degree3, msh{iptc});
+  sp_u1 = sp_bspline_3d (knots_u1, degree1, msh{iptc});
+  sp_u2 = sp_bspline_3d (knots_u2, degree2, msh{iptc});
+  sp_u3 = sp_bspline_3d (knots_u3, degree3, msh{iptc});
+  sp{iptc} = sp_vector_3d_curl_transform (sp_u1, sp_u2, sp_u3, msh{iptc});
+  clear sp_u1 sp_u2 sp_u3
 end
 
 [gnum, ndof, dofs_ornt] = mp_interface_hcurl_3d (interfaces, sp);
@@ -103,22 +105,15 @@ vals_mass  = zeros (nent, 1);
 ncounter = 0;
 for iptc = 1:npatch
 
-% Precompute the coefficients
-  x = squeeze (msh{iptc}.geo_map(1,:,:));
-  y = squeeze (msh{iptc}.geo_map(2,:,:));
-  z = squeeze (msh{iptc}.geo_map(3,:,:));
-
-  epsilon = reshape (c_elec_perm (x, y, z), msh{iptc}.nqn, msh{iptc}.nel);
-  mu      = reshape (c_magn_perm (x, y, z), msh{iptc}.nqn, msh{iptc}.nel);
-
 % Assemble the matrices setting the orientation
-  [rs, cs, vs] = op_curlu_curlv_3d (sp{iptc}, sp{iptc}, msh{iptc}, 1./mu);
+  invmu = @(x, y, z) 1./c_magn_perm (x, y, z);
+  [rs, cs, vs] = op_curlu_curlv_tp (sp{iptc}, sp{iptc}, msh{iptc}, invmu);
   rows(ncounter+(1:numel (rs))) = gnum{iptc}(rs);
   cols(ncounter+(1:numel (rs))) = gnum{iptc}(cs);
   vs = dofs_ornt{iptc}(rs)' .* vs .* dofs_ornt{iptc}(cs)';
   vals_stiff(ncounter+(1:numel (rs))) = vs;
 
-  [rs, cs, vs] = op_u_v (sp{iptc}, sp{iptc}, msh{iptc}, epsilon);
+  [rs, cs, vs] = op_u_v_tp (sp{iptc}, sp{iptc}, msh{iptc}, c_elec_perm);
   vs = dofs_ornt{iptc}(rs)' .* vs .* dofs_ornt{iptc}(cs)';
   vals_mass(ncounter+(1:numel (rs))) = vs;
   ncounter = ncounter + numel (rs);

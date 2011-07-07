@@ -25,7 +25,7 @@ problem_data.h = @(x, y, z, ind) zeros ([3, size(x)]);
 problem_data.uex     = @(x, y, z) cat (1, ...
                           singular_function (x, y, k), ...
                           zeros ([1, size(x)]));
-problem_data.curluex = @(x, y, z) zeros (size(x));
+problem_data.curluex = @(x, y, z) zeros ([3, size(x)]);
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
@@ -46,7 +46,7 @@ output_file = 'maxwell_camembert_Deg2_Reg1_Sub3';
 
 vtk_pts = {linspace(0, 1, 15), linspace(0, 0.99, 15), linspace(0, 1, 15)};
 fprintf ('The result is saved in the file %s \n \n', output_file);
-sp_to_vtk_3d (u, space, geometry, vtk_pts, output_file, 'u')
+sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 
 % 4.2) Comparison with the exact solution
 [error_hcurl, error_l2] = ...

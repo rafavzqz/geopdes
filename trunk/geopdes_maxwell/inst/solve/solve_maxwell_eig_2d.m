@@ -30,8 +30,8 @@
 % OUTPUT:
 %
 %  geometry: geometry structure (see geo_load)
-%  msh:      mesh structure (see msh_push_forward_2d)
-%  space:    space structure (see sp_bspline_curl_transform_2d)
+%  msh:      mesh object that defines the quadrature rule (see msh_2d)
+%  space:    space object that defines the discrete functions (see sp_vector_2d_curl_transform)
 %  eigv:     the computed eigenvalues
 %  eigf:     degrees of freedom of the associated eigenfunctions
 %
@@ -52,7 +52,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [geometry, msh, sp, eigv, eigf] = ...
+function [geometry, msh, space, eigv, eigf] = ...
               solve_maxwell_eig_2d (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
@@ -74,29 +74,28 @@ geometry = geo_load (geo_name);
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (zeta, rule);
-msh      = msh_2d_tensor_product (zeta, qn, qw);
-msh      = msh_push_forward_2d (msh, geometry);
+msh      = msh_2d (zeta, qn, qw, geometry);
 
 % Construct space structure
-sp = sp_bspline_curl_transform_2d (knots_u1, knots_u2, degree1, degree2, msh);
-
-% Precompute the coefficients
-x = squeeze (msh.geo_map(1,:,:));
-y = squeeze (msh.geo_map(2,:,:));
-
-epsilon = reshape (c_elec_perm (x, y), msh.nqn, msh.nel);
-mu      = reshape (c_magn_perm (x, y), msh.nqn, msh.nel);
+sp_u1 = sp_bspline_2d (knots_u1, degree1, msh);
+sp_u2 = sp_bspline_2d (knots_u2, degree2, msh);
+space = sp_vector_2d_curl_transform (sp_u1, sp_u2, msh);
+clear sp_u1 sp_u2
 
 % Assemble the matrices
-stiff_mat = op_curlu_curlv_2d (sp, sp, msh, 1./mu);
-mass_mat  = op_u_v (sp, sp, msh, epsilon);
+invmu = @(x, y) 1./c_magn_perm (x, y);
+stiff_mat = op_curlu_curlv_tp (space, space, msh, invmu);
+mass_mat  = op_u_v_tp (space, space, msh, c_elec_perm);
 
 % Apply homogeneous Dirichlet boundary conditions
-drchlt_dofs = unique ([sp.boundary(drchlt_sides).dofs]);
-int_dofs = setdiff (1:sp.ndof, drchlt_dofs);
+drchlt_dofs = [];
+for iside = 1:numel (drchlt_sides)
+  drchlt_dofs = unique ([drchlt_dofs space.boundary(drchlt_sides(iside)).dofs]);
+end
+int_dofs = setdiff (1:space.ndof, drchlt_dofs);
 
 % Solve the eigenvalue problem
-eigf = zeros (sp.ndof, numel(int_dofs));
+eigf = zeros (space.ndof, numel(int_dofs));
 [eigf(int_dofs, :), eigv] = ...
     eig (full (stiff_mat(int_dofs, int_dofs)), full (mass_mat(int_dofs, int_dofs)));
 eigv = diag (eigv);
