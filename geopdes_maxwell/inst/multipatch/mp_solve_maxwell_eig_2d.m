@@ -94,31 +94,28 @@ end
 
 [gnum, ndof, dofs_ornt] = mp_interface_hcurl_2d (interfaces, sp);
 
-nent = sum (cellfun (@(x, y, z) x.nel * y.nsh_max * z.nsh_max, msh, sp, sp));
-rows = zeros (nent, 1);
-cols = zeros (nent, 1);
-vals_stiff = zeros (nent, 1);
-vals_mass  = zeros (nent, 1);
-
-ncounter = 0;
+nc_stiff = 0; nc_mass = 0;
 for iptc = 1:npatch
 
 % Assemble the matrices setting the orientation
   invmu = @(x, y) 1./c_magn_perm (x, y);
   [rs, cs, vs] = op_curlu_curlv_tp (sp{iptc}, sp{iptc}, msh{iptc}, invmu);
-  rows(ncounter+(1:numel (rs))) = gnum{iptc}(rs);
-  cols(ncounter+(1:numel (rs))) = gnum{iptc}(cs);
+  rows_stiff(nc_stiff+(1:numel (rs))) = gnum{iptc}(rs);
+  cols_stiff(nc_stiff+(1:numel (rs))) = gnum{iptc}(cs);
   vs = dofs_ornt{iptc}(rs)' .* vs .* dofs_ornt{iptc}(cs)';
-  vals_stiff(ncounter+(1:numel (rs))) = vs;
+  vals_stiff(nc_stiff+(1:numel (rs))) = vs;
+  nc_stiff = nc_stiff + numel (rs);
 
   [rs, cs, vs] = op_u_v_tp (sp{iptc}, sp{iptc}, msh{iptc}, c_elec_perm);
+  rows_mass(nc_mass+(1:numel (rs))) = gnum{iptc}(rs);
+  cols_mass(nc_mass+(1:numel (rs))) = gnum{iptc}(cs);
   vs = dofs_ornt{iptc}(rs)' .* vs .* dofs_ornt{iptc}(cs)';
-  vals_mass(ncounter+(1:numel (rs))) = vs;
-  ncounter = ncounter + numel (rs);
+  vals_mass(nc_mass+(1:numel (rs))) = vs;
+  nc_mass = nc_mass + numel (rs);
 end
 
-stiff_mat = sparse (rows, cols, vals_stiff, ndof, ndof);
-mass_mat  = sparse (rows, cols, vals_mass, ndof, ndof);
+stiff_mat = sparse (rows_stiff, cols_stiff, vals_stiff, ndof, ndof);
+mass_mat  = sparse (rows_mass, cols_mass, vals_mass, ndof, ndof);
 
 % Apply homogeneous Dirichlet boundary conditions
 drchlt_dofs = [];

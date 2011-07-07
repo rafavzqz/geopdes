@@ -106,45 +106,35 @@ end
 [gnum, ndof, dofs_ornt] = mp_interface_hcurl_2d (interfaces, sp);
 [gnum_mul, ndof_mul] = mp_interface_2d (interfaces, sp_mul);
 
-
-nent = sum (cellfun (@(x, y, z) x.nel * y.nsh_max * z.nsh_max, msh, sp, sp));
-rows = zeros (nent, 1);
-cols = zeros (nent, 1);
-vals_stiff = zeros (nent, 1);
-vals_mass  = zeros (nent, 1);
-ncounter = 0;
-
-nent = sum (cellfun (@(x, y, z) x.nel * y.nsh_max * z.nsh_max, msh, sp_mul, sp));
-rows_saddle = zeros (nent, 1);
-cols_saddle = zeros (nent, 1);
-vals_saddle = zeros (nent, 1);
-ncounter_saddle = 0;
+nc_stiff = 0; nc_mass = 0; nc_saddle = 0;
 
 for iptc = 1:npatch
-
 % Assemble the matrices setting the orientation
   invmu = @(x, y) 1./c_magn_perm (x, y);
   [rs, cs, vs] = op_curlu_curlv_tp (sp{iptc}, sp{iptc}, msh{iptc}, invmu);
-  rows(ncounter+(1:numel (rs))) = gnum{iptc}(rs);
-  cols(ncounter+(1:numel (rs))) = gnum{iptc}(cs);
+  rows_stiff(nc_stiff+(1:numel (rs))) = gnum{iptc}(rs);
+  cols_stiff(nc_stiff+(1:numel (rs))) = gnum{iptc}(cs);
   vs = dofs_ornt{iptc}(rs)' .* vs .* dofs_ornt{iptc}(cs)';
-  vals_stiff(ncounter+(1:numel (rs))) = vs;
+  vals_stiff(nc_stiff+(1:numel (rs))) = vs;
+  nc_stiff = nc_stiff + numel (rs);
 
   [rs, cs, vs] = op_u_v_tp (sp{iptc}, sp{iptc}, msh{iptc}, c_elec_perm);
+  rows_mass(nc_mass+(1:numel (rs))) = gnum{iptc}(rs);
+  cols_mass(nc_mass+(1:numel (rs))) = gnum{iptc}(cs);
   vs = dofs_ornt{iptc}(rs)' .* vs .* dofs_ornt{iptc}(cs)';
-  vals_mass(ncounter+(1:numel (rs))) = vs;
-  ncounter = ncounter + numel (rs);
+  vals_mass(nc_mass+(1:numel (rs))) = vs;
+  nc_mass = nc_mass + numel (rs);
 
   [rs, cs, vs] = op_v_gradp_tp (sp{iptc}, sp_mul{iptc}, msh{iptc}, c_elec_perm);
-  rows_saddle(ncounter_saddle+(1:numel (rs))) = gnum_mul{iptc}(rs);
-  cols_saddle(ncounter_saddle+(1:numel (rs))) = gnum{iptc}(cs);
+  rows_saddle(nc_saddle+(1:numel (rs))) = gnum_mul{iptc}(rs);
+  cols_saddle(nc_saddle+(1:numel (rs))) = gnum{iptc}(cs);
   vs = vs .* dofs_ornt{iptc}(cs)';
-  vals_saddle(ncounter_saddle+(1:numel (rs))) = vs;
-  ncounter_saddle = ncounter_saddle + numel (rs);
+  vals_saddle(nc_saddle+(1:numel (rs))) = vs;
+  nc_saddle = nc_saddle + numel (rs);
 end
 
-stiff_mat  = sparse (rows, cols, vals_stiff, ndof, ndof);
-mass_mat   = sparse (rows, cols, vals_mass, ndof, ndof);
+stiff_mat  = sparse (rows_stiff, cols_stiff, vals_stiff, ndof, ndof);
+mass_mat   = sparse (rows_mass, cols_mass, vals_mass, ndof, ndof);
 saddle_mat = sparse (rows_saddle, cols_saddle, vals_saddle, ndof_mul, ndof);
 
 % Apply homogeneous Dirichlet boundary conditions
