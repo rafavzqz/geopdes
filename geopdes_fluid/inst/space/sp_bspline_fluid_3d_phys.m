@@ -29,8 +29,8 @@
 %
 % OUTPUT:
 %
-%   spv: class representing the discrete velocity function space (see sp_vector_3d)
-%   spp: class representing the discrete pressure function space (see sp_bspline_3d)
+%   spv: object representing the discrete velocity function space (see sp_vector_3d)
+%   spp: object representing the discrete pressure function space (see sp_bspline_3d)
 %   PI:  a projection matrix for the application of boundary conditions
 %         for Raviart-Thomas spaces. The identity matrix in all other cases.
 %

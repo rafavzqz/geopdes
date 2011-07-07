@@ -5,9 +5,9 @@
 %
 % INPUT: 
 %
-%   spv:     class representing the space of trial functions for the velocity (see sp_vector_2d, sp_vector_2d_piola)
-%   spq:     class representing the space of test functions for the pressure (see sp_bspline_2d)
-%   msh:     class defining the domain partition and the quadrature rule (see msh_2d)
+%   spv:     object representing the space of trial functions for the velocity (see sp_vector_2d, sp_vector_2d_piola)
+%   spq:     object representing the space of test functions for the pressure (see sp_bspline_2d)
+%   msh:     object that defines the domain partition and the quadrature rule (see msh_2d)
 %
 % OUTPUT: 
 %
@@ -39,8 +39,8 @@ function varargout = op_div_v_q_tp (spv, spq, msh)
   for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
     spv_col = sp_evaluate_col (spv, msh_col, 'divergence', true, ...
-			       'value', false, 'gradient', false);
-    spq_col = sp_evaluate_col (spq, msh_col, 'gradient', false);
+			       'value', false);
+    spq_col = sp_evaluate_col (spq, msh_col);
 
     A = A + op_div_v_q (spv_col, spq_col, msh_col);
   end
