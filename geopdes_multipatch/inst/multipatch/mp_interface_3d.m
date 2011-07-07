@@ -5,7 +5,7 @@
 % INPUT:
 %
 %  interfaces: structure with the information of the interfaces between patches (see mp_geo_read_file)
-%  sp:         structure representing the space of discrete functions (see sp_bspline_3d_phys)
+%  sp:         object representing the space of discrete functions (see sp_bspline_3d)
 %
 % OUTPUT:
 %
