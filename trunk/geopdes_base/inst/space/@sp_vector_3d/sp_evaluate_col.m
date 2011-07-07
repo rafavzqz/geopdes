@@ -4,7 +4,7 @@
 %
 % INPUTS:
 %     
-%    sp:      class defining the space of discrete functions (see sp_vector_3d)
+%    sp:      object defining the space of discrete functions (see sp_vector_3d)
 %    msh_col: msh structure containing (in the field msh.qn) the points 
 %              along each parametric direction in the parametric 
 %              domain at which to evaluate, i.e. quadrature points 

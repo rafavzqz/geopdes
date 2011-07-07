@@ -1,4 +1,4 @@
-% SP_BSPLINE_3D: Construct the class of a tensor-product space of B-Splines in 3D.
+% SP_BSPLINE_3D: Constructor of the class of tensor-product spaces of B-Splines in 3D.
 %
 %     sp = sp_bspline_3d (knots, degree, msh)
 %
@@ -6,14 +6,11 @@
 %     
 %     knots:     open knot vector    
 %     degree:    b-spline polynomial degree
-%     msh:       msh class containing (in the field msh.qn) the points 
-%                along each parametric direction in the parametric 
-%                domain at which to evaluate, i.e. quadrature points 
-%                or points for visualization (see msh_3d)
+%     msh:       msh object that defines the quadrature rule (see msh_3d)
 %
 % OUTPUT:
 %
-%    sp: class representing the discrete function space, with the following fields:
+%    sp: object representing the discrete function space, with the following fields:
 %
 %        FIELD_NAME      (SIZE)                            DESCRIPTION
 %        spu             (struct)                          space of univariate splines in the first parametric direction
