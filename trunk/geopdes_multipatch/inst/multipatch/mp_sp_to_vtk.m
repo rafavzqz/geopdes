@@ -5,7 +5,7 @@
 % INPUT:
 %     
 %     u:         vector of dof weights
-%     space:     structure representing the space of discrete functions (see sp_bspline_2d)
+%     space:     object representing the space of discrete functions (see sp_bspline_2d)
 %     geometry:  geometry structure (see geo_load)
 %     gnum:      array that relates the local numbering on each patch with the global one
 %     npts:      number of points along each parametric direction where to evaluate

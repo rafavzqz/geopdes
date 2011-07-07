@@ -4,8 +4,8 @@
 %
 % INPUT:
 %
-%  sp:         structure representing the space of trial functions (see sp_bspline_2d_phys)
-%  msh:        structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)
+%  sp:         object representing the space of trial functions (see sp_bspline_2d)
+%  msh:        object containing the domain partition and the quadrature rule (see msh_2d)
 %  h:          function handle to compute the Dirichlet condition
 %  gnum:       global numbering of the degrees of freedom (see mp_interface_2d)
 %  boundaries: array of strcutures containing the information for the boundaries (see mp_geo_load)
