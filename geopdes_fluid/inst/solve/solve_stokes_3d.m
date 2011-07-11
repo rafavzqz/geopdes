@@ -104,10 +104,10 @@ for iside = nmnn_sides
   msh_side = msh_eval_boundary_side (msh, iside);
   sp_side  = sp_eval_boundary_side (space_v, msh_side);
 
-  x = squeeze (msh.boundary(iside).geo_map(1,:,:));
-  y = squeeze (msh.boundary(iside).geo_map(2,:,:));
-  z = squeeze (msh.boundary(iside).geo_map(3,:,:));
-  gval = reshape (g (x, y, z, iside), 3, msh.boundary(iside).nqn, msh.boundary(iside).nel);
+  x = squeeze (msh_side.geo_map(1,:,:));
+  y = squeeze (msh_side.geo_map(2,:,:));
+  z = squeeze (msh_side.geo_map(3,:,:));
+  gval = reshape (g (x, y, z, iside), 3, msh_side.nqn, msh_side.nel);
 
   rhs_nmnn(sp_side.dofs) = rhs_nmnn(sp_side.dofs) + op_f_v (sp_side, msh_side, gval);
 end
