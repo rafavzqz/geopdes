@@ -19,7 +19,7 @@
 %    - nmnn_sides:   sides with natural boundary condition (may be empty)
 %    - drchlt_sides: sides with Dirichlet boundary condition
 %    - f:            force term
-%    - g:            function for Neumann condition (if nmnn_sides is not empty)
+%    - g:            function for natural condition (if nmnn_sides is not empty)
 %    - h:            function for Dirichlet boundary condition
 %    - viscosity:  viscosity coefficient (mu in the equation)
 %
@@ -112,7 +112,7 @@ int_dofs = setdiff (1:space_v.ndof, drchlt_dofs);
 nintdofs = numel (int_dofs);
 rhs_dir  = -A(int_dofs, drchlt_dofs)*vel(drchlt_dofs);
 
-% Apply Neumann boundary conditions
+% Apply natural boundary conditions
 rhs_nmnn = zeros(space_v.ndof,1);
 for iside = nmnn_sides
   x = squeeze (msh.boundary(iside).geo_map(1,:,:));
