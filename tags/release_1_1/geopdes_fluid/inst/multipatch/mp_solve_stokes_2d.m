@@ -16,10 +16,8 @@
 %
 %  problem_data: a structure with data of the problem. It contains the fields:
 %    - geo_name:     name of the file containing the geometry
-%    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
 %    - drchlt_sides: sides with Dirichlet boundary condition
 %    - f:            force term
-%    - g:            function for Neumann condition (if nmnn_sides is not empty)
 %    - h:            function for Dirichlet boundary condition
 %    - viscosity:    viscosity coefficient (mu in the equation)
 %
