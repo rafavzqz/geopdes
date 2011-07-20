@@ -103,7 +103,7 @@ if (gradient || curl)
 end
 
 % From here we apply the transformation
-jacdet = geopdes_det__ (msh.geo_map_jac);
+jacdet = reshape (geopdes_det__ (msh.geo_map_jac), msh.nqn, msh.nel);
 
 if (value)
   sp.shape_functions = geopdes_prod__ (msh.geo_map_jac, shape_functions);
@@ -130,10 +130,10 @@ end
 if (gradient || curl)
   shape_fun_grads = zeros (2, 2, msh.nqn, sp.nsh_max, msh.nel);
 
-  xu = squeeze (msh.geo_map_jac(1, 1, :, :));
-  xv = squeeze (msh.geo_map_jac(1, 2, :, :));
-  yu = squeeze (msh.geo_map_jac(2, 1, :, :));
-  yv = squeeze (msh.geo_map_jac(2, 2, :, :));
+  xu = reshape (msh.geo_map_jac(1, 1, :, :), msh.nqn, msh.nel);
+  xv = reshape (msh.geo_map_jac(1, 2, :, :), msh.nqn, msh.nel);
+  yu = reshape (msh.geo_map_jac(2, 1, :, :), msh.nqn, msh.nel);
+  yv = reshape (msh.geo_map_jac(2, 2, :, :), msh.nqn, msh.nel);
 
   xuu = reshape (msh.geo_map_der2(1, 1, 1, :, :), [], msh.nel);
   yuu = reshape (msh.geo_map_der2(2, 1, 1, :, :), [], msh.nel);
@@ -142,19 +142,15 @@ if (gradient || curl)
   xvv = reshape (msh.geo_map_der2(1, 2, 2, :, :), [], msh.nel);
   yvv = reshape (msh.geo_map_der2(2, 2, 2, :, :), [], msh.nel);
     
-  wh  = squeeze (shape_functions(1, :, :, :));
-  zh  = squeeze (shape_functions(2, :, :, :));
-  whu = squeeze (shape_function_gradients(1, 1, :, :, :));
-  whv = squeeze (shape_function_gradients(1, 2, :, :, :));
-  zhu = squeeze (shape_function_gradients(2, 1, :, :, :));
-  zhv = squeeze (shape_function_gradients(2, 2, :, :, :));
-
-  for ii=1:sp.nsh_max      
+  for ii=1:sp.nsh_max
+    wh  = reshape (shape_functions(1, :, ii, :), msh.nqn, msh.nel);
+    zh  = reshape (shape_functions(2, :, ii, :), msh.nqn, msh.nel);
+    whu = reshape (shape_function_gradients(1, 1, :, ii, :), msh.nqn, msh.nel);
+    whv = reshape (shape_function_gradients(1, 2, :, ii, :), msh.nqn, msh.nel);
+    zhu = reshape (shape_function_gradients(2, 1, :, ii, :), msh.nqn, msh.nel);
+    zhv = reshape (shape_function_gradients(2, 2, :, ii, :), msh.nqn, msh.nel);
     [wx, wy, zx, zy] = piola_transform_grad_2d__ (xuu, yuu, xuv, yuv, xvv, ... 
-                        yvv, xu, xv, yu, yv, ...
-                        squeeze (wh(:,ii,:)),  squeeze (zh(:,ii,:)), ...
-                        squeeze (whu(:,ii,:)), squeeze (whv(:,ii,:)), ...
-                        squeeze (zhu(:,ii,:)), squeeze (zhv(:,ii,:)), jacdet);
+                        yvv, xu, xv, yu, yv, wh, zh, whu, whv, zhu, zhv, jacdet);
 
     shape_fun_grads(1, 1, :, ii, :) = wx;
     shape_fun_grads(1, 2, :, ii, :) = wy;
