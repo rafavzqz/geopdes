@@ -95,7 +95,7 @@ quiver (X, Y, squeeze(eu(1,:,:)), squeeze(eu(2,:,:)))
 axis equal
 title('Computed solution')
 
-[div, F] = sp_eval_div_2d (vel, space_v, geometry, vtk_pts);
+[div, F] = sp_eval_div (vel, space_v, geometry, vtk_pts);
 figure()
 surf (X, Y, div)
 view(2)
