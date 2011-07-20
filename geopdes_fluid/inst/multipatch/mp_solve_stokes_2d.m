@@ -4,7 +4,6 @@
 %
 %   -div(mu(x) grad(vel)) + grad(press) = f    in Omega
 %                              div(vel) = 0    in Omega
-%                         mu(x) dvel/dn = g    on Gamma_N
 %                                   vel = h    on Gamma_D
 %
 % USAGE:
@@ -16,10 +15,8 @@
 %
 %  problem_data: a structure with data of the problem. It contains the fields:
 %    - geo_name:     name of the file containing the geometry
-%    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
 %    - drchlt_sides: sides with Dirichlet boundary condition
 %    - f:            force term
-%    - g:            function for Neumann condition (if nmnn_sides is not empty)
 %    - h:            function for Dirichlet boundary condition
 %    - viscosity:    viscosity coefficient (mu in the equation)
 %
@@ -87,18 +84,16 @@ npatch = numel (geometry);
 
 ndofp = 0;
 for iptc = 1:npatch
-  [knotsp, knotsv1, degreev1, knotsv2, degreev2, der2] = ...
-     sp_fluid_set_options_2d (element_name, geometry(iptc).nurbs.knots, ...
-                              nsub, degree, regularity);
-
-% Construct msh structure
+% Construct msh structure using the finest mesh
+  [msh_breaks, der2] = msh_set_breaks (element_name, ...
+                                       geometry(iptc).nurbs.knots, nsub);
   rule      = msh_gauss_nodes (nquad);
-  [qn, qw]  = msh_set_quad_nodes (knotsv1, rule);
-  msh{iptc} = msh_2d (knotsv1, qn, qw, geometry(iptc), 'der2', der2);
+  [qn, qw]  = msh_set_quad_nodes (msh_breaks, rule);
+  msh{iptc} = msh_2d (msh_breaks, qn, qw, geometry(iptc), 'der2', der2);
 
 % Construct space structure
-  [spv{iptc}, spp{iptc}] = sp_bspline_fluid_2d_phys (element_name, ...
-            knotsv1, degreev1, knotsv2, degreev2, knotsp, degree, msh{iptc});
+  [spv{iptc}, spp{iptc}] = sp_bspline_fluid_2d (element_name, ...
+               geometry(iptc).nurbs.knots, nsub, degree, regularity, msh{iptc});
 end
 
 % Create a correspondence between patches on the interfaces

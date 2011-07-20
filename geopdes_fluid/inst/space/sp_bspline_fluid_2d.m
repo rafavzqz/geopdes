@@ -1,6 +1,6 @@
-% SP_BSPLINE_FLUID_2D_PHYS: Construct different pair of B-Splines spaces on the physical domain for fluid problems.
+% SP_BSPLINE_FLUID_2D: Construct different pair of B-Splines spaces on the physical domain for fluid problems.
 %
-%   [spv, spp, PI] = sp_bspline_fluid_2d_phys (elem_name, knots, nsub, ...
+%   [spv, spp, PI] = sp_bspline_fluid_2d (elem_name, knots, nsub, ...
 %                                               degreep, regularity, msh)
 %
 % INPUTS:
@@ -45,31 +45,33 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [spv, spp, PI] = sp_bspline_fluid_2d_phys (element_name, ...
+function [spv, spp, PI] = sp_bspline_fluid_2d (element_name, ...
                    knots, nsub_p, degree_p, regularity_p, msh)
 
 % The pressure space is the same in the four cases
 knotsp = kntrefine (knots, nsub_p-1, degree_p, regularity_p);
 spp = sp_bspline_2d (knotsp, degree_p, msh);
 
-% Construction of the knot vectors for the velocity components
+% Construction of the knot vectors and the discrete space for the velocity
 switch (lower (element_name))
   case {'th'}
-    degree_v1 = degree_p + 1;
-    degree_v2 = degree_v1;
+    degree_v = degree_p + 1;
     regularity_v = regularity_p;
     nsub_v = nsub_p;
-    knots_v1 = kntrefine (knots, nsub_v-1, degree_v1, regularity_v);
-    knots_v2 = knots_v1;
+    knots_v = kntrefine (knots, nsub_v-1, degree_v, regularity_v);
+    sp_scalar = sp_bspline_2d (knots_v, degree_v, msh);
+    spv = sp_vector_2d (sp_scalar, sp_scalar, msh);
 
+    PI = speye (spp.ndof);
   case {'sg'}
-    degree_v1 = degree_p + 1;
-    degree_v2 = degree_v1;
+    degree_v = degree_p + 1;
     regularity_v = regularity_p+1;
     nsub_v = 2*nsub_p;
-    knots_v1 = kntrefine (knots, nsub_v-1, degree_v1, regularity_v);
-    knots_v2 = knots_v1;
+    knots_v = kntrefine (knots, nsub_v-1, degree_v, regularity_v);
+    sp_scalar = sp_bspline_2d (knots_v, degree_v, msh);
+    spv = sp_vector_2d (sp_scalar, sp_scalar, msh);
 
+    PI = speye (spp.ndof);
   case {'ndl'}
     degree_v1 = degree_p+1;
     degree_v2 = degree_p+1;
@@ -77,7 +79,11 @@ switch (lower (element_name))
     knots_v1{2}  = sort ([knotsp{2}, unique(knotsp{2})]);
     knots_v2{1}  = sort ([knotsp{1}, unique(knotsp{1})]);
     knots_v2{2}  = [knotsp{2}(1) knotsp{2} knotsp{2}(end)];
+    sp1 = sp_bspline_2d (knots_v1, degree_v1, msh);
+    sp2 = sp_bspline_2d (knots_v2, degree_v2, msh);
+    spv = sp_vector_2d_piola_transform (sp1, sp2, msh);
 
+    PI = speye (spp.ndof);
   case {'rt'}
     degree_v1 = [degree_p(1)+1 degree_p(2)];
     degree_v2 = [degree_p(1) degree_p(2)+1];
@@ -85,38 +91,14 @@ switch (lower (element_name))
     knots_v1{2}  = knotsp{2};
     knots_v2{1}  = knotsp{1};
     knots_v2{2}  = [knotsp{2}(1) knotsp{2} knotsp{2}(end)];
-  otherwise
-    error ('sp_bspline_fluid_2d_phys: unknown element type')
-end
 
-% Construction of the space for the velocity
-switch (lower (element_name))
-  case {'th'}
-    sp1 = sp_bspline_2d (knots_v1, degree_v1, msh);
-    sp2 = sp_bspline_2d (knots_v2, degree_v2, msh);
-    spv = sp_vector_2d (sp1, sp2, msh);
-
-    PI = speye (spp.ndof);
-  case {'sg'}
-    sp1 = sp_bspline_2d (knots_v1, degree_v1, msh);
-    sp2 = sp_bspline_2d (knots_v2, degree_v2, msh);
-    spv = sp_vector_2d (sp1, sp2, msh);
-
-    PI = speye (spp.ndof);
-  case {'ndl'}
-    sp1 = sp_bspline_2d (knots_v1, degree_v1, msh);
-    sp2 = sp_bspline_2d (knots_v2, degree_v2, msh);
-    spv = sp_vector_2d_piola_transform (sp1, sp2, msh);
-
-    PI = speye (spp.ndof);
-  case {'rt'}
     sp1 = sp_bspline_2d (knots_v1, degree_v1, msh);
     sp2 = sp_bspline_2d (knots_v2, degree_v2, msh);
     spv = sp_vector_2d_piola_transform (sp1, sp2, msh);
 
     PI = b2nst__ (spp, knotsp, degree_p, msh);
   otherwise
-    error ('sp_bspline_fluid_2d_phys: unknown element type')
+    error ('sp_bspline_fluid_2d: unknown element type')
 end
 
 end

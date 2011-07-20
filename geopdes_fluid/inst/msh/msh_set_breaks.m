@@ -8,7 +8,7 @@
 %                  'NDL' (Nedelec, 2nd family), 'RT' (Raviart-Thomas) and 
 %                  'SG' (subgrid). For more details see the references below
 %   knots:        knot vector of the coarse geometry
-%   nsub:         number of subdivisions O QUALCOSA DEL GENERE. DEVO SISTEMARE
+%   nsub:         number of subdivisions for refinement of the pressure space.
 %
 % OUTPUT:
 %
