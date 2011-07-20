@@ -19,8 +19,8 @@
 %        ndof            (scalar)                          total number of degrees of freedom
 %        ndof_dir        (1 x 3 vector)                    degrees of freedom along each direction (only for tensor product spaces)
 %        nsh_max         (scalar)                          maximum number of shape functions per element
-%        nsh             (1 x msh.nel vector)              actual number of shape functions per each element
-%        ncomp           (scalar)                    number of components of the functions of the space (actually, 1)
+%        nsh_dir         (1 x 3 vector)                    maximum number of univariate shape functions per element in each parametric direction
+%        ncomp           (scalar)                          number of components of the functions of the space (actually, 1)
 %        boundary        (1 x 6 struct array)              struct array representing the space of traces of basis functions on each edge
 %
 %       METHOD_NAME

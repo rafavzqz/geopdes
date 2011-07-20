@@ -4,7 +4,7 @@
 %
 % INPUTS:
 %     
-%    msh:   mesh class (see msh_3d)
+%    msh:   mesh object (see msh_3d)
 %    iside: number of the boundary side to compute, from 1 to 6 (see the file geo_specs for documentation about face numbering)
 %
 % OUTPUT:

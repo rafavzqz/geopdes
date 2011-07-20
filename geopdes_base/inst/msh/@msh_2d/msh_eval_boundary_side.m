@@ -4,7 +4,7 @@
 %
 % INPUTS:
 %     
-%    msh:   mesh class (see msh_2d)
+%    msh:   mesh object (see msh_2d)
 %    iside: number of the boundary side to compute, from 1 to 4 (see the file geo_specs for documentation about edge numbering)
 %   
 % OUTPUT:
