@@ -1,10 +1,10 @@
-% SP_EVAL: Evaluate a function, given by its degrees of freedom, at a given set of points.
+% SP_EVAL_DIV: Evaluate the divergence of a function, given by its degrees of freedom, at a given set of points.
 %
-%   [eu, F] = sp_eval (u, space, geometry, pts);
-%   [eu, F] = sp_eval (u, space, geometry, npts);
+%   [eu, F] = sp_eval_div (u, space, geometry, pts);
+%   [eu, F] = sp_eval_div (u, space, geometry, npts);
 %
 % INPUT:
-%     
+%
 %     u:         vector of dof weights
 %     space:     object defining the discrete space (see sp_bspline_2d)
 %     geometry:  geometry structure (see geo_load)
@@ -13,10 +13,10 @@
 %
 % OUTPUT:
 %
-%     eu: the function evaluated at the given points 
+%     eu: the divergence of the function evaluated in the given points 
 %     F:  grid points in the physical domain, that is, the mapped points
 % 
-% Copyright (C) 2009, 2010 Carlo de Falco
+% Copyright (C) 2011 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
@@ -32,7 +32,11 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [eu, F] = sp_eval (u, space, geometry, npts);
+function [eu, F] = sp_eval_div (u, space, geometry, npts);
+
+  if (space.ncomp == 1)
+    error ('sp_eval_div: field cannot be scalar')
+  end
 
   ndim = numel (npts);
 
@@ -62,14 +66,14 @@ function [eu, F] = sp_eval (u, space, geometry, npts);
   end
   sp  = space.constructor (msh);
 
-  [eu, F] = sp_eval_msh (u, sp, msh);
+  [eu, F] = sp_eval_div_msh (u, sp, msh);
 
   if (ndim == 2)
     F  = reshape (F, ndim, numel (pts{1}), numel (pts{2}));
-    eu = squeeze (reshape (eu, sp.ncomp, numel (pts{1}), numel (pts{2})));
+    eu = squeeze (reshape (eu, numel (pts{1}), numel (pts{2})));
   elseif (ndim == 3)
     F  = reshape (F, ndim, numel (pts{1}), numel (pts{2}), numel (pts{3}));
-    eu = squeeze (reshape (eu, sp.ncomp, numel (pts{1}), numel (pts{2}), numel (pts{3})));
+    eu = squeeze (reshape (eu, numel (pts{1}), numel (pts{2}), numel (pts{3})));
   end
 
 end
