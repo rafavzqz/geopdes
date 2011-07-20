@@ -98,9 +98,10 @@ if (curl)
   shape_function_curls(:, sp1_col.nsh_max+1:sp.nsh_max, :) = ...
                           squeeze (sp2_col.shape_function_gradients(1,:,:,:));
   for ii=1:sp.nsh_max
-    sp.shape_function_curls(:,ii,:) = ...
+    shape_function_curls(:,ii,:) = ...
        squeeze (shape_function_curls(:,ii,:))./jacdet;
   end
+  sp.shape_function_curls = shape_function_curls;
 end
 
 end
