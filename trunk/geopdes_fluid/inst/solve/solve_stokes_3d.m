@@ -4,7 +4,7 @@
 %
 %   -div(mu(x) grad(vel)) + grad(press) = f    in Omega
 %                              div(vel) = 0    in Omega
-%                         mu(x) dvel/dn = g    on Gamma_N
+%             mu(x) dvel/dn - press * n = g    on Gamma_N
 %                                   vel = h    on Gamma_D
 %
 % USAGE:
@@ -16,10 +16,10 @@
 %
 %  problem_data: a structure with data of the problem. It contains the fields:
 %    - geo_name:     name of the file containing the geometry
-%    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
+%    - nmnn_sides:   sides with natural boundary condition (may be empty)
 %    - drchlt_sides: sides with Dirichlet boundary condition
 %    - f:            force term
-%    - g:            function for Neumann condition (if nmnn_sides is not empty)
+%    - g:            function for natural condition (if nmnn_sides is not empty)
 %    - h:            function for Dirichlet boundary condition
 %    - viscosity:  viscosity coefficient (mu in the equation)
 %
@@ -76,17 +76,16 @@ end
 
 % load geometry
 geometry    = geo_load (geo_name);
-[knotsp, knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, der2] = ...
-   sp_fluid_set_options_3d (element_name, geometry.nurbs.knots, nsub, degree, regularity);
 
 % Compute the mesh structure using the finest mesh
+msh_breaks  = msh_set_breaks (element_name, geometry.nurbs.knots, nsub);
 rule        = msh_gauss_nodes (nquad);
-[qn, qw]    = msh_set_quad_nodes (knotsv1, rule);
-msh         = msh_3d (knotsv1, qn, qw, geometry); 
+[qn, qw]    = msh_set_quad_nodes (msh_breaks, rule);
+msh         = msh_3d (msh_breaks, qn, qw, geometry); 
 
 % Compute the space structures
-[space_v, space_p, PI] = sp_bspline_fluid_3d_phys (element_name, ...
-          knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, knotsp, degree, msh);
+[space_v, space_p, PI] = sp_bspline_fluid_3d (element_name, ...
+                     geometry.nurbs.knots, nsub, degree, regularity, msh);
 
 % Assemble the matrices
 A = op_gradu_gradv_tp (space_v, space_v, msh, viscosity);
@@ -98,7 +97,7 @@ F = op_f_v_tp (space_v, msh, f);
 vel   = zeros (space_v.ndof, 1);
 press = zeros (space_p.ndof, 1);
 
-% Apply Neumann boundary conditions
+% Apply natural boundary conditions
 rhs_nmnn = zeros(space_v.ndof,1);
 for iside = nmnn_sides
   msh_side = msh_eval_boundary_side (msh, iside);

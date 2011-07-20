@@ -78,15 +78,15 @@ end
 
 % load geometry
 geometry = geo_load (geo_name);
-[msh_breaks, der2] = msh_set_breaks (element_name, geometry.nurbs.knots, nsub);
 
 % Compute the mesh structure using the finest mesh
-rule        = msh_gauss_nodes (nquad);
-[qn, qw]    = msh_set_quad_nodes (msh_breaks, rule);
-msh         = msh_2d (msh_breaks, qn, qw, geometry, 'der2', der2);
+[msh_breaks, der2] = msh_set_breaks (element_name, geometry.nurbs.knots, nsub);
+rule               = msh_gauss_nodes (nquad);
+[qn, qw]           = msh_set_quad_nodes (msh_breaks, rule);
+msh                = msh_2d (msh_breaks, qn, qw, geometry, 'der2', der2);
 
 % Compute the space structures
-[space_v, space_p, PI] = sp_bspline_fluid_2d_phys (element_name, ...
+[space_v, space_p, PI] = sp_bspline_fluid_2d (element_name, ...
                 geometry.nurbs.knots, nsub, degree, regularity, msh);
 
 % Assemble the matrices

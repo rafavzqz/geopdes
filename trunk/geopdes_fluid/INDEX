@@ -1,13 +1,13 @@
 geopdes_fluid >> Iso-Geometric Analysis for Incompressible fluids
 Space
- sp_bspline_fluid_2d_phys
- sp_bspline_fluid_3d_phys
- sp_fluid_set_options_2d
- sp_fluid_set_options_3d
+ sp_bspline_fluid_2d
+ sp_bspline_fluid_3d
  @sp_vector_2d_piola_transform
   sp_vector_2d_piola_transform
   sp_eval_boundary_side
   sp_evaluate_column
+Msh
+ msh_set_breaks
 Solve
  solve_stokes_2d
  solve_stokes_3d
