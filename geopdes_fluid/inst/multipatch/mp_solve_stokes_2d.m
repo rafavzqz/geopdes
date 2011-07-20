@@ -85,19 +85,17 @@ npatch = numel (geometry);
 
 ndofp = 0;
 for iptc = 1:npatch
-  [knotsp, knotsv1, degreev1, knotsv2, degreev2, der2] = ...
-     sp_fluid_set_options_2d (element_name, geometry(iptc).nurbs.knots, ...
-                              nsub, degree, regularity);
-
 % Construct msh structure
+  [msh_breaks, der2] = msh_set_breaks (element_name, ...
+                                       geometry(iptc).nurbs.knots, nsub);
   rule      = msh_gauss_nodes (nquad);
-  [qn, qw]  = msh_set_quad_nodes (knotsv1, rule);
-  msh{iptc} = msh_2d_tensor_product (knotsv1, qn, qw);
+  [qn, qw]  = msh_set_quad_nodes (msh_breaks, rule);
+  msh{iptc} = msh_2d_tensor_product (msh_breaks, qn, qw);
   msh{iptc} = msh_push_forward_2d (msh{iptc}, geometry(iptc), 'der2', der2);
 
 % Construct space structure
-  [spv{iptc}, spp{iptc}] = sp_bspline_fluid_2d_phys (element_name, ...
-            knotsv1, degreev1, knotsv2, degreev2, knotsp, degree, msh{iptc});
+  [spv{iptc}, spp{iptc}] = sp_bspline_fluid_2d (element_name, ...
+               geometry(iptc).nurbs.knots, nsub, degree, regularity, msh{iptc});
 end
 
 % Create a correspondence between patches on the interfaces

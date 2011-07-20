@@ -76,18 +76,17 @@ end
 
 % load geometry
 geometry    = geo_load (geo_name);
-[knotsp, knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, der2] = ...
-   sp_fluid_set_options_3d (element_name, geometry.nurbs.knots, nsub, degree, regularity);
 
 % Compute the mesh structure using the finest mesh
+msh_breaks  = msh_set_breaks (element_name, geometry.nurbs.knots, nsub);
 rule        = msh_gauss_nodes (nquad);
-[qn, qw]    = msh_set_quad_nodes (knotsv1, rule);
-msh         = msh_3d_tensor_product (knotsv1, qn, qw); 
+[qn, qw]    = msh_set_quad_nodes (msh_breaks, rule);
+msh         = msh_3d_tensor_product (msh_breaks, qn, qw); 
 msh         = msh_push_forward_3d (msh, geometry);
 
 % Compute the space structures
-[space_v, space_p, PI] = sp_bspline_fluid_3d_phys (element_name, ...
-          knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, knotsp, degree, msh);
+[space_v, space_p, PI] = sp_bspline_fluid_3d (element_name, ...
+                     geometry.nurbs.knots, nsub, degree, regularity, msh);
 
 % Assemble the matrices
 x           = squeeze (msh.geo_map(1,:,:));

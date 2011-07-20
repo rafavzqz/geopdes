@@ -3,10 +3,10 @@ Space
  do_spv_component_wise_2d__
  do_spv_component_wise_3d__
  do_spv_piola_transform_2d__
- sp_bspline_fluid_2d_phys
- sp_bspline_fluid_3d_phys
- sp_fluid_set_options_2d
- sp_fluid_set_options_3d
+ sp_bspline_fluid_2d
+ sp_bspline_fluid_3d
+Msh
+ msh_set_breaks
 Solve
  solve_stokes_2d
  solve_stokes_3d
