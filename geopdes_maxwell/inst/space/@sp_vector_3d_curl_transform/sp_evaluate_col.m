@@ -115,15 +115,16 @@ if (curl)
   DFcurl = geopdes_prod__ (msh.geo_map_jac, shape_function_curls);
   for ii=1:sp.nsh_max
     DFaux = DFcurl(1,:,ii,:);
-    sp.shape_function_curls(1,:,ii,:) = ...
+    shape_function_curls(1,:,ii,:) = ...
         reshape(DFaux(:)./jacdet(:), 1, msh.nqn, 1, msh.nel);
     DFaux = DFcurl(2,:,ii,:);
-    sp.shape_function_curls(2,:,ii,:) = ...
+    shape_function_curls(2,:,ii,:) = ...
         reshape(DFaux(:)./jacdet(:), 1, msh.nqn, 1, msh.nel);
     DFaux = DFcurl(3,:,ii,:);
-    sp.shape_function_curls(3,:,ii,:) = ...
+    shape_function_curls(3,:,ii,:) = ...
         reshape(DFaux(:)./jacdet(:), 1, msh.nqn, 1, msh.nel);
   end
+  sp.shape_function_curls = shape_function_curls;
   clear DFcurl DFaux
 end
 
