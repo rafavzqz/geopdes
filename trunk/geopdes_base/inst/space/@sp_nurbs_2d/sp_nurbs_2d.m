@@ -22,7 +22,6 @@
 %        ndof_dir        (1 x 2 vector)              degrees of freedom along each direction
 %        nsh_max         (scalar)                    maximum number of shape functions per element
 %        nsh_dir         (1 x 2 vector)              maximum number of univariate shape functions per element in each parametric direction
-%        nsh             (1 x msh.nel vector)        actual number of shape functions per each element
 %        ncomp           (scalar)                    number of components of the functions of the space (actually, 1)
 %        boundary        (1 x 4 struct array)        struct array representing the space of traces of basis functions on each edge
 %

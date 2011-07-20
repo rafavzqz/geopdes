@@ -1,4 +1,4 @@
-% SP_VECTOR_3D: Constructof of the class of three-dimensional vectorial spaces with a component-wise mapping.
+% SP_VECTOR_3D: Constructor of the class of three-dimensional vectorial spaces with a component-wise mapping.
 %
 %     sp = sp_vector_3d (sp1, sp2, sp3, msh)
 %
@@ -14,14 +14,13 @@
 %    sp: object representing the discrete function space of vector-valued functions, with the following fields and methods:
 %
 %        FIELD_NAME      (SIZE)                      DESCRIPTION
-%        sp1             (space object)              space class for the first component
-%        sp2             (space object)              space class for the second component
-%        sp3             (space object)              space class for the third component
+%        sp1             (space object)              space object for the first component
+%        sp2             (space object)              space object for the second component
+%        sp3             (space object)              space object for the third component
 %        ndof            (scalar)                    total number of degrees of freedom
 %        ndof_dir        (3 x 3 matrix)              for each component, number of degrees of freedom along each direction
 %        comp_dofs       (1 x 3 cell array)          indices of the degrees of freedom for each component
 %        nsh_max         (scalar)                    maximum number of shape functions per element
-%        nsh             (1 x msh.nel vector)        actual number of shape functions per each element
 %        ncomp           (scalar)                    number of components of the functions of the space (actually, 3)
 %        boundary        (1 x 6 struct array)        struct array representing the space of traces of basis functions on each edge
 %

@@ -4,7 +4,7 @@
 %
 % INPUTS:
 %
-%    msh:    mesh class (see msh_3d)
+%    msh:    mesh object (see msh_3d)
 %    colnum: number of the "column", i.e., the element in the first parametric direction.
 %
 % OUTPUT:

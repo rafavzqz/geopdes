@@ -19,7 +19,7 @@
 %   
 % OUTPUT:
 %
-%     msh: class containing the following fields and methods
+%     msh: object containing the following fields and methods
 %
 %     FIELD_NAME    (SIZE)                  DESCRIPTION
 %     nel           (scalar)                number of elements of the partition
