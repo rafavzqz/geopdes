@@ -41,20 +41,18 @@ function varargout = op_div_v_q (spv, spq, msh)
   ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:, iel)))
-      jacdet_weights = msh.jacdet(:,iel) .* msh.quad_weights(:, iel);
-      jacdet_weights = repmat (jacdet_weights, [1, spv.nsh(iel)]);
+      jacdet_weights = reshape (msh.jacdet(:,iel) .* msh.quad_weights(:, iel), msh.nqn, 1);
 
       shpq_iel = spq.shape_functions(:, 1:spq.nsh(iel), iel);
       divv_iel = spv.shape_function_divs(:, 1:spv.nsh(iel), iel);
 
+      shpq_times_jw = bsxfun (@times, jacdet_weights, shpq_iel);
       for idof = 1:spq.nsh(iel)
-        ishp  = repmat (shpq_iel(:, idof), [1, spv.nsh(iel)]);
-
         rows(ncounter+(1:spv.nsh(iel))) = spq.connectivity(idof, iel);
         cols(ncounter+(1:spv.nsh(iel))) = spv.connectivity(1:spv.nsh(iel), iel);
 
-        values(ncounter+(1:spv.nsh(iel))) = ...
-                  sum (jacdet_weights .* ishp .* divv_iel);
+        aux_val = bsxfun (@times, shpq_times_jw(:,idof), divv_iel);
+        values(ncounter+(1:spv.nsh(iel))) = sum (aux_val, 1);
         ncounter = ncounter + spv.nsh(iel);
       end
     else
