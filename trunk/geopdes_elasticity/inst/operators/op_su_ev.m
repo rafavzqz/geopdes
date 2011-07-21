@@ -33,30 +33,24 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function varargout = op_su_ev (spu, spv, msh, lambda, mu, element_list)
+function varargout = op_su_ev (spu, spv, msh, lambda, mu)
 
-  if (nargin == 5)
-    element_list = 1:msh.nel;
-  end
-  nel = numel (element_list);
-
-  gradu = reshape (spu.shape_function_gradients, spu.ncomp, [], msh.nqn, spu.nsh_max, nel);
-  gradv = reshape (spv.shape_function_gradients, spv.ncomp, [], msh.nqn, spv.nsh_max, nel);
+  gradu = reshape (spu.shape_function_gradients, spu.ncomp, [], msh.nqn, spu.nsh_max, msh.nel);
+  gradv = reshape (spv.shape_function_gradients, spv.ncomp, [], msh.nqn, spv.nsh_max, msh.nel);
 
   ndir = size (gradu, 2);
 
-  rows = zeros (nel * spu.nsh_max * spv.nsh_max, 1);
-  cols = zeros (nel * spu.nsh_max * spv.nsh_max, 1);
-  values = zeros (nel * spu.nsh_max * spv.nsh_max, 1);
+  rows = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
+  cols = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
+  values = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
 
   ncounter = 0;
-  for iel = 1:nel
-    iel_glob = element_list (iel);
-    if (all (msh.jacdet(:, iel_glob)))
-      jacdet_weights = msh.jacdet(:, iel_glob) .* msh.quad_weights(:, iel_glob);
-      jacdet_weights_mu = repmat (jacdet_weights .* mu(:, iel_glob), [1,spu.nsh(iel)]);
-      jacdet_weights_lambda = repmat (jacdet_weights .* lambda(:, iel_glob), [1,spu.nsh(iel)]);
-
+  for iel = 1:msh.nel
+    if (all (msh.jacdet(:, iel)))
+      jacdet_weights = msh.jacdet(:, iel) .* msh.quad_weights(:, iel);
+      jacdet_weights_mu = reshape (jacdet_weights .* mu(:, iel), 1, msh.nqn);
+      jacdet_weights_lambda = reshape (jacdet_weights .* lambda(:, iel), msh.nqn, 1);
+      
       gradu_iel = permute (gradu(:, :, :, 1:spu.nsh(iel), iel), [1 2 4 3]);
       epsu_iel = (gradu_iel + permute (gradu_iel, [2 1 3 4]))/2;
       epsu_iel = reshape (epsu_iel, spu.ncomp * ndir, spu.nsh(iel), msh.nqn);
@@ -67,20 +61,20 @@ function varargout = op_su_ev (spu, spv, msh, lambda, mu, element_list)
       epsv_iel = reshape (epsv_iel, spv.ncomp * ndir, spv.nsh(iel), msh.nqn);
       epsv_iel = permute (epsv_iel, [1 3 2]);
 
-      divu_iel = spu.shape_function_divs(:,:,iel);
+      divv_iel = spv.shape_function_divs(:,1:spv.nsh(iel),iel);
+      divu_iel = spu.shape_function_divs(:,1:spu.nsh(iel),iel);
 
+      epsv_times_jw = bsxfun (@times, jacdet_weights_mu, epsv_iel);
+      divv_times_jw = bsxfun (@times, jacdet_weights_lambda, divv_iel);
       for idof = 1:spv.nsh(iel)
-        ieps  = repmat (epsv_iel(:, :, idof), [1 1 spu.nsh(iel)]);;
-        idiv  = repmat (spv.shape_function_divs(:, idof, iel), [1 spu.nsh(iel)]);
-
         rows(ncounter+(1:spu.nsh(iel))) = spv.connectivity(idof, iel);
         cols(ncounter+(1:spu.nsh(iel))) = spu.connectivity(1:spu.nsh(iel), iel);
 
-        val1 = 2 * sum (jacdet_weights_mu .* ...
-          reshape (sum (ieps .* epsu_iel, 1), msh.nqn, spu.nsh(iel)), 1);
-        val2 = sum (jacdet_weights_lambda .* idiv .* divu_iel, 1);
+        aux_val1 = bsxfun (@times, epsv_times_jw(:,:,idof), epsu_iel);
+        aux_val2 = bsxfun (@times, divv_times_jw(:,idof), divu_iel);
+        values(ncounter+(1:spu.nsh(iel))) = 2 * sum (sum (aux_val1, 2), 1);
+        values(ncounter+(1:spu.nsh(iel))) = values(ncounter+(1:spu.nsh(iel))) + sum (aux_val2, 1).';
 
-        values(ncounter+(1:spu.nsh(iel))) = val1 + val2;
         ncounter = ncounter + spu.nsh(iel);
       end
     else
