@@ -44,23 +44,21 @@ function varargout = op_v_gradp (spv, spp, msh, coeff)
   ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:, iel)))
-      jacdet_weights = msh.jacdet(:, iel) .* ...
-                       msh.quad_weights(:, iel) .* coeff(:, iel);
-      jacdet_weights = repmat (jacdet_weights, [1, spv.nsh(iel)]);
+      jacdet_weights = reshape (msh.jacdet(:,iel) .* ...
+                         msh.quad_weights(:, iel) .* coeff(:,iel), 1, msh.nqn);
 
       gradp_iel = reshape (spp.shape_function_gradients(:, :, 1:spp.nsh(iel), iel), ...
                                      ndir, msh.nqn, spp.nsh(iel));
       shpv_iel = reshape (spv.shape_functions(:, :, 1:spv.nsh(iel), iel), ...
                                      ndir, msh.nqn, spv.nsh(iel));
 
+      gradp_times_jw = bsxfun (@times, jacdet_weights, gradp_iel);
       for idof = 1:spp.nsh(iel)
-        ishg  = repmat (gradp_iel(:, :, idof), [1, 1, spv.nsh(iel)]);
-
         rows(ncounter+(1:spv.nsh(iel))) = spp.connectivity(idof, iel);
         cols(ncounter+(1:spv.nsh(iel))) = spv.connectivity(1:spv.nsh(iel), iel);
 
-        values(ncounter+(1:spv.nsh(iel))) = sum (jacdet_weights .* ...
-          reshape (sum (ishg .* shpv_iel, 1), msh.nqn, spv.nsh(iel)), 1);
+        aux_val = bsxfun (@times, gradp_times_jw(:,:,idof), shpv_iel);
+        values(ncounter+(1:spv.nsh(iel))) = sum (sum (aux_val, 2), 1);
         ncounter = ncounter + spv.nsh(iel);
       end
     else
