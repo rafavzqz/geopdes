@@ -45,21 +45,19 @@ function varargout = op_u_v (spu, spv, msh, coeff)
   ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:,iel)))
-      jacdet_weights = msh.jacdet(:, iel) .* ...
-                       msh.quad_weights(:, iel) .* coeff(:, iel);
-      jacdet_weights = repmat (jacdet_weights, [1, spu.nsh(iel)]);
+      jacdet_weights = reshape (msh.jacdet(:, iel) .* ...
+                       msh.quad_weights(:, iel) .* coeff(:, iel), 1, msh.nqn);
 
       shpv_iel = reshape (shpv(:, :, 1:spv.nsh(iel), iel), spv.ncomp, msh.nqn, spv.nsh(iel));
       shpu_iel = reshape (shpu(:, :, 1:spu.nsh(iel), iel), spu.ncomp, msh.nqn, spu.nsh(iel));
 
+      shpv_times_jw = bsxfun (@times, jacdet_weights, shpv_iel);
       for idof = 1:spv.nsh(iel)
-        ishp  = repmat (shpv_iel(:, :, idof), [1, 1, spu.nsh(iel)]);
-
         rows(ncounter+(1:spu.nsh(iel))) = spv.connectivity(idof, iel);
         cols(ncounter+(1:spu.nsh(iel))) = spu.connectivity(1:spu.nsh(iel), iel);
 
-        values(ncounter+(1:spu.nsh(iel))) = sum (jacdet_weights .* ...
-          reshape (sum (ishp .* shpu_iel, 1), msh.nqn, spu.nsh(iel)), 1);
+        aux_val = bsxfun (@times, shpv_times_jw(:,:,idof), shpu_iel);
+        values(ncounter+(1:spu.nsh(iel))) = sum (sum (aux_val, 2), 1);
         ncounter = ncounter + spu.nsh(iel);
       end
     else
