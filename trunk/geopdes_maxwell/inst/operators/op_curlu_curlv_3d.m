@@ -43,23 +43,21 @@ function varargout = op_curlu_curlv_3d (spu, spv, msh, coeff)
   ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:,iel)))
-      jacdet_weights = msh.jacdet(:, iel) .* ...
-                       msh.quad_weights(:, iel) .* coeff (:, iel);
-      jacdet_weights = repmat (jacdet_weights, [1, spu.nsh(iel)]);
+      jacdet_weights = reshape (msh.jacdet(:, iel) .* ...
+                       msh.quad_weights(:, iel) .* coeff(:, iel), 1, msh.nqn);
 
       curlv_iel = reshape (spv.shape_function_curls(:, :, 1:spv.nsh(iel), iel), ...
                             3, msh.nqn, spv.nsh(iel));
       curlu_iel = reshape (spu.shape_function_curls(:, :, 1:spu.nsh(iel), iel), ...
                             3, msh.nqn, spu.nsh(iel));
-      for idof = 1:spv.nsh(iel)
-        ishc = repmat (curlv_iel(:, :, idof), [1, 1, spu.nsh(iel)]);
 
+      curlv_times_jw = bsxfun (@times, jacdet_weights, curlv_iel);
+      for idof = 1:spv.nsh(iel)
         rows(ncounter+(1:spu.nsh(iel))) = spv.connectivity(idof, iel);
         cols(ncounter+(1:spu.nsh(iel))) = spu.connectivity(1:spu.nsh(iel), iel);
 
-        values(ncounter+(1:spu.nsh(iel))) = sum (jacdet_weights .* ...
-           reshape (sum (ishc .* curlu_iel, 1), msh.nqn, spu.nsh(iel)), 1);
-
+        aux_val = bsxfun (@times, curlv_times_jw(:,:,idof), curlu_iel);
+        values(ncounter+(1:spu.nsh(iel))) = sum (sum (aux_val, 2), 1);
         ncounter = ncounter + spu.nsh(iel);
       end
     else
