@@ -52,11 +52,23 @@ function varargout = geo_2d_nurbs (nurbs, pts, ders)
       end
       varargout{1} = map_jac;
     case 2
-      dF = nrbsurfderiveval (nurbs, pts, ders);
-      hess(1:2, 1, 1, :) = squeeze (dF(1:2, 3, 1, :));
-      hess(1:2, 2, 2, :) = squeeze (dF(1:2, 1, 3, :));
-      hess(1:2, 1, 2, :) = squeeze (dF(1:2, 2, 2, :));
-      hess(1:2, 2, 1, :) = squeeze (dF(1:2, 2, 2, :));
+      [deriv, deriv2] = nrbderiv (nurbs);
+      [F, jac, hessian] = nrbdeval (nurbs, deriv, deriv2, pts);
+
+      if (iscell (pts))
+        npts = prod (cellfun (@numel, pts));
+        hess = zeros (2, 2, 2, npts);
+        hess(1:2, 1, 1, :) = reshape (hessian{1,1}(1:2,:,:), 2, 1, 1, npts);
+        hess(1:2, 2, 2, :) = reshape (hessian{2,2}(1:2,:,:), 2, 1, 1, npts);
+        hess(1:2, 1, 2, :) = reshape (hessian{1,2}(1:2,:,:), 2, 1, 1, npts);
+        hess(1:2, 2, 1, :) = reshape (hessian{2,1}(1:2,:,:), 2, 1, 1, npts);
+      else
+        hess = zeros (2, 2, 2, size (pts, 2));
+        hess(1:2, 1, 1, :) = reshape (hessian{1,1}(1:2,:), 2, 1, 1, size (pts, 2));
+        hess(1:2, 2, 2, :) = reshape (hessian{2,2}(1:2,:), 2, 1, 1, size (pts, 2));
+        hess(1:2, 1, 2, :) = reshape (hessian{1,2}(1:2,:), 2, 1, 1, size (pts, 2));
+        hess(1:2, 2, 1, :) = reshape (hessian{2,1}(1:2,:), 2, 1, 1, size (pts, 2));          
+      end
       varargout{1} = hess;
     otherwise
       error ('geo_2d_nurbs: number of derivatives limited to two')
