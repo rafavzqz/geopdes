@@ -99,7 +99,7 @@ function msh_col = msh_evaluate_col (msh, colnum)
 
 
   if (msh.der2)
-    msh_col.geo_map_der2 = reshape (feval (msh.map_der2, {qnu(:), qnv(:)}'), ...
+    msh_col.geo_map_der2 = reshape (feval (msh.map_der2, {qnu(:)', qnv(:)'}), ...
                                          2, 2, 2, msh_col.nqn, msh_col.nel);
   end
 
