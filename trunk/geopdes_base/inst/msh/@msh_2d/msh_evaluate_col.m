@@ -55,46 +55,70 @@ function msh_col = msh_evaluate_col (msh, colnum)
 
   qnu = msh.qn{1}(:,colnum);  qnv = msh.qn{2};
 
-  quad_nodes_u = reshape (qnu, msh.nqn_dir(1), 1, 1);
-  quad_nodes_u = repmat  (quad_nodes_u, [1, msh.nqn_dir(2), msh.nel_dir(2)]);
-  quad_nodes_u = reshape (quad_nodes_u, [], msh.nel_dir(2));
+  if (isempty (msh.quad_nodes))
+    quad_nodes_u = reshape (qnu, msh.nqn_dir(1), 1, 1);
+    quad_nodes_u = repmat  (quad_nodes_u, [1, msh.nqn_dir(2), msh.nel_dir(2)]);
+    quad_nodes_u = reshape (quad_nodes_u, [], msh.nel_dir(2));
 
-  quad_nodes_v = reshape (qnv, 1, msh.nqn_dir(2), msh.nel_dir(2));
-  quad_nodes_v = repmat  (quad_nodes_v, [msh.nqn_dir(1), 1, 1]);
-  quad_nodes_v = reshape (quad_nodes_v, [], msh.nel_dir(2));
+    quad_nodes_v = reshape (qnv, 1, msh.nqn_dir(2), msh.nel_dir(2));
+    quad_nodes_v = repmat  (quad_nodes_v, [msh.nqn_dir(1), 1, 1]);
+    quad_nodes_v = reshape (quad_nodes_v, [], msh.nel_dir(2));
 
-  msh_col.quad_nodes(1, :, :) = quad_nodes_u;
-  msh_col.quad_nodes(2, :, :) = quad_nodes_v;
+    msh_col.quad_nodes(1, :, :) = quad_nodes_u;
+    msh_col.quad_nodes(2, :, :) = quad_nodes_v;
+  else
+    msh_col.quad_nodes = msh.quad_nodes(:,:,msh_col.elem_list);
+  end
 
   clear quad_nodes_u quad_nodes_v
 
   if (~isempty (msh.qw))
-    qwu = msh.qw{1}(:,colnum);  qwv = msh.qw{2};
-    quad_weights_u = reshape (qwu, msh.nqn_dir(1), 1, 1);
-    quad_weights_u = repmat  (quad_weights_u, [1, msh.nqn_dir(2), msh.nel_dir(2)]);
-    quad_weights_u = reshape (quad_weights_u, [], msh.nel_dir(2));
+    if (isempty (msh.quad_weights))
+      qwu = msh.qw{1}(:,colnum);  qwv = msh.qw{2};
+      quad_weights_u = reshape (qwu, msh.nqn_dir(1), 1, 1);
+      quad_weights_u = repmat  (quad_weights_u, [1, msh.nqn_dir(2), msh.nel_dir(2)]);
+      quad_weights_u = reshape (quad_weights_u, [], msh.nel_dir(2));
 
-    quad_weights_v = reshape (qwv, 1, msh.nqn_dir(2), msh.nel_dir(2));
-    quad_weights_v = repmat  (quad_weights_v, [msh.nqn_dir(1), 1, 1]);
-    quad_weights_v = reshape (quad_weights_v, [], msh.nel_dir(2));
+      quad_weights_v = reshape (qwv, 1, msh.nqn_dir(2), msh.nel_dir(2));
+      quad_weights_v = repmat  (quad_weights_v, [msh.nqn_dir(1), 1, 1]);
+      quad_weights_v = reshape (quad_weights_v, [], msh.nel_dir(2));
 
-    msh_col.quad_weights = quad_weights_u .* quad_weights_v;
+      msh_col.quad_weights = quad_weights_u .* quad_weights_v;
 
-    clear quad_weights_u quad_weights_v
+      clear quad_weights_u quad_weights_v
+    else
+      msh_col.quad_weights = msh.quad_weights(:,msh_col.elem_list);
+    end
   end
 
-  F = feval (msh.map, {qnu(:)', qnv(:)'});
-  msh_col.geo_map = reshape (F, [2, msh.nqn, msh.nel_dir(2)]);
+  if (isempty (msh.geo_map))
+    F = feval (msh.map, {qnu(:)', qnv(:)'});
+    msh_col.geo_map = reshape (F, [2, msh.nqn, msh.nel_dir(2)]);
+  else
+    msh_col.geo_map = msh.geo_map(:,:,msh_col.elem_list);
+  end
   
-  jac = feval (msh.map_der, {qnu(:)', qnv(:)'});
-  msh_col.geo_map_jac = reshape (jac, 2, 2, msh.nqn, msh.nel_dir(2));
-  msh_col.jacdet = abs (geopdes_det__ (msh_col.geo_map_jac));
-  msh_col.jacdet = reshape (msh_col.jacdet, [msh.nqn, msh.nel_dir(2)]);
-
+  if (isempty (msh.geo_map_jac))
+    jac = feval (msh.map_der, {qnu(:)', qnv(:)'});
+    msh_col.geo_map_jac = reshape (jac, 2, 2, msh.nqn, msh.nel_dir(2));
+  else
+    msh_col.geo_map_jac = msh.geo_map_jac(:,:,:,msh_col.elem_list);
+  end
+   
+  if (isempty (msh.jacdet))
+    msh_col.jacdet = abs (geopdes_det__ (msh_col.geo_map_jac));
+    msh_col.jacdet = reshape (msh_col.jacdet, [msh.nqn, msh.nel_dir(2)]);
+  else
+    msh_col.jacdet = msh.jacdet(:,msh_col.elem_list);
+  end
 
   if (msh.der2)
-    msh_col.geo_map_der2 = reshape (feval (msh.map_der2, {qnu(:)', qnv(:)'}), ...
+    if (isempty (msh.geo_map_der2))
+      msh_col.geo_map_der2 = reshape (feval (msh.map_der2, {qnu(:)', qnv(:)'}), ...
                                          2, 2, 2, msh_col.nqn, msh_col.nel);
+    else
+      msh_col.geo_map_der2 = msh.geo_map_der2(:,:,:,:,msh_col.elem_list);
+    end
   end
 
 end
