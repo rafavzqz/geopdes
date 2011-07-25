@@ -120,6 +120,13 @@ function msh = msh_2d (breaks, qn, qw, geo, varargin)
     end
   end
 
+  msh.quad_nodes   = [];
+  msh.quad_weights = [];
+  msh.geo_map      = [];
+  msh.geo_map_jac  = [];
+  msh.geo_map_der2 = [];
+  msh.jacdet       = [];
+
   msh = class (msh, 'msh_2d');
 
 end
