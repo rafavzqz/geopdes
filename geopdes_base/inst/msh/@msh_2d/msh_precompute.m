@@ -124,10 +124,6 @@ function msh = msh_precompute (msh, varargin)
   end
 
   if (geo_map_jac || jacdet)
-    msh.geo_map_jac = zeros (2, 2, msh.nqn, msh.nel);
-    msh.geo_map_jac(1, 1, :, :) = 1;
-    msh.geo_map_jac(2, 2, :, :) = 1;
-
     jac = feval (msh.map_der, {qn{1}(:)', qn{2}(:)'});
     jac = reshape (jac, [2, 2, nqnu, nelu, nqnv, nelv]);
     jac = permute (jac, [1 2 3 5 4 6]);
