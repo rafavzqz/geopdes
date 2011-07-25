@@ -1,17 +1,11 @@
 % MSH_EVALUATE_COL: evaluate the parameterization in one column of the mesh.
 %
-%     msh_col = msh_evaluate_col (msh, colnum, 'option1', value1, ...)
+%     msh_col = msh_evaluate_col (msh, colnum)
 %
 % INPUTS:
 %
 %    msh:    mesh object (see msh_2d)
 %    colnum: number of the "column", i.e., the element in the first parametric direction.
-%   'option', value: additional optional parameters, currently available options are:
-%            
-%              Name     |   Default value |  Meaning
-%           ------------+-----------------+-----------
-%               der2    |      false      |  compute second order derivatives
-%                       |                 |  of the geometry at quad nodes
 %
 % OUTPUT:
 %
