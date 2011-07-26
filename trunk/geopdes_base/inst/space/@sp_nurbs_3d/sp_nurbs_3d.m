@@ -101,6 +101,11 @@ function sp = sp_nurbs_3d (varargin)
     sp.boundary = [];
   end
 
+  sp.nsh = [];
+  sp.connectivity = [];
+  sp.shape_functions = [];
+  sp.shape_function_gradients = [];
+
   sp.constructor = @(MSH) sp_nurbs_3d (sp.knots, sp.degree, sp.weights, MSH);
   sp = class (sp, 'sp_nurbs_3d');
 

@@ -5,7 +5,7 @@
 %
 % INPUT:
 %     
-%    space: object representing the discrete function space (see sp_nurbs_2d).
+%    space: object representing the discrete function space (see sp_bspline_2d).
 %
 % OUTPUT:
 %
@@ -16,7 +16,7 @@
 %    connectivity    (nsh_max x msh_col.nel vector)         indices of basis functions that do not vanish in each element
 %    shape_functions (msh_col.nqn x nsh_max x msh_col.nel)  basis functions evaluated at each quadrature node in each element
 %    shape_function_gradients
-%             (2 x msh_col.nqn x nsh_max x msh_col.nel)     basis function gradients evaluated at each quadrature node in each element
+%             (3 x msh_col.nqn x nsh_max x msh_col.nel)     basis function gradients evaluated at each quadrature node in each element
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
@@ -68,7 +68,7 @@ function sp = sp_precompute (sp, msh, varargin)
       msh = msh_precompute (msh, 'geo_map_jac');
     end
     JinvT = geopdes_invT__ (msh.geo_map_jac);
-    JinvT = reshape (JinvT, [2, 2, msh.nqn, msh.nel]);
+    JinvT = reshape (JinvT, [3, 3, msh.nqn, msh.nel]);
     sp.shape_function_gradients = geopdes_prod__ (JinvT, sp.shape_function_gradients);
   end
 

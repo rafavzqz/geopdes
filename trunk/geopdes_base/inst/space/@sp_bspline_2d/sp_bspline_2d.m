@@ -79,10 +79,10 @@ function sp = sp_bspline_2d (knots, degree, msh)
     sp.boundary = [];
   end
 
+  sp.nsh = [];
   sp.connectivity = [];
   sp.shape_functions = [];
   sp.shape_function_gradients = [];
-  sp.shape_function_hessians = [];
 
   sp.constructor = @(MSH) sp_bspline_2d (sp.knots, sp.degree, MSH);
   sp = class (sp, 'sp_bspline_2d');

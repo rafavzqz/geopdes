@@ -12,6 +12,7 @@
 %    space: object representing the discrete function space, plus the following fields (or some of them):
 %
 %    FIELD_NAME      (SIZE)                                 DESCRIPTION
+%    nsh             (1 x msh.nel vector)                   actual number of shape functions per each element
 %    connectivity    (nsh_max x msh_col.nel vector)         indices of basis functions that do not vanish in each element
 %    shape_functions (msh_col.nqn x nsh_max x msh_col.nel)  basis functions evaluated at each quadrature node in each element
 %    shape_function_gradients
@@ -43,7 +44,9 @@ function sp = sp_precompute (sp, msh, varargin)
     gradient = false;
     for ii=1:length(varargin)
       if (strcmpi (varargin {ii}, 'connectivity'))
-        value = true;
+        connectivity = true;
+      elseif (strcmpi (varargin {ii}, 'nsh'))
+        nsh = true;
       elseif (strcmpi (varargin {ii}, 'value'))
         value = true;
       elseif (strcmpi (varargin {ii}, 'gradient'))

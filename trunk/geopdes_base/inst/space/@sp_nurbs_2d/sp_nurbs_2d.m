@@ -94,6 +94,7 @@ function sp = sp_nurbs_2d (varargin)
     sp.boundary = [];
   end
 
+  sp.nsh = [];
   sp.connectivity = [];
   sp.shape_functions = [];
   sp.shape_function_gradients = [];
