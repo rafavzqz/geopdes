@@ -43,82 +43,63 @@ DEFUN_DLD(op_div_v_q, args, nargout,"OP_DIV_V_Q: assemble the matrix B = [b(i,j)
   if (!error_state)
     {
 
-      const octave_idx_type nel = msh.nel (), nqn = msh.nqn (), ndof_spq = spq.ndof (), nsh_max_spq = spq.nsh_max (), ndof_spv = spv.ndof (), nsh_max_spv = spv.nsh_max ();
+      octave_idx_type iel, inode, idof, jdof, icmp, idir;
+      const octave_idx_type nel = msh.nel (), nqn = msh.nqn (), ndof_spq = spq.ndof (), 
+        nsh_max_spq = spq.nsh_max (), ndof_spv = spv.ndof (), nsh_max_spv = spv.nsh_max (),
+        ncomp_spv = spv.ncomp (), ncomp_spq = spq.ncomp ();
+      
+      double shdivv[nsh_max_spv][nqn];
+      double shpq[nsh_max_spq][nqn][ncomp_spq];
+      double jacdet_weights[nqn];
+                              
+      octave_idx_type conn_v[nsh_max_spv];
+      octave_idx_type conn_q[nsh_max_spq];
 
       dim_vector dims (nel * nsh_max_spv * nsh_max_spq, 1);
+
       Array <octave_idx_type> I (dims, 0);
+      octave_idx_type* Iptr = I.fortran_vec ();
+
       Array <octave_idx_type> J (dims, 0);
+      octave_idx_type* Jptr = J.fortran_vec ();
+
       Array <double> V (dims, 0.0);    
+      double* Vptr = V.fortran_vec ();
 
       SparseMatrix mat;
 
-      octave_idx_type counter = 0, iel, inode, idof, jdof, icmp;
-
-#pragma omp parallel default (none) shared (msh, spv, spq, I, J, V)
-      {
-
-#pragma omp for
+      octave_idx_type counter = 0;
       for ( iel=0; iel < nel; iel++) 
         if (msh.area (iel) > 0.0)
 	  {
-            const octave_idx_type nsh_q = spq.nsh (iel);
-            const octave_idx_type nsh_v = spv.nsh (iel);
-            double jacdet_weights[nqn];
-
             for ( inode = 0; inode < nqn; inode++)
-              {
-                jacdet_weights[inode] = msh.jacdet (inode, iel) *
-                  msh.weights (inode, iel);
-              }
+              jacdet_weights[inode] = msh.jacdet (inode, iel) * msh.weights (inode, iel);
 
-            double shdivv[nsh_v][nqn];
-            double shpq[nsh_q][nqn];
-            int conn_v[nsh_v];
-            int conn_q[nsh_q];
+            // Cache element data to speed-up memory access
+            spq.cache_element_shape_functions (iel, (double*)shpq);
+            spv.cache_element_shape_function_divs (iel, (double*)shdivv);
 
-              for ( jdof = 0; jdof < nsh_v; jdof++)
-		{
-                  for ( inode = 0; inode < nqn; inode++)
-                    {
-                      shdivv[jdof][inode] = spv.shape_function_divs (inode, jdof, iel);
-                    }
-		  conn_v[jdof] = spv.connectivity (jdof, iel) - 1;
-	        }
+            spq.cache_element_connectivity (iel, (octave_idx_type*)conn_q);
+            spv.cache_element_connectivity (iel, (octave_idx_type*)conn_v);
 
-              for ( idof = 0; idof < nsh_q; idof++)
-		{
-                  for ( inode = 0; inode < nqn; inode++)
-                    {
-                      shpq[idof][inode] = spq.shape_functions (0, inode, idof, iel);
-                    }
-		  conn_q[idof] = spq.connectivity (idof, iel) - 1;
-	        }
+            for ( idof = 0; idof <  spq.nsh (iel); idof++) 
+              for ( jdof = 0; jdof < spv.nsh (iel); jdof++) 
+                {
+                  counter = jdof + nsh_max_spv * (idof + nsh_max_spq * iel);
+                  
+                  Iptr[counter] = conn_q[idof] - 1;
+                  Jptr[counter] = conn_v[jdof] - 1;
+                  Vptr[counter] = 0.0;
 
-
-            for ( idof = 0; idof < nsh_q; idof++) 
-	      {
-                for ( jdof = 0; jdof < nsh_v; jdof++) 
-		  {
-                    counter = jdof + nsh_v * (idof + nsh_q * iel);
-                    
-                    I(counter) = conn_q[idof];
-                    J(counter) = conn_v[jdof];
-		    V(counter) = 0.0;
-                    for ( inode = 0; inode < nqn; inode++)
-		      {
-		        if (msh.weights (inode, iel) > 0.0)
-			  {
-			    V(counter) += jacdet_weights[inode] *
-                              shdivv[jdof][inode] * shpq[idof][inode];
-			  }  
-		      } // end for inode		  
-		  } // end for jdof
-	      } // end for idof
-          } else {
-#pragma omp critical
-          {warning_with_id ("geopdes:zero_measure_element", "op_div_v_q: element %d has 0 area (or volume)", iel);}
-        }  // end for iel, if area > 0
-      } // end of parallel region
+                  for (inode = 0; inode < nqn; inode++)
+                    if (msh.weights (inode, iel) > 0.0)
+                      Vptr[counter] += jacdet_weights[inode] * shdivv[jdof][inode] * shpq[idof][inode][0];
+                }  // end for idof, for jdof
+          } 
+        else 
+          {
+            warning_with_id ("geopdes:zero_measure_element", "op_div_v_q: element %d has 0 area (or volume)", iel);
+          }  // end for iel, if area > 0
 
       if (nargout == 1) 
         {
@@ -129,8 +110,8 @@ DEFUN_DLD(op_div_v_q, args, nargout,"OP_DIV_V_Q: assemble the matrix B = [b(i,j)
 	{
           for ( icmp = 0; icmp <= counter; icmp++) 
             {
-              I(icmp)++;
-              J(icmp)++;
+              Iptr[icmp]++;
+              Jptr[icmp]++;
             }
           retval(0) = octave_value (I);
           retval(1) = octave_value (J);
