@@ -51,69 +51,64 @@ OUTPUT:\n\
 
       octave_idx_type counter = 0, iel, inode, idof, icmp;
 
-#pragma omp parallel default (none) shared (msh, sp, coeff, mat) 
       {
         double local_contribution;
-#pragma omp for
-        for ( iel=0; iel < nel; iel++) 
+
+        for (iel=0; iel < nel; iel++) 
           if (msh.area (iel) > 0)
             {
-            const octave_idx_type nsh = sp.nsh (iel);
-            double jacdet_weights[nqn];
+              const octave_idx_type nsh = sp.nsh (iel);
+              double jacdet_weights[nqn];
 
-            for ( inode = 0; inode < nqn; inode++)
-              {
-                jacdet_weights[inode] = msh.jacdet (inode, iel) *
-                  msh.weights (inode, iel);
-              }
+              for (inode = 0; inode < nqn; inode++)
+                {
+                  jacdet_weights[inode] = msh.jacdet (inode, iel) *
+                    msh.weights (inode, iel);
+                }
 
-            double shp_x_n[nsh][nqn][ncomp];
-            int conn[nsh];
+              double shp_x_n[nsh][nqn][ncomp];
+              octave_idx_type conn[nsh];
 
 
-            for ( idof = 0; idof < nsh; idof++) 
-              {
-                for ( inode = 0; inode < nqn; inode++)
+              for (idof = 0; idof < nsh; idof++) 
+                for (inode = 0; inode < nqn; inode++)
                   {
                     shp_x_n[idof][inode][0] = 
-                                    sp.shape_functions (1, inode, idof, iel)*
-                                    msh.normal (2, inode, iel) -
-                                    sp.shape_functions (2, inode, idof, iel)*
-                                    msh.normal (1, inode, iel);
+                      sp.shape_functions (1, inode, idof, iel)*
+                      msh.normal (2, inode, iel) -
+                      sp.shape_functions (2, inode, idof, iel)*
+                      msh.normal (1, inode, iel);
                     shp_x_n[idof][inode][1] = 
-                                    sp.shape_functions (2, inode, idof, iel)*
-                                    msh.normal (0, inode, iel) -
-                                    sp.shape_functions (0, inode, idof, iel)*
-                                    msh.normal (2, inode, iel);
+                      sp.shape_functions (2, inode, idof, iel)*
+                      msh.normal (0, inode, iel) -
+                      sp.shape_functions (0, inode, idof, iel)*
+                      msh.normal (2, inode, iel);
                     shp_x_n[idof][inode][2] = 
-                                    sp.shape_functions (0, inode, idof, iel)*
-                                    msh.normal (1, inode, iel) -
-                                    sp.shape_functions (1, inode, idof, iel)*
-                                    msh.normal (0, inode, iel);
+                      sp.shape_functions (0, inode, idof, iel)*
+                      msh.normal (1, inode, iel) -
+                      sp.shape_functions (1, inode, idof, iel)*
+                      msh.normal (0, inode, iel);
                   }
-                conn[idof] = sp.connectivity (idof, iel) - 1;
-              }
 
+              sp.cache_element_connectivity (iel, (octave_idx_type*)conn);
+            
 
-            for ( idof = 0; idof < nsh; idof++) 
-              {
-                for ( inode = 0; inode < nqn; inode++)
-                  {
-                    if (msh.weights (inode, iel) > 0.0)
-                      {
-                        double s = 0.0;
-                        for ( icmp = 0; icmp < ncomp; icmp++)
-                          s += shp_x_n[idof][inode][icmp] * coeff (icmp, inode, iel);
-                          local_contribution = jacdet_weights[inode] * s;
-#pragma omp critical
-                          {mat(conn[idof]) += local_contribution;}
-                        }  
-                    } // end for inode
-                } // end for idof
-            } else {
-#pragma omp critical
-            {warning_with_id ("geopdes:zero_measure_element", "op_f_vxn_3d: element %d has 0 area", iel);}
-          } // end for iel, if area > 0
+              for (idof = 0; idof < nsh; idof++) 
+                for (inode = 0; inode < nqn; inode++)
+                  if (msh.weights (inode, iel) > 0.0)
+                    {
+                      double s = 0.0;
+                      for (icmp = 0; icmp < ncomp; icmp++)
+                        s += shp_x_n[idof][inode][icmp] * coeff (icmp, inode, iel);
+                      local_contribution = jacdet_weights[inode] * s;
+                      
+                      mat(conn[idof]-1) += local_contribution;
+                    } // end for idof, for inode, if   
+            }
+          else
+            {
+              {warning_with_id ("geopdes:zero_measure_element", "op_f_vxn_3d: element %d has 0 area", iel);}
+            } // end for iel, if area > 0
       } // end of parallel section
       retval(0) = octave_value (mat);
     } // end if !error_state
