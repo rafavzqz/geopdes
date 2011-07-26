@@ -5,7 +5,7 @@
 %
 % INPUTS:
 %     
-%     msh: mesh object containing the quadrature information (see msh_2d)
+%     msh: mesh object containing the quadrature information (see msh_3d)
 %
 % OUTPUT:
 %
@@ -13,11 +13,10 @@
 %
 %     FIELD_NAME    (SIZE)                  DESCRIPTION
 %
-%     quad_nodes    (2 x nqn x nel vector)  coordinates of the quadrature nodes in parametric space
+%     quad_nodes    (3 x nqn x nel vector)  coordinates of the quadrature nodes in parametric space
 %     quad_weights  (nqn x nel vector)      weights associated to the quadrature nodes
-%     geo_map       (2 x nqn x nel vector)  physical coordinates of the quadrature nodes
-%     geo_map_jac   (2 x 2 x nqn x nel)     Jacobian matrix of the map evaluated at the quadrature nodes
-%     geo_map_der2  (2 x 2 x 2 x nqn x nel) Second order derivatives of the map evaluated at the quadrature nodes ()
+%     geo_map       (3 x nqn x nel vector)  physical coordinates of the quadrature nodes
+%     geo_map_jac   (3 x 3 x nqn x nel)     Jacobian matrix of the map evaluated at the quadrature nodes
 %     jacdet        (nqn x nel)             determinant of the Jacobian evaluated in the quadrature points
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
@@ -43,14 +42,12 @@ function msh = msh_precompute (msh, varargin)
     quad_weights = true;
     geo_map = true;
     geo_map_jac = true;
-    geo_map_der2 = true;
     jacdet = true;
   else
     quad_nodes = false;
     quad_weights = false;
     geo_map = false;
     geo_map_jac = false;
-    geo_map_der2 = false;
     jacdet = false;
     for ii=1:length(varargin)
       if (strcmpi (varargin {ii}, 'quad_nodes'))
@@ -61,72 +58,83 @@ function msh = msh_precompute (msh, varargin)
         geo_map = true;
       elseif (strcmpi (varargin {ii}, 'geo_map_jac'))
         geo_map_jac = true;
-      elseif (strcmpi (varargin {ii}, 'geo_map_der2'))
-        geo_map_der2 = true;
       elseif (strcmpi (varargin {ii}, 'jacdet'))
         jacdet = true;
       else
         error ('msh_precompute: unknown option %s', varargin {ii});
       end
-    end    
+    end
+    
   end
 
-  nelu = msh.nel_dir(1); nelv = msh.nel_dir(2);
+  nelu = msh.nel_dir(1); nelv = msh.nel_dir(2); nelw = msh.nel_dir(3);
   nel  = msh.nel;
-  nqnu = msh.nqn_dir(1); nqnv = msh.nqn_dir(2);
+  nqnu = msh.nqn_dir(1); nqnv = msh.nqn_dir(2); nqnw = msh.nqn_dir(3);
   nqn  = msh.nqn;
   qn = msh.qn;
 
   if (quad_nodes || geo_map)
-    quad_nodes_u = reshape (qn{1}, nqnu, 1, nelu, 1);
-    quad_nodes_u = repmat  (quad_nodes_u, [1, nqnv, 1, nelv]);
+    quad_nodes_u = reshape (qn{1}, nqnu, 1, 1, nelu, 1, 1);
+    quad_nodes_u = repmat  (quad_nodes_u, [1, nqnv, nqnw, 1, nelv, nelw]);
     quad_nodes_u = reshape (quad_nodes_u, [], nel);
 
-    quad_nodes_v = reshape (qn{2}, 1, nqnv, 1, nelv);
-    quad_nodes_v = repmat  (quad_nodes_v, [nqnu, 1, nelu, 1]);
+    quad_nodes_v = reshape (qn{2}, 1, nqnv, 1, 1, nelv, 1);
+    quad_nodes_v = repmat  (quad_nodes_v, [nqnu, 1, nqnw, nelu, 1, nelw]);
     quad_nodes_v = reshape (quad_nodes_v, [], nel);
+
+    quad_nodes_w = reshape (qn{3}, 1, 1, nqnw, 1, 1, nelw);
+    quad_nodes_w = repmat  (quad_nodes_w, [nqnu, nqnv, 1, nelu, nelv, 1]);
+    quad_nodes_w = reshape (quad_nodes_w, [], nel);
 
     if (quad_nodes)
       msh.quad_nodes(1, :, :) = quad_nodes_u;
       msh.quad_nodes(2, :, :) = quad_nodes_v;
+      msh.quad_nodes(3, :, :) = quad_nodes_w;
     end
     if (geo_map) % The map is applied below
       msh.geo_map(1, :, :) = quad_nodes_u;
       msh.geo_map(2, :, :) = quad_nodes_v;
+      msh.geo_map(3, :, :) = quad_nodes_w;
     end
-    clear quad_nodes_u quad_nodes_v
+    clear quad_nodes_u quad_nodes_v quad_nodes_w
 
   end
 
   if (~isempty (msh.qw) && quad_weights)
-    qwu = msh.qw{1};  qwv = msh.qw{2};
-    quad_weights_u = reshape (qwu, nqnu, 1, nelu, 1);
-    quad_weights_u = repmat  (quad_weights_u, [1, nqnv, 1, nelv]);
+    qwu = msh.qw{1};  qwv = msh.qw{2}; qww = msh.qw{3};
+    quad_weights_u = reshape (qwu, nqnu, 1, 1, nelu, 1, 1);
+    quad_weights_u = repmat  (quad_weights_u, [1, nqnv, nqnw, 1, nelv, nelw]);
     quad_weights_u = reshape (quad_weights_u, [], nel);
 
-    quad_weights_v = reshape (qwv, 1, nqnv, 1, nelv);
-    quad_weights_v = repmat  (quad_weights_v, [nqnu, 1, nelu, 1]);
+    quad_weights_v = reshape (qwv, 1, nqnv, 1, 1, nelv, 1);
+    quad_weights_v = repmat  (quad_weights_v, [nqnu, 1, nqnw, nelu, 1, nelw]);
     quad_weights_v = reshape (quad_weights_v, [], nel);
 
-    msh.quad_weights = quad_weights_u .* quad_weights_v;
+    quad_weights_w = reshape (qww, 1, 1, nqnw, 1, 1, nelw);
+    quad_weights_w = repmat  (quad_weights_w, [nqnu, nqnv, 1, nelu, nelv, 1]);
+    quad_weights_w = reshape (quad_weights_w, [], nel);
+
+    msh.quad_weights = quad_weights_u .* quad_weights_v .* quad_weights_w;
+
     if (abs (sum (msh.quad_weights(:)) - 1) > 1e-10)
       warning ('msh_precompute: inconsistent quadrature formula')
     end
-    clear quad_weights_u quad_weights_v
+    clear quad_weights_u quad_weights_v quad_weights_w
   end
 
   if (geo_map)
-    F = feval (msh.map, {qn{1}(:)', qn{2}(:)'});
-    F = reshape (F, [2, nqnu, nelu, nqnv, nelv]);
-    F = permute (F, [1 2 4 3 5]);
-    msh.geo_map = reshape (F, [2, nqn, nel]);
+    F = feval (msh.map, {qn{1}(:)', qn{2}(:)', qn{3}(:)'});
+    F = reshape (F, [3, nqnu, nelu, nqnv, nelv, nqnw, nelw]);
+    F = permute (F, [1 2 4 6 3 5 7]);
+    msh.geo_map = reshape (F, [3, nqn, nel]);
   end
 
   if (geo_map_jac || jacdet)
-    jac = feval (msh.map_der, {qn{1}(:)', qn{2}(:)'});
-    jac = reshape (jac, [2, 2, nqnu, nelu, nqnv, nelv]);
-    jac = permute (jac, [1 2 3 5 4 6]);
-    jac = reshape (jac, 2, 2, nqn, nel);
+    jac = feval (msh.map_der, {qn{1}(:)', qn{2}(:)' qn{3}(:)'});
+    jac = reshape (jac, [3, 3, nqnu, nelu, nqnv, nelv, nqnw, nelw]);
+    jac = permute (jac, [1 2 3 5 7 4 6 8]);
+    jac = reshape (jac, 3, 3, nqn, nel);
+
     if (geo_map_jac)
       msh.geo_map_jac = jac;
     end
@@ -134,10 +142,6 @@ function msh = msh_precompute (msh, varargin)
       msh.jacdet = abs (geopdes_det__ (jac));
       msh.jacdet = reshape (msh.jacdet, [nqn, nel]);
     end
-  end
-
-  if (~isempty (msh.map_der2) && geo_map_der2)
-    msh.geo_map_der2 = reshape (feval (msh.map_der2, {qn{1}(:)', qn{2}(:)'}), 2, 2, 2, msh.nqn, msh.nel);
   end
 
 end

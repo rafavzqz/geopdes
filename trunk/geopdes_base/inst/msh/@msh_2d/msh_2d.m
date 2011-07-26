@@ -42,6 +42,9 @@
 %                       fixing the element in the first parametric direction.
 %     msh_eval_boundary_side: computes the parameterization in one boundary side
 %                       of the domain.
+%     msh_precompute:   computes, for all the mesh, any of the fields related
+%                       to the quadrature rule, as in the mesh structure from
+%                       previous versions of GeoPDEs.
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez

@@ -66,11 +66,12 @@ function msh_col = msh_evaluate_col (msh, colnum)
 
     msh_col.quad_nodes(1, :, :) = quad_nodes_u;
     msh_col.quad_nodes(2, :, :) = quad_nodes_v;
+
+    clear quad_nodes_u quad_nodes_v
   else
     msh_col.quad_nodes = msh.quad_nodes(:,:,msh_col.elem_list);
   end
 
-  clear quad_nodes_u quad_nodes_v
 
   if (~isempty (msh.qw))
     if (isempty (msh.quad_weights))
