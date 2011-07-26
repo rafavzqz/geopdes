@@ -44,69 +44,54 @@ OUTPUT:\n\
   if (!error_state)
     {
 
-      const octave_idx_type nel = msh.nel (), ncomp = sp.ncomp (), nqn = msh.nqn ();
+      const octave_idx_type nel = msh.nel (), ncomp = sp.ncomp (), 
+        nqn = msh.nqn (), nsh = sp.nsh_max ();
+
+      double jacdet_weights[nqn];
 
       dim_vector    idx (ncomp, nqn, nel);
-      NDArray       coeff = args(2).array_value ().reshape (idx);
-      ColumnVector mat (sp.ndof (), 0.0);
+      Array<double> coeff = args(2).array_value ().reshape (idx);
+
+      double shp[nsh][nqn][ncomp];
+      octave_idx_type conn[nsh];
+      ColumnVector  mat (sp.ndof (), 0.0);
+      double *matptr = mat.fortran_vec ();
 
       octave_idx_type iel, inode, idof, icmp;
-
-#pragma omp parallel default (none) shared (msh, sp, idx, mat, coeff)
-      {
-        double local_contribution;
-
-#pragma omp for
-      for ( iel=0; iel < nel; iel++) 
+      
+      for (iel=0; iel < nel; iel++) 
         if (msh.area (iel) > 0.0)
-	  {
-            const octave_idx_type nsh = sp.nsh (iel);
-            double jacdet_weights[nqn];
-
-            for ( inode = 0; inode < nqn; inode++)
-              {
-                jacdet_weights[inode] = msh.jacdet (inode, iel) *
-                  msh.weights (inode, iel);
-              }
-
-            double shp[nsh][nqn][ncomp];
-            int conn[nsh];
-
-            for ( idof = 0; idof < nsh; idof++) 
-              {
-                for ( inode = 0; inode < nqn; inode++)
+          {              
+            for (inode = 0; inode < nqn; inode++)
+              jacdet_weights[inode] = msh.jacdet (inode, iel) *
+                msh.weights (inode, iel);
+            
+            sp.cache_element_shape_functions (iel, (double*)shp);
+            sp.cache_element_connectivity (iel, (octave_idx_type*)conn);
+            
+            for (idof = 0; idof < nsh; idof++) 
+              for (inode = 0; inode < nqn; inode++)
+                if (msh.weights (inode, iel) > 0.0)
                   {
-                    for ( icmp = 0; icmp < ncomp; icmp++)
-                      {
-                        shp[idof][inode][icmp] = sp.shape_functions (icmp, inode, idof, iel);
-                      }
-                  }
-                conn[idof] = sp.connectivity (idof, iel) - 1;
-              }
 
+                    double s = 0.0;
 
-            for ( idof = 0; idof < nsh; idof++) 
-	      {
-                for ( inode = 0; inode < nqn; inode++)
-                  {
-                    if (msh.weights (inode, iel) > 0.0)
-                      {
-                        double s = 0.0;
-                        for ( icmp = 0; icmp < ncomp; icmp++)
-                          s += shp[idof][inode][icmp] * coeff (icmp, inode, iel);
-                        local_contribution = jacdet_weights[inode] * s;
-#pragma omp critical
-                        mat(conn[idof]) += local_contribution;			  
-                      }  
-                  } // end for inode
-	      } // end for idof
-          } else {
-#pragma omp critical
-          {warning_with_id ("geopdes:zero_measure_element", "op_f_v: element %d has 0 area (or volume)", iel);}
-        }  // end for iel, if area > 0
-      }  // end for parallel region
+                    for (icmp = 0; icmp < ncomp; icmp++)
+                      s += shp[idof][inode][icmp] * coeff (icmp, inode, iel);
+
+                    matptr[(conn[idof])-1] += jacdet_weights[inode] * s;
+		  
+                  } // end for idof, for inode, if weight > 0
+          }  // end for iel, if area > 0 
+        else 
+          {
+            warning_with_id ("geopdes:zero_measure_element", "op_f_v: element %d has 0 area (or volume)", iel);
+          }
+      
       retval(0) = octave_value (mat);
+      
     } // end if !error_state
+  
   return retval;
 }
 
