@@ -47,30 +47,16 @@ OUTPUT: \n\
     
   if (!error_state)
     {   
-
-      octave_idx_type iel, giel, inode, idof, jdof, icmp, idir;
+      octave_idx_type iel, inode, idof, jdof, icmp, idir;
       octave_idx_type nel = msh.nel ();
-      Array <octave_idx_type> element_list;
-      if (nargin > 4) 
-        {
-          element_list = args(4).octave_idx_type_vector_value ();
-          nel = element_list.numel ();
-        } 
-      else 
-        {
-          dim_vector tmpd (nel, 1);
-          element_list.resize (tmpd, 0);
-          for (iel = 0; iel < nel; iel++)
-            element_list (iel) = iel + 1;
-        }
-
 
       const octave_idx_type ndir = msh.ndir (), ncomp = spu.ncomp (), nqn = msh.nqn (), 
         ndof_spu = spu.ndof (), nsh_max_spu = spu.nsh_max (), ndof_spv = spv.ndof (), 
         nsh_max_spv = spv.nsh_max ();
       
-      octave_idx_type nsh_u = spu.nsh_max ();
-      octave_idx_type nsh_v = spv.nsh_max ();
+      octave_idx_type nsh_u = spu.nsh_max (); 
+      octave_idx_type nsh_v = spv.nsh_max (); 
+
       double jacdet_weights[nqn];
       
       double shgv[nsh_v][nqn][ndir][ncomp];
@@ -81,71 +67,54 @@ OUTPUT: \n\
       
       dim_vector dims (nel * nsh_max_spv * nsh_max_spu, 1);
       Array <octave_idx_type> I (dims, 0);
+      octave_idx_type* Iptr = I.fortran_vec ();
+
       Array <octave_idx_type> J (dims, 0);
+      octave_idx_type* Jptr = J.fortran_vec ();
+
       Array <double> V (dims, 0.0);
+      double* Vptr = V.fortran_vec ();
 
       SparseMatrix mat;
 
-
-#pragma omp parallel default (none) shared (msh, spu, spv, I, J, V, coeff)
-      {
-        octave_idx_type counter = 0;
-
-#pragma omp for
-        for (iel = 0; iel < nel; iel++) 
+      octave_idx_type counter = 0;
+      for (iel = 0; iel < nel; iel++) 
+        if (msh.area (iel) > 0.0)
           {
-            giel = element_list (iel) - 1;
-            if (msh.area (giel) > 0.0)
-              {
+            for (inode = 0; inode < nqn; inode++)
+              jacdet_weights[inode] = msh.jacdet (inode, iel) *
+                msh.weights (inode, iel) * coeff (inode, iel);
               
-                for (inode = 0; inode < nqn; inode++)
-                  {
-                    jacdet_weights[inode] = msh.jacdet (inode, giel) *
-                      msh.weights (inode, giel) * coeff (inode, giel);
-                  }
+            // Cache element data to speed-up memory access
+            spv.cache_element_shape_function_gradients (iel, (double*)shgv);
+            spu.cache_element_shape_function_gradients (iel, (double*)shgu);
 
-              
-                // Cache element data to speed-up memory access
-                spv.cache_element_shape_function_gradients (iel, (double*)shgv); 
-              
-                spu.cache_element_shape_function_gradients (iel, (double*)shgu); 
-              
-                for (idof = 0; idof < nsh_v; idof++) 
-                  conn_v[idof] = spv.connectivity (idof, iel) - 1;
+            spv.cache_element_connectivity (iel, (octave_idx_type*)conn_v);              
+            spu.cache_element_connectivity (iel, (octave_idx_type*)conn_u);
 
-                for (jdof = 0; jdof < nsh_u; jdof++) 
-                  conn_u[jdof] = spu.connectivity (jdof, iel) - 1;
-              
-                for (idof = 0; idof < nsh_v; idof++) 
-                  {
-                    for (jdof = 0; jdof < nsh_u; jdof++) 
+            for (idof = 0; idof < spv.nsh (iel); idof++) 
+              for (jdof = 0; jdof < spu.nsh (iel); jdof++) 
+                {
+                  counter = jdof + nsh_u * (idof + nsh_v * iel);
+                  
+                  Iptr[counter] = conn_v[idof] - 1;
+                  Jptr[counter] = conn_u[jdof] - 1;
+                  Vptr[counter] = 0.0;
+                  for (inode = 0; inode < nqn; inode++)
+                    if (msh.weights (inode, iel) > 0.0)
                       {
-                        counter = jdof + nsh_u * (idof + nsh_v * iel);
-
-                        I(counter) = conn_v[idof];
-                        J(counter) = conn_u[jdof];
-                        V(counter) = 0.0;
-                        for (inode = 0; inode < nqn; inode++)
-                          {
-                            if (msh.weights (inode, giel) > 0.0)
-                              {
-                                double s = 0.0;
-                                for (icmp = 0; icmp < ncomp; icmp++)
-                                  for (idir = 0; idir < ndir; idir++)
-                                    s += shgv[idof][inode][idir][icmp] * 
-                                      shgu[jdof][inode][idir][icmp];
-  
-                                V(counter) += s * jacdet_weights[inode];
-                              }  
-                          } // end for inode
-                      } // end for jdof
-                  } // end for idof
-              } else {
-#pragma omp critical
-              {warning_with_id ("geopdes:zero_measure_element", "op_gradu_gradv: element %d has 0 area (or volume)", iel);}
-            } // end if area > 0
-          }  // end for iel
-      } // end of openmp parallel section
+                        double s = 0.0;
+                        for (icmp = 0; icmp < ncomp; icmp++)
+                          for (idir = 0; idir < ndir; idir++)
+                            s += shgv[idof][inode][idir][icmp] * 
+                              shgu[jdof][inode][idir][icmp];
+                        
+                        Vptr[counter] += s * jacdet_weights[inode];
+                      }  // end for inode, if weight > 0
+                } // end for idof, for jdof
+          } else {
+          warning_with_id ("geopdes:zero_measure_element", "op_gradu_gradv: element %d has 0 area (or volume)", iel);
+        } // end for iel, if area > 0
 
       if (nargout == 1) 
         {
@@ -154,10 +123,10 @@ OUTPUT: \n\
         } 
       else if (nargout == 3)
         {
-          for (icmp = 0; icmp < I.length(); icmp++) 
+          for (icmp = 0; icmp < I.numel (); icmp++) 
             {
-              I(icmp)++;
-              J(icmp)++;
+              Iptr[icmp]++;
+              Jptr[icmp]++;
             }
           //assign in reverse order to resize only once
           retval(2) = octave_value (V);
