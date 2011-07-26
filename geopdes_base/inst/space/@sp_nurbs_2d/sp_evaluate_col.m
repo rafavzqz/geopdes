@@ -70,11 +70,13 @@ end
 sp = sp_evaluate_col_param (space, msh, varargin{:});
 
 if (gradient)
-  JinvT = geopdes_invT__ (msh.geo_map_jac);
-  JinvT = reshape (JinvT, [2, 2, msh.nqn, msh.nel]);
-  sp.shape_function_gradients = geopdes_prod__ (JinvT, sp.shape_function_gradients);
+  if (isempty (space.shape_function_gradients))
+    JinvT = geopdes_invT__ (msh.geo_map_jac);
+    JinvT = reshape (JinvT, [2, 2, msh.nqn, msh.nel]);
+    sp.shape_function_gradients = geopdes_prod__ (JinvT, sp.shape_function_gradients);
+  else
+    sp.shape_function_gradients = space.shape_function_gradients(:,:,:,msh.elem_list);
+  end
 end
-
-clear shp_u shp_v shape_functions
 
 end

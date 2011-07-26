@@ -38,6 +38,9 @@
 %                       fixing the element in the first parametric direction.
 %     msh_eval_boundary_side: computes the parameterization in one boundary side
 %                       of the domain.
+%     msh_precompute:   computes, for all the mesh, any of the fields related
+%                       to the quadrature rule, as in the mesh structure from
+%                       previous versions of GeoPDEs.
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
@@ -111,6 +114,12 @@ function msh = msh_3d (breaks, qn, qw, geo, varargin)
 
   msh.map = geo.map;
   msh.map_der = geo.map_der;
+
+  msh.quad_nodes   = [];
+  msh.quad_weights = [];
+  msh.geo_map      = [];
+  msh.geo_map_jac  = [];
+  msh.jacdet       = [];
 
   msh = class (msh, 'msh_3d');
 

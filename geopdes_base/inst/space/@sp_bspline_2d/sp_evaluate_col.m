@@ -75,18 +75,14 @@ end
 
 sp = sp_evaluate_col_param (space, msh, varargin{:});
 
-if (gradient || hessian)
-  if (gradient)
-    JinvT = geopdes_invT__ (msh.geo_map_jac);
-    JinvT = reshape (JinvT, [2, 2, msh.nqn, msh.nel]);
-    sp.shape_function_gradients = geopdes_prod__ (JinvT, sp.shape_function_gradients);
-  end
-
-  if (hessian && isfield (msh, 'geo_map_der2'))
-    xu = squeeze (msh.geo_map_jac(1,1,:,:));
-    xv = squeeze (msh.geo_map_jac(1,2,:,:)); 
-    yu = squeeze (msh.geo_map_jac(2,1,:,:)); 
-    yv = squeeze (msh.geo_map_jac(2,2,:,:)); 
+if (hessian && isfield (msh, 'geo_map_der2'))
+  if (~isempty (space.shape_function_hessians))
+    sp.shape_function_hessians = space.shape_function_hessians (:,:,:,:,msh.elem_list);
+  else
+    xu = reshape (msh.geo_map_jac(1,1,:,:), msh.nqn, msh.nel);
+    xv = reshape (msh.geo_map_jac(1,2,:,:), msh.nqn, msh.nel);
+    yu = reshape (msh.geo_map_jac(2,1,:,:), msh.nqn, msh.nel);
+    yv = reshape (msh.geo_map_jac(2,2,:,:), msh.nqn, msh.nel);
 
     xuu = reshape (msh.geo_map_der2(1, 1, 1, :, :), [], msh.nel);
     yuu = reshape (msh.geo_map_der2(2, 1, 1, :, :), [], msh.nel);
@@ -96,14 +92,14 @@ if (gradient || hessian)
     yvv = reshape (msh.geo_map_der2(2, 2, 2, :, :), [], msh.nel);
 
     [uxx, uxy, uyy, vxx, vxy, vyy] = ...
-            der2_inv_map__ (xu, xv, yu, yv, xuu, xuv, xvv, yuu, yuv, yvv);
+          der2_inv_map__ (xu, xv, yu, yv, xuu, xuv, xvv, yuu, yuv, yvv);
 
     for ii=1:sp.nsh_max   
-      bu = squeeze (sp.shape_function_gradients(1,:,ii,:));
-      bv = squeeze (sp.shape_function_gradients(2,:,ii,:));
-      buu = squeeze (sp.shape_function_hessians(1,1,:,ii,:));
-      buv = squeeze (sp.shape_function_hessians(1,2,:,ii,:));
-      bvv = squeeze (sp.shape_function_hessians(2,2,:,ii,:));
+      bu = reshape (sp.shape_function_gradients(1,:,ii,:), msh.nqn, msh.nel);
+      bv = reshape (sp.shape_function_gradients(2,:,ii,:), msh.nqn, msh.nel);
+      buu = reshape (sp.shape_function_hessians(1,1,:,ii,:), msh.nqn, msh.nel);
+      buv = reshape (sp.shape_function_hessians(1,2,:,ii,:), msh.nqn, msh.nel);
+      bvv = reshape (sp.shape_function_hessians(2,2,:,ii,:), msh.nqn, msh.nel);
       
       [bxx, bxy, byy] = der2_basisfun_phys__ (xu(:), xv(:), yu(:), yv(:), uxx(:), uxy(:), uyy(:), vxx(:), vxy(:), vyy(:), buu(:), buv(:), bvv(:), bu(:), bv(:));
 
@@ -112,16 +108,23 @@ if (gradient || hessian)
       shape_function_hessians(1,2,:,ii,:) = reshape (bxy, sh);
       shape_function_hessians(2,1,:,ii,:) = reshape (bxy, sh);
       shape_function_hessians(2,2,:,ii,:) = reshape (byy, sh);
-    end  
+    end
     sp.shape_function_hessians = shape_function_hessians;
-    
+
     clear shape_function_hessians
     clear bu bv buu buv bvv xu xv yu yv xuu xuv xvv yuu yuv yvv ...
              uxx uxy uyy vxx vxy vyy bxx bxy byy
   end
-  clear shg_u shg_v
 end
 
-clear shp_u shp_v
+if (gradient)
+  if (isempty (space.shape_function_gradients))
+    JinvT = geopdes_invT__ (msh.geo_map_jac);
+    JinvT = reshape (JinvT, [2, 2, msh.nqn, msh.nel]);
+    sp.shape_function_gradients = geopdes_prod__ (JinvT, sp.shape_function_gradients);
+  else
+    sp.shape_function_gradients = space.shape_function_gradients(:,:,:,msh.elem_list);
+  end
+end
 
 end
