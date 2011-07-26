@@ -76,10 +76,11 @@ end
 spu = space.spu;
 spv = space.spv;
 
-nsh  = spu.nsh(msh.colnum) * spv.nsh;
-nsh  = nsh(:)';
 ndof = spu.ndof * spv.ndof;
 ndof_dir = [spu.ndof, spv.ndof];
+
+nsh  = spu.nsh(msh.colnum) * spv.nsh;
+nsh  = nsh(:)';
 
 if (isempty (space.connectivity))
   conn_u = reshape (spu.connectivity(:,msh.colnum), spu.nsh_max, 1, 1);
@@ -95,9 +96,15 @@ if (isempty (space.connectivity))
   connectivity(indices) = ...
     sub2ind ([spu.ndof, spv.ndof], conn_u(indices), conn_v(indices));
   connectivity = reshape (connectivity, space.nsh_max, msh.nel);
+
+  clear conn_u conn_v
 else
   connectivity = space.connectivity(:,msh.elem_list);
 end
+
+sp = struct('nsh_max', space.nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
+            'ndof_dir', ndof_dir, 'connectivity', connectivity, ...
+            'ncomp', 1);
 
 if (isempty (space.shape_functions) || isempty (space.shape_function_gradients))
   shp_u = reshape (spu.shape_functions(:, :, msh.colnum), ...
@@ -109,10 +116,6 @@ if (isempty (space.shape_functions) || isempty (space.shape_function_gradients))
   shp_v = repmat  (shp_v, [msh.nqn_dir(1), 1, spu.nsh_max, 1, 1]);
   shp_v = reshape (shp_v, msh.nqn, space.nsh_max, msh.nel);
 end
-
-sp = struct('nsh_max', space.nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
-            'ndof_dir', ndof_dir, 'connectivity', connectivity, ...
-            'ncomp', 1);
 
 if (value)
   if (isempty (space.shape_functions))

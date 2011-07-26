@@ -85,6 +85,11 @@ function sp = sp_bspline_3d (knots, degree, msh)
     sp.boundary = [];
   end
 
+  sp.nsh = [];
+  sp.connectivity = [];
+  sp.shape_functions = [];
+  sp.shape_function_gradients = [];
+
   sp.constructor = @(MSH) sp_bspline_3d (sp.knots, sp.degree, MSH);
   sp = class (sp, 'sp_bspline_3d');
 

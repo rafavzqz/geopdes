@@ -89,9 +89,15 @@ if (isempty (space.connectivity))
   connectivity(indices) = ...
     sub2ind ([space.spu.ndof, space.spv.ndof], conn_u(indices), conn_v(indices));
   connectivity = reshape (connectivity, space.nsh_max, msh.nel);
+
+  clear conn_u conn_v
 else
   connectivity = space.connectivity(:,msh.elem_list);
 end
+
+sp = struct('nsh_max', space.nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
+            'ndof_dir', ndof_dir, 'connectivity', connectivity, ...
+            'ncomp', 1);
 
 if (isempty (space.shape_functions) || isempty (space.shape_function_gradients))
   shp_u = reshape (spu.shape_functions(:, :, msh.colnum), ...
@@ -111,9 +117,6 @@ if (isempty (space.shape_functions) || isempty (space.shape_function_gradients))
   shape_functions = shape_functions ./ D;
 end
 
-sp = struct('nsh_max', space.nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
-            'ndof_dir', ndof_dir, 'connectivity', connectivity, ...
-            'ncomp', 1);
 if (value)
   if (isempty (space.shape_functions))
     sp.shape_functions = shape_functions;
