@@ -11,12 +11,12 @@
 %
 %    space: object representing the discrete function space, plus the following fields (or some of them):
 %
-%    FIELD_NAME      (SIZE)                                 DESCRIPTION
-%    nsh             (1 x msh.nel vector)                   actual number of shape functions per each element
-%    connectivity    (nsh_max x msh_col.nel vector)         indices of basis functions that do not vanish in each element
-%    shape_functions (msh_col.nqn x nsh_max x msh_col.nel)  basis functions evaluated at each quadrature node in each element
+%    FIELD_NAME      (SIZE)                             DESCRIPTION
+%    nsh             (1 x msh.nel vector)               actual number of shape functions per each element
+%    connectivity    (nsh_max x msh.nel vector)         indices of basis functions that do not vanish in each element
+%    shape_functions (msh.nqn x nsh_max x msh.nel)      basis functions evaluated at each quadrature node in each element
 %    shape_function_gradients
-%             (3 x msh_col.nqn x nsh_max x msh_col.nel)     basis function gradients evaluated at each quadrature node in each element
+%             (3 x msh.nqn x nsh_max x msh.nel)         basis function gradients evaluated at each quadrature node in each element
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
@@ -36,23 +36,17 @@
 
 function sp = sp_precompute (sp, msh, varargin)
 
-  if (nargin == 2)
-    value = true;
+  if (isempty (varargin))
     gradient = true;
   else
-    value = false;
+    if (~rem (length (varargin), 2) == 0)
+      error ('sp_precompute: options must be passed in the [option, value] format');
+    end
+
     gradient = false;
-    for ii=1:length(varargin)
-      if (strcmpi (varargin {ii}, 'connectivity'))
-        value = true;
-      elseif (strcmpi (varargin {ii}, 'nsh'))
-        nsh = true;
-      elseif (strcmpi (varargin {ii}, 'value'))
-        value = true;
-      elseif (strcmpi (varargin {ii}, 'gradient'))
+    for ii=1:2:length(varargin)-1
+      if (strcmpi (varargin {ii}, 'gradient'))
         gradient = true;
-      else
-        error ('sp_precompute: unknown option %s', varargin {ii});
       end
     end    
   end

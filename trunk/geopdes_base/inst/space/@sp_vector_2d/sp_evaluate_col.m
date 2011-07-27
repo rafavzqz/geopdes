@@ -30,7 +30,7 @@
 %    nsh_max         (scalar)                                   maximum number of shape functions per element
 %    nsh             (1 x msh_col.nel vector)                   actual number of shape functions per each element
 %    connectivity    (nsh_max x msh_col.nel vector)             indices of basis functions that do not vanish in each element
-%    shape_functions (msh_col.nqn x nsh_max x msh_col.nel)      basis functions evaluated at each quadrature node in each element
+%    shape_functions (2 x msh_col.nqn x nsh_max x msh_col.nel)  basis functions evaluated at each quadrature node in each element
 %    shape_function_gradients
 %               (2 x 2 x msh_col.nqn x nsh_max x msh_col.nel)   basis function gradients evaluated at each quadrature node in each element
 %    shape_function_divs (msh_col.nqn x nsh_max x msh_col.nel)  basis function gradients evaluated at each quadrature node in each element
@@ -93,21 +93,32 @@ sp = struct('nsh_max', space.nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
 
 % From here it depends on the transformation
 if (value)
-  sp.shape_functions = zeros (2, msh.nqn, sp.nsh_max, msh.nel);
-  sp.shape_functions(1,:,1:sp1_col.nsh_max,:)            = sp1_col.shape_functions;
-  sp.shape_functions(2,:,sp1_col.nsh_max+1:sp.nsh_max,:) = sp2_col.shape_functions;
+  if (isempty (space.shape_functions))
+    sp.shape_functions = zeros (2, msh.nqn, sp.nsh_max, msh.nel);
+    sp.shape_functions(1,:,1:sp1_col.nsh_max,:)            = sp1_col.shape_functions;
+    sp.shape_functions(2,:,sp1_col.nsh_max+1:sp.nsh_max,:) = sp2_col.shape_functions;
+  else
+    sp.shape_functions = space.shape_functions(:,:,:,msh.elem_list);
+  end
 end
 
-
 if (gradient || curl || divergence)
-  shape_fun_grads = zeros (2, 2, msh.nqn, sp.nsh_max, msh.nel);
+  if (isempty (space.sp1.shape_function_gradients))
+    shape_fun_grads = zeros (2, 2, msh.nqn, sp.nsh_max, msh.nel);
 
-  JinvT = geopdes_invT__ (msh.geo_map_jac);
-  JinvT = reshape (JinvT, [2, 2, msh.nqn, msh.nel]);
-  shape_fun_grads(1,:,:,1:sp1_col.nsh_max,:) = ...
+    JinvT = geopdes_invT__ (msh.geo_map_jac);
+    JinvT = reshape (JinvT, [2, 2, msh.nqn, msh.nel]);
+    shape_fun_grads(1,:,:,1:sp1_col.nsh_max,:) = ...
                 geopdes_prod__ (JinvT, sp1_col.shape_function_gradients);
-  shape_fun_grads(2,:,:,sp1_col.nsh_max+1:sp.nsh_max,:) = ...
+    shape_fun_grads(2,:,:,sp1_col.nsh_max+1:sp.nsh_max,:) = ...
                 geopdes_prod__ (JinvT, sp2_col.shape_function_gradients);
+  else
+    shape_fun_grads = zeros (2, 2, msh.nqn, sp.nsh_max, msh.nel);
+    shape_fun_grads(1,:,:,1:sp1_col.nsh_max,:) = ...
+             space.sp1.shape_function_gradients(:,:,:,msh.elem_list);
+    shape_fun_grads(2,:,:,sp1_col.nsh_max+1:sp.nsh_max,:) = ...
+             space.sp2.shape_function_gradients(:,:,:,msh.elem_list);
+  end
 
   if (gradient)
     sp.shape_function_gradients = shape_fun_grads;
