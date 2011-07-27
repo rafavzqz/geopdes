@@ -140,7 +140,7 @@ else
 
   sol = mat \ rhs;
   vel(int_dofs) = sol(1:nintdofs);
-  press = PI * sol(1+nintdofs:end);
+  press = sol(1+nintdofs:end);
 end
 
 end
