@@ -119,14 +119,28 @@ nintdofs = numel (int_dofs);
 rhs_dir  = -A(int_dofs, drchlt_dofs)*vel(drchlt_dofs);
 
 % Solve the linear system
-mat = [ A(int_dofs, int_dofs), -B(:,int_dofs).',            sparse(nintdofs, 1);
-       -B(:,int_dofs),          sparse(size (B,1), size(B,1)), E';
-        sparse(1, nintdofs),    E,                          0];
-rhs = [F(int_dofs) + rhs_dir + rhs_nmnn(int_dofs); 
-       B(:, drchlt_dofs)*vel(drchlt_dofs); 
-       0];
-sol = mat \ rhs;
-vel(int_dofs) = sol(1:nintdofs);
-press = PI * sol(1+nintdofs:end-1);
+if (isempty (nmnn_sides))
+% If all the sides are Dirichlet, the pressure is zero averaged.
+  mat = [ A(int_dofs, int_dofs), -B(:,int_dofs).',          sparse(nintdofs, 1);
+         -B(:,int_dofs),          sparse(size (B,1), size(B,1)), E';
+          sparse(1, nintdofs),    E,                             0];
+  rhs = [F(int_dofs) + rhs_dir; 
+         B(:, drchlt_dofs)*vel(drchlt_dofs);
+         0];
+
+  sol = mat \ rhs;
+  vel(int_dofs) = sol(1:nintdofs);
+  press = PI * sol(1+nintdofs:end-1);
+else
+% With natural boundary condition, the constraint on the pressure is not needed.
+  mat = [ A(int_dofs, int_dofs), -B(:,int_dofs).';
+         -B(:,int_dofs),          sparse(size (B,1), size (B,1))];
+  rhs = [F(int_dofs) + rhs_dir + rhs_nmnn(int_dofs);
+         B(:, drchlt_dofs)*vel(drchlt_dofs)];
+
+  sol = mat \ rhs;
+  vel(int_dofs) = sol(1:nintdofs);
+  press = PI * sol(1+nintdofs:end);
+end
 
 end
