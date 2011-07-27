@@ -23,18 +23,19 @@
 %    sp: struct representing the discrete function space, with the following fields:
 %              (see the article for a detailed description)
 %
-%    FIELD_NAME      (SIZE)                                    DESCRIPTION
-%    ncomp           (scalar)                                  number of components of the functions of the space (actually, 3)
-%    ndof            (scalar)                                  total number of degrees of freedom
-%    ndof_dir        (3 x 3 matrix)                            for each component, number of degrees of freedom along each direction
-%    nsh_max         (scalar)                                  maximum number of shape functions per element
+%    FIELD_NAME      (SIZE)                                     DESCRIPTION
+%    ncomp           (scalar)                                   number of components of the functions of the space (actually, 3)
+%    ndof            (scalar)                                   total number of degrees of freedom
+%    ndof_dir        (3 x 3 matrix)                             for each component, number of degrees of freedom along each direction
+%    nsh_max         (scalar)                                   maximum number of shape functions per element
 %    nsh             (1 x msh_col.nel vector)                   actual number of shape functions per each element
 %    connectivity    (nsh_max x msh_col.nel vector)             indices of basis functions that do not vanish in each element
-%    shape_functions (msh_col.nqn x nsh_max x msh_col.nel)      basis functions evaluated at each quadrature node in each element
+%    shape_functions (3 x msh_col.nqn x nsh_max x msh_col.nel)  basis functions evaluated at each quadrature node in each element
 %    shape_function_gradients
-%               (2 x 2 x msh_col.nqn x nsh_max x msh_col.nel)   basis function gradients evaluated at each quadrature node in each element
+%               (3 x 3 x msh_col.nqn x nsh_max x msh_col.nel)   basis function gradients evaluated at each quadrature node in each element
 %    shape_function_divs (msh_col.nqn x nsh_max x msh_col.nel)  basis function gradients evaluated at each quadrature node in each element
-%    shape_function_curls (msh_col.nqn x nsh_max x msh_col.nel) basis function gradients evaluated at each quadrature node in each element
+%    shape_function_curls 
+%               (3 x msh_col.nqn x nsh_max x msh_col.nel)       basis function gradients evaluated at each quadrature node in each element
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
@@ -96,7 +97,7 @@ sp = struct('nsh_max', space.nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
 % From here it will depend on the transformation
 if (value)
   sp.shape_functions = zeros (3, msh.nqn, sp.nsh_max, msh.nel);
-  sp.shape_functions(1,:,1:sp1_col.nsh_max,:)            = sp1_col.shape_functions;
+  sp.shape_functions(1,:,1:sp1_col.nsh_max,:) = sp1_col.shape_functions;
   sp.shape_functions(2,:,sp1_col.nsh_max+(1:sp2_col.nsh_max),:) = sp2_col.shape_functions;
   sp.shape_functions(3,:,sp1_col.nsh_max+sp2_col.nsh_max+1:sp.nsh_max,:) = sp3_col.shape_functions;
 end
@@ -134,6 +135,7 @@ if (gradient || curl || divergence)
     shape_fun_curls(3,:,sp1_col.nsh_max+sp2_col.nsh_max+1:sp.nsh_max,:) = ...
       reshape (shape_fun_grads(2,1,:,:,:) - shape_fun_grads(1,2,:,:,:), ...
                                        1, msh.nqn, sp.nsh_max, msh.nel);
+    sp_col.shape_function_curls = shape_fun_curls;
   end
 end
 
