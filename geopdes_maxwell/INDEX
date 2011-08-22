@@ -4,14 +4,18 @@ Space
   sp_vector_2d_curl_transform
   sp_eval_boundary_side
   sp_evaluate_col
+  sp_precompute
  @sp_vector_3d_curl_transform
   sp_vector_3d_curl_transform
   sp_eval_boundary_side
   sp_evaluate_col
+  sp_precompute
  @sp_bspline_2d_3forms
   sp_bspline_2d_3forms
   sp_eval_boundary_side
   sp_evaluate_col
+  sp_precompute
+  sp_precompute_param
  sp_hcurl_error
  sp_drchlt_l2_proj_uxn
 Operators

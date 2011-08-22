@@ -65,7 +65,8 @@ sp = sp_evaluate_col_param (space, msh, varargin{:});
 
 jacdet = geopdes_det__ (msh.geo_map_jac);
 for ii = 1:sp.nsh_max
-  sp.shape_functions(:,ii,:) = squeeze(sp.shape_functions(:,ii,:))./jacdet;
+  sp.shape_functions(:,ii,:) = reshape (sp.shape_functions(:,ii,:), ...
+                                              msh.nqn, msh.nel)./jacdet;
 end
 
 end

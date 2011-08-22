@@ -14,8 +14,6 @@
 %              Name     |   Default value |  Meaning
 %           ------------+-----------------+----------------------------------
 %            value      |      true       |  compute shape_functions
-%            gradient   |      false      |  compute shape_function_gradients
-%            hessian    |      false      |  compute shape_function_hessians
 %
 % OUTPUT:
 %
@@ -30,10 +28,6 @@
 %    nsh             (1 x msh_col.nel vector)               actual number of shape functions per each element
 %    connectivity    (nsh_max x msh_col.nel vector)         indices of basis functions that do not vanish in each element
 %    shape_functions (msh_col.nqn x nsh_max x msh_col.nel)  basis functions evaluated at each quadrature node in each element
-%    shape_function_gradients
-%            (2 x msh_col.nqn x nsh_max x msh_col.nel)      basis function gradients evaluated at each quadrature node in each element
-%    shape_function_hessians
-%            (2 x 2 x msh_col.nqn x nsh_max x msh_col.nel)  basis function hessians evaluated at each quadrature node in each element
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
