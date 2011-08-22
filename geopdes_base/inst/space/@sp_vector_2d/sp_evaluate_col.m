@@ -93,32 +93,20 @@ sp = struct('nsh_max', space.nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
 
 % From here it depends on the transformation
 if (value)
-  if (isempty (space.shape_functions))
-    sp.shape_functions = zeros (2, msh.nqn, sp.nsh_max, msh.nel);
-    sp.shape_functions(1,:,1:sp1_col.nsh_max,:)            = sp1_col.shape_functions;
-    sp.shape_functions(2,:,sp1_col.nsh_max+1:sp.nsh_max,:) = sp2_col.shape_functions;
-  else
-    sp.shape_functions = space.shape_functions(:,:,:,msh.elem_list);
-  end
+  sp.shape_functions = zeros (2, msh.nqn, sp.nsh_max, msh.nel);
+  sp.shape_functions(1,:,1:sp1_col.nsh_max,:)            = sp1_col.shape_functions;
+  sp.shape_functions(2,:,sp1_col.nsh_max+1:sp.nsh_max,:) = sp2_col.shape_functions;
 end
 
 if (gradient || curl || divergence)
-  if (isempty (space.sp1.shape_function_gradients))
-    shape_fun_grads = zeros (2, 2, msh.nqn, sp.nsh_max, msh.nel);
+  shape_fun_grads = zeros (2, 2, msh.nqn, sp.nsh_max, msh.nel);
 
-    JinvT = geopdes_invT__ (msh.geo_map_jac);
-    JinvT = reshape (JinvT, [2, 2, msh.nqn, msh.nel]);
-    shape_fun_grads(1,:,:,1:sp1_col.nsh_max,:) = ...
-                geopdes_prod__ (JinvT, sp1_col.shape_function_gradients);
-    shape_fun_grads(2,:,:,sp1_col.nsh_max+1:sp.nsh_max,:) = ...
-                geopdes_prod__ (JinvT, sp2_col.shape_function_gradients);
-  else
-    shape_fun_grads = zeros (2, 2, msh.nqn, sp.nsh_max, msh.nel);
-    shape_fun_grads(1,:,:,1:sp1_col.nsh_max,:) = ...
-             space.sp1.shape_function_gradients(:,:,:,msh.elem_list);
-    shape_fun_grads(2,:,:,sp1_col.nsh_max+1:sp.nsh_max,:) = ...
-             space.sp2.shape_function_gradients(:,:,:,msh.elem_list);
-  end
+  JinvT = geopdes_invT__ (msh.geo_map_jac);
+  JinvT = reshape (JinvT, [2, 2, msh.nqn, msh.nel]);
+  shape_fun_grads(1,:,:,1:sp1_col.nsh_max,:) = ...
+              geopdes_prod__ (JinvT, sp1_col.shape_function_gradients);
+  shape_fun_grads(2,:,:,sp1_col.nsh_max+1:sp.nsh_max,:) = ...
+              geopdes_prod__ (JinvT, sp2_col.shape_function_gradients);
 
   if (gradient)
     sp.shape_function_gradients = shape_fun_grads;

@@ -76,86 +76,71 @@ nsh  = nsh(:)';
 ndof = spu.ndof * spv.ndof * spw.ndof;
 ndof_dir = [spu.ndof, spv.ndof, spw.ndof];
 
-if (isempty (space.connectivity))
-  conn_u = reshape (spu.connectivity(:,msh.colnum), spu.nsh_max, 1, 1, 1, 1);
-  conn_u = repmat  (conn_u, [1, spv.nsh_max, spw.nsh_max, 1, msh.nel_dir(2), msh.nel_dir(3)]);
-  conn_u = reshape (conn_u, [], msh.nel);
+conn_u = reshape (spu.connectivity(:,msh.colnum), spu.nsh_max, 1, 1, 1, 1);
+conn_u = repmat  (conn_u, [1, spv.nsh_max, spw.nsh_max, 1, msh.nel_dir(2), msh.nel_dir(3)]);
+conn_u = reshape (conn_u, [], msh.nel);
 
-  conn_v = reshape (spv.connectivity, 1, spv.nsh_max, 1, msh.nel_dir(2), 1);
-  conn_v = repmat  (conn_v, [spu.nsh_max, 1, spw.nsh_max, 1, msh.nel_dir(3)]);
-  conn_v = reshape (conn_v, [], msh.nel);
+conn_v = reshape (spv.connectivity, 1, spv.nsh_max, 1, msh.nel_dir(2), 1);
+conn_v = repmat  (conn_v, [spu.nsh_max, 1, spw.nsh_max, 1, msh.nel_dir(3)]);
+conn_v = reshape (conn_v, [], msh.nel);
 
-  conn_w = reshape (spw.connectivity, 1, 1, spw.nsh_max, 1, msh.nel_dir(3));
-  conn_w = repmat  (conn_w, [spu.nsh_max, spv.nsh_max, 1, msh.nel_dir(2), 1]);
-  conn_w = reshape (conn_w, [], msh.nel);
+conn_w = reshape (spw.connectivity, 1, 1, spw.nsh_max, 1, msh.nel_dir(3));
+conn_w = repmat  (conn_w, [spu.nsh_max, spv.nsh_max, 1, msh.nel_dir(2), 1]);
+conn_w = reshape (conn_w, [], msh.nel);
 
-  connectivity = zeros (space.nsh_max, msh.nel);
-  indices = conn_u ~= 0 & conn_v ~= 0 & conn_w~=0;
-  connectivity(indices) = ...
-       sub2ind ([spu.ndof, spv.ndof, spw.ndof], conn_u(indices), conn_v(indices), conn_w(indices));
-  connectivity = reshape (connectivity, space.nsh_max, msh.nel);
+connectivity = zeros (space.nsh_max, msh.nel);
+indices = conn_u ~= 0 & conn_v ~= 0 & conn_w~=0;
+connectivity(indices) = ...
+     sub2ind ([spu.ndof, spv.ndof, spw.ndof], conn_u(indices), conn_v(indices), conn_w(indices));
+connectivity = reshape (connectivity, space.nsh_max, msh.nel);
 
-  clear conn_u conn_v conn_w
-else
-  connectivity = space.connectivity(:,msh.elem_list);
-end
+clear conn_u conn_v conn_w
 
 sp = struct('nsh_max', space.nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
             'ndof_dir', ndof_dir, 'connectivity', connectivity, ...
             'ncomp', 1);
 
-if (isempty (space.shape_functions) || isempty (space.shape_function_gradients))
-  shp_u = reshape (spu.shape_functions(:, :, msh.colnum), ...
-                 msh.nqn_dir(1), 1, 1, spu.nsh_max, 1, 1, 1, 1);  %% one column only
-  shp_u = repmat  (shp_u, [1, msh.nqn_dir(2), msh.nqn_dir(3), 1, spv.nsh_max, spw.nsh_max, msh.nel_dir(2), msh.nel_dir(3)]);
-  shp_u = reshape (shp_u, msh.nqn, space.nsh_max, msh.nel);
+shp_u = reshape (spu.shape_functions(:, :, msh.colnum), ...
+               msh.nqn_dir(1), 1, 1, spu.nsh_max, 1, 1, 1, 1);  %% one column only
+shp_u = repmat  (shp_u, [1, msh.nqn_dir(2), msh.nqn_dir(3), 1, spv.nsh_max, spw.nsh_max, msh.nel_dir(2), msh.nel_dir(3)]);
+shp_u = reshape (shp_u, msh.nqn, space.nsh_max, msh.nel);
 
-  shp_v = reshape (spv.shape_functions, 1, msh.nqn_dir(2), 1, 1, spv.nsh_max, 1, msh.nel_dir(2), 1);
-  shp_v = repmat  (shp_v, [msh.nqn_dir(1), 1, msh.nqn_dir(3), spu.nsh_max, 1, spw.nsh_max, 1, msh.nel_dir(3)]);
-  shp_v = reshape (shp_v, msh.nqn, space.nsh_max, msh.nel);
+shp_v = reshape (spv.shape_functions, 1, msh.nqn_dir(2), 1, 1, spv.nsh_max, 1, msh.nel_dir(2), 1);
+shp_v = repmat  (shp_v, [msh.nqn_dir(1), 1, msh.nqn_dir(3), spu.nsh_max, 1, spw.nsh_max, 1, msh.nel_dir(3)]);
+shp_v = reshape (shp_v, msh.nqn, space.nsh_max, msh.nel);
 
-  shp_w = reshape (spw.shape_functions, 1, 1, msh.nqn_dir(3), 1, 1, spw.nsh_max, 1, msh.nel_dir(3));
-  shp_w = repmat (shp_w, [msh.nqn_dir(1), msh.nqn_dir(2), 1, spu.nsh_max, spv.nsh_max, 1, msh.nel_dir(2), 1]);
-  shp_w = reshape (shp_w, msh.nqn, space.nsh_max, msh.nel);
-end
+shp_w = reshape (spw.shape_functions, 1, 1, msh.nqn_dir(3), 1, 1, spw.nsh_max, 1, msh.nel_dir(3));
+shp_w = repmat (shp_w, [msh.nqn_dir(1), msh.nqn_dir(2), 1, spu.nsh_max, spv.nsh_max, 1, msh.nel_dir(2), 1]);
+shp_w = reshape (shp_w, msh.nqn, space.nsh_max, msh.nel);
 
 if (value)
-  if (isempty (space.shape_functions))
-    sp.shape_functions = shp_u .* shp_v .* shp_w;
-  else
-    sp.shape_functions = space.shape_functions(:,:,msh.elem_list);
-  end
+  sp.shape_functions = shp_u .* shp_v .* shp_w;
 end
 
 if (gradient)
-  if (isempty (space.shape_function_gradients))
-    shg_u = reshape (spu.shape_function_gradients(:, :, msh.colnum), ...
-                 msh.nqn_dir(1), 1, 1, spu.nsh_max, 1, 1, 1, 1);  %% one column only
-    shg_u = repmat  (shg_u, [1, msh.nqn_dir(2), msh.nqn_dir(3), 1, spv.nsh_max, spw.nsh_max, msh.nel_dir(2), msh.nel_dir(3)]);
-    shg_u = reshape (shg_u, msh.nqn, space.nsh_max, msh.nel);
+  shg_u = reshape (spu.shape_function_gradients(:, :, msh.colnum), ...
+               msh.nqn_dir(1), 1, 1, spu.nsh_max, 1, 1, 1, 1);  %% one column only
+  shg_u = repmat  (shg_u, [1, msh.nqn_dir(2), msh.nqn_dir(3), 1, spv.nsh_max, spw.nsh_max, msh.nel_dir(2), msh.nel_dir(3)]);
+  shg_u = reshape (shg_u, msh.nqn, space.nsh_max, msh.nel);
 
-    shg_v = reshape (spv.shape_function_gradients, ...
-            1, msh.nqn_dir(2), 1, 1, spv.nsh_max, 1, msh.nel_dir(2), 1);
-    shg_v = repmat (shg_v, [msh.nqn_dir(1), 1, msh.nqn_dir(3), spu.nsh_max, 1, spw.nsh_max, 1, msh.nel_dir(3)]);
-    shg_v = reshape (shg_v, msh.nqn, space.nsh_max, msh.nel);
+  shg_v = reshape (spv.shape_function_gradients, ...
+          1, msh.nqn_dir(2), 1, 1, spv.nsh_max, 1, msh.nel_dir(2), 1);
+  shg_v = repmat (shg_v, [msh.nqn_dir(1), 1, msh.nqn_dir(3), spu.nsh_max, 1, spw.nsh_max, 1, msh.nel_dir(3)]);
+  shg_v = reshape (shg_v, msh.nqn, space.nsh_max, msh.nel);
 
-    shg_w = reshape (spw.shape_function_gradients, ...
-            1, 1, msh.nqn_dir(3), 1, 1, spw.nsh_max, 1, msh.nel_dir(3));
-    shg_w = repmat (shg_w, [msh.nqn_dir(1), msh.nqn_dir(2), 1, spu.nsh_max, spv.nsh_max, 1, msh.nel_dir(2), 1]);
-    shg_w = reshape (shg_w, msh.nqn, space.nsh_max, msh.nel);
+  shg_w = reshape (spw.shape_function_gradients, ...
+          1, 1, msh.nqn_dir(3), 1, 1, spw.nsh_max, 1, msh.nel_dir(3));
+  shg_w = repmat (shg_w, [msh.nqn_dir(1), msh.nqn_dir(2), 1, spu.nsh_max, spv.nsh_max, 1, msh.nel_dir(2), 1]);
+  shg_w = reshape (shg_w, msh.nqn, space.nsh_max, msh.nel);
 
-    sp.shape_function_gradients(1,:,:,:) = shg_u .* shp_v .* shp_w ;
-    sp.shape_function_gradients(2,:,:,:) = shp_u .* shg_v .* shp_w ;
-    sp.shape_function_gradients(3,:,:,:) = shp_u .* shp_v .* shg_w ;
+  sp.shape_function_gradients(1,:,:,:) = shg_u .* shp_v .* shp_w ;
+  sp.shape_function_gradients(2,:,:,:) = shp_u .* shg_v .* shp_w ;
+  sp.shape_function_gradients(3,:,:,:) = shp_u .* shp_v .* shg_w ;
 
-    sp.shape_function_gradients = reshape (sp.shape_function_gradients, ...
-                                  3, msh.nqn, sp.nsh_max, msh.nel);
+  sp.shape_function_gradients = reshape (sp.shape_function_gradients, ...
+                                3, msh.nqn, sp.nsh_max, msh.nel);
 
-    clear shg_u shg_v shg_w
-  else
-% This one must be used carefully: space may have the gradients in the physical domain.
-    sp.shape_function_gradients = space.shape_function_gradients(:,:,:,msh.elem_list);
-  end
+  clear shg_u shg_v shg_w
 end
 
 clear shp_u shp_v shp_w
