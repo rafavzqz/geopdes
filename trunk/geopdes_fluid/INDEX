@@ -6,6 +6,7 @@ Space
   sp_vector_2d_piola_transform
   sp_eval_boundary_side
   sp_evaluate_column
+  sp_precompute
 Msh
  msh_set_breaks
 Solve
