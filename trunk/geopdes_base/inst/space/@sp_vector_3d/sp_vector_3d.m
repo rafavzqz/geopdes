@@ -81,6 +81,13 @@ function sp = sp_vector_3d (sp1, sp2, sp3, msh)
     sp.boundary = [];
   end
 
+  sp.nsh = [];
+  sp.connectivity = [];
+  sp.shape_functions = [];
+  sp.shape_function_gradients = [];
+  sp.shape_function_divs = [];
+  sp.shape_function_curls = [];
+
   sp.constructor = @(MSH) sp_vector_3d (sp1.constructor (MSH), ...
                                         sp2.constructor (MSH), ...
                                         sp3.constructor (MSH), MSH);
