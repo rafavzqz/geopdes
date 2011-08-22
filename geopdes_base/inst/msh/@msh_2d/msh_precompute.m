@@ -137,7 +137,10 @@ function msh = msh_precompute (msh, varargin)
   end
 
   if (~isempty (msh.map_der2) && geo_map_der2)
-    msh.geo_map_der2 = reshape (feval (msh.map_der2, {qn{1}(:)', qn{2}(:)'}), 2, 2, 2, msh.nqn, msh.nel);
+    hess = feval (msh.map_der2, {qn{1}(:)', qn{2}(:)'});
+    hess = reshape (hess, [2, 2, 2, nqnu, nelu, nqnv, nelv]);
+    hess = permute (hess, [1 2 3 4 6 5 7]);
+    msh.geo_map_der2 = reshape (hess, 2, 2, 2, nqn, nel);
   end
 
 end
