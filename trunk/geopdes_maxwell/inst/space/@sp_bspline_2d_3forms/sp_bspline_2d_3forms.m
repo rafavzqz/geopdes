@@ -56,9 +56,6 @@ function sp = sp_bspline_2d_3forms (knots, degree, msh)
   sp.ndof_dir = [sp.spu.ndof, sp.spv.ndof];
   sp.ncomp    = 1;
 
-  mcp = sp.ndof_dir(1);
-  ncp = sp.ndof_dir(2); 
-
   sp.constructor = @(MSH) sp_bspline_2d_3forms (sp.knots, sp.degree, MSH);
   sp = class (sp, 'sp_bspline_2d_3forms');
 

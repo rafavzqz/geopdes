@@ -28,7 +28,7 @@
 %    nsh_max         (scalar)                                   maximum number of shape functions per element
 %    nsh             (1 x msh_col.nel vector)                   actual number of shape functions per each element
 %    connectivity    (nsh_max x msh_col.nel vector)             indices of basis functions that do not vanish in each element
-%    shape_functions (msh_col.nqn x nsh_max x msh_col.nel)      basis functions evaluated at each quadrature node in each element
+%    shape_functions (2 x msh_col.nqn x nsh_max x msh_col.nel)  basis functions evaluated at each quadrature node in each element
 %    shape_function_curls (msh_col.nqn x nsh_max x msh_col.nel) basis function curls evaluated at each quadrature node in each element
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
