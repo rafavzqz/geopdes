@@ -1,12 +1,15 @@
 % SP_PRECOMPUTE_PARAM: precompute all the fields, as in the space structure of the technical report, before mapping to the physical domain.
 %  This function is used in vectorial spaces, before applying the map.
 %
-%     space = sp_precompute_param (space, msh)
-%     space = sp_precompute_param (space, msh, 'option')
+%     space = sp_precompute_param (space, msh); computes all the fields
+%     space = sp_precompute_param (space, msh, 'option');  only computes the selected fields
 %
 % INPUT:
 %     
 %    space: object representing the discrete function space (see sp_bspline_2d).
+%    'option', value: additional optional parameters, available options are:
+%        nsh, connectivity, value (shape_functions), gradient (shape_function_gradients).
+%     The value must be true or false. All the values are false by default.
 %
 % OUTPUT:
 %
@@ -51,14 +54,14 @@ function sp = sp_precompute_param (sp, msh, varargin)
     value = false;
     gradient = false;
     for ii=1:2:length(varargin)-1
-      if (strcmpi (varargin {ii}, 'connectivity'))
-        connectivity = true;
-      elseif (strcmpi (varargin {ii}, 'nsh'))
-        nsh = true;
-      elseif (strcmpi (varargin {ii}, 'value'))
-        value = true;
-      elseif (strcmpi (varargin {ii}, 'gradient'))
-        gradient = true;
+      if (strcmpi (varargin{ii}, 'connectivity'))
+        connectivity = varargin{ii+1};
+      elseif (strcmpi (varargin{ii}, 'nsh'))
+        nsh = varargin{ii+1};
+      elseif (strcmpi (varargin{ii}, 'value'))
+        value = varargin{ii+1};
+      elseif (strcmpi (varargin{ii}, 'gradient'))
+        gradient = varargin{ii+1};
       else
         error ('sp_precompute_param: unknown option %s', varargin {ii});
       end
