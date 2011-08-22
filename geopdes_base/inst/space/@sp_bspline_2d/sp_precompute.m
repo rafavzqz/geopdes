@@ -1,11 +1,14 @@
 % SP_PRECOMPUTE: precompute all the fields, as in the space structure of the technical report.
 %
-%     space = sp_precompute (space, msh)
-%     space = sp_precompute (space, msh, 'option')
+%     space = sp_precompute (space, msh);  computes all the fields of the structure.
+%     space = sp_precompute (space, msh, 'option', value);  only computes the selected fields
 %
 % INPUT:
 %     
 %    space: object representing the discrete function space (see sp_bspline_2d).
+%    'option', value: additional optional parameters, available options are:
+%        nsh, connectivity, value (shape_functions), gradient (shape_function_gradients).
+%     The value must be true or false. All the values are false by default.
 %
 % OUTPUT:
 %
@@ -46,8 +49,8 @@ function sp = sp_precompute (sp, msh, varargin)
 
     gradient = false;
     for ii=1:2:length(varargin)-1
-      if (strcmpi (varargin {ii}, 'gradient'))
-        gradient = true;
+      if (strcmpi (varargin{ii}, 'gradient'))
+        gradient = varargin{ii+1};
       end
     end    
   end

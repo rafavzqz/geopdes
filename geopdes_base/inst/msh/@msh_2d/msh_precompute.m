@@ -1,11 +1,15 @@
 % MSH_PRECOMPUTE: precompute all the fields, as in the msh structure of the technical report.
 %
-%     msh = msh_precompute (msh);
-%     msh = msh_precompute (msh, 'option');
+%     msh = msh_precompute (msh);  computes all the fields of the structure.
+%
+%     msh = msh_precompute (msh, 'option', value);  only computes the selected fields.
 %
 % INPUTS:
 %     
 %     msh: mesh object containing the quadrature information (see msh_2d)
+%    'option', value: additional optional parameters, available options are:
+%        quad_nodes, quad_weights, geo_map, geo_map_jac, geo_map_der2, jacdet.
+%     The value must be true or false. All the values are false by default.
 %
 % OUTPUT:
 %
@@ -46,25 +50,28 @@ function msh = msh_precompute (msh, varargin)
     geo_map_der2 = true;
     jacdet = true;
   else
+    if (~rem (length (varargin), 2) == 0)
+      error ('msh_precompute: options must be passed in the [option, value] format');
+    end
     quad_nodes = false;
     quad_weights = false;
     geo_map = false;
     geo_map_jac = false;
     geo_map_der2 = false;
     jacdet = false;
-    for ii=1:length(varargin)
-      if (strcmpi (varargin {ii}, 'quad_nodes'))
-        quad_nodes = true;
-      elseif (strcmpi (varargin {ii}, 'quad_weights'))
-        quad_weights = true;
-      elseif (strcmpi (varargin {ii}, 'geo_map'))
-        geo_map = true;
-      elseif (strcmpi (varargin {ii}, 'geo_map_jac'))
-        geo_map_jac = true;
-      elseif (strcmpi (varargin {ii}, 'geo_map_der2'))
-        geo_map_der2 = true;
-      elseif (strcmpi (varargin {ii}, 'jacdet'))
-        jacdet = true;
+    for ii=1:2:length(varargin)-1
+      if (strcmpi (varargin{ii}, 'quad_nodes'))
+        quad_nodes = varargin{ii+1};
+      elseif (strcmpi (varargin{ii}, 'quad_weights'))
+        quad_weights = varargin{ii+1};
+      elseif (strcmpi (varargin{ii}, 'geo_map'))
+        geo_map = varargin{ii+1};
+      elseif (strcmpi (varargin{ii}, 'geo_map_jac'))
+        geo_map_jac = varargin{ii+1};
+      elseif (strcmpi (varargin{ii}, 'geo_map_der2'))
+        geo_map_der2 = varargin{ii+1};
+      elseif (strcmpi (varargin{ii}, 'jacdet'))
+        jacdet = varargin{ii+1};
       else
         error ('msh_precompute: unknown option %s', varargin {ii});
       end
