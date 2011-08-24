@@ -62,7 +62,7 @@ function sp = sp_precompute (sp, msh, varargin)
 
   if (gradient)
     if (isempty (msh.geo_map_jac))
-      msh = msh_precompute (msh, 'geo_map_jac');
+      msh = msh_precompute (msh, 'geo_map_jac', true);
     end
     JinvT = geopdes_invT__ (msh.geo_map_jac);
     JinvT = reshape (JinvT, [3, 3, msh.nqn, msh.nel]);
