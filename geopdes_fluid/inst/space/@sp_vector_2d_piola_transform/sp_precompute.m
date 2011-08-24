@@ -102,7 +102,7 @@ function sp = sp_precompute (sp, msh, varargin)
 
   if (value || gradient || divergence || curl)
     if (isempty (msh.geo_map_jac))
-      msh = msh_precompute (msh, 'geo_map_jac');
+      msh = msh_precompute (msh, 'geo_map_jac', true);
     end
     jacdet = reshape (geopdes_det__ (msh.geo_map_jac), msh.nqn, msh.nel);
 
@@ -145,7 +145,7 @@ function sp = sp_precompute (sp, msh, varargin)
 
   if (gradient || curl)
     if (isempty (msh.geo_map_der2))
-      msh = msh_precompute (msh, 'geo_map_der2');
+      msh = msh_precompute (msh, 'geo_map_der2', true);
     end
 
 % From here we apply the Piola transformation
