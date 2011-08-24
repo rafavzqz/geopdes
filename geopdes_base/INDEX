@@ -11,39 +11,51 @@ Mesh
   msh_2d
   msh_eval_boundary_side
   msh_evaluate_col
+  msh_precompute
  @msh_3d
   msh_3d
   msh_eval_boundary_side
   msh_evaluate_col
+  msh_precompute
 Space
  @sp_bspline_2d
   sp_bspline_2d
   sp_eval_boundary_side
   sp_evaluate_col
   sp_evaluate_col_param
+  sp_precompute
+  sp_precompute_param
  @sp_bspline_3d
   sp_bspline_3d
   sp_eval_boundary_side
   sp_evaluate_col
   sp_evaluate_col_param
+  sp_precompute
+  sp_precompute_param
  @sp_nurbs_2d
   sp_nurbs_2d
   sp_eval_boundary_side
   sp_evaluate_col
   sp_evaluate_col_param
+  sp_precompute
+  sp_precompute_param
  @sp_nurbs_3d
   sp_nurbs_3d
   sp_eval_boundary_side
   sp_evaluate_col
   sp_evaluate_col_param
+  sp_precompute
+  sp_precompute_param
  @sp_vector_2d
   sp_vector_2d
   sp_eval_boundary_side
   sp_evaluate_col
+  sp_precompute
  @sp_vector_3d
   sp_vector_3d
   sp_eval_boundary_side
   sp_evaluate_col  
+  sp_precompute
  sp_bspline_1d_param
  sp_eval
  sp_eval_msh
