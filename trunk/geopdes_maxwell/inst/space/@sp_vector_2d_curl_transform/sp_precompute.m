@@ -90,7 +90,7 @@ function sp = sp_precompute (sp, msh, varargin)
 % From here we apply the transformation
   if (value || curl)
     if (isempty (msh.geo_map_jac))
-      msh = msh_precompute (msh, 'geo_map_jac');
+      msh = msh_precompute (msh, 'geo_map_jac', true);
     end
     [JinvT, jacdet] = geopdes_invT__ (msh.geo_map_jac);
   end

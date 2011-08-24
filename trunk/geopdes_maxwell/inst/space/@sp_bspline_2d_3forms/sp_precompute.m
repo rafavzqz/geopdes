@@ -61,7 +61,7 @@ function sp = sp_precompute (sp, msh, varargin)
 
   if (value)
     if (isempty (msh.geo_map_jac))
-      msh = msh_precompute (msh, 'geo_map_jac');
+      msh = msh_precompute (msh, 'geo_map_jac', true);
     end
     jacdet = geopdes_det__ (msh.geo_map_jac);
 
