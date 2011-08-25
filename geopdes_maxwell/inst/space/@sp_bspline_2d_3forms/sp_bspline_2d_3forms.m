@@ -24,6 +24,9 @@
 %       METHOD_NAME
 %       sp_evaluate_col: compute the basis functions in one column of the mesh (that is, fixing the element in the first parametric direction).
 %       sp_evaluate_col_param: compute the basis functions in one column of the mesh in the reference domain.
+%       sp_precompute:  compute any of the fields related to the discrete
+%                       space (except boundary), in all the quadrature points,
+%                       as in the space structure from previous versions.
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
