@@ -37,14 +37,14 @@
 %     map_der2      (function handle)       a copy of the map_der2 handle of the geometry structure
 %
 %     METHOD NAME
-%     msh_evaluate_col: computes the parameterization (and its derivatives) of
+%     msh_evaluate_col: computes the parameterization (and its derivatives) at
 %                       the quadrature points in one column of the mesh, i.e.,
 %                       fixing the element in the first parametric direction.
 %     msh_eval_boundary_side: computes the parameterization in one boundary side
 %                       of the domain.
 %     msh_precompute:   computes, for all the mesh, any of the fields related
-%                       to the quadrature rule, as in the mesh structure from
-%                       previous versions of GeoPDEs.
+%                       to the quadrature rule, or all of them (except boundary)
+%                       as in the mesh structure from previous versions.
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez

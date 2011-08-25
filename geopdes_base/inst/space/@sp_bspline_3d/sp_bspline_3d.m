@@ -13,6 +13,8 @@
 %    sp: object representing the discrete function space, with the following fields:
 %
 %        FIELD_NAME      (SIZE)                            DESCRIPTION
+%        knots           (1 x 3 cell array)                knot vector in each parametric direction
+%        degree          (1 x 3 vector)                    splines degree in each parametric direction
 %        spu             (struct)                          space of univariate splines in the first parametric direction
 %        spv             (struct)                          space of univariate splines in the second parametric direction
 %        spw             (struct)                          space of univariate splines in the third parametric direction
@@ -24,9 +26,12 @@
 %        boundary        (1 x 6 struct array)              struct array representing the space of traces of basis functions on each edge
 %
 %       METHOD_NAME
-%       sp_evaluate_col: compute the basis functions in one column of the mesh (that is, fixing the element in the first parametric direction).
-%       sp_evaluate_row: compute the basis functions in one row of the mesh (that is, fixing the element in the last parametric direction).
+%       sp_evaluate_col: compute the basis functions (and derivatives) in one column of the mesh (that is, fixing the element in the first parametric direction).
+%       sp_evaluate_col_param: compute the basis functions (and derivatives) in one column of the mesh in the parametric domain.
 %       sp_eval_boundary_side: evaluate the basis functions in one side of the boundary.
+%       sp_precompute:  compute any of the fields related to the discrete
+%                       space (except boundary), in all the quadrature points,
+%                       as in the space structure from previous versions.
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
