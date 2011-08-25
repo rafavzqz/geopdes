@@ -22,7 +22,7 @@
 %     quad_weights  (nqn x nel vector)      weights associated to the quadrature nodes
 %     geo_map       (2 x nqn x nel vector)  physical coordinates of the quadrature nodes
 %     geo_map_jac   (2 x 2 x nqn x nel)     Jacobian matrix of the map evaluated at the quadrature nodes
-%     geo_map_der2  (2 x 2 x 2 x nqn x nel) Second order derivatives of the map evaluated at the quadrature nodes ()
+%     geo_map_der2  (2 x 2 x 2 x nqn x nel) Second order derivatives of the map evaluated at the quadrature nodes (optional)
 %     jacdet        (nqn x nel)             determinant of the Jacobian evaluated in the quadrature points
 %  For more details, see the documentation
 % 
