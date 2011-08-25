@@ -25,9 +25,14 @@
 %         for Raviart-Thomas spaces. The identity matrix in all other cases.
 %
 %   For more details, see:
-%      A.Buffa, C.de Falco, G. Sangalli, 
+%      A. Buffa, C. de Falco, G. Sangalli, 
 %      IsoGeometric Analysis: Stable elements for the 2D Stokes equation
-%      IJNMF, 2010
+%      Internat. J. Numer. Methods Fluids, 2011
+%
+%      A. Bressan, G. Sangalli,
+%      Isogeometric discretizations of the Stokes problem: stability
+%       analysis by the macroelement technique
+%      Tech. Report, IMATI-CNR, 2011.
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
