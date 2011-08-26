@@ -1,8 +1,7 @@
 % MSH_PRECOMPUTE: precompute all the fields, as in the msh structure of the technical report.
 %
-%     msh = msh_precompute (msh);  computes all the fields of the structure.
-%
-%     msh = msh_precompute (msh, 'option', value);  only computes the selected fields.
+%     msh = msh_precompute (msh);
+%     msh = msh_precompute (msh, 'option', value);
 %
 % INPUTS:
 %     
@@ -13,7 +12,10 @@
 %
 % OUTPUT:
 %
-%     msh: mesh object containing the information of the input object, plus the following fields (or some of them)
+%     msh: mesh object containing the information of the input object, plus the 
+%            fields of the old structure, that are listed below. If no option
+%            is given all the fields are computed. If an option is given,
+%            only the selected fields will be computed.
 %
 %     FIELD_NAME    (SIZE)                  DESCRIPTION
 %
