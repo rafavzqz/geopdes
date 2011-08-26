@@ -1,10 +1,9 @@
 CONTENTS:
-0: CHANGELOG
 1: INSTALLATION
   1.1: OCTAVE
     1.1.1 - Install
     1.1.2 - Test
-    1.1.3 - Note for windows users
+    1.1.3 - Note for Windows users
   1.2: MATLAB
 2: GETTING STARTED
   2.1: EXAMPLES
@@ -12,55 +11,9 @@ CONTENTS:
 3: HOW TO CONTRIBUTE
   3.1: CITING GeoPDEs
   3.2: PROVIDING FEEDBACK
+4: CHANGELOG
 
 -----------------------------------------------------
-
-0: CHANGELOG
-
-Below is a list of the main changes introduced with each new release
-
-Version geopdes_***-1.1.0
-
-* Changed the way the examples are called.
-* Make use of tensor product in msh_push_forward_2d(3d) and geo_2d(3d)_nurbs.
-    This requires version 1.3.4 of the nurbs toolbox.
-* New file format for multipatch geometries (v.0.7).
-* Changed the way the multipatch numbering (and orientation) is set.
-* Added a new function to compute the deformed geometry in geopdes_elasticity.
-* Added multipatch examples in geopdes_elasticity.
-* Added Subgrid method in geopdes_fluid.
-* Added multipatch examples for TH and SG elements in geopdes_fluid.
-* Modified the C version of the operators to be compatible with Octave 3.4.
-* Modified the operators to return the vectors that build the sparse matrix.
-* Modified the m-version of the operators to make them faster.
-* Modified matrix assembly in multipatch examples, to make it faster.
-* Modified matrix assembly in sp_drchlt_* files.
-* sp_nurbs_*_param. Fixed a bug for the functions on the boundary.
-* sp_scalar_to_vector_2d. Fixed a bug where the field ndof_dir was missing.
-
-Version geopdes_maxwell-1.0.1
-
-* mp_interface_hcurl_3d.m, fixed a bug in setting the orientation of 
-   the functions associated to the edges.
-
-* op_curlu_curlv.cc, fixed a bug where the coefficient was not actually used.
-
-Version geopdes_base-1.0.2 (18/11/2010)
-
-* msh_push_forward_2d.m, msh_push_forward_3d.m. Fixed a bug in the
-   computation of the normal vector exterior to the boundary.
-
-* msh_2d_tensor_product.m, msh_3d_tensor_product.m. Added the 
-   computation of the normal vector exterior to the boundary.
-
-* sp_scalar_to_vector_3d.m. Fixed a bug where the field ndof_dir 
-   was missing.
-
-Version geopdes_base-1.0.1 (17/11/2010)
-
-* inst/space/bsp_2_nrb_1d__.m, inst/space/bsp_2_nrb_2d__.m,
-  inst/space/bsp_2_nrb_3d__.m. Fixed a bug where the modified shape
-  functions where not returned in the output.
 
 1. INSTALLATION
 
@@ -68,17 +21,17 @@ Version geopdes_base-1.0.1 (17/11/2010)
 
 1.1.1 - Install
  
- * Install Octave version 3.2 or higher.  Source code is available from
+ * Install Octave version 3.2 or higher. Source code is available from
     http://www.octave.org, binary packages for Mac OSX and Windows are
     available from http://octave.sf.net, Linux binary packages are
-    included with all major binary distributions
+    included with all major binary distributions.
 
- * Install the "nurbs" and "integration" packages available on
+ * Install the "nurbs" package available on
     http://octave.sf.net: 
-   - download the latest release of nurbs-<version>.tar.gz and
-      integration-<version>.tar.gz 
+   - download the latest release of nurbs-<version>.tar.gz
    - type, at the octave prompt
-      pkg install nurbs-<version>.tar.gz integration-<version>.tar.gz
+      pkg install nurbs-<version>.tar.gz
+      pkg load nurbs
 
  * Download the geopdes_base-<version>.tar.gz package from 
     http://geopdes.sf.net/functions/geopdes_base
@@ -92,11 +45,11 @@ Version geopdes_base-1.0.1 (17/11/2010)
  * After installing the geopdes_base package, the other packages 
     can be installed in an analogous way.
 
-1.1.3 - Note for windows users
+1.1.3 - Note for Windows users
 
  * The mingw-based binary version of Octave distributed on
     http://octave.sf.net by default installs dynamically loaded binary
-    functions in a differnt location as that of script functions. This
+    functions in a different location as that of script functions. This
     can create problems when installing geopdes_base, it is therefore
     recomended that you change the package installation prefix prior to
     installing geopdes_base, e.g.:
@@ -106,9 +59,9 @@ Version geopdes_base-1.0.1 (17/11/2010)
     system ("tar xzf geopdes_base-<version>.tar.gz")
     pkg install geopdes_base-<version>
 
-   If this procedure fails for you please let us know, see the section
+   If this procedure fails for you please let us know. See the section
     "HOW TO CONTRIBUTE" below for the preferred procedure for giving
-    feedback. 
+    feedback.
 
 1.2. MATLAB
 
@@ -116,16 +69,12 @@ Version geopdes_base-1.0.1 (17/11/2010)
    - download the latest release of nurbs.tar.gz available on 
       http://octave.sf.net
    - uncompress and untar the file. We recommend you to do this in the
-      toolbox folder of Matlab
-   - download the C functions for matlab "nurbs_c_files.tar.gz" from
+      toolbox folder of Matlab.
+   - download the C functions for matlab "nurbs_mex_files.tar.gz" from
       http://sourceforge.net/projects/geopdes/files
    - uncompress and untar the file in the folder "nurbs/inst"
    - in Matlab, go to the folder "nurbs/inst" and run the script file 'compile'.
       This will compile the files and save the nurbs package to your Matlab path
-
- * Download the function "grule.m" from
-    http://sourceforge.net/projects/geopdes/files
-    and save it somewhere in your Matlab path.
 
  * Install the geopdes_base package:
    - download the latest release of geopdes_base.tar.gz from 
@@ -137,10 +86,10 @@ Version geopdes_base-1.0.1 (17/11/2010)
  * The other packages are installed analogously, but the geopdes_base
     package must be also installed in order to make them work.
 
- * For convenience, you can set the path using the script "setpath_geopdes.m".
+ * For convenience, you can set the path using the script "geopdes_setpath.m".
    - download the function from http://sourceforge.net/projects/geopdes/files
    - replace "my_path" by the path of the folder where you saved the packages
-   - if necessary, add the path for the function "grule.m" and the nurbs package
+   - run the script, typing "geopdes_setpath" in Matlab command window
    
 2. GETTING STARTED
 
@@ -166,13 +115,18 @@ Version geopdes_base-1.0.1 (17/11/2010)
 2.2. HELP
 
  * A detailed documentation for the software is not likely to be published.
-    We suggest you to read the technical report
+    We suggest you to read the paper
 
       C. de Falco, A. Reali, R. Vazquez. 
       GeoPDES: a research tool for Isogeometric Analysis of PDEs, 
+      Advances in Engineering Software, 2011
+      doi:10.1016/j.advengsoft.2011.06.10
+
+    also available in preprint form as
+
       Tech. Report, IMATI-CNR, (2010),
 
-    where we give an explanation of the architecture, the design and
+    In the paper we give an explanation of the architecture, the design and
     the main features of the code. This paper can be seen as brief user's guide.
 
  * The format for the geometry files is explained in the files
@@ -189,14 +143,15 @@ Version geopdes_base-1.0.1 (17/11/2010)
 
 3.1 CITING GeoPDEs
 
- * GeoPDEs has been developed as a part of our research, and is funded by our 
-    respective institutions. The best way to support us is by citing
+ * GeoPDEs has been developed as a part of our research, and is funded by 
+    our respective institutions. The best way to support us is by citing
 
       C. de Falco, A. Reali, R. Vazquez. 
       GeoPDES: a research tool for Isogeometric Analysis of PDEs, 
-      Tech. Report, IMATI-CNR, (2010),
+      Advances in Engineering Software, 2011 
+      doi:10.1016/j.advengsoft.2011.06.010
 
-    in any paper where GeoPDEs is used to obtain results.
+    in any paper where GeoPDEs is used to obtain numerical results.
 
 3.2 GIVING FEEDBACK
 
@@ -205,9 +160,70 @@ Version geopdes_base-1.0.1 (17/11/2010)
     subscribe to the mailing list following the instructions at
     https://lists.sourceforge.net/lists/listinfo/geopdes-users
 
- *  Before posting a question to the mailing list, please browse the
+ * Before posting a question to the mailing list, please browse the
     mailing list archives at
     https://sourceforge.net/mailarchive/forum.php?forum_name=geopdes-users
     to see whether it has already been answered before.
   
- 
+4: CHANGELOG
+
+Below is a list of the main changes introduced with each new release
+
+Version geopdes_***-2.0.0
+
+* Added the classes msh_2d and msh_3d, with their methods.
+* Added the classes sp_bspline_2d, sp_bspline_3d, sp_nurbs_2d, sp_nurbs_3d,
+    sp_vector_2d, sp_vector_3d, sp_vector_2d_piola_transform, 
+    sp_vector_2d_curl_transform, sp_vector_3d_curl_transform,
+    sp_bspline_2d_3forms, with their methods.
+* Removed many functions that became unnecessary with the classes.
+* Functions sp_eval and sp_to_vtk work now for 2D and 3D geometries.
+* Added the functions sp_eval_msh, sp_eval_div_msh.
+* Added the tensor product version of the operators (like op_u_v_tp.m).
+    They only work for classes.
+* Modified the m-version of the operators, to make them even faster.
+
+Version geopdes_***-1.1.0
+
+* Added the function grule to the "utils" folder.
+* Changed the way the examples are called.
+* Make use of tensor product in msh_push_forward_2d(3d) and geo_2d(3d)_nurbs.
+    This requires version 1.3.4 of the nurbs toolbox.
+* New file format for multipatch geometries (v.0.7).
+* Changed the way the multipatch numbering (and orientation) is set.
+* Added a new function to compute the deformed geometry in geopdes_elasticity.
+* Added multipatch examples in geopdes_elasticity.
+* Added Subgrid method in geopdes_fluid.
+* Added multipatch examples for TH and SG elements in geopdes_fluid.
+* Modified the C version of the operators to be compatible with Octave 3.4.
+* Modified the operators to return the vectors that build the sparse matrix.
+* Modified the m-version of the operators to make them faster.
+* Modified matrix assembly in multipatch examples, to make it faster.
+* Modified matrix assembly in sp_drchlt_* files.
+* sp_nurbs_*_param. Fixed a bug for the functions on the boundary.
+* sp_scalar_to_vector_2d. Fixed a bug where the field ndof_dir was missing.
+
+Version geopdes_maxwell-1.0.1 (not released)
+
+* mp_interface_hcurl_3d.m, fixed a bug in setting the orientation of 
+   the functions associated to the edges.
+
+* op_curlu_curlv.cc, fixed a bug where the coefficient was not actually used.
+
+Version geopdes_base-1.0.2 (18/11/2010)
+
+* msh_push_forward_2d.m, msh_push_forward_3d.m. Fixed a bug in the
+   computation of the normal vector exterior to the boundary.
+
+* msh_2d_tensor_product.m, msh_3d_tensor_product.m. Added the 
+   computation of the normal vector exterior to the boundary.
+
+* sp_scalar_to_vector_3d.m. Fixed a bug where the field ndof_dir 
+   was missing.
+
+Version geopdes_base-1.0.1 (17/11/2010)
+
+* inst/space/bsp_2_nrb_1d__.m, inst/space/bsp_2_nrb_2d__.m,
+  inst/space/bsp_2_nrb_3d__.m. Fixed a bug where the modified shape
+  functions where not returned in the output.
+

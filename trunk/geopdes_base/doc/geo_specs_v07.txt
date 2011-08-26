@@ -5,7 +5,7 @@
 # WARNING
 #  This file format is only valid for single patch geometries.
 #  The file format for multipatch geometries is explained in
-#   the geopdes_multipatch package.
+#   the file geo_specs_mp_v07.txt, in the geopdes_multipatch package.
 #
 # FILE STRUCTURE
 # The file starts with a header containing information about the file,
