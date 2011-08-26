@@ -19,8 +19,8 @@ Examples
  ex_stokes_square_sg
  ex_stokes_annulus_th
  ex_stokes_annulus_rt
- ex_stokes_driven_cavity_th
- ex_stokes_driven_cavity_rt
+ ex_stokes_article_ijnmf_th
+ ex_stokes_article_ijnmf_rt
  ex_stokes_driven_cavity_3d_th
  ex_stokes_driven_cavity_3d_sg
  ex_stokes_twisted_pipe
