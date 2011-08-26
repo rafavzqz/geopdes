@@ -38,7 +38,7 @@ function [u, dofs] = sp_drchlt_l2_proj (sp, msh, h, sides)
   nent = 0;
   for iside = sides
     nent = nent + msh.boundary(iside).nel * sp.boundary(iside).nsh_max^2;
-    dofs = unique ([dofs, sp.boundary(iside).dofs]);
+    dofs = union (dofs, sp.boundary(iside).dofs);
   end
 
   rows = zeros (nent, 1);
