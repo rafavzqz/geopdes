@@ -1,7 +1,7 @@
 % SP_PRECOMPUTE: precompute all the fields, as in the space structure of the technical report.
 %
-%     space = sp_precompute (space, msh);  computes all the fields of the structure.
-%     space = sp_precompute (space, msh, 'option', value);  only computes the selected fields
+%     space = sp_precompute (space, msh);
+%     space = sp_precompute (space, msh, 'option', value);
 %
 % INPUT:
 %     
@@ -12,7 +12,10 @@
 %
 % OUTPUT:
 %
-%    space: object representing the discrete function space, plus the following fields (or some of them):
+%     space: object containing the information of the input object, plus the 
+%            fields of the old structure, that are listed below. If no option
+%            is given all the fields are computed. If an option is given,
+%            only the selected fields will be computed.
 %
 %    FIELD_NAME      (SIZE)                             DESCRIPTION
 %    nsh             (1 x msh.nel vector)               actual number of shape functions per each element
@@ -38,7 +41,6 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function sp = sp_precompute (sp, msh, varargin)
-
 
   if (isempty (varargin))
     gradient = true;
