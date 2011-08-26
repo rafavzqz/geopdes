@@ -89,13 +89,13 @@ while (iopt > 0)
           input ('Press <Enter> to continue: ');
          case 7
           clc;
-          fprintf (1, 'You can have a look at the source file: ex_stokes_driven_cavity_th.m \n \n');
-          ex_stokes_driven_cavity_th;
+          fprintf (1, 'You can have a look at the source file: ex_stokes_article_ijnmf_th.m \n \n');
+          ex_stokes_article_ijnmf_th;
           input ('Press <Enter> to continue: ');
          case 8
           clc;
-          fprintf (1, 'You can have a look at the source file: ex_stokes_driven_cavity_rt.m \n \n');
-          ex_stokes_driven_cavity_rt;
+          fprintf (1, 'You can have a look at the source file: ex_stokes_article_ijnmf_rt.m \n \n');
+          ex_stokes_article_ijnmf_rt;
           input ('Press <Enter> to continue: ');
         end %# switch (iopt2)
       end %# if (~isempty (iopt2))
