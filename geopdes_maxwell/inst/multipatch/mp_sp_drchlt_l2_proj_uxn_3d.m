@@ -48,7 +48,7 @@ function [u, dofs] = mp_sp_drchlt_l2_proj_uxn_3d (sp, msh, h, gnum, ornt, bounda
       sp_bnd = sp{iptc}.boundary(iside);
 
       global_dofs = gnum{iptc}(sp_bnd.dofs);
-      dofs = [dofs global_dofs];
+      dofs = union (dofs, global_dofs);
 
 
       [x, y, z] = deal (squeeze (msh_bnd.geo_map(1,:,:)), ...
