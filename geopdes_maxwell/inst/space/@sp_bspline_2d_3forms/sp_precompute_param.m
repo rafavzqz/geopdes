@@ -1,8 +1,8 @@
 % SP_PRECOMPUTE_PARAM: precompute all the fields, as in the space structure of the technical report, before mapping to the physical domain.
 %  This function is used before applying the map.
 %
-%     space = sp_precompute_param (space, msh); computes all the fields
-%     space = sp_precompute_param (space, msh, 'option');  only computes the selected fields
+%     space = sp_precompute_param (space, msh);
+%     space = sp_precompute_param (space, msh, 'option');
 %
 % INPUT:
 %     
@@ -13,7 +13,10 @@
 %
 % OUTPUT:
 %
-%    space: object representing the discrete function space in the parametric domain, plus the following fields (or some of them):
+%    space: object containing the information of the input object, plus the 
+%            fields of the old structure, that are listed below. If no option
+%            is given all the fields are computed. If an option is given,
+%            only the selected fields will be computed.
 %
 %    FIELD_NAME      (SIZE)                             DESCRIPTION
 %    nsh             (1 x msh.nel vector)               actual number of shape functions per each element
