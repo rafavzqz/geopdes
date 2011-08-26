@@ -35,7 +35,8 @@ msh                = msh_2d (msh_breaks, qn, qw, geometry, 'der2', der2);
 
 % Compute the space structures
 [space_v, space_p, PI] = sp_bspline_fluid_2d (element_name, ...
-                geometry.nurbs.knots, nsub, degree, regularity, msh);
+                                              geometry.nurbs.knots, nsub, 
+                                              degree, regularity, msh);
 
 % Assemble the matrices
 A = op_gradu_gradv_tp (space_v, space_v, msh, viscosity); 
@@ -54,17 +55,17 @@ vel(space_v.boundary(4).comp_dofs{1}) = 1;
 
 drchlt_dofs = [];
 for iside = drchlt_sides; 
-  drchlt_dofs = unique ([drchlt_dofs space_v.boundary(iside).dofs]);
+  drchlt_dofs = union (drchlt_dofs, space_v.boundary(iside).dofs);
 end
 
 int_dofs = setdiff (1:space_v.ndof, drchlt_dofs);
 nintdofs = numel (int_dofs);
-rhs_dir  = -A(int_dofs, drchlt_dofs)*vel(drchlt_dofs);
+rhs_dir  = -A(int_dofs, drchlt_dofs) * vel(drchlt_dofs);
 
 % Solve the linear system
-mat = [ A(int_dofs, int_dofs), -B(:,int_dofs).',          sparse(nintdofs, 1);
+mat = [ A(int_dofs, int_dofs), -B(:,int_dofs).',               sparse(nintdofs, 1);
        -B(:,int_dofs),          sparse(size (B,1), size(B,1)), E';
-        sparse(1, nintdofs),    E,                             0];
+       sparse(1, nintdofs),     E,                             0];
 rhs = [F(int_dofs) + rhs_dir; 
        B(:, drchlt_dofs)*vel(drchlt_dofs);
        0];
@@ -77,7 +78,7 @@ press = PI * sol(1+nintdofs:end-1);
 output_file = 'Driven_cavity_TH_Deg3_Reg2_Sub10';
 
 fprintf ('The result is saved in the files %s \n and %s \n \n', ...
-           [output_file '_vel'], [output_file '_press']);
+         [output_file '_vel'], [output_file '_press']);
 vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20)};
 sp_to_vtk (press, space_p, geometry, vtk_pts, [output_file '_press'], 'press')
 sp_to_vtk (vel,   space_v, geometry, vtk_pts, [output_file '_vel'  ], 'vel')
@@ -85,14 +86,14 @@ sp_to_vtk (vel,   space_v, geometry, vtk_pts, [output_file '_vel'  ], 'vel')
 % Plot in Matlab
 [eu, F] = sp_eval (vel, space_v, geometry, vtk_pts);
 [X,  Y] = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
-figure()
+figure ()
 quiver (X, Y, squeeze(eu(1,:,:)), squeeze(eu(2,:,:)))
 axis equal
-title('Computed solution')
+title ('Computed solution')
 
 [div, F] = sp_eval_div (vel, space_v, geometry, vtk_pts);
-figure()
+figure ()
 surf (X, Y, div)
-view(2)
+view (2)
 axis equal
-title('Computed divergence')
+title ('Computed divergence')
