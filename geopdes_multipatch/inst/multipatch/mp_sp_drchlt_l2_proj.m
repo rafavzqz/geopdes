@@ -48,7 +48,7 @@ function [u, dofs] = mp_sp_drchlt_l2_proj (sp, msh, h, gnum, boundaries, refs)
       sp_bnd  = sp_eval_boundary_side (sp{iptc}, msh_bnd);
 
       global_dofs = gnum{iptc}(sp_bnd.dofs);
-      dofs = [dofs global_dofs];
+      dofs = union (dofs, global_dofs);
 
       if (size (msh_bnd.geo_map, 1) == 2)
         [x, y] = deal (squeeze (msh_bnd.geo_map(1,:,:)), ...
