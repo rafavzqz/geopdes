@@ -1,4 +1,4 @@
-% EX_NURBS_LAPLACE_2D_15LINES: minimalistic tutorial in 15 lines.
+% EX_ARTICLE_15LINES: minimalistic tutorial in 15 lines... Sorry, 16 lines.
 %
 % Example to solve the problem
 %
@@ -42,7 +42,7 @@ rhs = op_f_v_tp (space, msh, @(x, y) (8-9*sqrt(x.^2+y.^2)).*sin(2*atan(y./x))./(
 
 drchlt_dofs = [];
 for iside = 1:4
-  drchlt_dofs = unique ([drchlt_dofs space.boundary(iside).dofs]);
+  drchlt_dofs = union (drchlt_dofs, space.boundary(iside).dofs);
 end
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
 
