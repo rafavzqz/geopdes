@@ -1,4 +1,4 @@
-% EX_NURBS_LAPLACE_2D_15LINES: minimalistic tutorial in 15 lines.
+% EX_ARTICLE_15LINES: minimalistic tutorial in 15 lines.
 %
 % Example to solve the problem
 %
