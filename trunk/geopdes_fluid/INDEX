@@ -5,7 +5,7 @@ Space
  @sp_vector_2d_piola_transform
   sp_vector_2d_piola_transform
   sp_eval_boundary_side
-  sp_evaluate_column
+  sp_evaluate_col
   sp_precompute
 Msh
  msh_set_breaks
