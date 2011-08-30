@@ -1,4 +1,4 @@
-% EX_STOKES_TWISTED_PIPE: solve the Stokes problem on a twisted pipe using a bspline discretization.
+% EX_STOKES_TWISTED_PIPE: solve the Stokes problem on a twisted pipe using a B-spline discretization.
 
 % 1) PHYSICAL DATA OF THE PROBLEM
 clear problem_data  
