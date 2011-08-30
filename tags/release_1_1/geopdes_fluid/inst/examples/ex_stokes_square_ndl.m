@@ -77,3 +77,6 @@ subplot(1,2,1)
 quiver (X, Y, squeeze(eu(1,:,:)), squeeze(eu(2,:,:)))
 axis equal
 title('Computed solution')
+
+%!demo
+%! ex_stokes_square_ndl
