@@ -97,3 +97,6 @@ surf (X, Y, div)
 view (2)
 axis equal
 title ('Computed divergence')
+
+%!demo
+%! ex_stokes_article_ijnmf_rt
