@@ -101,3 +101,6 @@ surf (X, Y, div)
 view(2)
 axis equal
 title('Computed divergence')
+
+%!demo
+%! ex_stokes_annulus_th
