@@ -60,7 +60,7 @@ function varargout = op_gradu_gradv (spu, spv, msh, coeff)
 
       for idof = 1:spv.nsh(iel)
         ishg = gradv_iel(:, :, idof);
-        for jdof = 1:spu.nsh(iel) 
+        for jdof = 1:spu.nsh(iel)
           ncounter = ncounter + 1;
           rows(ncounter) = spv.connectivity(idof, iel);
           cols(ncounter) = spu.connectivity(jdof, iel);

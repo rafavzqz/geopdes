@@ -48,3 +48,6 @@ def_geom = geo_deform (u, space, geometry);
 nrbplot (def_geom.nurbs, [40 40 40], 'light', 'on')
 axis equal tight
 title ('Deformed configuration')
+
+%!demo
+%! ex_lin_elast_horseshoe
