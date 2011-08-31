@@ -35,8 +35,7 @@ msh                = msh_2d (msh_breaks, qn, qw, geometry, 'der2', der2);
 
 % Compute the space structures
 [space_v, space_p, PI] = sp_bspline_fluid_2d (element_name, ...
-                                              geometry.nurbs.knots, nsub, 
-                                              degree, regularity, msh);
+                          geometry.nurbs.knots, nsub, degree, regularity, msh);
 
 % Assemble the matrices
 A = op_gradu_gradv_tp (space_v, space_v, msh, viscosity); 
