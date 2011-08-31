@@ -121,7 +121,6 @@ for iside = nmnn_sides
 
   rhs_nmnn(space_v.boundary(iside).dofs) = rhs_nmnn(space_v.boundary(iside).dofs) + op_f_v(space_v.boundary(iside), msh.boundary(iside), gval);
 end
-rhs_nmnn = rhs_nmnn(int_dofs);
 
 % Solve the linear system
 if (isempty (nmnn_sides))
