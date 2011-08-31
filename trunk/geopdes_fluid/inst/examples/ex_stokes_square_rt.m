@@ -56,7 +56,7 @@ error_l2_p = sp_l2_error (space_p, msh, press, problem_data.pressex)
 
 
 % 4.2) EXPORT TO PARAVIEW
-output_file = 'SQUARE_RT_Deg3_Reg2_Sub10'
+output_file = 'SQUARE_RT_Deg3_Reg2_Sub10';
 
 fprintf ('The result is saved in the files %s \n and %s \n \n', ...
            [output_file '_vel'], [output_file '_press']);

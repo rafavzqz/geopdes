@@ -75,7 +75,7 @@ vel(int_dofs) = sol(1:nintdofs);
 press = PI * sol(1+nintdofs:end-1);
 
 % Export to ParaView
-output_file = 'Driven_cavity_TH_Deg3_Reg2_Sub10';
+output_file = 'Driven_cavity_RT_Deg3_Reg2_Sub10';
 
 fprintf ('The result is saved in the files %s \n and %s \n \n', ...
          [output_file '_vel'], [output_file '_press']);
