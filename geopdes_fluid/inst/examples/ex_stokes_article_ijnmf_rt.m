@@ -1,4 +1,4 @@
-% EX_STOKES_DRIVEN_CAVITY_RT: solve the Stokes problem in the driven cavity with generalized Raviart_Thomas elements.
+% EX_STOKES_ARTICLE_IJNMF_RT: solve the Stokes problem in the driven cavity with generalized Raviart_Thomas elements.
 %
 % This is the example of Section 4.1.2 in the paper
 %      A.Buffa, C.de Falco, G. Sangalli, 
