@@ -1,5 +1,4 @@
-/* Copyright (C) 2010 Carlo de Falco, Rafael Vazquez
-   Copyright (C) 2011 Rafael Vazquez
+/* Copyright (C) 2010, 2011 Carlo de Falco, Rafael Vazquez
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -52,6 +51,7 @@ OUTPUT:\n\
 
       const octave_idx_type nel = msh.nel (), nqn = msh.nqn (), ndof_spu = spu.ndof (), nsh_max_spu = spu.nsh_max (), ndof_spv = spv.ndof (), nsh_max_spv = spv.nsh_max ();
 
+#if OCTAVE_API_VERSION_NUMBER>37
       dim_vector dims (nel * nsh_max_spv * nsh_max_spu, 1);
       Array <octave_idx_type> I (dims, 0);
       octave_idx_type* Iptr = I.fortran_vec ();
@@ -61,8 +61,18 @@ OUTPUT:\n\
 
       Array <double> V (dims, 0.0);
       double* Vptr = V.fortran_vec ();
+#else
+      ColumnVector I (nel * nsh_max_spv * nsh_max_spu, 0);
+      double* Iptr = I.fortran_vec ();
 
-      octave_idx_type counter = 0, iel, inode, idof, jdof, icmp, idir;
+      ColumnVector J (nel * nsh_max_spv * nsh_max_spu, 0);
+      double* Jptr = J.fortran_vec ();
+
+      ColumnVector V (nel * nsh_max_spv * nsh_max_spu, 0.0);
+      double* Vptr = V.fortran_vec ();
+#endif
+
+      octave_idx_type counter = 0, iel, inode, idof, jdof, icmp;
       {
         for (iel=0; iel < nel; iel++) 
           if (msh.area (iel) > 0.0)
@@ -124,8 +134,8 @@ OUTPUT:\n\
 	{
           for (icmp = 0; icmp <= counter; icmp++) 
             {
-              Iptr[icmp]++;
-              Jptr[icmp]++;
+              Iptr[icmp] += 1;
+              Jptr[icmp] += 1;
             }
           retval(0) = octave_value (I);
           retval(1) = octave_value (J);
