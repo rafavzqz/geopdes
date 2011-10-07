@@ -119,7 +119,7 @@ CONTENTS:
 
       C. de Falco, A. Reali, R. Vazquez. 
       GeoPDES: a research tool for Isogeometric Analysis of PDEs, 
-      Advances in Engineering Software, 2011
+      Advances in Engineering Software, 42(12), 2011
       doi:10.1016/j.advengsoft.2011.06.10
 
     also available in preprint form as
@@ -148,7 +148,7 @@ CONTENTS:
 
       C. de Falco, A. Reali, R. Vazquez. 
       GeoPDES: a research tool for Isogeometric Analysis of PDEs, 
-      Advances in Engineering Software, 2011 
+      Advances in Engineering Software, 42(12), 2011
       doi:10.1016/j.advengsoft.2011.06.010
 
     in any paper where GeoPDEs is used to obtain numerical results.
@@ -168,6 +168,11 @@ CONTENTS:
 4: CHANGELOG
 
 Below is a list of the main changes introduced with each new release
+
+Version geopdes_***-2.0.1
+
+* Modified the oct-operators to be compatible with Octave 3.2
+* Fixed bug in the function names sp_vector_#d_curl_transform
 
 Version geopdes_***-2.0.0
 
@@ -226,4 +231,3 @@ Version geopdes_base-1.0.1 (17/11/2010)
 * inst/space/bsp_2_nrb_1d__.m, inst/space/bsp_2_nrb_2d__.m,
   inst/space/bsp_2_nrb_3d__.m. Fixed a bug where the modified shape
   functions where not returned in the output.
-
