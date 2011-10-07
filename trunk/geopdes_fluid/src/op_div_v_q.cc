@@ -1,4 +1,4 @@
-/* Copyright (C) 2010 Carlo de Falco
+/* Copyright (C) 2010, 2011 Carlo de Falco
    Copyright (C) 2011 Rafael Vazquez
 
    This program is free software; you can redistribute it and/or modify
@@ -43,10 +43,10 @@ DEFUN_DLD(op_div_v_q, args, nargout,"OP_DIV_V_Q: assemble the matrix B = [b(i,j)
   if (!error_state)
     {
 
-      octave_idx_type iel, inode, idof, jdof, icmp, idir;
+      octave_idx_type iel, inode, idof, jdof, icmp;
       const octave_idx_type nel = msh.nel (), nqn = msh.nqn (), ndof_spq = spq.ndof (), 
         nsh_max_spq = spq.nsh_max (), ndof_spv = spv.ndof (), nsh_max_spv = spv.nsh_max (),
-        ncomp_spv = spv.ncomp (), ncomp_spq = spq.ncomp ();
+        ncomp_spq = spq.ncomp ();
       
       double shdivv[nsh_max_spv][nqn];
       double shpq[nsh_max_spq][nqn][ncomp_spq];
@@ -55,6 +55,7 @@ DEFUN_DLD(op_div_v_q, args, nargout,"OP_DIV_V_Q: assemble the matrix B = [b(i,j)
       octave_idx_type conn_v[nsh_max_spv];
       octave_idx_type conn_q[nsh_max_spq];
 
+#if OCTAVE_API_VERSION_NUMBER>37
       dim_vector dims (nel * nsh_max_spv * nsh_max_spq, 1);
 
       Array <octave_idx_type> I (dims, 0);
@@ -65,6 +66,16 @@ DEFUN_DLD(op_div_v_q, args, nargout,"OP_DIV_V_Q: assemble the matrix B = [b(i,j)
 
       Array <double> V (dims, 0.0);    
       double* Vptr = V.fortran_vec ();
+#else
+      ColumnVector I (nel * nsh_max_spv * nsh_max_spq, 0);
+      double* Iptr = I.fortran_vec ();
+
+      ColumnVector J (nel * nsh_max_spv * nsh_max_spq, 0);
+      double* Jptr = J.fortran_vec ();
+
+      ColumnVector V (nel * nsh_max_spv * nsh_max_spq, 0.0);
+      double* Vptr = V.fortran_vec ();
+#endif
 
       SparseMatrix mat;
 
@@ -110,8 +121,8 @@ DEFUN_DLD(op_div_v_q, args, nargout,"OP_DIV_V_Q: assemble the matrix B = [b(i,j)
 	{
           for ( icmp = 0; icmp <= counter; icmp++) 
             {
-              Iptr[icmp]++;
-              Jptr[icmp]++;
+              Iptr[icmp] += 1;
+              Jptr[icmp] += 1;
             }
           retval(0) = octave_value (I);
           retval(1) = octave_value (J);

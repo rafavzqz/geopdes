@@ -43,8 +43,6 @@ OUTPUT: \n\
 
   Matrix coeff = args(3).matrix_value();
 
-  const int nargin = args.length ();
-    
   if (!error_state)
     {   
       octave_idx_type iel, inode, idof, jdof, icmp, idir;
