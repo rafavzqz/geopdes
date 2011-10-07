@@ -65,6 +65,7 @@ OUTPUT: \n\
       octave_idx_type conn_v[nsh_v];
       octave_idx_type conn_u[nsh_u];
       
+#if OCTAVE_API_VERSION_NUMBER>37
       dim_vector dims (nel * nsh_max_spv * nsh_max_spu, 1);
       Array <octave_idx_type> I (dims, 0);
       octave_idx_type* Iptr = I.fortran_vec ();
@@ -74,6 +75,16 @@ OUTPUT: \n\
 
       Array <double> V (dims, 0.0);
       double* Vptr = V.fortran_vec ();
+#else
+      ColumnVector I (nel * nsh_max_spv * nsh_max_spu, 0);
+      double* Iptr = I.fortran_vec ();
+
+      ColumnVector J (nel * nsh_max_spv * nsh_max_spu, 0);
+      double* Jptr = J.fortran_vec ();
+
+      ColumnVector V (nel * nsh_max_spv * nsh_max_spu, 0.0);
+      double* Vptr = V.fortran_vec ();
+#endif
 
       SparseMatrix mat;
 
@@ -125,8 +136,8 @@ OUTPUT: \n\
         {
           for (icmp = 0; icmp < I.numel (); icmp++) 
             {
-              Iptr[icmp]++;
-              Jptr[icmp]++;
+              Iptr[icmp] += 1;
+              Jptr[icmp] += 1;
             }
           //assign in reverse order to resize only once
           retval(2) = octave_value (V);
