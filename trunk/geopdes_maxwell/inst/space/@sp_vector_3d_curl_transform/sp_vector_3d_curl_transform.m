@@ -47,7 +47,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp = sp_vector_3d (sp1, sp2, sp3, msh)
+function sp = sp_vector_3d_curl_transform (sp1, sp2, sp3, msh)
 
   sp.sp1 = sp1;
   sp.sp2 = sp2;
