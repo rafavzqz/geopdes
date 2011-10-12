@@ -2,8 +2,7 @@ CONTENTS:
 1: INSTALLATION
   1.1: OCTAVE
     1.1.1 - Install
-    1.1.2 - Test
-    1.1.3 - Note for Windows users
+    1.1.2 - Note for Windows users
   1.2: MATLAB
 2: GETTING STARTED
   2.1: EXAMPLES
@@ -45,19 +44,26 @@ CONTENTS:
  * After installing the geopdes_base package, the other packages 
     can be installed in an analogous way.
 
-1.1.3 - Note for Windows users
+1.1.2 - Note for Windows users
 
- * The mingw-based binary version of Octave distributed on
+   The mingw-based binary version of Octave distributed on
     http://octave.sf.net by default installs dynamically loaded binary
     functions in a different location as that of script functions. This
-    can create problems when installing geopdes_base, it is therefore
-    recomended that you change the package installation prefix prior to
-    installing geopdes_base, e.g.:
+    can create problems when installing geopdes_base. The procedure to 
+    install the package in Windows is as follows: 
 
-    mkdir c:\octave-packages
-    pkg prefix c:\octave-packages c:\octave-packages
-    system ("tar xzf geopdes_base-<version>.tar.gz")
-    pkg install geopdes_base
+ * Install octave, the nurbs package, and download geopdes_base, like in
+    steps 1 to 3 of Section 1.1.1.
+
+ * Be sure to put the file geopdes_base-<version>.tar.gz to a folder 
+    without blanks in the name, for instance, c:\tmp
+
+ * In Octave, change the package installation prefix and install geopdes_base:
+     cd c:\tmp
+     mkdir c:\octave-packages
+     pkg prefix c:\octave-packages c:\octave-packages
+     system ("tar xzf geopdes_base-<version>.tar.gz")
+     pkg install geopdes_base
 
    If this procedure fails for you please let us know. See the section
     "HOW TO CONTRIBUTE" below for the preferred procedure for giving
