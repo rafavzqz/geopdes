@@ -49,7 +49,7 @@ OUTPUT:\n\
 
       ColumnVector mat (sp.ndof (), 0.0);
 
-      octave_idx_type counter = 0, iel, inode, idof, icmp;
+      octave_idx_type iel, inode, idof, icmp;
 
       {
         double local_contribution;
