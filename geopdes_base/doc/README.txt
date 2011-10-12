@@ -57,7 +57,7 @@ CONTENTS:
     mkdir c:\octave-packages
     pkg prefix c:\octave-packages c:\octave-packages
     system ("tar xzf geopdes_base-<version>.tar.gz")
-    pkg install geopdes_base-<version>
+    pkg install geopdes_base
 
    If this procedure fails for you please let us know. See the section
     "HOW TO CONTRIBUTE" below for the preferred procedure for giving
