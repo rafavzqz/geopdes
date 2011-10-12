@@ -44,11 +44,11 @@ OUTPUT:\n\
 
   if (!error_state)
     {
-      const octave_idx_type nel = msh.nel (), ncomp = sp.ncomp (), nqn = msh.nqn ();
+      const octave_idx_type nel = msh.nel (), nqn = msh.nqn ();
 
      ColumnVector mat (sp.ndof (), 0.0);
 
-      octave_idx_type counter = 0, iel, inode, idof;
+      octave_idx_type iel, inode, idof;
       {
         double local_contribution;
         for (iel=0; iel < nel; iel++) 
