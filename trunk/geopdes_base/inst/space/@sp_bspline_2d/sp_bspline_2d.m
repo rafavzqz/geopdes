@@ -13,8 +13,8 @@
 %    sp: object representing the discrete function space, with the following fields and methods:
 %
 %        FIELD_NAME      (SIZE)                      DESCRIPTION
-%        knots           (1 x 3 cell array)          knot vector in each parametric direction
-%        degree          (1 x 3 vector)              splines degree in each parametric direction
+%        knots           (1 x 2 cell array)          knot vector in each parametric direction
+%        degree          (1 x 2 vector)              splines degree in each parametric direction
 %        spu             (struct)                    space of univariate splines in the first parametric direction
 %        spv             (struct)                    space of univariate splines in the second parametric direction
 %        ndof            (scalar)                    total number of degrees of freedom
