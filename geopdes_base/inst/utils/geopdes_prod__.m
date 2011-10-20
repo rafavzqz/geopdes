@@ -1,6 +1,7 @@
 % -*- INTERNAL UNDOCUMENTED FUNCTION -*-
 %
 % Copyright (C) 2010 Carlo de Falco
+% Copyright (C) 2011 Rafael Vazquez
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -18,16 +19,10 @@
 % Author: Carlo de Falco <cdf AT users.sourceforge.net>
 
 function c = geopdes_prod__ (a, b)
-nel = size(b,4);
-c = zeros(size(a,1), size(a,3), size(b, 3), nel);
-  for ish = 1:size (b, 3)
-    for idir = 1:size (a,1)
-      for jdir = 1:size(a,2)
-        tmp_a = a(idir, jdir, :, :);
-        tmp_b = b(jdir, :, ish, :);
-	c(idir,:,ish,:) = c(idir,:,ish,:) + ...
-	  reshape(tmp_a(:).*tmp_b(:), 1, [], 1, nel);
-      end
-    end
-  end
+
+  aux_dim = [size(a,1), size(a,3), size(b,3), size(b,4)];
+  a = reshape (a, size(a,1), size(a,2), size(a,3), 1, size(a,4));
+  b = reshape (b, [1, size(b)]);
+  c = reshape (sum (bsxfun (@times, a, b), 2), aux_dim);
+
 end
