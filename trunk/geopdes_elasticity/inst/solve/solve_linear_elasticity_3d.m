@@ -109,6 +109,19 @@ for iside = nmnn_sides
   rhs(sp.boundary(iside).dofs) = rhs(sp.boundary(iside).dofs) + op_f_v (sp_side, msh_side, gval);
 end
 
+% Apply pressure conditions
+for iside = press_sides
+  msh_side = msh_eval_boundary_side (msh, iside);
+  sp_side  = sp_eval_boundary_side (sp, msh_side);
+
+  x = squeeze (msh_side.geo_map(1,:,:));
+  y = squeeze (msh_side.geo_map(2,:,:));
+  z = squeeze (msh_side.geo_map(2,:,:));
+  pval = reshape (p (x, y, z, iside), msh_side.nqn, msh_side.nel);
+
+  rhs(sp_side.dofs) = rhs(sp_side.dofs) - op_pn_v (sp_side, msh_side, pval);
+end
+
 % Apply Dirichlet boundary conditions
 u = zeros (sp.ndof, 1);
 [u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (sp, msh, h, drchlt_sides);
