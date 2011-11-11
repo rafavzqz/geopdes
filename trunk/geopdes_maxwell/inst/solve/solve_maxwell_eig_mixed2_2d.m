@@ -99,7 +99,7 @@ saddle_mat   = op_curlv_p_tp (space, sp_mul, msh, @(x, y) ones (size (x)));
 % Apply homogeneous Dirichlet boundary conditions
 drchlt_dofs = [];
 for iside = 1:numel (drchlt_sides)
-  drchlt_dofs = unique ([drchlt_dofs space.boundary(drchlt_sides(iside)).dofs]);
+  drchlt_dofs = union (drchlt_dofs, space.boundary(drchlt_sides(iside)).dofs);
 end
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
 
