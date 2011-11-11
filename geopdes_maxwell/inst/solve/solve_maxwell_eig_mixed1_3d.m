@@ -101,8 +101,8 @@ saddle_mat = op_v_gradp_tp (space, sp_mul, msh, c_elec_perm);
 % Apply homogeneous Dirichlet boundary conditions
 drchlt_dofs = []; drchlt_dofs_mul = [];
 for iside = 1:numel (drchlt_sides)
-  drchlt_dofs = unique ([drchlt_dofs space.boundary(drchlt_sides(iside)).dofs]);
-  drchlt_dofs_mul = unique ([drchlt_dofs_mul sp_mul.boundary(drchlt_sides(iside)).dofs]);
+  drchlt_dofs = union (drchlt_dofs, space.boundary(drchlt_sides(iside)).dofs);
+  drchlt_dofs_mul = union (drchlt_dofs_mul, sp_mul.boundary(drchlt_sides(iside)).dofs);
 end
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
 int_dofs_mul = setdiff (1:sp_mul.ndof, drchlt_dofs_mul);
