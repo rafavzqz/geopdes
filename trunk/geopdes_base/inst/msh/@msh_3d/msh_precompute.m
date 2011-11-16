@@ -58,7 +58,7 @@ function msh = msh_precompute (msh, varargin)
     geo_map = false;
     geo_map_jac = false;
     jacdet = false;
-    for ii=1:length(varargin)
+    for ii=1:2:length(varargin)-1
       if (strcmpi (varargin{ii}, 'quad_nodes'))
         quad_nodes = varargin{ii+1};
       elseif (strcmpi (varargin{ii}, 'quad_weights'))
