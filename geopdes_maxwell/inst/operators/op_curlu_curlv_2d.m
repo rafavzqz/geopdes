@@ -77,3 +77,31 @@ function varargout = op_curlu_curlv_2d (spu, spv, msh, coeff)
 
 end
 
+%% COPY OF THE FIRST VERSION OF THE FUNCTION (MORE UNDERSTANDABLE)
+% 
+% function mat = op_curlu_curlv_2d (spu, spv, msh, coeff)
+%   
+%   mat = spalloc(spv.ndof, spu.ndof, 1);
+%   for iel = 1:msh.nel
+%     if (all (msh.jacdet(:,iel)))
+%       mat_loc = zeros (spv.nsh(iel), spu.nsh(iel));
+%       for idof = 1:spv.nsh(iel)
+%         ishc = squeeze (spv.shape_function_curls(:,idof,iel));
+%         for jdof = 1:spu.nsh(iel)
+%           jshc = squeeze (spu.shape_function_curls(:,jdof,iel));
+% % The cycle on the quadrature points is vectorized
+%           %for inode = 1:msh.nqn
+%             mat_loc(idof, jdof) = mat_loc(idof, jdof) + ...
+%               sum (msh.jacdet(:,iel) .* msh.quad_weights(:, iel) .*...
+%               ishc .* jshc .* coeff (:, iel));
+%           %end  
+%         end
+%       end
+%       mat(spv.connectivity(:,iel), spu.connectivity(:,iel)) = ...
+%         mat(spv.connectivity(:,iel), spu.connectivity(:,iel)) + mat_loc;
+%     else
+%       warning ('geopdes:jacdet_zero_at_quad_node', 'op_curlu_curlv: singular map in element number %d', iel)
+%     end
+%   end
+% 
+% end

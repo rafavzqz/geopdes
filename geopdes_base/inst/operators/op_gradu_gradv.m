@@ -85,3 +85,40 @@ function varargout = op_gradu_gradv (spu, spv, msh, coeff)
   end
 
 end
+
+
+
+%% COPY OF THE FIRST VERSION OF THE FUNCTION (MORE UNDERSTANDABLE)
+% 
+% function mat = op_gradu_gradv (spu, spv, msh, coeff)
+%   
+%   mat = spalloc (spv.ndof, spu.ndof, 1);
+%   
+%   gradu = reshape (spu.shape_function_gradients, spu.ncomp, [], msh.nqn, spu.nsh_max, msh.nel);
+%   gradv = reshape (spv.shape_function_gradients, spv.ncomp, [], msh.nqn, spv.nsh_max, msh.nel);
+% 
+%   ndir = size (gradu, 2);
+% 
+%   for iel = 1:msh.nel
+%     if (all (msh.jacdet(:,iel)))
+%       mat_loc = zeros (spv.nsh(iel), spu.nsh(iel));
+%       for idof = 1:spv.nsh(iel)
+%         ishg = reshape(gradv(:,:,:,idof,iel),spv.ncomp * ndir, []);
+%         for jdof = 1:spu.nsh(iel) 
+%           jshg = reshape(gradu(:,:,:,jdof,iel),spu.ncomp * ndir, []);
+% % The cycle on the quadrature points is vectorized
+%           %for inode = 1:msh.nqn
+%           mat_loc(idof, jdof) = mat_loc(idof, jdof) + ...
+%              sum (msh.jacdet(:,iel) .* msh.quad_weights(:, iel) .* ...
+%                   sum (ishg .* jshg, 1).' .* coeff(:,iel));
+%           %end  
+%         end
+%       end
+%       mat(spv.connectivity(:, iel), spu.connectivity(:, iel)) = ...
+%         mat(spv.connectivity(:, iel), spu.connectivity(:, iel)) + mat_loc;
+%     else
+%       warning ('geopdes:jacdet_zero_at_quad_node', 'op_gradu_gradv: singular map in element number %d', iel)
+%     end
+%   end
+% 
+% end

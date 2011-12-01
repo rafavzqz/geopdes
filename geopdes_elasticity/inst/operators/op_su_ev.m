@@ -93,3 +93,43 @@ function varargout = op_su_ev (spu, spv, msh, lambda, mu)
   end
 
 end
+
+%% COPY OF THE FIRST VERSION OF THE FUNCTION (MORE UNDERSTANDABLE)
+% 
+% function mat = op_su_ev (spu, spv, msh, lambda, mu)
+%   
+%   mat = spalloc (spv.ndof, spu.ndof, 1);
+%   
+%   gradu = reshape (spu.shape_function_gradients, spu.ncomp, [], msh.nqn, spu.nsh_max, msh.nel);
+%   gradv = reshape (spv.shape_function_gradients, spv.ncomp, [], msh.nqn, spv.nsh_max, msh.nel);
+% 
+%   ndir = size (gradu, 2);
+% 
+%   for iel = 1:msh.nel
+%     if (all (msh.jacdet(:,iel)))
+%       mat_loc = zeros (spv.nsh(iel), spu.nsh(iel));
+%       for idof = 1:spv.nsh(iel)
+%         ishg  = gradv(:,:,:,idof,iel);
+%         ishgt = permute (ishg, [2, 1, 3]);
+%         ieps  = reshape(ishg + ishgt, spv.ncomp * ndir, [])/2;
+%         idiv  = spv.shape_function_divs(:, idof, iel);
+%         for jdof = 1:spu.nsh(iel) 
+%           jshg  = gradu(:,:,:,jdof,iel);
+%           jshgt = permute (jshg, [2, 1, 3]);
+%           jeps  = reshape(jshg + jshgt, spu.ncomp * ndir, [])/2;
+%           jdiv  = spu.shape_function_divs(:, jdof, iel);
+%  % The cycle on the quadrature points is vectorized         
+%           mat_loc(idof, jdof) = mat_loc(idof, jdof) + ...
+%               sum (msh.jacdet(:,iel) .* msh.quad_weights(:, iel) .* ...
+%                    (2 * sum (ieps .* jeps, 1).' .* mu(:,iel)  + ...
+%                     (idiv .* jdiv) .* lambda(:,iel)));
+%         end
+%       end
+%       mat(spv.connectivity(:, iel), spu.connectivity(:, iel)) = ...
+%         mat(spv.connectivity(:, iel), spu.connectivity(:, iel)) + mat_loc;
+%     else
+%       warning ('geopdes:jacdet_zero_at_quad_node', 'op_su_ev: singular map in element number %d', iel)
+%     end
+%   end
+% 
+% end

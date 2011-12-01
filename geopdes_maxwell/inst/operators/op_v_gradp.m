@@ -78,3 +78,32 @@ function varargout = op_v_gradp (spv, spp, msh, coeff)
 
 end
 
+
+%% COPY OF THE FIRST VERSION OF THE FUNCTION (MORE UNDERSTANDABLE)
+% function mat = op_v_gradp (spv, spp, msh, coeff)
+% 
+%   mat = spalloc(spp.ndof, spv.ndof, 1);
+%   ndir = size (spp.shape_function_gradients, 1);
+%   for iel = 1:msh.nel
+%     if (all (msh.jacdet(:,iel)))
+%       mat_loc = zeros (spp.nsh(iel), spv.nsh(iel));
+%       for idof = 1:spp.nsh(iel)
+%         ishg = reshape(spp.shape_function_gradients(:,:,idof,iel),ndir,[]);
+%         for jdof = 1:spv.nsh(iel)
+%           jshg = reshape(spv.shape_functions(:,:,jdof,iel),ndir,[]);
+% % The cycle on the quadrature points is vectorized
+%           %for inode = 1:msh.nqn
+%             mat_loc(idof, jdof) = mat_loc(idof, jdof) + ...
+%              sum (msh.jacdet(:, iel) .* msh.quad_weights(:, iel) .* ...
+%              sum (ishg .* jshg, 1).' .* coeff(:, iel));
+%           %end  
+%         end
+%       end
+%       mat(spp.connectivity(:, iel), spv.connectivity(:, iel)) = ...
+%         mat(spp.connectivity(:, iel), spv.connectivity(:, iel)) + mat_loc;
+%     else
+%       warning ('geopdes:jacdet_zero_at_quad_node', 'op_v_gradp: singular map in element number %d', iel)
+%     end
+%   end
+% 
+% end

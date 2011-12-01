@@ -71,3 +71,33 @@ function varargout = op_div_v_q (spv, spq, msh)
   end
 
 end
+
+
+%% COPY OF THE FIRST VERSION OF THE FUNCTION (MORE UNDERSTANDABLE)
+% 
+% function mat = op_div_v_q (spv, spq, msh)
+%   
+%   mat = spalloc(spq.ndof, spv.ndof, 1);
+%   
+%   for iel = 1:msh.nel
+%     if (all (msh.jacdet(:, iel)))
+%       mat_loc = zeros (spq.nsh(iel), spv.nsh(iel));
+%       for idof = 1:spq.nsh(iel)
+%         ishp = spq.shape_functions(:, idof, iel);
+%         for jdof = 1:spv.nsh(iel) 
+%           jshd = spv.shape_function_divs(:, jdof, iel);
+% % The cycle on the quadrature points is vectorized
+%           %for inode = 1:msh.nqn
+%           mat_loc(idof, jdof) = mat_loc(idof, jdof) + ...
+%             sum (msh.jacdet(:,iel) .* msh.quad_weights(:, iel) .* ishp .* jshd);
+%           %end  
+%         end
+%       end
+%       mat(spq.connectivity(:, iel), spv.connectivity(:, iel)) = ...
+%         mat(spq.connectivity(:, iel), spv.connectivity(:, iel)) + mat_loc;
+%     else
+%       warning ('geopdes:jacdet_zero_at_quad_node', 'op_div_v_q: singular map in element number %d', iel)
+%     end
+%   end
+% 
+% end
