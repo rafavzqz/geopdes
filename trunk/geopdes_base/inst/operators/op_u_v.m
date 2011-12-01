@@ -77,3 +77,35 @@ function varargout = op_u_v (spu, spv, msh, coeff)
 
 end
 
+
+%% COPY OF THE FIRST VERSION OF THE FUNCTION (MORE UNDERSTANDABLE)
+% 
+% function mat = op_u_v (spu, spv, msh, coeff)
+%   
+%   mat = spalloc(spv.ndof, spu.ndof, 1);
+%   shpu = reshape (spu.shape_functions, spu.ncomp, msh.nqn, spu.nsh_max, msh.nel);
+%   shpv = reshape (spv.shape_functions, spv.ncomp, msh.nqn, spv.nsh_max, msh.nel);
+%   
+%   for iel = 1:msh.nel
+%     if (all (msh.jacdet(:,iel)))
+%       mat_loc = zeros (spv.nsh(iel), spu.nsh(iel));
+%       for idof = 1:spv.nsh(iel)
+%         ishp = reshape (shpv(:,:,idof,iel), spv.ncomp, []);
+%         for jdof = 1:spu.nsh(iel)
+%           jshp = reshape (shpu(:,:,jdof,iel), spu.ncomp, []);
+% % The cycle on the quadrature points is vectorized
+%           %for inode = 1:msh.nqn
+%             mat_loc(idof, jdof) = mat_loc(idof, jdof) + ...
+%               sum (msh.jacdet(:, iel) .* msh.quad_weights(:, iel) .* ...
+%               sum(ishp .* jshp, 1).' .* coeff(:, iel));
+%           %end  
+%         end
+%       end
+%       mat(spv.connectivity(:, iel), spu.connectivity(:, iel)) = ...
+%         mat(spv.connectivity(:, iel), spu.connectivity(:, iel)) +  mat_loc;
+%     else
+%       warning ('geopdes:jacdet_zero_at_quad_node', 'op_u_v: singular map in element number %d', iel)
+%     end
+%   end
+% 
+% end

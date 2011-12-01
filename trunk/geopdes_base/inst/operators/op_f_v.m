@@ -52,3 +52,30 @@ function rhs = op_f_v (spv, msh, coeff)
  end
  
 end
+
+%% COPY OF THE FIRST VERSION OF THE FUNCTION (MORE UNDERSTANDABLE)
+% 
+% function rhs = op_f_v (spv, msh, coeff)
+%   
+%  rhs   = zeros(spv.ndof, 1);
+%  shpv  = reshape (spv.shape_functions, spv.ncomp, msh.nqn, spv.nsh_max, msh.nel);
+%  coeff = reshape (coeff, spv.ncomp, msh.nqn, msh.nel);
+%  for iel = 1:msh.nel
+%    if (all (msh.jacdet(:,iel)))
+%      rhs_loc = zeros (spv.nsh(iel), 1);
+%      for idof = 1:spv.nsh(iel)
+%        ishp = reshape(shpv(:,:,idof,iel), spv.ncomp, []);
+% % The cycle on the quadrature points is vectorized
+%         %for inode = 1:msh.nqn 
+%          rhs_loc(idof) = rhs_loc(idof) + ...
+%            sum (msh.jacdet(:, iel) .* msh.quad_weights(:, iel) .* ...
+%                 sum(ishp .* coeff(:, :, iel), 1).');
+%         %end  
+%      end
+%      rhs(spv.connectivity(:, iel)) = mat(spv.connectivity(:, iel)) + mat_loc; 
+%    else
+%      warning ('geopdes:jacdet_zero_at_quad_node', 'op_f_v: singular map in element number %d', iel)
+%    end
+%  end
+%  
+% end
