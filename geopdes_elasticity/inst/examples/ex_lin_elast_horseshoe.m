@@ -8,11 +8,13 @@ problem_data.geo_name = 'horseshoe.mat';
 % Type of boundary conditions for each side of the domain
 problem_data.nmnn_sides   = [1 2 3 4];
 problem_data.drchlt_sides = [5 6];
+problem_data.press_sides  = [];
+problem_data.symm_sides   = [];
 
 % Physical parameters
 E  =  1; nu = 0.3;
-problem_data.lam = @(x, y, z) ((nu*E)/((1+nu)*(1-2*nu)) * ones (size (x))); 
-problem_data.mu  = @(x, y, z) (E/(2*(1+nu)) * ones (size (x)));
+problem_data.lambda_lame = @(x, y, z) ((nu*E)/((1+nu)*(1-2*nu)) * ones (size (x))); 
+problem_data.mu_lame = @(x, y, z) (E/(2*(1+nu)) * ones (size (x)));
 
 % Source and boundary terms
 fx = @(x, y, z) zeros (size (x));

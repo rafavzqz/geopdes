@@ -25,8 +25,8 @@
 %    - geo_name:     name of the file containing the geometry
 %    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
 %    - drchlt_sides: sides with Dirichlet boundary condition
-%    - lam:          first Lame' parameter
-%    - mu:           second Lame' parameter
+%    - lambda_lame:  first Lame' parameter
+%    - mu_lame:      second Lame' parameter
 %    - f:            source term
 %    - h:            function for Dirichlet boundary condition
 %    - g:            function for Neumann condition (if nmnn_sides is not empty)
@@ -104,7 +104,7 @@ rhs = zeros (ndof, 1);
 
 ncounter = 0;
 for iptc = 1:npatch
-  [rs, cs, vs] = op_su_ev_tp (sp{iptc}, sp{iptc}, msh{iptc}, lam, mu);
+  [rs, cs, vs] = op_su_ev_tp (sp{iptc}, sp{iptc}, msh{iptc}, lambda_lame, mu_lame);
 
   rows(ncounter+(1:numel (rs))) = gnum{iptc}(rs);
   cols(ncounter+(1:numel (rs))) = gnum{iptc}(cs);

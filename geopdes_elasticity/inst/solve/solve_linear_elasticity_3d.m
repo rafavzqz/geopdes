@@ -23,8 +23,8 @@
 %    - geo_name:     name of the file containing the geometry
 %    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
 %    - drchlt_sides: sides with Dirichlet boundary condition
-%    - lam:          first Lame' parameter
-%    - mu:           second Lame' parameter
+%    - lambda_lame:  first Lame' parameter
+%    - mu_lame:      second Lame' parameter
 %    - f:            source term
 %    - h:            function for Dirichlet boundary condition
 %    - g:            function for Neumann condition (if nmnn_sides is not empty)
@@ -94,7 +94,7 @@ sp = sp_vector_3d (sp_scalar, sp_scalar, sp_scalar, msh);
 clear sp_scalar
 
 % Assemble the matrices
-mat    = op_su_ev_tp (sp, sp, msh, lam, mu); 
+mat    = op_su_ev_tp (sp, sp, msh, lambda_lame, mu_lame); 
 rhs    = op_f_v_tp (sp, msh, f);
 
 % Apply Neumann boundary conditions
