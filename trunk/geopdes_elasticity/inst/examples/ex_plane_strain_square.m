@@ -13,12 +13,12 @@ problem_data.symm_sides   = [];
 
 % Physical parameters
 E  =  1; nu = .3; 
-problem_data.lam = @(x, y) ((nu*E)/((1+nu)*(1-2*nu)) * ones (size (x))); 
-problem_data.mu  = @(x, y) (E/(2*(1+nu)) * ones (size (x)));
+problem_data.lambda_lame = @(x, y) ((nu*E)/((1+nu)*(1-2*nu)) * ones (size (x)));
+problem_data.mu_lame = @(x, y) (E/(2*(1+nu)) * ones (size (x)));
 
 % Source and boundary terms
-fx = @(x, y) -(-(problem_data.mu(x, y)*3 + problem_data.lam(x, y)).*sin(2*pi*x).*sin(2*pi*y) + ...
-     (problem_data.mu(x, y) + problem_data.lam(x, y)).*cos(2*pi*x).*cos(2*pi*y))*(2*pi)^2;
+fx = @(x, y) -(-(problem_data.mu_lame(x, y)*3 + problem_data.lambda_lame(x, y)).*sin(2*pi*x).*sin(2*pi*y) + ...
+     (problem_data.mu_lame(x, y) + problem_data.lambda_lame(x, y)).*cos(2*pi*x).*cos(2*pi*y))*(2*pi)^2;
 fy = fx;
 problem_data.f = @(x, y) cat(1, ...
                 reshape (fx (x,y), [1, size(x)]), ...

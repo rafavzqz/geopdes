@@ -13,8 +13,8 @@ problem_data.symm_sides   = [3 4];
 
 % Physical parameters
 E  =  1; nu = 0; 
-problem_data.lam = @(x, y) ((nu*E)/((1+nu)*(1-2*nu)) * ones (size (x))); 
-problem_data.mu  = @(x, y) (E/(2*(1+nu)) * ones (size (x)));
+problem_data.lambda_lame = @(x, y) ((nu*E)/((1+nu)*(1-2*nu)) * ones (size (x)));
+problem_data.mu_lame = @(x, y) (E/(2*(1+nu)) * ones (size (x)));
 
 % Source and boundary terms
 P = 1;
