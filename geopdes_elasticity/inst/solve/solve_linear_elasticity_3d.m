@@ -23,6 +23,8 @@
 %    - geo_name:     name of the file containing the geometry
 %    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
 %    - drchlt_sides: sides with Dirichlet boundary condition
+%    - press_sides:  sides with pressure boundary condition (may be empty)
+%    - symm_sides:   sides with symmetry boundary condition (may be empty)
 %    - lambda_lame:  first Lame' parameter
 %    - mu_lame:      second Lame' parameter
 %    - f:            source term
@@ -120,6 +122,25 @@ for iside = press_sides
   pval = reshape (p (x, y, z, iside), msh_side.nqn, msh_side.nel);
 
   rhs(sp_side.dofs) = rhs(sp_side.dofs) - op_pn_v (sp_side, msh_side, pval);
+end
+
+% Apply symmetry conditions
+u = zeros (sp.ndof, 1);
+symm_dofs = [];
+for iside = symm_sides
+  msh_side = msh_eval_boundary_side (msh, iside);
+  if ((all (abs (msh_side.normal(2,:,:)) < 1e-10)) && ...
+      (all (abs (msh_side.normal(3,:,:)) < 1e-10)))
+    symm_dofs = union (symm_dofs, sp.boundary(iside).comp_dofs{1});
+  elseif ((all (abs (msh_side.normal(1,:,:)) < 1e-10)) && ...
+          (all (abs (msh_side.normal(3,:,:)) < 1e-10)))
+    symm_dofs = union (symm_dofs, sp.boundary(iside).comp_dofs{2});
+  elseif ((all (abs (msh_side.normal(1,:,:)) < 1e-10)) && ...
+          (all (abs (msh_side.normal(2,:,:)) < 1e-10)))
+    symm_dofs = union (symm_dofs, sp.boundary(iside).comp_dofs{3});
+  else
+    error ('ex_nurbs_linear_elasticity_3d: We have only implemented the symmetry condition for boundaries parallel to the axes')
+  end
 end
 
 % Apply Dirichlet boundary conditions
