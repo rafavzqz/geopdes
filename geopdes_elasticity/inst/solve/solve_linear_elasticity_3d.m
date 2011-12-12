@@ -129,14 +129,17 @@ u = zeros (sp.ndof, 1);
 symm_dofs = [];
 for iside = symm_sides
   msh_side = msh_eval_boundary_side (msh, iside);
-  if ((all (abs (msh_side.normal(2,:,:)) < 1e-10)) && ...
-      (all (abs (msh_side.normal(3,:,:)) < 1e-10)))
+  normal_comp1 = reshape (msh_side.normal(1,:,:), 1, msh_side.nqn*msh_side.nel);
+  normal_comp2 = reshape (msh_side.normal(2,:,:), 1, msh_side.nqn*msh_side.nel);
+  normal_comp3 = reshape (msh_side.normal(3,:,:), 1, msh_side.nqn*msh_side.nel);
+  if ((all (abs (normal_comp2) < 1e-10)) && ...
+      (all (abs (normal_comp3) < 1e-10)))
     symm_dofs = union (symm_dofs, sp.boundary(iside).comp_dofs{1});
-  elseif ((all (abs (msh_side.normal(1,:,:)) < 1e-10)) && ...
-          (all (abs (msh_side.normal(3,:,:)) < 1e-10)))
+  elseif ((all (abs (normal_comp1) < 1e-10)) && ...
+          (all (abs (normal_comp3) < 1e-10)))
     symm_dofs = union (symm_dofs, sp.boundary(iside).comp_dofs{2});
-  elseif ((all (abs (msh_side.normal(1,:,:)) < 1e-10)) && ...
-          (all (abs (msh_side.normal(2,:,:)) < 1e-10)))
+  elseif ((all (abs (normal_comp1) < 1e-10)) && ...
+          (all (abs (normal_comp2) < 1e-10)))
     symm_dofs = union (symm_dofs, sp.boundary(iside).comp_dofs{3});
   else
     error ('ex_nurbs_linear_elasticity_3d: We have only implemented the symmetry condition for boundaries parallel to the axes')
