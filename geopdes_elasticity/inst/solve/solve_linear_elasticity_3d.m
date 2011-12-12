@@ -148,7 +148,7 @@ u = zeros (sp.ndof, 1);
 [u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (sp, msh, h, drchlt_sides);
 u(drchlt_dofs) = u_drchlt;
 
-int_dofs = setdiff (1:sp.ndof, drchlt_dofs);
+int_dofs = setdiff (1:sp.ndof, [drchlt_dofs, symm_dofs]);
 rhs(int_dofs) = rhs(int_dofs) - mat (int_dofs, drchlt_dofs) * u_drchlt;
 
 % Solve the linear system
