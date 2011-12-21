@@ -61,11 +61,12 @@ function varargout = op_div_v_q (spv, spq, msh)
   end
 
   if (nargout == 1)
-    varargout{1} = sparse (rows, cols, values, spq.ndof, spv.ndof);
+    varargout{1} = sparse (rows(1:ncounter), cols(1:ncounter), ...
+                           values(1:ncounter), spq.ndof, spv.ndof);
   elseif (nargout == 3)
-    varargout{1} = rows;
-    varargout{2} = cols;
-    varargout{3} = values;
+    varargout{1} = rows(1:ncounter);
+    varargout{2} = cols(1:ncounter);
+    varargout{3} = values(1:ncounter);
   else
     error ('op_div_v_q: wrong number of output arguments')
   end
