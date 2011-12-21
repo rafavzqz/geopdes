@@ -83,11 +83,12 @@ function varargout = op_su_ev (spu, spv, msh, lambda, mu)
   end
 
   if (nargout == 1)
-    varargout{1} = sparse (rows, cols, values, spv.ndof, spu.ndof);
+    varargout{1} = sparse (rows(1:ncounter), cols(1:ncounter), ...
+                           values(1:ncounter), spv.ndof, spu.ndof);
   elseif (nargout == 3)
-    varargout{1} = rows;
-    varargout{2} = cols;
-    varargout{3} = values;
+    varargout{1} = rows(1:ncounter);
+    varargout{2} = cols(1:ncounter);
+    varargout{3} = values(1:ncounter);
   else
     error ('op_su_ev: wrong number of output arguments')
   end
