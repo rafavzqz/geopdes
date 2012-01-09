@@ -175,6 +175,16 @@ CONTENTS:
 
 Below is a list of the main changes introduced with each new release
 
+Version geopdes_***-2.0.2
+
+* sp_eval and sp_to_vtk: added the possibility to plot curl and gradient
+* Added the function(s) sp_eval_grad(div,curl)_msh
+* Added the old version of the operators, at the end of the new ones,
+    for didactic purposes
+* Linear elasticity: added pressure and symmetric conditions in 3D
+* Linear elasticity: changed the name of the variables for Lame parameters
+* @msh_3d/msh_precompute: fixed bug in the loop
+
 Version geopdes_***-2.0.1
 
 * Modified the oct-operators to be compatible with Octave 3.2
