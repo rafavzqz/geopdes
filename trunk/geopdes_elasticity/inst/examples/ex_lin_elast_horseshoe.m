@@ -40,9 +40,11 @@ method_data.nquad      = [4 4 4];     % Points for the Gaussian quadrature rule
 % 4) POST-PROCESSING. EXPORT TO PARAVIEW
 output_file = 'lin_elast_horseshoe_Deg3_Reg2_Sub1';
 
-vtk_pts = {linspace(0, 1, 5), linspace(0, 1, 5), linspace(0, 1, 40)};
+vtk_pts = {linspace(0, 1, 8), linspace(0, 1, 8), linspace(0, 1, 40)};
 fprintf ('results being saved in: %s_displacement\n \n', output_file)
 sp_to_vtk (u, space, geometry, vtk_pts, sprintf ('%s_displacement', output_file), 'displacement')
+sp_to_vtk_stress (u, space, geometry, vtk_pts, problem_data.lambda_lame, ...
+                  problem_data.mu_lame, sprintf ('%s_stress', output_file)); 
 
 % Plot in Matlab
 figure
