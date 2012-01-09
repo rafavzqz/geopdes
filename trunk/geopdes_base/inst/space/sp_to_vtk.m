@@ -1,7 +1,7 @@
 % SP_TO_VTK: Export to VTK format for plotting.
 %
-%  sp_to_vtk (u, space, geometry, npts, filename, fieldname)
-%  sp_to_vtk (u, space, geometry, pts, filename, fieldname)
+%  sp_to_vtk (u, space, geometry, npts, filename, fieldname, [option])
+%  sp_to_vtk (u, space, geometry, pts, filename, fieldname, [option])
 %
 % INPUT:
 %     
@@ -12,13 +12,15 @@
 %     pts:        cell array with the coordinates along each parametric direction of the points where to evaluate
 %     filename:   name of the output file. 
 %     fieldname:  how to name the saved variable in the vtk file
+%     option:     accepted options are 'value' (default), 'gradient',
+%                  and for vectors also 'curl', 'divergence'
 %
 % OUTPUT:
 %
 %    none    
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011, 2012 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -33,10 +35,20 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp_to_vtk (u, space, geometry, npts, filename, fieldname)
+function sp_to_vtk (u, space, geometry, npts, filename, fieldname, varargin)
 
-  [eu, F] = sp_eval (u, space, geometry, npts);
+  if (nargin == 6)
+    option = 'value';
+  else
+    option = varargin{1};
+  end
+    
+  [eu, F] = sp_eval (u, space, geometry, npts, option);
 
-  msh_to_vtk (F, eu, filename, fieldname);
+  if (space.ncomp == 1 || ~strcmp(option, 'gradient'))
+    msh_to_vtk (F, eu, filename, fieldname);
+  else
+    error ('For vector fields, the gradient cannot saved')
+  end
 
 end
