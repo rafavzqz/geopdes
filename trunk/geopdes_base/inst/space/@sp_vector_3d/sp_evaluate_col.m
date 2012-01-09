@@ -136,7 +136,7 @@ if (gradient || curl || divergence)
     shape_fun_curls(3,:,:,:) = ...
       reshape (shape_fun_grads(2,1,:,:,:) - shape_fun_grads(1,2,:,:,:), ...
                                        1, msh.nqn, sp.nsh_max, msh.nel);
-    sp_col.shape_function_curls = shape_fun_curls;
+    sp.shape_function_curls = shape_fun_curls;
   end
 end
 
