@@ -8,6 +8,10 @@ Solve
  solve_linear_elasticity_3d
 Geometry
  geo_deform
+Space
+ sp_eval_stress
+ sp_eval_stress_msh
+ sp_to_vtk_stress
 Examples
  ex_plane_strain_square
  ex_plane_strain_square_mixed_bc
