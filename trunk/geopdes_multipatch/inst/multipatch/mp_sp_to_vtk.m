@@ -1,6 +1,6 @@
 % MP_SP_TO_VTK: Export multipatch results to VTK format for plotting.
 %
-%  mp_sp_to_vtk (u, space, geometry, gnum, npts, filename, fieldname)
+%  mp_sp_to_vtk (u, space, geometry, gnum, npts, filename, fieldname, [option])
 %
 % INPUT:
 %     
@@ -11,13 +11,15 @@
 %     npts:      number of points along each parametric direction where to evaluate
 %     filename:  name of the output file. 
 %     fieldname: how to name the saved variable in the vtk file
+%     option:     accepted options are 'value' (default), 'gradient',
+%                  and for vectors also 'curl', 'divergence'
 %
 % OUTPUT:
 %
 %    none    
 % 
 % Copyright (C) 2010 Carlo de Falco, Rafael Vazquez
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011, 2012 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -32,7 +34,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function mp_sp_to_vtk (u, space, geometry, gnum, npts, filename, fieldname)
+function mp_sp_to_vtk (u, space, geometry, gnum, npts, filename, fieldname, varargin)
 
   str1 = cat (2,'<?xml version="1.0"?> \n', ...
 '<VTKFile type="Collection" version="0.1"> \n', ...
@@ -61,7 +63,7 @@ function mp_sp_to_vtk (u, space, geometry, gnum, npts, filename, fieldname)
     filename_patch = cat (2, filename, '_', num2str (iptc));
     fprintf (fid, str2, iptc, filename_patch);
     sp_to_vtk (u(gnum{iptc}), space{iptc}, geometry(iptc), npts, ...
-                           filename_patch, fieldname)
+                           filename_patch, fieldname, varargin{:})
   end
   fprintf (fid, str3);
 
