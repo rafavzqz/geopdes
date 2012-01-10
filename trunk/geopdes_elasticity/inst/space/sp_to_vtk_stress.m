@@ -87,13 +87,13 @@ function sp_to_vtk_stress (u, space, geometry, npts, lambda, mu, filename)
            npts(1)-1, npts(2)-1, npts(3)-1);
 
   if (space.ncomp == 2)
-    fprintf (fid, str2, 'sigma11');
+    fprintf (fid, str2, 'sigma_xx');
     fprintf (fid, '%g ', reshape (squeeze (stress(1,1,:,:)), [], 1));
     fprintf (fid, str3);
-    fprintf (fid, str2, 'sigma12');
+    fprintf (fid, str2, 'sigma_xy');
     fprintf (fid, '%g ', reshape (squeeze (stress(1,2,:,:)), [], 1));
     fprintf (fid, str3);
-    fprintf (fid, str2, 'sigma22');
+    fprintf (fid, str2, 'sigma_yy');
     fprintf (fid, '%g ', reshape (squeeze (stress(2,2,:,:)), [], 1));
     fprintf (fid, str3);
     fprintf (fid, str4);
@@ -102,22 +102,22 @@ function sp_to_vtk_stress (u, space, geometry, npts, lambda, mu, filename)
 
     fclose (fid);
   elseif (space.ncomp == 3)
-    fprintf (fid, str2, 'sigma11');
+    fprintf (fid, str2, 'sigma_xx');
     fprintf (fid, '%g ', reshape (squeeze (stress(1,1,:,:,:)), [], 1));
     fprintf (fid, str3);
-    fprintf (fid, str2, 'sigma12');
+    fprintf (fid, str2, 'sigma_xy');
     fprintf (fid, '%g ', reshape (squeeze (stress(1,2,:,:,:)), [], 1));
     fprintf (fid, str3);
-    fprintf (fid, str2, 'sigma13');
+    fprintf (fid, str2, 'sigma_xz');
     fprintf (fid, '%g ', reshape (squeeze (stress(1,3,:,:,:)), [], 1));
     fprintf (fid, str3);
-    fprintf (fid, str2, 'sigma22');
+    fprintf (fid, str2, 'sigma_yy');
     fprintf (fid, '%g ', reshape (squeeze (stress(2,2,:,:,:)), [], 1));
     fprintf (fid, str3);
-    fprintf (fid, str2, 'sigma23');
+    fprintf (fid, str2, 'sigma_yz');
     fprintf (fid, '%g ', reshape (squeeze (stress(2,3,:,:,:)), [], 1));
     fprintf (fid, str3);
-    fprintf (fid, str2, 'sigma33');
+    fprintf (fid, str2, 'sigma_zz');
     fprintf (fid, '%g ', reshape (squeeze (stress(3,3,:,:,:)), [], 1));
     fprintf (fid, str3);
     fprintf (fid, str4);
@@ -127,21 +127,5 @@ function sp_to_vtk_stress (u, space, geometry, npts, lambda, mu, filename)
     fclose (fid);
 
   end
-
-
-%  if (space.ncomp == 2)
-%    msh_to_vtk (F, squeeze (stress(1,1,:,:)), [filename '_comp11'], 'sigma11');
-%    msh_to_vtk (F, squeeze (stress(1,2,:,:)), [filename '_comp12'], 'sigma12');
-%    msh_to_vtk (F, squeeze (stress(2,2,:,:)), [filename '_comp22'], 'sigma22');
-%  elseif (space.ncomp == 3)
-%    msh_to_vtk (F, squeeze (stress(1,1,:,:,:)), [filename '_comp11'], 'sigma11');
-%    msh_to_vtk (F, squeeze (stress(1,2,:,:,:)), [filename '_comp12'], 'sigma12');
-%    msh_to_vtk (F, squeeze (stress(1,3,:,:,:)), [filename '_comp13'], 'sigma13');
-%    msh_to_vtk (F, squeeze (stress(2,2,:,:,:)), [filename '_comp22'], 'sigma22');
-%    msh_to_vtk (F, squeeze (stress(2,3,:,:,:)), [filename '_comp23'], 'sigma23');
-%    msh_to_vtk (F, squeeze (stress(3,3,:,:,:)), [filename '_comp33'], 'sigma33');
-%  else
-%    error ('For scalar fields, the stress cannot saved')
-%  end
 
 end
