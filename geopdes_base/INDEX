@@ -16,6 +16,16 @@ Mesh
  @msh_3d/msh_evaluate_col
  @msh_3d/msh_precompute
 Space
+ sp_eval
+ sp_eval_msh
+ sp_eval_div_msh
+ sp_eval_curl_msh
+ sp_eval_grad_msh
+ sp_h1_error
+ sp_l2_error
+ sp_to_vtk
+ sp_drchlt_l2_proj
+ sp_bspline_1d_param
  sp_bspline_2d
  @sp_bspline_2d/sp_eval_boundary_side
  @sp_bspline_2d/sp_evaluate_col
@@ -48,16 +58,6 @@ Space
  @sp_vector_3d/sp_eval_boundary_side
  @sp_vector_3d/sp_evaluate_col  
  @sp_vector_3d/sp_precompute
- sp_bspline_1d_param
- sp_eval
- sp_eval_msh
- sp_eval_div_msh
- sp_eval_curl_msh
- sp_eval_grad_msh
- sp_h1_error
- sp_l2_error
- sp_to_vtk
- sp_drchlt_l2_proj
 Operators
  op_f_v
  op_f_v_tp
