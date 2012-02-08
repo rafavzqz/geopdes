@@ -48,7 +48,7 @@ function sp_to_vtk (u, space, geometry, npts, filename, fieldname, varargin)
   if (space.ncomp == 1 || ~strcmp(option, 'gradient'))
     msh_to_vtk (F, eu, filename, fieldname);
   else
-    error ('For vector fields, the gradient cannot saved')
+    error ('sp_to_vtk: For vector fields, the gradient cannot be saved')
   end
 
 end
