@@ -76,6 +76,8 @@ CONTENTS:
       http://octave.sf.net
    - uncompress and untar the file. We recommend you to do this in the
       toolbox folder of Matlab.
+
+ * Install the mex-files for the "nurbs" package (OPTIONAL):
    - download the C functions for matlab "nurbs_mex_files.tar.gz" from
       http://sourceforge.net/projects/geopdes/files
    - uncompress and untar the file in the folder "nurbs/inst"
