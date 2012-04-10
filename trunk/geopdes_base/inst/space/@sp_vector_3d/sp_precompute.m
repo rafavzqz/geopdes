@@ -103,7 +103,7 @@ function sp = sp_precompute (sp, msh, varargin)
   end
 
   if (connectivity)
-    sp.connectivity = [sp1.connectivity; sp2.connectivity+sp1.ndof, ...
+    sp.connectivity = [sp1.connectivity; sp2.connectivity+sp1.ndof; ...
                        sp3.connectivity+sp1.ndof+sp2.ndof];
   end
 
