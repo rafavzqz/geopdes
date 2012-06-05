@@ -88,21 +88,64 @@ function geometry = geo_load (in)
 end
 
 function mps = affine_map  (ps, in)
-  ndim = size (ps, 1);
-  nps  = size (ps, 2);
-  mps  = in([1:ndim, 4], [1:ndim, 4]) * [ps; ones(1, size(ps, 2))];
+  if (iscell (ps))
+    ndim = numel (ps);
+    npts = cellfun (@numel, ps);
+    nps = prod (npts);
+    if (ndim == 2)
+      u = reshape (repmat (ps{1}(:), 1, npts(2)), 1, []);
+      v = reshape (repmat (ps{2}(:)', npts(1), 1), 1, []);
+      ps = [u; v];
+    elseif (ndim == 3)
+      u = reshape (ps{1}, npts(1), 1, 1);
+      u = reshape (repmat (u, [1, npts(2), npts(3)]), 1, []);
+      v = reshape (ps{2}, 1, npts(2), 1);
+      v = reshape (repmat (v, [npts(1), 1, npts(3)]), 1, []);
+      w = reshape (ps{3}, 1, 1, npts(3));
+      w = reshape (repmat (w, [npts(1), npts(2), 1]), 1, []);
+      ps = [u; v; w];
+    end
+  else
+    ndim = size (ps, 1);
+    nps  = size (ps, 2);
+  end
+  mps  = in([1:ndim, 4], [1:ndim, 4]) * [ps; ones(1, nps)];
   mps  = mps (1:ndim, :);
 end
 
 function mps = affine_map_der  (ps, in)
-  ndim = size (ps, 1);
-  nps  = size (ps, 2);
+  if (iscell (ps))
+    ndim = numel (ps);
+    npts = cellfun (@numel, ps);
+    nps = prod (npts);
+    if (ndim == 2)
+      u = reshape (repmat (ps{1}(:), 1, npts(2)), 1, []);
+      v = reshape (repmat (ps{2}(:)', npts(1), 1), 1, []);
+      ps = [u; v];
+    elseif (ndim == 3)
+      u = reshape (ps{1}, npts(1), 1, 1);
+      u = reshape (repmat (u, [1, npts(2), npts(3)]), 1, []);
+      v = reshape (ps{2}, 1, npts(2), 1);
+      v = reshape (repmat (v, [npts(1), 1, npts(3)]), 1, []);
+      w = reshape (ps{3}, 1, 1, npts(3));
+      w = reshape (repmat (w, [npts(1), npts(2), 1]), 1, []);
+      ps = [u; v; w];
+    end
+  else
+    ndim = size (ps, 1);
+    nps  = size (ps, 2);
+  end
   mps  = repmat (in(1:ndim, 1:ndim), [1, 1, nps]);
 end
 
 function mps = affine_map_der2  (ps)
-  ndim = size (ps, 1);
-  nps  = size (ps, 2);
+  if (iscell (ps))
+    ndim = numel (ps);
+    nps = prod (cellfun (@numel, ps));
+  else
+    ndim = size (ps, 1);
+    nps  = size (ps, 2);
+  end
   mps  = zeros (ndim, ndim, ndim, nps);
 end
 
