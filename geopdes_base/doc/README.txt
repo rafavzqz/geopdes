@@ -80,7 +80,8 @@ CONTENTS:
  * Install the mex-files for the "nurbs" package (OPTIONAL):
    - download the C functions for matlab "nurbs_mex_files.tar.gz" from
       http://sourceforge.net/projects/geopdes/files
-   - uncompress and untar the file in the folder "nurbs/inst"
+   - uncompress and untar the file in the folder "nurbs/inst" of the 
+      nurbs package
    - in Matlab, go to the folder "nurbs/inst" and run the script file 'compile'.
       This will compile the files and save the nurbs package to your Matlab path
 

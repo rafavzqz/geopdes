@@ -9,7 +9,6 @@ Space
  @sp_vector_3d_curl_transform/sp_evaluate_col
  @sp_vector_3d_curl_transform/sp_precompute
  sp_bspline_2d_3forms
- @sp_bspline_2d_3forms/sp_eval_boundary_side
  @sp_bspline_2d_3forms/sp_evaluate_col
  @sp_bspline_2d_3forms/sp_precompute
  @sp_bspline_2d_3forms/sp_precompute_param
