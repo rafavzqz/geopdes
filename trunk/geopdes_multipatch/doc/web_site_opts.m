@@ -56,11 +56,11 @@ opt.header = sprintf("<!DOCTYPE html PUBLIC ""-//W3C//DTD XHTML 1.0 Strict//EN""
   </head>\n\
 <body>\n\
 <div id=""top""><a href=""http://geopdes.sourceforge.net"">Home</a> &middot; <a href=""%s/functions/%s/overview.html"">Function Reference</a> </div>\n\
-<div id=""doccontent"">", date, "cdf@users.sourceforge.net", site_root, site_root, pkg_name);
+<div id=""doccontent"">", date, "rafavzqz@users.sourceforge.net", site_root, site_root, pkg_name);
 
 opt.footer= sprintf("\n\
 <div id=""left_footer"">\n\
-  page maintained by <address><a href=""mailto:cdf@users.sourceforge.net""> cdf@users.sourceforge.net </a></address>\n\
+  page maintained by <address><a href=""mailto:rafavzqz@users.sourceforge.net""> rafavzqz@users.sourceforge.net </a></address>\n\
   <!-- hhmts start --> Last modified: %s <!-- hhmts end -->\n\
 </div>\n\
 <div id=""right_footer"">\n\
