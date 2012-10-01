@@ -1,4 +1,4 @@
-% MP_INTERFACE_3D: create a global numbering of basis functions in two-dimensional multipatch geometries.
+% MP_INTERFACE_3D: create a global numbering of basis functions in three-dimensional multipatch geometries.
 %
 %   [glob_num, glob_ndof] = mp_interface_3d (interfaces, sp);
 %
@@ -105,7 +105,7 @@ function [glob_num, ppnum] = set_same_patch (iptc, intrfc, ttform, new_dofs, ...
     [common_dofs, pos1, pos2] = intersect (ttform{iptc, ii}, intrfc_dofs);
     not_set = find (ppnum{ii}(pos1) == 0);
     if (~isempty (not_set))
-      ppnum{ii}(pos1(not_set)) = ppnum{intrfc}(pos2(not_set));
+      ppnum{ii}(pos1(not_set)) = ppnum{intrfc}(new_dofs(pos2(not_set)));
       [glob_num, ppnum] = set_same_interface (iptc, ii, ttform, ...
                     pos1(not_set), interfaces, glob_num, ppnum, patch_intrfc);
     end
