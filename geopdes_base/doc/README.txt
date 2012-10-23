@@ -178,6 +178,11 @@ CONTENTS:
 
 Below is a list of the main changes introduced with each new release
 
+Version geopdes_***-2.0.3
+
+* In geopdes.h, "quad_nodes" replaced by "geo_map_jac" to check the dimension.
+* Fixed bug in the functions mp_interface_#d
+
 Version geopdes_***-2.0.2
 
 * sp_eval and sp_to_vtk: added the possibility to plot curl and gradient

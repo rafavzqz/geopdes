@@ -89,7 +89,7 @@ public:
 
     nqn_rep  = msh.contents  ("nqn")(0).int_value ();
     nel_rep  = msh.contents  ("nel")(0).int_value ();
-    ndir_rep = msh.contents  ("quad_nodes")(0).array_value ().rows (); 
+    ndir_rep = msh.contents  ("geo_map_jac")(0).array_value ().dim2 (); 
     jacdet_rep  = msh.contents ("jacdet")(0).matrix_value (); 
     weights_rep = msh.contents ("quad_weights")(0).matrix_value (); 
   }
