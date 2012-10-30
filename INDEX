@@ -1,0 +1,19 @@
+geopdes_tsplines >> T-splines computation using Bezier extraction within GeoPDEs.
+Tsplines
+ tspline_mesh_space
+ tspline_boundary
+ tspline_sp_eval_msh
+ tspline_to_vtk
+ tspline_l2_error
+ tspline_h1_error
+ tspline_drchlt_l2_proj
+Solve
+ solve_laplace_tsplines_2d
+Examples
+ ex_tsplines_15lines
+ ex_laplace_square_tsplines
+ ex_laplace_ring_tsplines
+Utils
+ read_bezier_extraction
+ msh_to_vtu
+

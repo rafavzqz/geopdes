@@ -1,0 +1,10 @@
+Name: geopdes_tsplines
+Version: 1.0.0
+Date: 2012-10-31
+Author: Rafael Vazquez
+Maintainer: Rafael Vazquez
+Title: Iso-Geometric Analysis with T-splines
+Description: T-splines computation using Bezier extraction within GeoPDEs.
+Depends: octave (>= 3.2.3), nurbs (>= 1.3.5), geopdes_base (>= 2.0.3)
+Autoload: yes
+License: GPLv3
