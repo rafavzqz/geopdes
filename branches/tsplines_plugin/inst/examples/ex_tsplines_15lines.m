@@ -33,7 +33,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-tspline = read_bezier_extraction ('arc_tsplines.iga');
+tspline = read_bezier_extraction ('arch_tsplines.iga');
 [msh, space] = tspline_mesh_space (tspline);
 
 [x, y] = deal (squeeze (msh.geo_map(1,:,:)), squeeze (msh.geo_map(2,:,:)));
