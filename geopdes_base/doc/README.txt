@@ -29,10 +29,6 @@ CONTENTS:
    - For Matlab users, the file geopdes_setpath.m
    
     
-
-  The file GeoPDEs_full contains all that is necessary to install 
-   GeoPDEs.
-
 1.1. OCTAVE
 
 1.1.1 - Install
