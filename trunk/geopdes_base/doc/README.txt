@@ -1,5 +1,5 @@
 CONTENTS:
-1: INSTALLATION
+1: CONTENTS AND INSTALLATION
   1.1: OCTAVE
     1.1.1 - Install
     1.1.2 - Note for Windows users
@@ -14,32 +14,42 @@ CONTENTS:
 
 -----------------------------------------------------
 
-1. INSTALLATION
+1. CONTENTS AND INSTALLATION
+
+  Download and uncompress the file GeoPDEs_full.tar.gz. This file contains 
+   all that is necessary to install GeoPDEs:
+   - The NURBS toolbox: nurbs-1.3.6.tar.gz
+   - The GeoPDEs packages:
+      geopdes_base-2.0.3.tar.gz, geopdes_elasticity-2.0.2.tar.gz, 
+      geopdes_fluid-2.0.2.tar.gz, geopdes_maxwell-2.0.2.tar.gz, 
+      geopdes_multipatch-2.0.3.tar.gz, geopdes_tsplines-2.0.3.tar.gz
+   - The technical report: GeoPDES_report.pdf
+   - This README file.
+   - For Matlab users, the mex files of the NURBS toolbox: nurbs_mex_files.tar.gz
+   - For Matlab users, the file geopdes_setpath.m
+   
+    
+
+  The file GeoPDEs_full contains all that is necessary to install 
+   GeoPDEs.
 
 1.1. OCTAVE
 
 1.1.1 - Install
  
- * Install Octave version 3.2 or higher. Source code is available from
-    http://www.octave.org, binary packages for Mac OSX and Windows are
-    available from http://octave.sf.net, Linux binary packages are
+ * Be sure to have installed Octave version 3.2 or higher. 
+    Source code is available from http://www.octave.org, 
+    binary packages for Mac OSX and Windows are available
+    from http://octave.sf.net, Linux binary packages are
     included with all major binary distributions.
 
- * Install the "nurbs" package available on
-    http://octave.sf.net: 
-   - download the latest release of nurbs-<version>.tar.gz
-   - type, at the octave prompt
-      pkg install nurbs-<version>.tar.gz
-      pkg load nurbs
+ * Install the "nurbs" package by typing at the octave prompt
+    pkg install nurbs-<version>.tar.gz
+    pkg load nurbs
 
- * Download the geopdes_base-<version>.tar.gz package from 
-    http://geopdes.sf.net/functions/geopdes_base
- 
  * Install geopdes_base package by typing at the octave prompt
-   pkg install geopdes_base-<version>.tar.gz
-
- * Load the package:
-   pkg load geopdes_base
+    pkg install geopdes_base-<version>.tar.gz
+    pkg load geopdes_base
 
  * After installing the geopdes_base package, the other packages 
     can be installed in an analogous way.
@@ -52,8 +62,8 @@ CONTENTS:
     can create problems when installing geopdes_base. The procedure to 
     install the package in Windows is as follows: 
 
- * Install octave, the nurbs package, and download geopdes_base, like in
-    steps 1 to 3 of Section 1.1.1.
+ * Install octave and the nurbs package, like in
+    steps 1 to 2 of Section 1.1.1.
 
  * Be sure to put the file geopdes_base-<version>.tar.gz to a folder 
     without blanks in the name, for instance, c:\tmp
@@ -72,23 +82,17 @@ CONTENTS:
 1.2. MATLAB
 
  * Install the "nurbs" package available on http://octave.sf.net:
-   - download the latest release of nurbs.tar.gz available on 
-      http://octave.sf.net
-   - uncompress and untar the file. We recommend you to do this in the
-      toolbox folder of Matlab.
+   - uncompress and untar the file nurbs-<version>.tar.gz. 
+     We recommend you to do this in the toolbox folder of Matlab.
 
  * Install the mex-files for the "nurbs" package (OPTIONAL):
-   - download the C functions for matlab "nurbs_mex_files.tar.gz" from
-      http://sourceforge.net/projects/geopdes/files
-   - uncompress and untar the file in the folder "nurbs/inst" of the 
-      nurbs package
+   - uncompress and untar the file nurbs_mex_files.tar.gz in the folder 
+      "nurbs/inst" of the nurbs package
    - in Matlab, go to the folder "nurbs/inst" and run the script file 'compile'.
       This will compile the files and save the nurbs package to your Matlab path
 
  * Install the geopdes_base package:
-   - download the latest release of geopdes_base.tar.gz from 
-       http://geopdes.sf.net/functions/geopdes_base
-   - uncompress and untar the file
+   - uncompress and untar the file geopdes_base-<version>.tar.gz
    - add the directory "geopdes_base/inst" and its subfolders to
       Matlab's default path (see below)
 
@@ -96,7 +100,6 @@ CONTENTS:
     package must be also installed in order to make them work.
 
  * For convenience, you can set the path using the script "geopdes_setpath.m".
-   - download the function from http://sourceforge.net/projects/geopdes/files
    - replace "my_path" by the path of the folder where you saved the packages
    - run the script, typing "geopdes_setpath" in Matlab command window
    
