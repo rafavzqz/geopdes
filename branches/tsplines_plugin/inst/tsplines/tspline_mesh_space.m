@@ -116,28 +116,28 @@ function [msh, space] = tspline_mesh_space (tspline, option, npts)
     end
   end
 
-% This is a weird way to decide which degrees combinations are present in the space
-aux = {tspline.elements.degree};
-mult_deg = cellfun (@str2num, unique (cellfun (@num2str, aux, 'UniformOutput', false)), ...
-        'UniformOutput', false);
+% % This is a weird way to decide which degrees combinations are present in the space
+% aux = {tspline.elements.degree};
+% mult_deg = cellfun (@str2num, unique (cellfun (@num2str, aux, 'UniformOutput', false)), ...
+%         'UniformOutput', false);
   
-% Multivariate Bernstein polynomials
-  if (tspline.ndim == 2)
-    for ii = 1:numel(mult_deg)
-      ideg = mult_deg{ii}(1); jdeg = mult_deg{ii}(2);
-      bernstein_shape_funs{ideg, jdeg} = kron (shape_funs{jdeg}{2}, shape_funs{ideg}{1});
-      bernstein_shape_fun_grad{ideg, jdeg}{1} = kron (shape_funs{jdeg}{2}, shape_fun_ders{ideg}{1});
-      bernstein_shape_fun_grad{ideg, jdeg}{2} = kron (shape_fun_ders{jdeg}{2}, shape_funs{ideg}{1});
-    end
-  elseif (tspline.ndim == 3)
-    for ii = 1:numel(mult_deg)
-      ideg = mult_deg{ii}(1); jdeg = mult_deg{ii}(2); kdeg = mult_deg{ii}(3);
-      bernstein_shape_funs = kron (shape_funs{kdeg}{3}, kron (shape_funs{jdeg}{2}, shape_funs{ideg}{1}));
-      bernstein_shape_fun_grad{ideg, jdeg}{1} = kron (shape_funs{kdeg}{3}, kron (shape_funs{jdeg}{2}, shape_fun_ders{ideg}{1}));
-      bernstein_shape_fun_grad{ideg, jdeg}{2} = kron (shape_funs{kdeg}{3}, kron (shape_fun_ders{jdeg}{2}, shape_funs{ideg}{1}));
-      bernstein_shape_fun_grad{ideg, jdeg}{3} = kron (shape_fun_ders{kdeg}{3}, kron (shape_funs{jdeg}{2}, shape_funs{ideg}{1}));
-    end
-  end
+% % Multivariate Bernstein polynomials
+%   if (tspline.ndim == 2)
+%     for ii = 1:numel(mult_deg)
+%       ideg = mult_deg{ii}(1); jdeg = mult_deg{ii}(2);
+%       bernstein_shape_funs{ideg, jdeg} = kron (shape_funs{jdeg}{2}, shape_funs{ideg}{1});
+%       bernstein_shape_fun_grad{ideg, jdeg}{1} = kron (shape_funs{jdeg}{2}, shape_fun_ders{ideg}{1});
+%       bernstein_shape_fun_grad{ideg, jdeg}{2} = kron (shape_fun_ders{jdeg}{2}, shape_funs{ideg}{1});
+%     end
+%   elseif (tspline.ndim == 3)
+%     for ii = 1:numel(mult_deg)
+%       ideg = mult_deg{ii}(1); jdeg = mult_deg{ii}(2); kdeg = mult_deg{ii}(3);
+%       bernstein_shape_funs{ideg, jdeg, kdeg} = kron (shape_funs{kdeg}{3}, kron (shape_funs{jdeg}{2}, shape_funs{ideg}{1}));
+%       bernstein_shape_fun_grad{ideg, jdeg, kdeg}{1} = kron (shape_funs{kdeg}{3}, kron (shape_funs{jdeg}{2}, shape_fun_ders{ideg}{1}));
+%       bernstein_shape_fun_grad{ideg, jdeg, kdeg}{2} = kron (shape_funs{kdeg}{3}, kron (shape_fun_ders{jdeg}{2}, shape_funs{ideg}{1}));
+%       bernstein_shape_fun_grad{ideg, jdeg, kdeg}{3} = kron (shape_fun_ders{kdeg}{3}, kron (shape_funs{jdeg}{2}, shape_funs{ideg}{1}));
+%     end
+%   end
 
 % For every Bezier element, we start computing the basis functions in the
 %   parent element [-1 1]^n
