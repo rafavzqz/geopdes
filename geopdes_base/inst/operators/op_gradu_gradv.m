@@ -12,7 +12,7 @@
 %
 % OUTPUT:
 %
-%   mat: assembled stiffness matrix
+%   mat:    assembled stiffness matrix
 %   rows:   row indices of the nonzero entries
 %   cols:   column indices of the nonzero entries
 %   values: values of the nonzero entries
