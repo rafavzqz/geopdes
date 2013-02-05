@@ -74,9 +74,9 @@ nel = size (nodes, 2);
 nqn = size (nodes, 1);
 
 nsh = zeros (1, nel);
-for iel=1:nel    
-  s = findspan (mcp, p, nodes(:, iel)', knots); 
-  c = numbasisfun (s, nodes(:, iel)', p, knots); 
+for iel=1:nel
+  s = findspan (mcp, p, nodes(:, iel)', knots);
+  c = numbasisfun (s, nodes(:, iel)', p, knots);
   c = unique(c(:))+1;
   connectivity(1:numel(c), iel) = c;
   nsh(iel) = nnz (connectivity(:,iel));
@@ -87,31 +87,31 @@ nsh_max = max (nsh);
 s     = findspan(mcp, p, nodes, knots);
 tders = basisfunder (s, p, nodes, knots, nders);
 nbf   = numbasisfun (s(:)', nodes(:)', p, knots);
-nbf   = reshape (nbf+1, size(s,1), size(s,2) , p+1);
+nbf   = reshape (nbf+1, size(s,1), size(s,2), p+1);
 
-ders = zeros(numel(nodes),nders+1,nsh_max);
+ders = zeros (numel(nodes), nders+1, nsh_max);
 for inqn = 1:numel(nodes)
   [ir,iel] = ind2sub (size(nodes),inqn);
   ind = find (connectivity(:,iel) == nbf(ir,iel,1)); 
   ders(inqn,:,ind:ind+p) = tders(inqn,:,:);
 end
 
-shape_functions = reshape (ders (:, 1, :), nqn, nel, []);
+shape_functions = reshape (ders(:, 1, :), nqn, nel, []);
 shape_functions = permute (shape_functions, [1, 3, 2]);
 
-sp = struct('nsh_max', nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
-            'connectivity', connectivity, ...
-            'shape_functions', shape_functions, ...
-            'ncomp', 1);
+sp = struct ('nsh_max', nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
+             'connectivity', connectivity, ...
+             'shape_functions', shape_functions, ...
+             'ncomp', 1);
 
 if (gradient)
-  shape_function_gradients = reshape (ders (:, 2, :), nqn, nel, []);
+  shape_function_gradients = reshape (ders(:, 2, :), nqn, nel, []);
   shape_function_gradients = permute (shape_function_gradients, [1, 3, 2]);
   sp.('shape_function_gradients') = shape_function_gradients;
 end
 
 if (hessian)
-  shape_function_hessians = reshape (ders (:, 3, :), nqn, nel, []);
+  shape_function_hessians = reshape (ders(:, 3, :), nqn, nel, []);
   shape_function_hessians = permute (shape_function_hessians, [1, 3, 2]);
   sp.('shape_function_hessians') = shape_function_hessians;
 end
