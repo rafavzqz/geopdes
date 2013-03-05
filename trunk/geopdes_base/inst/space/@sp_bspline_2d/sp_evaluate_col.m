@@ -91,14 +91,16 @@ if (hessian && isfield (msh, 'geo_map_der2'))
   [uxx, uxy, uyy, vxx, vxy, vyy] = ...
         der2_inv_map__ (xu, xv, yu, yv, xuu, xuv, xvv, yuu, yuv, yvv);
 
-  for ii=1:sp.nsh_max   
+  for ii=1:sp.nsh_max
     bu = reshape (sp.shape_function_gradients(1,:,ii,:), msh.nqn, msh.nel);
     bv = reshape (sp.shape_function_gradients(2,:,ii,:), msh.nqn, msh.nel);
     buu = reshape (sp.shape_function_hessians(1,1,:,ii,:), msh.nqn, msh.nel);
     buv = reshape (sp.shape_function_hessians(1,2,:,ii,:), msh.nqn, msh.nel);
     bvv = reshape (sp.shape_function_hessians(2,2,:,ii,:), msh.nqn, msh.nel);
       
-    [bxx, bxy, byy] = der2_basisfun_phys__ (xu(:), xv(:), yu(:), yv(:), uxx(:), uxy(:), uyy(:), vxx(:), vxy(:), vyy(:), buu(:), buv(:), bvv(:), bu(:), bv(:));
+    [bxx, bxy, byy] = der2_basisfun_phys__ (xu(:), xv(:), yu(:), yv(:), ...
+        uxx(:), uxy(:), uyy(:), vxx(:), vxy(:), vyy(:), ...
+        buu(:), buv(:), bvv(:), bu(:), bv(:));
 
     sh = size (sp.shape_function_hessians(1,1,:,ii,:));
     shape_function_hessians(1,1,:,ii,:) = reshape (bxx, sh);
