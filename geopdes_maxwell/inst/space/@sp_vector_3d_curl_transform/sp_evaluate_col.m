@@ -112,20 +112,10 @@ if (curl)
   shape_function_curls(2,:,(sp1_col.nsh_max+sp2_col.nsh_max+1):sp.nsh_max,:)=...
                                    -sp3_col.shape_function_gradients(1,:,:,:); 
 
-  DFcurl = geopdes_prod__ (msh.geo_map_jac, shape_function_curls);
-  for ii=1:sp.nsh_max
-    DFaux = DFcurl(1,:,ii,:);
-    shape_function_curls(1,:,ii,:) = ...
-        reshape(DFaux(:)./jacdet(:), 1, msh.nqn, 1, msh.nel);
-    DFaux = DFcurl(2,:,ii,:);
-    shape_function_curls(2,:,ii,:) = ...
-        reshape(DFaux(:)./jacdet(:), 1, msh.nqn, 1, msh.nel);
-    DFaux = DFcurl(3,:,ii,:);
-    shape_function_curls(3,:,ii,:) = ...
-        reshape(DFaux(:)./jacdet(:), 1, msh.nqn, 1, msh.nel);
-  end
-  sp.shape_function_curls = shape_function_curls;
-  clear DFcurl DFaux
+  jacdet = reshape (jacdet, 1, msh.nqn, 1, msh.nel);
+  shape_function_curls = geopdes_prod__ (msh.geo_map_jac, shape_function_curls);
+  sp.shape_function_curls = bsxfun (@rdivide, shape_function_curls, jacdet);
+
 end
 
 end
