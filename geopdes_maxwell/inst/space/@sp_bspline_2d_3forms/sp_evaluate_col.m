@@ -63,7 +63,7 @@ end
 
 sp = sp_evaluate_col_param (space, msh, varargin{:});
 
-jacdet = reshape (geopdes_det__ (msh.geo_map_jac), msh.nqn, msh.nel);
+jacdet = reshape (geopdes_det__ (msh.geo_map_jac), msh.nqn, 1, msh.nel);
 
 sp.shape_functions = bsxfun (@rdivide, sp.shape_functions, jacdet);
 
