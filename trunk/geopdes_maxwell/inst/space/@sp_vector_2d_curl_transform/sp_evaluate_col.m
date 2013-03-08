@@ -97,11 +97,9 @@ if (curl)
                           squeeze (-sp1_col.shape_function_gradients(2,:,:,:));
   shape_function_curls(:, sp1_col.nsh_max+1:sp.nsh_max, :) = ...
                           squeeze (sp2_col.shape_function_gradients(1,:,:,:));
-  for ii=1:sp.nsh_max
-    shape_function_curls(:,ii,:) = ...
-       squeeze (shape_function_curls(:,ii,:))./jacdet;
-  end
-  sp.shape_function_curls = shape_function_curls;
+
+  jacdet = reshape (jacdet, msh.nqn, 1, msh.nel);
+  sp.shape_function_curls = bsxfun (@rdivide, shape_function_curls, jacdet);
 end
 
 end
