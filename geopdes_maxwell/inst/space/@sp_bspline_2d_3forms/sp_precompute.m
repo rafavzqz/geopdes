@@ -66,12 +66,9 @@ function sp = sp_precompute (sp, msh, varargin)
     if (isempty (msh.geo_map_jac))
       msh = msh_precompute (msh, 'geo_map_jac', true);
     end
-    jacdet = geopdes_det__ (msh.geo_map_jac);
+    jacdet = reshape (geopdes_det__ (msh.geo_map_jac), msh.nqn, msh.nel);
 
-    for ii = 1:sp.nsh_max
-      sp.shape_functions(:,ii,:) = reshape (sp.shape_functions(:,ii,:), ...
-                                                  msh.nqn, msh.nel)./jacdet;
-    end
+    sp.shape_functions = bsxfun (@rdivide, sp.shape_functions, jacdet);
   end
 
 end
