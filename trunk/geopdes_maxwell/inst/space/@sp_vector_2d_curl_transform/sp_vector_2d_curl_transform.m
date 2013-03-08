@@ -85,6 +85,11 @@ function sp = sp_vector_2d_curl_transform (sp1, sp2, msh)
     sp.boundary = [];
   end
 
+  sp.nsh = [];
+  sp.connectivity = [];
+  sp.shape_functions = [];
+  sp.shape_function_curls = [];
+
   sp.constructor = @(MSH) sp_vector_2d_curl_transform ...
                            (sp1.constructor (MSH), sp2.constructor (MSH), MSH);
   sp = class (sp, 'sp_vector_2d_curl_transform');
