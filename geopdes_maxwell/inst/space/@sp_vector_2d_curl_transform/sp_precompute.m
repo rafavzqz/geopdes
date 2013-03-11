@@ -113,7 +113,7 @@ function sp = sp_precompute (sp, msh, varargin)
     sp.shape_function_curls(:, sp1.nsh_max+1:sp.nsh_max, :) = reshape ...
        (sp2.shape_function_gradients(1,:,:,:), msh.nqn, sp2.nsh_max, msh.nel);
 
-    jacdet = reshape (msh.nqn, 1, msh.nel);
+    jacdet = reshape (jacdet, msh.nqn, 1, msh.nel);
     sp.shape_function_curls = bsxfun (@rdivide, sp.shape_function_curls, jacdet);
   end
 
