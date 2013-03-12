@@ -14,7 +14,7 @@
 %     F:  grid points in the physical domain, that is, the mapped points
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011, 2013 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -43,15 +43,14 @@ function [eu, F] = sp_eval_msh (u, space, msh)
     uc_iel = zeros (size (sp_col.connectivity));
     uc_iel(sp_col.connectivity~=0) = ...
           u(sp_col.connectivity(sp_col.connectivity~=0));
-    weight = repmat (reshape (uc_iel, [1, 1, sp_col.nsh_max, msh_col.nel]), ...
-                                  [sp_col.ncomp, msh_col.nqn, 1, 1]);
+    weight = reshape (uc_iel, [1, 1, sp_col.nsh_max, msh_col.nel]);
 
     sp_col.shape_functions = reshape (sp_col.shape_functions, sp_col.ncomp, ...
                                       msh_col.nqn, sp_col.nsh_max, msh_col.nel);
 
     F(:,:,msh_col.elem_list) = msh_col.geo_map;
-    eu(:,:,msh_col.elem_list) = reshape (sum (weight .* sp_col.shape_functions, 3), ...
-                             sp_col.ncomp, msh_col.nqn, msh_col.nel);
+    eu(:,:,msh_col.elem_list) = reshape (sum (bsxfun (@times, weight, ...
+           sp_col.shape_functions), 3), sp_col.ncomp, msh_col.nqn, msh_col.nel);
   end
 
   if (space.ncomp == 1)

@@ -14,7 +14,7 @@
 %     F:  grid points in the physical domain, that is, the mapped points
 % 
 % Copyright (C) 2011 Carlo de Falco
-% Copyright (C) 2011, 2012 Rafael Vazquez
+% Copyright (C) 2011, 2012, 2013 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -49,15 +49,14 @@ function [eu, F] = sp_eval_curl_msh (u, space, msh);
       uc_iel = zeros (size (sp_col.connectivity));
       uc_iel(sp_col.connectivity~=0) = ...
             u(sp_col.connectivity(sp_col.connectivity~=0));
-      weight = repmat (reshape (uc_iel, [1, sp_col.nsh_max, msh_col.nel]), ...
-                                    [msh_col.nqn, 1, 1]);
+      weight = reshape (uc_iel, [1, sp_col.nsh_max, msh_col.nel]);
 
       sp_col.shape_function_curls = reshape (sp_col.shape_function_curls,  ...
                                       msh_col.nqn, sp_col.nsh_max, msh_col.nel);
 
       F(:,:,msh_col.elem_list) = msh_col.geo_map;
-      eu(:,msh_col.elem_list) = reshape (sum (weight .* sp_col.shape_function_curls, 2), ...
-                               msh_col.nqn, msh_col.nel);
+      eu(:,msh_col.elem_list) = reshape (sum (bsxfun (@times, weight, ...
+           sp_col.shape_function_curls), 2), msh_col.nqn, msh_col.nel);
     end
 
   elseif (ndim == 3)
@@ -71,15 +70,15 @@ function [eu, F] = sp_eval_curl_msh (u, space, msh);
       uc_iel = zeros (size (sp_col.connectivity));
       uc_iel(sp_col.connectivity~=0) = ...
             u(sp_col.connectivity(sp_col.connectivity~=0));
-      weight = repmat (reshape (uc_iel, [1, 1, sp_col.nsh_max, msh_col.nel]),...
-                                    [sp_col.ncomp, msh_col.nqn, 1, 1]);
+      weight = reshape (uc_iel, [1, 1, sp_col.nsh_max, msh_col.nel]);
 
       sp_col.shape_function_curls = reshape (sp_col.shape_function_curls, ...
                        sp_col.ncomp, msh_col.nqn, sp_col.nsh_max, msh_col.nel);
 
       F(:,:,msh_col.elem_list) = msh_col.geo_map;
-      eu(:,:,msh_col.elem_list) = reshape (sum (weight .* sp_col.shape_function_curls, 3), ...
-                          sp_col.ncomp, msh_col.nqn, msh_col.nel);
+      eu(:,:,msh_col.elem_list) = reshape (sum (bsxfun (@times, weight, ...
+              sp_col.shape_function_curls), 3), ...
+              sp_col.ncomp, msh_col.nqn, msh_col.nel);
     end
   end
 
