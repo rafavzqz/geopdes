@@ -15,7 +15,7 @@
 %     F:  grid points in the physical domain, that is, the mapped points
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011, 2012 Rafael Vazquez
+% Copyright (C) 2011, 2012, 2013 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -49,10 +49,8 @@ function [stress, F] = sp_eval_stress_msh (u, space, msh, lambda, mu);
     uc_iel = zeros (size (sp_col.connectivity));
     uc_iel(sp_col.connectivity~=0) = ...
           u(sp_col.connectivity(sp_col.connectivity~=0));
-    w_grad = repmat (reshape (uc_iel, [1, 1, 1, sp_col.nsh_max, msh_col.nel]), ...
-                                  [sp_col.ncomp, ndim, msh_col.nqn, 1, 1]);
-    w_div = repmat (reshape (uc_iel, [1, sp_col.nsh_max, msh_col.nel]), ...
-                                  [msh_col.nqn, 1, 1]);
+    w_grad = reshape (uc_iel, [1, 1, 1, sp_col.nsh_max, msh_col.nel]);
+    w_div = reshape (uc_iel, [1, sp_col.nsh_max, msh_col.nel]);
 
     sp_col.shape_function_gradients = ...
            reshape (sp_col.shape_function_gradients, sp_col.ncomp, ndim, ...
@@ -66,11 +64,10 @@ function [stress, F] = sp_eval_stress_msh (u, space, msh, lambda, mu);
       x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
     end
 
-    aux_grad = ...
-       reshape (sum (w_grad .* sp_col.shape_function_gradients, 4), ...
-                             sp_col.ncomp, ndim, msh_col.nqn, msh_col.nel);
-    aux_div = reshape (sum (w_div .* sp_col.shape_function_divs, 2), ...
-                             msh_col.nqn, msh_col.nel);
+    aux_grad = reshape (sum (bsxfun (@times, w_grad, ...
+       sp_col.shape_function_gradients), 4), sp_col.ncomp, ndim, msh_col.nqn, msh_col.nel);
+    aux_div = reshape (sum (bsxfun (@times, w_div, sp_col.shape_function_divs), 2), ...
+                  msh_col.nqn, msh_col.nel);
 
     mu_col = reshape (mu (x{:}), 1, 1, 1, msh_col.nel);
     stress(:,:,:,msh_col.elem_list) = bsxfun (@times, mu_col, ...
