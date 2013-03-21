@@ -29,7 +29,7 @@
 %    shape_function_curls (msh.nqn x nsh_max x msh.nel)      basis function curl evaluated at each quadrature node in each element
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011, 2013 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
