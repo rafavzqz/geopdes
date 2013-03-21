@@ -37,7 +37,7 @@
 %    shape_function_curls (msh_col.nqn x nsh_max x msh_col.nel) basis function gradients evaluated at each quadrature node in each element
 %
 % Copyright (C) 2010 Carlo de Falco
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011, 2013 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
