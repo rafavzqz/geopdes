@@ -1,11 +1,10 @@
-% MSH_GAUSS_NODES: define nodes and weights for a multi-dimensional
-%                                 tensor-product Gauss quadrature rule.
+% MSH_GAUSS_NODES: define nodes and weights for a multi-dimensional tensor-product Gauss quadrature rule.
 %
 %   rule = msh_gauss_nodes (nnodes)
 %
 % INPUT:
 %
-%     nnodes:   number of qadrature nodes along each direction
+%     nnodes:   number of quadrature nodes along each direction
 %
 % OUTPUT:
 %
