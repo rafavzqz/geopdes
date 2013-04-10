@@ -88,7 +88,6 @@ for iptc = 1:npatch
   for ifld = 1:numel (fields)
       geometry(iptc).(fields{ifld}) = nurbs.(fields{ifld});
   end
-  geometry(iptc) = orderfields (geo_load (nurbs), geometry);
 
 % Construct msh structure
   rule      = msh_gauss_nodes (nquad);
