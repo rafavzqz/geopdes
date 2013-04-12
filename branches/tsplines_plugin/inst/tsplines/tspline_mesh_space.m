@@ -157,7 +157,7 @@ function [msh, space] = tspline_mesh_space (tspline, option, npts)
 % Non-rational T-spline basis functions and derivatives in the parent element
       bsp_shape_funs = C * bernstein_shape_funs';
       for idim = 1:tspline.ndim
-        bsp_shape_fun_grad{idim} = C *bernstein_shape_fun_grad{idim}';
+        bsp_shape_fun_grad{idim} = C * bernstein_shape_fun_grad{idim}';
       end
 % Rational T-spline basis functions and derivatives in the parent element
       Wb = weights * bsp_shape_funs;

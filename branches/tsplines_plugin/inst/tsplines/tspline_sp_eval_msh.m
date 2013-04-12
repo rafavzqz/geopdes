@@ -15,7 +15,7 @@
 %     F:  grid points in the physical domain
 %
 % Copyright (C) 2010 Carlo de Falco
-% Copyright (C) 2012 Rafael Vazquez
+% Copyright (C) 2012, 2013 Rafael Vazquez
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -48,29 +48,22 @@ function [eu, F] = tspline_sp_eval_msh (u, sp, msh, option)
 
 
   if (strcmpi (option, 'value'))
-    eu = zeros (sp.ncomp, msh.nqn, msh.nel);
+    weight = reshape (u_conn, [1, 1, sp.nsh_max, msh.nel]);
 % Reshape the function values, to use the same code for scalars and vectors
     sp.shape_functions = reshape (sp.shape_functions, ...
                                   sp.ncomp, msh.nqn, sp.nsh_max, msh.nel);
 
-    for icmp = 1:sp.ncomp
-      eu(icmp,:,:) = sum (bsxfun (@times, weight, ...
-          reshape (sp.shape_functions(icmp,:,:,:), msh.nqn, sp.nsh_max, msh.nel)), 2);
-    end
+    eu = reshape (sum (bsxfun (@times, weight, sp.shape_functions), 3), ...
+                  sp.ncomp, msh.nqn, msh.nel);
 
   elseif (strcmpi (option, 'gradient'))
-    eu = zeros (sp.ncomp, ndim, msh.nqn, msh.nel);
+    weight = reshape (u_conn, [1, 1, 1, sp.nsh_max, msh.nel]);
 % Reshape the function values, to use the same code for scalars and vectors
     sp.shape_function_gradients = reshape (sp.shape_function_gradients, ...
                                   sp.ncomp, ndim, msh.nqn, sp.nsh_max, msh.nel);
 
-    for icmp = 1:sp.ncomp
-      for idim = 1:ndim
-        eu(icmp,idim,:,:) = sum (bsxfun (@times, weight, ...
-                      reshape (sp.shape_function_gradients(icmp,idim,:,:,:), ...
-                      msh.nqn, sp.nsh_max, msh.nel)), 2);
-      end
-    end
+    eu = reshape (sum (bsxfun (@times, weight, sp.shape_function_gradients), 4), ...
+                  sp.ncomp, ndim, msh.nqn, msh.nel);
   end
 
   if (sp.ncomp == 1)
