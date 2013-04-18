@@ -15,6 +15,7 @@
 %           ------------+-----------------+----------------------------------
 %            value      |      true       |  compute shape_functions
 %            gradient   |      false      |  compute shape_function_gradients
+%            hessian    |      false      |  compute shape_function_hessians
 %
 % OUTPUT:
 %
@@ -31,9 +32,12 @@
 %    shape_functions (msh_col.nqn x nsh_max x msh_col.nel)  basis functions evaluated at each quadrature node in each element
 %    shape_function_gradients
 %                (2 x msh_col.nqn x nsh_max x msh_col.nel)  basis function gradients evaluated at each quadrature node in each element
+%    shape_function_hessians
+%            (2 x 2 x msh_col.nqn x nsh_max x msh_col.nel)  basis function hessians evaluated at each quadrature node in each element
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011, 2013 Rafael Vazquez
+% Copyright (C) 2013, Marco Pingaro
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -52,6 +56,7 @@ function sp = sp_evaluate_col (space, msh, varargin)
 
 value = true;
 gradient = false;
+hessian = false;
 if (~isempty (varargin))
   if (~rem (length (varargin), 2) == 0)
     error ('sp_evaluate_col: options must be passed in the [option, value] format');
@@ -61,6 +66,8 @@ if (~isempty (varargin))
       value = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'gradient'))
       gradient = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'hessian'))
+      hessian = varargin {ii+1};
     else
       error ('sp_evaluate_col: unknown option %s', varargin {ii});
     end
@@ -69,10 +76,53 @@ end
 
 sp = sp_evaluate_col_param (space, msh, varargin{:});
 
+if (hessian && isfield (msh, 'geo_map_der2'))
+  xu = reshape (msh.geo_map_jac(1,1,:,:), msh.nqn, msh.nel);
+  xv = reshape (msh.geo_map_jac(1,2,:,:), msh.nqn, msh.nel);
+  yu = reshape (msh.geo_map_jac(2,1,:,:), msh.nqn, msh.nel);
+  yv = reshape (msh.geo_map_jac(2,2,:,:), msh.nqn, msh.nel);
+
+  xuu = reshape (msh.geo_map_der2(1, 1, 1, :, :), [], msh.nel);
+  yuu = reshape (msh.geo_map_der2(2, 1, 1, :, :), [], msh.nel);
+  xuv = reshape (msh.geo_map_der2(1, 1, 2, :, :), [], msh.nel);
+  yuv = reshape (msh.geo_map_der2(2, 2, 1, :, :), [], msh.nel);
+  xvv = reshape (msh.geo_map_der2(1, 2, 2, :, :), [], msh.nel);
+  yvv = reshape (msh.geo_map_der2(2, 2, 2, :, :), [], msh.nel);
+
+  [uxx, uxy, uyy, vxx, vxy, vyy] = ...
+        der2_inv_map__ (xu, xv, yu, yv, xuu, xuv, xvv, yuu, yuv, yvv);
+
+  for ii=1:sp.nsh_max
+    bu = reshape (sp.shape_function_gradients(1,:,ii,:), msh.nqn, msh.nel);
+    bv = reshape (sp.shape_function_gradients(2,:,ii,:), msh.nqn, msh.nel);
+    buu = reshape (sp.shape_function_hessians(1,1,:,ii,:), msh.nqn, msh.nel);
+    buv = reshape (sp.shape_function_hessians(1,2,:,ii,:), msh.nqn, msh.nel);
+    bvv = reshape (sp.shape_function_hessians(2,2,:,ii,:), msh.nqn, msh.nel);
+      
+    [bxx, bxy, byy] = der2_basisfun_phys__ (xu(:), xv(:), yu(:), yv(:), ...
+        uxx(:), uxy(:), uyy(:), vxx(:), vxy(:), vyy(:), ...
+        buu(:), buv(:), bvv(:), bu(:), bv(:));
+
+    sh = size (sp.shape_function_hessians(1,1,:,ii,:));
+    shape_function_hessians(1,1,:,ii,:) = reshape (bxx, sh);
+    shape_function_hessians(1,2,:,ii,:) = reshape (bxy, sh);
+    shape_function_hessians(2,1,:,ii,:) = reshape (bxy, sh);
+    shape_function_hessians(2,2,:,ii,:) = reshape (byy, sh);
+  end
+
+  sp.shape_function_hessians = shape_function_hessians;
+
+  clear shape_function_hessians
+  clear bu bv buu buv bvv xu xv yu yv xuu xuv xvv yuu yuv yvv ...
+           uxx uxy uyy vxx vxy vyy bxx bxy byy
+end
+
 if (gradient)
   JinvT = geopdes_invT__ (msh.geo_map_jac);
   JinvT = reshape (JinvT, [2, 2, msh.nqn, msh.nel]);
   sp.shape_function_gradients = geopdes_prod__ (JinvT, sp.shape_function_gradients);
+elseif (isfield (sp, 'shape_function_gradients'))
+  sp = rmfield (sp, 'shape_function_gradients');
 end
 
 end
