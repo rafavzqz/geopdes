@@ -73,6 +73,7 @@ Solve
  solve_laplace_3d
  solve_laplace_3d_iso
  solve_laplace_eig_2d
+ solve_bilaplace_2d_iso
 Examples
  geopdes_base_examples
  ex_article_15lines
