@@ -94,6 +94,11 @@ function sp = sp_nurbs_2d (varargin)
     boundary(2).dofs = sub2ind ([mcp, ncp], mcp*ones(1,ncp), 1:ncp);
     boundary(3).dofs = sub2ind ([mcp, ncp], 1:mcp, ones(1,mcp));
     boundary(4).dofs = sub2ind ([mcp, ncp], 1:mcp, ncp*ones(1,mcp));
+
+    boundary(1).adjacent_dofs = sub2ind ([mcp, ncp], 2*ones(1,ncp), 1:ncp);
+    boundary(2).adjacent_dofs = sub2ind ([mcp, ncp], (mcp-1)*ones(1,ncp), 1:ncp);
+    boundary(3).adjacent_dofs = sub2ind ([mcp, ncp], 1:mcp, 2*ones(1,mcp));
+    boundary(4).adjacent_dofs = sub2ind ([mcp, ncp], 1:mcp,(ncp-1)*ones(1,mcp));
     
     sp.boundary = boundary;
   else
