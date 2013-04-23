@@ -65,6 +65,8 @@ Operators
  op_gradu_gradv_tp
  op_u_v
  op_u_v_tp
+ op_laplaceu_laplacev
+ op_laplaceu_laplacev_tp
 Solve
  solve_laplace_2d
  solve_laplace_2d_iso
