@@ -37,7 +37,7 @@
 %  geometry: geometry structure (see geo_load)
 %  msh:      mesh object that defines the quadrature rule (see msh_2d)
 %  space:    space object that defines the discrete functions (see sp_vector_2d_curl_transform)
-%  sp_mul:   space object for the multiplier (see sp_bspline_2d_3forms)
+%  sp_mul:   space object for the multiplier (see sp_bspline_2d_nforms)
 %  eigv:     the computed eigenvalues
 %  eigf:     degrees of freedom of the associated eigenfunctions
 %
@@ -88,7 +88,7 @@ sp_u1 = sp_bspline_2d (knots_u1, degree1, msh);
 sp_u2 = sp_bspline_2d (knots_u2, degree2, msh);
 space = sp_vector_2d_curl_transform (sp_u1, sp_u2, msh);
 clear sp_u1 sp_u2
-sp_mul = sp_bspline_2d_3forms (knots_mul, degree-1, msh);
+sp_mul = sp_bspline_2d_nforms (knots_mul, degree-1, msh);
 
 % Assemble the matrices
 sqrt_invmu = @(x, y) sqrt (1./c_magn_perm (x, y));
