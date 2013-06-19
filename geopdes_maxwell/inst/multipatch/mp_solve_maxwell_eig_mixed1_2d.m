@@ -152,6 +152,10 @@ for iref = drchlt_sides
 end
 drchlt_dofs = unique (drchlt_dofs);
 drchlt_dofs_mul = unique (drchlt_dofs_mul);
+if (isempty(drchlt_dofs_mul))
+  drchlt_dofs_mul = ndof_mul;
+end
+
 int_dofs = setdiff (1:ndof, drchlt_dofs);
 int_dofs_mul = setdiff (1:ndof_mul, drchlt_dofs_mul);
 
