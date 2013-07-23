@@ -43,9 +43,6 @@ function [eu, F] = tspline_sp_eval_msh (u, sp, msh, option)
   u_conn = zeros (size (sp.connectivity));
   u_conn(sp.connectivity~=0) = u(sp.connectivity(sp.connectivity~=0));
 
-  weight = reshape (u_conn, [1, sp.nsh_max, msh.nel]);
-  clear u_conn
-
 
   if (strcmpi (option, 'value'))
     weight = reshape (u_conn, [1, 1, sp.nsh_max, msh.nel]);
