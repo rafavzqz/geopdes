@@ -238,7 +238,7 @@ BOUNDARY 8
 #
 #  The geometry is a three-dimensional thick L-shaped domain, with coordinates
 #
-#   Omega = (-1,1)^3 \ [(0,1) x (-1,0) x (0,1)].
+#   Omega = [(-1,1) x (-1,1) x (0,1)] \ [(0,1) x (-1,0) x (0,1)].
 #
 #  It is defined with three patches, which correspond to the coordinates
 #
