@@ -79,7 +79,6 @@ CONTENTS:
 
  * Install the "nurbs" package available on http://octave.sf.net:
    - uncompress and untar the file nurbs-<version>.tar.gz. 
-     We recommend you to do this in the toolbox folder of Matlab.
 
  * Install the mex-files for the "nurbs" package (OPTIONAL):
    - uncompress and untar the file nurbs_mex_files.tar.gz in the folder 
