@@ -119,7 +119,9 @@ for iptc = 1:npatch
   rhs(gnum{iptc}) = rhs(gnum{iptc}) + rhs_loc;
 end
 
+clear rs cs vs
 mat = sparse (rows, cols, vals, ndof, ndof);
+clear rows cols vals
 
 % Apply Neumann boundary conditions
 for iref = nmnn_sides
