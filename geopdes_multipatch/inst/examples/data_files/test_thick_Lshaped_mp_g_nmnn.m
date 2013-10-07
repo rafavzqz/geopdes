@@ -1,6 +1,6 @@
 % TEST_THICL_LSHAPED_MP_G_NMNN: data function for Neumann boundary condition.
 
-function g = test_thick_Lshaped_mp_g_nmnn(x, y, z, ind, k)
+function g = test_thick_Lshaped_mp_g_nmnn(x, y, z, ind)
   switch (ind)
    case {1, 4}
      g = cos(z) .* exp(x) .* (sin(x.*y) + y .* cos(x.*y));
