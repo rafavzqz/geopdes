@@ -5,12 +5,10 @@
 %
 % INPUT:
 %
-%  spu:        class representing the space of trial functions (see sp_bspline_2d)
-%  spv:        class representing the space of test functions (see sp_bspline_2d)
-%  msh:        class defining the domain partition and the quadrature rule (see msh_2d)
-%  coeff:      function handle to compute the reaction coefficient
-%  coeff_sp:   function space of the reaction coefficient
-%  coeff_dofs: weitghs of the dofs in the reaction coefficient
+%  spu:   object representing the space of trial functions (see sp_bspline_2d)
+%  spv:   object representing the space of test functions (see sp_bspline_2d)
+%  msh:   object defining the domain partition and the quadrature rule (see msh_2d)
+%  coeff: function handle to compute the reaction coefficient
 %
 % OUTPUT:
 %
@@ -19,8 +17,7 @@
 %  cols:   column indices of the nonzero entries
 %  values: values of the nonzero entries
 % 
-% Copyright (C) 2011 Rafael Vazquez
-% Copyright (C) 2011, 2013 Carlo de Falco
+% Copyright (C) 2011, Carlo de Falco, Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -35,46 +32,31 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function varargout = op_u_v_tp (space1, space2, msh, varargin)
+function varargout = op_u_v_tp (space1, space2, msh, coeff)
 
-    if (numel (varargin) < 2)
-        fun_coef = true;
-        coeff = varargin{1};
-    elseif (numel (varargin) == 2)
-        fun_coef = false;      
-        [coeff_sp, coeff_dofs] = deal (varargin{:});
-    else
-        error ('op_u_v_tp: wrong number of input parameters');
+  A = spalloc (space2.ndof, space1.ndof, 3*space1.ndof);
+
+  ndim = numel (msh.qn);
+
+  for iel = 1:msh.nel_dir(1)
+    msh_col = msh_evaluate_col (msh, iel);
+    sp1_col = sp_evaluate_col (space1, msh_col);
+    sp2_col = sp_evaluate_col (space2, msh_col);
+
+    for idim = 1:ndim
+      x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
     end
 
-    A = spalloc (space2.ndof, space1.ndof, 3*space1.ndof);
+    A = A + op_u_v (sp1_col, sp2_col, msh_col, coeff (x{:}));
+  end
 
-    ndim = numel (msh.qn);
-    
-    for iel = 1:msh.nel_dir(1)
-        msh_col = msh_evaluate_col (msh, iel);
-        sp1_col = sp_evaluate_col (space1, msh_col);
-        sp2_col = sp_evaluate_col (space2, msh_col);
-        
-        if (fun_coef)
-            for idim = 1:ndim
-                x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
-            end
-        
-            A = A + op_u_v (sp1_col, sp2_col, msh_col, coeff (x{:}));
-        else
-            A = A + op_u_v (sp1_col, sp2_col, msh_col, ...
-                            sp_eval (eps_dofs, eps_sp, msh_col));
-        end
-    end
-    
-    if (nargout == 1)
-        varargout{1} = A;
-    elseif (nargout == 3)
-        [rows, cols, vals] = find (A);
-        varargout{1} = rows;
-        varargout{2} = cols;
-        varargout{3} = vals;
-    end
-    
+  if (nargout == 1)
+    varargout{1} = A;
+  elseif (nargout == 3)
+    [rows, cols, vals] = find (A);
+    varargout{1} = rows;
+    varargout{2} = cols;
+    varargout{3} = vals;
+  end
+
 end
