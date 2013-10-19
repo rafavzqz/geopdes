@@ -38,8 +38,8 @@ OUTPUT:\n\
   
   octave_value_list retval;
 
-  geopdes_mesh  msh (args(1).map_value ());
-  geopdes_space sp  (args(0).map_value (), msh);
+  geopdes_mesh  msh (args(1).scalar_map_value ());
+  geopdes_space sp  (args(0).scalar_map_value (), msh);
 
   if (!error_state)
     {
