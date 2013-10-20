@@ -126,7 +126,7 @@ protected:
   octave_idx_type *nsh_rep, *connectivity_rep;
 
   Array<octave_idx_type> nsh_rep_v, connectivity_rep_v;
-  octave_scala_map sp;
+  octave_scalar_map sp;
 
 public:
   geopdes_space (const octave_scalar_map& refsp, const geopdes_mesh& msh): geopdes_mesh (msh) 
