@@ -36,9 +36,9 @@ DEFUN_DLD(op_div_v_q, args, nargout,"OP_DIV_V_Q: assemble the matrix B = [b(i,j)
   
   octave_value_list retval;
 
-  geopdes_mesh  msh (args(2).map_value ());
-  geopdes_space spv (args(0).map_value (), msh);
-  geopdes_space spq (args(1).map_value (), msh);
+  geopdes_mesh  msh (args(2).scalar_map_value ());
+  geopdes_space spv (args(0).scalar_map_value (), msh);
+  geopdes_space spq (args(1).scalar_map_value (), msh);
 
   if (!error_state)
     {
@@ -55,7 +55,6 @@ DEFUN_DLD(op_div_v_q, args, nargout,"OP_DIV_V_Q: assemble the matrix B = [b(i,j)
       octave_idx_type conn_v[nsh_max_spv];
       octave_idx_type conn_q[nsh_max_spq];
 
-#if OCTAVE_API_VERSION_NUMBER>37
       dim_vector dims (nel * nsh_max_spv * nsh_max_spq, 1);
 
       Array <octave_idx_type> I (dims, 0);
@@ -66,16 +65,6 @@ DEFUN_DLD(op_div_v_q, args, nargout,"OP_DIV_V_Q: assemble the matrix B = [b(i,j)
 
       Array <double> V (dims, 0.0);    
       double* Vptr = V.fortran_vec ();
-#else
-      ColumnVector I (nel * nsh_max_spv * nsh_max_spq, 0);
-      double* Iptr = I.fortran_vec ();
-
-      ColumnVector J (nel * nsh_max_spv * nsh_max_spq, 0);
-      double* Jptr = J.fortran_vec ();
-
-      ColumnVector V (nel * nsh_max_spv * nsh_max_spq, 0.0);
-      double* Vptr = V.fortran_vec ();
-#endif
 
       SparseMatrix mat;
 
