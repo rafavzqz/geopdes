@@ -21,7 +21,7 @@
 class geopdes_space_elasticity: public geopdes_space
 {
 public:
-  geopdes_space_elasticity (const Octave_map& refsp, const geopdes_mesh& msh): geopdes_space (refsp, msh) {};
+  geopdes_space_elasticity (const octave_scalar_map& refsp, const geopdes_mesh& msh): geopdes_space (refsp, msh) {};
   inline double shape_function_strain_tensor (octave_idx_type i, octave_idx_type j, octave_idx_type k, 
                                               octave_idx_type m, octave_idx_type n) const
   {
