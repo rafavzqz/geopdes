@@ -142,7 +142,7 @@ for iside = symm_sides
           (all (abs (normal_comp2) < 1e-10)))
     symm_dofs = union (symm_dofs, sp.boundary(iside).comp_dofs{3});
   else
-    error ('ex_nurbs_linear_elasticity_3d: We have only implemented the symmetry condition for boundaries parallel to the axes')
+    error ('solve_linear_elasticity_3d: We have only implemented the symmetry condition for boundaries parallel to the axes')
   end
 end
 
