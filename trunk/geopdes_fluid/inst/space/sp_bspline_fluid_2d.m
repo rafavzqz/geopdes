@@ -67,7 +67,9 @@ switch (lower (element_name))
     sp_scalar = sp_bspline_2d (knots_v, degree_v, msh);
     spv = sp_vector_2d (sp_scalar, sp_scalar, msh);
 
-    PI = speye (spp.ndof);
+    if (nargout == 3)
+      PI = speye (spp.ndof);
+    end
   case {'sg'}
     degree_v = degree_p + 1;
     regularity_v = regularity_p+1;
@@ -76,7 +78,9 @@ switch (lower (element_name))
     sp_scalar = sp_bspline_2d (knots_v, degree_v, msh);
     spv = sp_vector_2d (sp_scalar, sp_scalar, msh);
 
-    PI = speye (spp.ndof);
+    if (nargout == 3)
+      PI = speye (spp.ndof);
+    end
   case {'ndl'}
     degree_v1 = degree_p+1;
     degree_v2 = degree_p+1;
@@ -88,7 +92,9 @@ switch (lower (element_name))
     sp2 = sp_bspline_2d (knots_v2, degree_v2, msh);
     spv = sp_vector_2d_piola_transform (sp1, sp2, msh);
 
-    PI = speye (spp.ndof);
+    if (nargout == 3)
+      PI = speye (spp.ndof);
+    end
   case {'rt'}
     degree_v1 = [degree_p(1)+1 degree_p(2)];
     degree_v2 = [degree_p(1) degree_p(2)+1];
@@ -101,7 +107,9 @@ switch (lower (element_name))
     sp2 = sp_bspline_2d (knots_v2, degree_v2, msh);
     spv = sp_vector_2d_piola_transform (sp1, sp2, msh);
 
-    PI = b2nst__ (spp, knotsp, degree_p, msh);
+    if (nargout == 3)
+      PI = b2nst__ (spp, knotsp, degree_p, msh);
+    end
   otherwise
     error ('sp_bspline_fluid_2d: unknown element type')
 end

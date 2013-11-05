@@ -65,7 +65,9 @@ switch (lower (element_name))
     sp_scalar = sp_bspline_3d (knots_v, degree_v, msh);
     spv = sp_vector_3d (sp_scalar, sp_scalar, sp_scalar, msh);
 
-    PI = speye (spp.ndof);
+    if (nargout == 3)
+      PI = speye (spp.ndof);
+    end
   case {'sg'}
     degree_v = degree_p + 1;
     regularity_v = regularity_p+1;
@@ -74,7 +76,9 @@ switch (lower (element_name))
     sp_scalar = sp_bspline_3d (knots_v, degree_v, msh);
     spv = sp_vector_3d (sp_scalar, sp_scalar, sp_scalar, msh);
 
-    PI = speye (spp.ndof);
+    if (nargout == 3)
+      PI = speye (spp.ndof);
+    end
   case {'ndl', 'rt'}
     error ('NDL and RT elements have not been implemented in 3D yet')
   otherwise
