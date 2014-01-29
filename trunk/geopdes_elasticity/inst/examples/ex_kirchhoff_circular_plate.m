@@ -70,5 +70,5 @@ axis equal
 % Max Deflection (in the same points used for plotting)
 max_displacement = min (eu(:));
 exact_solution = -5*Radius^4/(64*D);
-fprintf('Computed solution, max. displacement = %s \n', max_displacement);
-fprintf('Exact solution, max. displacement = %s \n', exact_solution);
+fprintf('Computed solution, max. displacement = %e \n', max_displacement);
+fprintf('Exact solution, max. displacement = %e \n', exact_solution);

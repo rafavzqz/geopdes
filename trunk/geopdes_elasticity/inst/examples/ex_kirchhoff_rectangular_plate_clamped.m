@@ -59,6 +59,5 @@ title ('Numerical solution')
 axis equal
 
 % Max Deflection (in the same points used for plotting)
-format long
 max_displacement = min (eu(:));
-fprintf ('Computed solution, max. displacement = %s \n', max_displacement);
+fprintf ('Computed solution, max. displacement = %e \n', max_displacement);
