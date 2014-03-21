@@ -84,14 +84,14 @@ rule        = msh_gauss_nodes (nquad);
 msh         = msh_3d (msh_breaks, qn, qw, geometry); 
 
 % Compute the space structures
-[space_v, space_p, PI] = sp_bspline_fluid_3d (element_name, ...
+[space_v, space_p] = sp_bspline_fluid_3d (element_name, ...
                      geometry.nurbs.knots, nsub, degree, regularity, msh);
 
 % Assemble the matrices
 A = op_gradu_gradv_tp (space_v, space_v, msh, viscosity);
-B = PI' * op_div_v_q_tp (space_v, space_p, msh);
+B = op_div_v_q_tp (space_v, space_p, msh);
 M = op_u_v_tp (space_p, space_p, msh, @(x, y, z) ones (size (x)));
-E = sum (M, 1) * PI / sum (sum (M));
+E = sum (M, 1) / sum (sum (M));
 F = op_f_v_tp (space_v, msh, f);
 
 vel   = zeros (space_v.ndof, 1);
@@ -130,7 +130,7 @@ if (isempty (nmnn_sides))
 
   sol = mat \ rhs;
   vel(int_dofs) = sol(1:nintdofs);
-  press = PI * sol(1+nintdofs:end-1);
+  press = sol(1+nintdofs:end-1);
 else
 % With natural boundary condition, the constraint on the pressure is not needed.
   mat = [ A(int_dofs, int_dofs), -B(:,int_dofs).';

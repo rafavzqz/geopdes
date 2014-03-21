@@ -1,6 +1,6 @@
 % SP_BSPLINE_FLUID_3D: Construct different pair of B-Splines spaces on the physical domain for fluid problems.
 %
-%   [spv, spp, PI] = sp_bspline_fluid_3d (elem_name, knots, nsub, ...
+%   [spv, spp] = sp_bspline_fluid_3d (elem_name, knots, nsub, ...
 %                                              degreep, regularity, msh)
 %
 % INPUTS:
@@ -20,8 +20,6 @@
 %
 %   spv: object representing the discrete velocity function space (see sp_vector_3d)
 %   spp: object representing the discrete pressure function space (see sp_bspline_3d)
-%   PI:  a projection matrix for the application of boundary conditions
-%         for Raviart-Thomas spaces. The identity matrix in all other cases.
 %
 %   For more details, see:
 %      A. Buffa, C. de Falco, G. Sangalli, 
@@ -49,7 +47,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [spv, spp, PI] = sp_bspline_fluid_3d (element_name, ...
+function [spv, spp] = sp_bspline_fluid_3d (element_name, ...
                            knots, nsub_p, degree_p, regularity_p, msh)
 
 % The pressure space is the same in all the cases
@@ -65,9 +63,6 @@ switch (lower (element_name))
     sp_scalar = sp_bspline_3d (knots_v, degree_v, msh);
     spv = sp_vector_3d (sp_scalar, sp_scalar, sp_scalar, msh);
 
-    if (nargout == 3)
-      PI = speye (spp.ndof);
-    end
   case {'sg'}
     degree_v = degree_p + 1;
     regularity_v = regularity_p+1;
@@ -76,9 +71,6 @@ switch (lower (element_name))
     sp_scalar = sp_bspline_3d (knots_v, degree_v, msh);
     spv = sp_vector_3d (sp_scalar, sp_scalar, sp_scalar, msh);
 
-    if (nargout == 3)
-      PI = speye (spp.ndof);
-    end
   case {'ndl', 'rt'}
     error ('NDL and RT elements have not been implemented in 3D yet')
   otherwise
