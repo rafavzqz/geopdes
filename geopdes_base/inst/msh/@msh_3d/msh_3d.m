@@ -86,10 +86,9 @@ function msh = msh_3d (breaks, qn, qw, geo, varargin)
   msh.nel = prod (msh.nel_dir);
   msh.nelcol = msh.nel_dir(2) * msh.nel_dir(3);
 
-  qnu = qn{1};  qnv = qn{2}; qnw = qn{3};
-  msh.nqn_dir(1) = size (qnu,1); 
-  msh.nqn_dir(2) = size (qnv,1);
-  msh.nqn_dir(3) = size (qnw,1);
+  msh.nqn_dir(1) = size (qn{1},1); 
+  msh.nqn_dir(2) = size (qn{2},1);
+  msh.nqn_dir(3) = size (qn{3},1);
   msh.nqn  = prod (msh.nqn_dir);
   
   if (boundary)

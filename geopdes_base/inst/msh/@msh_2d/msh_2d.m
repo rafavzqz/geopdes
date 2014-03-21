@@ -92,7 +92,6 @@ function msh = msh_2d (breaks, qn, qw, geo, varargin)
   msh.nel = msh.nel_dir(1) * msh.nel_dir(2);
   msh.nelcol = msh.nel_dir(2);
 
-  qnu = qn{1};  qnv = qn{2};
   msh.nqn_dir(1) = size (qn{1},1); 
   msh.nqn_dir(2) = size (qn{2},1);
   msh.nqn  = prod (msh.nqn_dir);
