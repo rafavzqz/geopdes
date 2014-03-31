@@ -49,8 +49,9 @@ press = zeros (space_p.ndof, 1);
 
 % Apply Dirichlet boundary conditions without using the L2-projection
 % This is necessary to have a divergence exactly equal to zero
-vel(space_v.boundary(3).comp_dofs{1}) = -1;
-vel(space_v.boundary(4).comp_dofs{1}) = 1;
+% We divide by the aspect ration, because the Piola transform removes
+vel(space_v.boundary(3).comp_dofs{1}) = -1/aspect_ratio;
+vel(space_v.boundary(4).comp_dofs{1}) = 1/aspect_ratio;
 
 drchlt_dofs = [];
 for iside = drchlt_sides; 
