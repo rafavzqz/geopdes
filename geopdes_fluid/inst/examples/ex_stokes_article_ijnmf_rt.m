@@ -6,7 +6,7 @@
 %      Internat. J. Numer. Methods Fluids, 2011
 
 % Physical domain, defined from the aspect ratio using the NURBS toolbox
-aspect_ratio = 0.7;
+aspect_ratio = 0.9;
 nrb_square = nrb4surf ([0 0], [1 0], [0 1], [1 1]);
 geo_name = nrbtform (nrb_square, vecscale ([1 aspect_ratio]));
 
