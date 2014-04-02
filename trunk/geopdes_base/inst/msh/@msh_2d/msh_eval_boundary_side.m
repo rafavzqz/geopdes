@@ -59,17 +59,65 @@ function msh_side = msh_eval_boundary_side (msh, iside)
   msh_side.geo_map = reshape (F, size (msh_side.quad_nodes));
   msh_side.geo_map_jac = reshape(jac, 2, 2, msh_side.nqn, msh_side.nel);
   msh_side.jacdet = geopdes_norm__ (squeeze (msh_side.geo_map_jac(:,ind,:,:)));
-
-  [JinvT, jacdet] = geopdes_invT__ (msh_side.geo_map_jac);
+  clear F jac
+  
+  [JinvT, ~] = geopdes_invT__ (msh_side.geo_map_jac);
   JinvT = reshape (JinvT, [2, 2, msh_side.nqn, msh_side.nel]);
-
   normal = zeros (2, msh_side.nqn, msh_side.nel);
   normal(ind2,:,:) = (-1)^iside;
   normal = reshape (normal, [2, msh_side.nqn, 1, msh_side.nel]);
   normal = geopdes_prod__ (JinvT, normal);
   normal = reshape (normal, [2, msh_side.nqn, msh_side.nel]);
   norms = repmat (reshape (geopdes_norm__ (normal), [1, msh_side.nqn, msh_side.nel]), [2 1 1]);
-  msh_side.normal = normal ./ norms;
+  %Now normalize
+  normal = normal ./ norms;
+  msh_side.normal = normal;
+  clear JinvT;
+
+
+  %(ADDED) msh_side should store geo_map_der2 cause of Piola transformation
+  % of the basis functions on physical domain, that needs the second
+  % derivative of the Geometric Mapping.
+%   der2 = feval (msh.map_der2, [qn1(:), qn2(:)]');
+%   msh_side.geo_map_der2 = reshape (der2, 2, 2, 2, msh_side.nqn, msh_side.nel);
+%   clear der2
+
+  
+%(ADDED)
+  if(iside == 1)
+      xi_span_charlen = 0.5*(msh.breaks{1}(2) - msh.breaks{1}(1)).*ones(1,msh.nel_dir(2));
+      eta_span_charlen = 0.5*diff(msh.breaks{2});
+  elseif(iside == 2)
+      xi_span_charlen = 0.5*(msh.breaks{1}(end) - msh.breaks{1}(end-1)).*ones(1,msh.nel_dir(2));
+      eta_span_charlen = 0.5*diff(msh.breaks{2});
+  elseif(iside == 3)
+      xi_span_charlen = 0.5*diff(msh.breaks{1});
+      eta_span_charlen = 0.5*(msh.breaks{2}(2) - msh.breaks{2}(1)).*ones(1,msh.nel_dir(1));
+  else
+      xi_span_charlen = 0.5*diff(msh.breaks{1});
+      eta_span_charlen = 0.5*(msh.breaks{2}(end) - msh.breaks{2}(end-1)).*ones(1,msh.nel_dir(1));
+  end
+
+  %(ADDED) In order to compute Nitsches Method we need a characteristic 
+  % length of the elements on the (physical) boundary. Computed as in
+  % "Weak Dirichlet boundary condition for wall-bounded turbulent flows".
+  geo_map_jac = msh_side.geo_map_jac;
+  
+  for iel = 1:msh_side.nel
+      for nquad = 1:msh_side.nqn
+          geo_map_jac(:,1,nquad,iel) = xi_span_charlen(iel).*geo_map_jac(:,1,nquad,iel);
+          geo_map_jac(:,2,nquad,iel) = eta_span_charlen(iel).*geo_map_jac(:,2,nquad,iel);
+      end
+  end
+  
+  %[Jinv, ~] = geopdes_inv__ (msh_side.geo_map_jac);
+  [Jinv, ~] = geopdes_inv__ (geo_map_jac);
+  Jinv = reshape (Jinv, [2, 2, msh_side.nqn, msh_side.nel]);
+  normal = reshape (normal, [2, msh_side.nqn, 1, msh_side.nel]);
+  normal = geopdes_prod__ (Jinv, normal);
+  normal = reshape (normal, [2, msh_side.nqn, msh_side.nel]);
+  norms = geopdes_norm__ (normal);
+  msh_side.charlen = (2./norms);
   clear normal norms
 
 end
