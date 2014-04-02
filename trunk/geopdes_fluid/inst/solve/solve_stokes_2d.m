@@ -49,6 +49,7 @@
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011, Andrea Bressan, Rafael Vazquez
+% Copyright (C) 2014  Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -86,14 +87,14 @@ rule               = msh_gauss_nodes (nquad);
 msh                = msh_2d (msh_breaks, qn, qw, geometry, 'der2', der2);
 
 % Compute the space structures
-[space_v, space_p, PI] = sp_bspline_fluid_2d (element_name, ...
+[space_v, space_p] = sp_bspline_fluid_2d (element_name, ...
                 geometry.nurbs.knots, nsub, degree, regularity, msh);
 
 % Assemble the matrices
 A = op_gradu_gradv_tp (space_v, space_v, msh, viscosity); 
-B = PI' * op_div_v_q_tp (space_v, space_p, msh);
+B = op_div_v_q_tp (space_v, space_p, msh);
 M = op_u_v_tp (space_p, space_p, msh, @(x,y) ones (size (x))); 
-E = sum (M, 1) * PI / sum (sum (M)); 
+E = sum (M, 1) / sum (sum (M)); 
 F = op_f_v_tp (space_v, msh, f);
 
 vel   = zeros (space_v.ndof, 1);
@@ -112,31 +113,40 @@ for iside = nmnn_sides
   rhs_nmnn(sp_side.dofs) = rhs_nmnn(sp_side.dofs) + op_f_v (sp_side, msh_side, gval);
 end
 
-% Apply Dirichlet  boundary conditions
-[vel_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space_v, msh, h, drchlt_sides);
+% Apply Dirichlet  boundary conditions. For RT elements the normal
+%  component is imposed strongly, and the tangential one is imposed weakly.
+if (strcmpi (element_name, 'RT'))
+  [N_mat, N_rhs, vel_drchlt, drchlt_dofs] = ...
+    sp_weak_drchlt_bc (space_v, msh, geometry, der2, drchlt_sides, h, viscosity, Cpen);
+else
+  [vel_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space_v, msh, h, drchlt_sides);
+  N_mat = sparse (space_v.ndof, space_v.ndof, 1);
+  N_rhs = zeros (space_v.ndof, 1);
+end
+
 vel(drchlt_dofs) = vel_drchlt;
 int_dofs = setdiff (1:space_v.ndof, drchlt_dofs);
 nintdofs = numel (int_dofs);
-rhs_dir  = -A(int_dofs, drchlt_dofs)*vel(drchlt_dofs);
+rhs_dir  = -A(int_dofs, drchlt_dofs)*vel(drchlt_dofs) + N_mat(int_dofs,drchlt_dofs)*vel(drchlt_dofs);
 
 % Solve the linear system
 if (isempty (nmnn_sides))
 % If all the sides are Dirichlet, the pressure is zero averaged.
-  mat = [ A(int_dofs, int_dofs), -B(:,int_dofs).',          sparse(nintdofs, 1);
-         -B(:,int_dofs),          sparse(size (B,1), size(B,1)), E';
-          sparse(1, nintdofs),    E,                             0];
-  rhs = [F(int_dofs) + rhs_dir; 
+  mat = [ A(int_dofs, int_dofs) - N_mat(int_dofs, int_dofs), -B(:,int_dofs).',              sparse(nintdofs, 1);
+         -B(:,int_dofs),                                     sparse(size (B,1), size(B,1)), E';
+          sparse(1, nintdofs),                               E,                             0];
+  rhs = [F(int_dofs) + N_rhs(int_dofs) + rhs_dir; 
          B(:, drchlt_dofs)*vel(drchlt_dofs);
          0];
 
   sol = mat \ rhs;
   vel(int_dofs) = sol(1:nintdofs);
-  press = PI * sol(1+nintdofs:end-1);
+  press = sol(1+nintdofs:end-1);
 else
 % With natural boundary condition, the constraint on the pressure is not needed.
-  mat = [ A(int_dofs, int_dofs), -B(:,int_dofs).';
-         -B(:,int_dofs),          sparse(size (B,1), size (B,1))];
-  rhs = [F(int_dofs) + rhs_dir + rhs_nmnn(int_dofs);
+  mat = [ A(int_dofs, int_dofs) - N_mat(int_dofs, int_dofs), -B(:,int_dofs).';
+         -B(:,int_dofs),                                     sparse(size (B,1), size (B,1))];
+  rhs = [F(int_dofs) + N_rhs(int_dofs) + rhs_dir + rhs_nmnn(int_dofs);
          B(:, drchlt_dofs)*vel(drchlt_dofs)];
 
   sol = mat \ rhs;
