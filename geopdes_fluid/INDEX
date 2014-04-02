@@ -14,6 +14,8 @@ Solve
 Operators
  op_div_v_q
  op_div_v_q_tp
+ op_udotn_vdotn
+ op_fdotn_vdotn
 Examples
  ex_stokes_square_th
  ex_stokes_square_ndl
