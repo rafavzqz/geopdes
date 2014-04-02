@@ -22,7 +22,8 @@
 %     jacdet        (nqn x nel)             determinant of the Jacobian evaluated at the quadrature points
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011, 2014 Rafael Vazquez
+% Copyright (C) 2014 Adriano Cortes
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
