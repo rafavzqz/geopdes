@@ -176,6 +176,14 @@ CONTENTS:
 
 Below is a list of the main changes introduced with each new release
 
+Version geopdes_***-2.0.4
+* geopdes_base, added functions for the bilaplacian: op_laplaceu_laplacev, op_laplaceu_laplacev_tp, solve_bilaplace_2d_iso.
+* geopdes_elasticity, added functions for the bilaplacian: op_gradgradu_gradgradv, op_gradgradu_gradgradv_tp, solve_bilaplace_gradgrad_2d_iso, ex_kirchhoff_*.
+* geopdes_fluid, added functions for the Nitsche's method: sp_weak_dirichlet_bc, op_udotn_vdotn, op_fdotn_vdotn, op_gradv_n_u, op_gradv_n_f.
+* solve_stokes_2d, sp_bspline_fluid_2d: modified to use Nitsche's method.
+* msh_2d/msh_eval_boundary_side: added computation of the normal characteristic length.
+* sp_eval_stress: modified to work also with the Piola transformation.
+
 Version geopdes_***-2.0.3
 
 * In geopdes.h, "quad_nodes" replaced by "geo_map_jac" to check the dimension.
