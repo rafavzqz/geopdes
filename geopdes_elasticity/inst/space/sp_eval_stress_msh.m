@@ -30,7 +30,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [stress, F] = sp_eval_stress_msh (u, space, msh, lambda, mu);
+function [stress, F] = sp_eval_stress_msh (u, space, msh, lambda, mu)
 
   if (space.ncomp == 1)
     error ('sp_eval_stress_msh: the stress is not computed for scalars')
