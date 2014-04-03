@@ -38,6 +38,11 @@ function [stress, F] = sp_eval_stress (u, space, geometry, npts, lambda, mu)
   if (space.ncomp == 1)
     error ('sp_eval_stress: the stress is not computed for scalars')
   end
+  
+  der2 = false;
+  if (isa (space, 'sp_vector_2d_piola_transform'))
+    der2 = true;
+  end
 
   ndim = numel (npts);
 
@@ -62,7 +67,7 @@ function [stress, F] = sp_eval_stress (u, space, geometry, npts, lambda, mu)
   end
 
   if (ndim == 2)
-    msh = msh_2d ({brk{1}, brk{2}}, pts, [], geometry, 'boundary', false);
+    msh = msh_2d ({brk{1}, brk{2}}, pts, [], geometry, 'boundary', false, 'der2', der2);
   elseif (ndim == 3)
     msh = msh_3d ({brk{1}, brk{2}, brk{3}}, pts, [], geometry, 'boundary', false);
   end
