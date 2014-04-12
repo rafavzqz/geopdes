@@ -99,23 +99,23 @@ v1 = 1./det.*(xu.*u1h + xv.*u2h + xw.*u3h);
 v2 = 1./det.*(yu.*u1h + yv.*u2h + yw.*u3h);
 v3 = 1./det.*(zu.*u1h + zv.*u2h + zw.*u3h);
 
-v1x = (-detdx*v1 + 
+v1x = (-detdx.*v1 + ...
 (xdux.*u1h + xu.*u1hx + xdvx.*u2h + xv.*u2hx + xdwx.*u3h + xw.*u3hx))./det;
-v1y = (-detdy*v1 + 
+v1y = (-detdy.*v1 + ...
 (xduy.*u1h + xu.*u1hy + xdvy.*u2h + xv.*u2hy + xdwy.*u3h + xw.*u3hy))./det;
-v1z = (-detdz*v1 + 
+v1z = (-detdz.*v1 + ...
 (xduz.*u1h + xu.*u1hz + xdvz.*u2h + xv.*u2hz + xdwz.*u3h + xw.*u3hz))./det;
-v2x = (-detdx*v2 + 
+v2x = (-detdx.*v2 + ...
 (ydux.*u1h + yu.*u1hx + ydvx.*u2h + yv.*u2hx + ydwx.*u3h + yw.*u3hx))./det;
-v2y = (-detdy*v2 + 
+v2y = (-detdy.*v2 + ...
 (yduy.*u1h + yu.*u1hy + ydvy.*u2h + yv.*u2hy + ydwy.*u3h + yw.*u3hy))./det;
-v2z = (-detdz*v2 + 
+v2z = (-detdz.*v2 + ...
 (yduz.*u1h + yu.*u1hz + ydvz.*u2h + yv.*u2hz + ydwz.*u3h + yw.*u3hz))./det;
-v3x = (-detdx*v3 + 
+v3x = (-detdx.*v3 + ...
 (zdux.*u1h + zu.*u1hx + zdvx.*u2h + zv.*u2hx + zdwx.*u3h + zw.*u3hx))./det;
-v3y = (-detdy*v3 + 
+v3y = (-detdy.*v3 + ...
 (zduy.*u1h + zu.*u1hy + zdvy.*u2h + zv.*u2hy + zdwy.*u3h + zw.*u3hy))./det;
-v3z = (-detdz*v3 + 
+v3z = (-detdz.*v3 + ...
 (zduz.*u1h + zu.*u1hz + zdvz.*u2h + zv.*u2hz + zdwz.*u3h + zw.*u3hz))./det;
 
 end
