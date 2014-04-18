@@ -75,16 +75,8 @@ function msh_side = msh_eval_boundary_side (msh, iside)
   msh_side.normal = normal;
   clear JinvT;
 
-
-  %(ADDED) msh_side should store geo_map_der2 cause of Piola transformation
-  % of the basis functions on physical domain, that needs the second
-  % derivative of the Geometric Mapping.
-%   der2 = feval (msh.map_der2, [qn1(:), qn2(:)]');
-%   msh_side.geo_map_der2 = reshape (der2, 2, 2, 2, msh_side.nqn, msh_side.nel);
-%   clear der2
-
-  
-%(ADDED)
+% Computation of the normal characteristic length for Nitsche's method
+% Computed as in "Weak Dirichlet boundary condition for wall-bounded turbulent flows".
   if(iside == 1)
       xi_span_charlen = 0.5*(msh.breaks{1}(2) - msh.breaks{1}(1)).*ones(1,msh.nel_dir(2));
       eta_span_charlen = 0.5*diff(msh.breaks{2});
@@ -99,9 +91,6 @@ function msh_side = msh_eval_boundary_side (msh, iside)
       eta_span_charlen = 0.5*(msh.breaks{2}(end) - msh.breaks{2}(end-1)).*ones(1,msh.nel_dir(1));
   end
 
-  %(ADDED) In order to compute Nitsches Method we need a characteristic 
-  % length of the elements on the (physical) boundary. Computed as in
-  % "Weak Dirichlet boundary condition for wall-bounded turbulent flows".
   geo_map_jac = msh_side.geo_map_jac;
   
   for iel = 1:msh_side.nel
@@ -111,7 +100,6 @@ function msh_side = msh_eval_boundary_side (msh, iside)
       end
   end
   
-  %[Jinv, ~] = geopdes_inv__ (msh_side.geo_map_jac);
   [Jinv, ~] = geopdes_inv__ (geo_map_jac);
   Jinv = reshape (Jinv, [2, 2, msh_side.nqn, msh_side.nel]);
   normal = reshape (normal, [2, msh_side.nqn, 1, msh_side.nel]);
