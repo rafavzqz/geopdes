@@ -146,6 +146,23 @@ for iptc = 1:npatches
     geom(iptc).nurbs.coefs(3,:,:,:) = cp_z;
     geom(iptc).nurbs.coefs(4,:,:,:) = weights;
 
+   case 1
+    line = fgetl (fid);
+    while (line(1) == '#')
+      line = fgetl (fid);
+    end
+    cp_x = str2num (line);
+
+    line = fgetl (fid);
+    while (line(1) == '#')
+      line = fgetl (fid);
+    end
+    weights = str2num (line);
+
+    geom(iptc).nurbs.coefs(1,:,:,:) = cp_x;
+    geom(iptc).nurbs.coefs(2,:,:,:) = 0;
+    geom(iptc).nurbs.coefs(3,:,:,:) = 0;
+    geom(iptc).nurbs.coefs(4,:,:,:) = weights;
   end
   
   if (dim == 2)
@@ -155,6 +172,10 @@ for iptc = 1:npatches
   elseif (dim == 3)
     geom(iptc).map     = @(PTS) geo_3d_nurbs (geom(iptc).nurbs, PTS, 0);
     geom(iptc).map_der = @(PTS) geo_3d_nurbs (geom(iptc).nurbs, PTS, 1);
+  elseif (dim == 1)
+    geom(iptc).nurbs.knots = [geom(iptc).nurbs.knots{:}];
+    geom(iptc).map     = @(PTS) geo_1d_nurbs (geom(iptc).nurbs, PTS, 0);
+    geom(iptc).map_der = @(PTS) geo_1d_nurbs (geom(iptc).nurbs, PTS, 1);
   end
 end
 
