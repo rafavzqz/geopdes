@@ -18,6 +18,7 @@
 %   The structure may contain further information. See the documentation.
 %
 % Copyright (C) 2010 Carlo de Falco
+% Copyright (C) 2013 Rafael Vazquez
 % 
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -32,9 +33,6 @@
 % You should have received a copy of the GNU General Public License
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
-%
-% Author: Carlo de Falco <cdf@users.sourceforge.net>
-% Created: 2010-05-06
 
 function geometry = geo_load (in)
 
@@ -55,16 +53,37 @@ function geometry = geo_load (in)
     if (strcmpi (in(end-3:end), '.mat'))     
       tmp  = load (in);
       geometry.nurbs   = tmp.geo;
-      if (numel (geometry.nurbs.knots) == 2)
-        geometry.map      =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 0);
-        geometry.map_der  =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 1);
-        geometry.map_der2 =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 2);
-    elseif (numel (geometry.nurbs.knots) == 3)
-        geometry.map     =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 0);
-        geometry.map_der =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 1);
+      if (iscell (geometry.nurbs.knots))
+        if (numel (geometry.nurbs.knots) == 2)
+          geometry.map      =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 0);
+          geometry.map_der  =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 1);
+          geometry.map_der2 =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 2);
+        elseif (numel (geometry.nurbs.knots) == 3)
+          geometry.map     =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 0);
+          geometry.map_der =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 1);
+        end
+      else
+        geometry.map     = @(PTS) geo_1d_nurbs (geometry.nurbs, PTS, 0);
+        geometry.map_der = @(PTS) geo_1d_nurbs (geometry.nurbs, PTS, 1);
       end
     elseif (strcmpi (in(end-3:end), '.txt'))
       geometry = geo_read_nurbs (in);
+%% load geometry from an xml file
+    elseif (strcmpi (in(end-3:end), '.xml'))
+      geometry.nurbs = xml_import (in);
+      if (iscell (geometry.nurbs.knots))
+        if (numel (geometry.nurbs.knots) == 2)
+          geometry.map      =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 0);
+          geometry.map_der  =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 1);
+          geometry.map_der2 =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 2);
+        elseif (numel (geometry.nurbs.knots) == 3)
+          geometry.map     =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 0);
+          geometry.map_der =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 1);
+        end
+      else
+        geometry.map     = @(PTS) geo_1d_nurbs (geometry.nurbs, PTS, 0);
+        geometry.map_der = @(PTS) geo_1d_nurbs (geometry.nurbs, PTS, 1);
+      end
     else
       error ('geo_load: unknown file extension');
     end
