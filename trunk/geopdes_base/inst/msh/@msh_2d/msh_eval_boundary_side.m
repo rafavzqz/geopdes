@@ -76,7 +76,8 @@ function msh_side = msh_eval_boundary_side (msh, iside)
   clear JinvT;
 
 % Computation of the normal characteristic length for Nitsche's method
-% Computed as in "Weak Dirichlet boundary condition for wall-bounded turbulent flows".
+% Computed as in "Weak Dirichlet boundary condition for wall-bounded
+%  turbulent flows", Y. Bazilevs and T.J.R. Hughes (2007).
   if(iside == 1)
       xi_span_charlen = 0.5*(msh.breaks{1}(2) - msh.breaks{1}(1)).*ones(1,msh.nel_dir(2));
       eta_span_charlen = 0.5*diff(msh.breaks{2});
