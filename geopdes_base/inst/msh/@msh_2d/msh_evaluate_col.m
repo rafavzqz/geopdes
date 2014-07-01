@@ -122,8 +122,9 @@ function msh_col = msh_evaluate_col (msh, colnum)
     end
   end
 
-
-  msh_col.element_size = sqrt (sum ...
+  if (~isempty(msh.quad_weights) && ~isempty(msh_col.jacdet))
+    msh_col.element_size = sqrt (sum ...
                            (msh_col.quad_weights .* abs (msh_col.jacdet), 1));
+  end
 
 end
