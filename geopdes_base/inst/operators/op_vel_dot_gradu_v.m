@@ -1,4 +1,5 @@
 % OP_VEL_DOT_GRADU_V: assemble the matrix B = [b(i,j)], b(i,j) = (V * grad u_j, v_i).
+%  The current version only works for the scalar case.
 %
 %   mat = op_vel_dot_gradu_v (spu, spv, msh, Vel);
 %   [rows, cols, values] = op_vel_dot_gradu_v (spu, spv, msh, Vel);
@@ -16,9 +17,6 @@
 %   rows:   row indices of the nonzero entries
 %   cols:   column indices of the nonzero entries
 %   values: values of the nonzero entries
-%
-% WARNING!
-%  The current version does not work for vector-valued spaces
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011, 2014 Rafael Vazquez
