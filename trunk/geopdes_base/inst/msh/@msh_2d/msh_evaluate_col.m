@@ -122,7 +122,7 @@ function msh_col = msh_evaluate_col (msh, colnum)
     end
   end
 
-  if (~isempty(msh_col.quad_weights) && ~isempty(msh_col.jacdet))
+  if (isfield(msh_col, 'quad_weights') && isfield(msh_col, 'jacdet'))
     msh_col.element_size = sqrt (sum ...
                            (msh_col.quad_weights .* abs (msh_col.jacdet), 1));
   end
