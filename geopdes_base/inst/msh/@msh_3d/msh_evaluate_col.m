@@ -130,4 +130,7 @@ function msh_col = msh_evaluate_col (msh, colnum, varargin)
     msh_col.jacdet = msh.jacdet(:,msh_col.elem_list);
   end
 
+  msh_col.element_size = (sum (msh_col.quad_weights .* ...
+                           abs (msh_col.jacdet), 1)).^(1/3);
+
 end
