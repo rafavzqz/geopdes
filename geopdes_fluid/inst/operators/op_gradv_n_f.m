@@ -35,6 +35,8 @@ function rhs = op_gradv_n_f (spv, msh, coeff)
   gradv = reshape (spv.shape_function_gradients, spv.ncomp, [], ...
 		   msh.nqn, spv.nsh_max, msh.nel);
 
+  coeff = reshape (coeff, spv.ncomp, msh.nqn, msh.nel);
+
   ndim = size (gradv, 2);
 
   for iel = 1:msh.nel
