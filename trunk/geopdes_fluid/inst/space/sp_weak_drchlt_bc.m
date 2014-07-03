@@ -70,7 +70,6 @@ function [A, rhs, u, dofs] = sp_weak_drchlt_bc (space, msh, geometry, der2, bnd_
 
     if (ndim == 2)
       if (iside == 1)
-%        msh_aux = msh_2d ({[0 1] msh.breaks{2}}, {0, msh.qn{2}}, {1, msh.qw{2}}, geometry, 'der2', der2);
         msh_aux = msh_2d ({msh.breaks{1}(1:2) msh.breaks{2}}, {msh.breaks{1}(1), msh.qn{2}}, {1, msh.qw{2}}, geometry, 'der2', der2);
       elseif (iside == 2)
         msh_aux = msh_2d ({msh.breaks{1}(end-1:end) msh.breaks{2}}, {msh.breaks{1}(end), msh.qn{2}}, {1, msh.qw{2}}, geometry, 'der2', der2);
