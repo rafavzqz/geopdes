@@ -68,14 +68,19 @@ function [A, rhs, u, dofs] = sp_weak_drchlt_bc (space, msh, geometry, der2, bnd_
     end
     msh_side = msh_eval_boundary_side (msh, iside);
 
-    if (iside == 1)
-      msh_aux = msh_2d ({[0 1] msh.breaks{2}}, {0, msh.qn{2}}, {1, msh.qw{2}}, geometry, 'der2', der2);
-    elseif (iside == 2)
-      msh_aux = msh_2d ({[0 1] msh.breaks{2}}, {1, msh.qn{2}}, {1, msh.qw{2}}, geometry, 'der2', der2);
-    elseif (iside == 3)
-      msh_aux = msh_2d ({msh.breaks{1} [0 1]}, {msh.qn{1} 0}, {msh.qw{1}, 1}, geometry, 'der2', der2);
-    elseif (iside == 4)
-      msh_aux = msh_2d ({msh.breaks{1} [0 1]}, {msh.qn{1} 1}, {msh.qw{1}, 1}, geometry, 'der2', der2);
+    if (ndim == 2)
+      if (iside == 1)
+%        msh_aux = msh_2d ({[0 1] msh.breaks{2}}, {0, msh.qn{2}}, {1, msh.qw{2}}, geometry, 'der2', der2);
+        msh_aux = msh_2d ({msh.breaks{1}(1:2) msh.breaks{2}}, {msh.breaks{1}(1), msh.qn{2}}, {1, msh.qw{2}}, geometry, 'der2', der2);
+      elseif (iside == 2)
+        msh_aux = msh_2d ({msh.breaks{1}(end-1:end) msh.breaks{2}}, {msh.breaks{1}(end), msh.qn{2}}, {1, msh.qw{2}}, geometry, 'der2', der2);
+      elseif (iside == 3)
+        msh_aux = msh_2d ({msh.breaks{1} msh.breaks{2}(1:2)}, {msh.qn{1}, msh.breaks{2}(1)}, {msh.qw{1}, 1}, geometry, 'der2', der2);
+      elseif (iside == 4)
+        msh_aux = msh_2d ({msh.breaks{1} msh.breaks{2}(end-1:end)}, {msh.qn{1}, msh.breaks{2}(end)}, {msh.qw{1}, 1}, geometry, 'der2', der2);
+      end
+    elseif (ndim == 3)
+      error ('Weak Dirichlet boundary conditions not implemented in 3D yet')
     end
 
     sp_bnd = space.constructor (msh_aux);
@@ -94,7 +99,7 @@ function [A, rhs, u, dofs] = sp_weak_drchlt_bc (space, msh, geometry, der2, bnd_
          reshape(coeff_at_qnodes,[1, msh_side.nqn, msh_side.nel]));
     gradv_n_g = op_gradv_n_f (sp_bnd, msh_side, g_times_coeff);
 
-
+keyboard
     coeff_at_qnodes =  coeff_at_qnodes * Cpen ./ msh_side.charlen;
     C = op_u_v (sp_bnd, sp_bnd, msh_side, coeff_at_qnodes);
 
