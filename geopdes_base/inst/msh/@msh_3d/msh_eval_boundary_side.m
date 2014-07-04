@@ -69,10 +69,11 @@ function msh_side = msh_eval_boundary_side (msh, iside)
   quad_nodes(2, :, :) = quad_nodes_v;
   clear quad_nodes_u quad_nodes_v
 
+  msh_side.quad_nodes = zeros ([3, msh_side.nqn, msh_side.nel]);
   if (mod (iside, 2) == 0)
-    msh_side.quad_nodes = ones ([3, msh_side.nqn, msh_side.nel]);
+    msh_side.quad_nodes(ind2,:,:) = msh.breaks{ind2}(end);
   else
-    msh_side.quad_nodes = zeros ([3, msh_side.nqn, msh_side.nel]);
+    msh_side.quad_nodes(ind2,:,:) = msh.breaks{ind2}(1);
   end
   msh_side.quad_nodes(ind, :, :) = quad_nodes;
 

@@ -19,7 +19,7 @@
 %     F:  grid points in the physical domain, that is, the mapped points
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011, 2012 Rafael Vazquez
+% Copyright (C) 2011, 2012, 2014 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -48,19 +48,20 @@ function [eu, F] = sp_eval (u, space, geometry, npts, varargin)
     pts = npts;
     npts = cellfun (@numel, pts);
   elseif (isvector (npts))
+    knt = space.knots;
     if (ndim == 2)
-      pts = {(linspace (0, 1, npts(1))), (linspace (0, 1, npts(2)))};
+      pts = {(linspace (knt{1}(1), knt{1}(end), npts(1))), (linspace (knt{2}(1), knt{2}(end), npts(2)))};
     elseif (ndim == 3)
-      pts = {(linspace (0, 1, npts(1))), (linspace (0, 1, npts(2))), (linspace (0, 1, npts(3)))};
+      pts = {(linspace (knt{1}(1), knt{1}(end), npts(1))), (linspace (knt{2}(1), knt{2}(end), npts(2))), (linspace (knt{3}(1), knt{3}(end), npts(3)))};
     end
   end
 
   for jj = 1:ndim
     pts{jj} = pts{jj}(:)';
     if (numel (pts{jj}) > 1)
-      brk{jj} = [0, pts{jj}(1:end-1) + diff(pts{jj})/2, 1]; 
+      brk{jj} = [space.knots{jj}(1), pts{jj}(1:end-1) + diff(pts{jj})/2, space.knots{jj}(end)];
     else
-      brk{jj} = [0 1];
+      brk{jj} = [space.knots{jj}(1) space.knots{jj}(end)];
     end
   end
 
