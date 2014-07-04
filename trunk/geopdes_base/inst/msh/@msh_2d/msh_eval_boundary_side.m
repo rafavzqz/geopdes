@@ -49,9 +49,11 @@ function msh_side = msh_eval_boundary_side (msh, iside)
   msh_side.quad_nodes = zeros ([2, size(msh.qn{ind})]);
   msh_side.quad_nodes(ind,:,:) = msh.qn{ind};
   if (iside == 2 || iside == 4)
-    msh_side.quad_nodes(ind2,:,:) = 1;
+    msh_side.quad_nodes(ind2,:,:) = msh.breaks{ind2}(end);
+  elseif (iside == 1 || iside == 3)
+    msh_side.quad_nodes(ind2,:,:) = msh.breaks{ind2}(1);
   end
-
+  
   qn1 = msh_side.quad_nodes(1,:,:);
   qn2 = msh_side.quad_nodes(2,:,:);
   F   = feval (msh.map, [qn1(:), qn2(:)]');
