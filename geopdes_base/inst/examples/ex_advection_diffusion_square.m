@@ -47,7 +47,7 @@ sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 [X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
 surf (X, Y, eu)
 
-disp ('Overshooting is caused by using the L2 projection for Dirichlet boundary conditions')
+disp ('The overshoots come from using the L2 projection for Dirichlet boundary conditions')
 disp ('This can be fixed setting the boundary conditions in a different way (see solve_adv_diff_2d)')
 
 
