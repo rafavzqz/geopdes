@@ -44,11 +44,20 @@ function [eu, F] = sp_eval (u, space, geometry, npts, varargin)
 
   ndim = numel (npts);
 
+% Temporary solution, to be fixed using "isprop" after defining the
+%  classes with classdef
+  if (isfield (struct(space), 'knots'))
+    knt = space.knots;
+  elseif (isfield (struct(space), 'sp1'))
+    knt = space.sp1.knots;
+  else
+    for idim=1:ndim; knt{idim} = [0 1]; end
+  end
+
   if (iscell (npts))
     pts = npts;
     npts = cellfun (@numel, pts);
   elseif (isvector (npts))
-    knt = space.knots;
     if (ndim == 2)
       pts = {(linspace (knt{1}(1), knt{1}(end), npts(1))), (linspace (knt{2}(1), knt{2}(end), npts(2)))};
     elseif (ndim == 3)
@@ -59,9 +68,9 @@ function [eu, F] = sp_eval (u, space, geometry, npts, varargin)
   for jj = 1:ndim
     pts{jj} = pts{jj}(:)';
     if (numel (pts{jj}) > 1)
-      brk{jj} = [space.knots{jj}(1), pts{jj}(1:end-1) + diff(pts{jj})/2, space.knots{jj}(end)];
+      brk{jj} = [knt{jj}(1), pts{jj}(1:end-1) + diff(pts{jj})/2, knt{jj}(end)];
     else
-      brk{jj} = [space.knots{jj}(1) space.knots{jj}(end)];
+      brk{jj} = [knt{jj}(1) knt{jj}(end)];
     end
   end
 
