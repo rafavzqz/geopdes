@@ -46,10 +46,15 @@ function [eu, F] = sp_eval (u, space, geometry, npts, varargin)
 
 % Temporary solution, to be fixed using "isprop" after defining the
 %  classes with classdef
+  knt = cell (ndim, 1);
   if (isfield (struct(space), 'knots'))
-    knt = space.knots;
+    for idim=1:ndim
+      knt{idim} = space.knots{idim}(space.degree(idim)+1:end-space.degree(idim));
+    end
   elseif (isfield (struct(space), 'sp1'))
-    knt = space.sp1.knots;
+    for idim=1:ndim
+      knt{idim} = space.sp1.knots{idim}(space.sp1.degree(idim)+1:end-space.sp1.degree(idim));
+    end
   else
     for idim=1:ndim; knt{idim} = [0 1]; end
   end
