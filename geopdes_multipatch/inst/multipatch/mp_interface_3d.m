@@ -30,7 +30,6 @@
 function [glob_num, glob_ndof] = mp_interface_3d (interfaces, sp)
 
   if (~isempty (interfaces))
-    glob_ndof = 0;
     glob_num = cell (numel (sp), 1);
     patch_intrfc = cell (numel (sp), 1);
     ttform   = cell (numel (sp), numel (interfaces));
