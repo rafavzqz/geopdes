@@ -111,19 +111,7 @@ function msh = msh_precompute (msh, varargin)
 
   if (~isempty (msh.qw) && quad_weights)
     qwu = msh.qw{1};  qwv = msh.qw{2}; qww = msh.qw{3};
-    quad_weights_u = reshape (qwu, nqnu, 1, 1, nelu, 1, 1);
-    quad_weights_u = repmat  (quad_weights_u, [1, nqnv, nqnw, 1, nelv, nelw]);
-    quad_weights_u = reshape (quad_weights_u, [], nel);
-
-    quad_weights_v = reshape (qwv, 1, nqnv, 1, 1, nelv, 1);
-    quad_weights_v = repmat  (quad_weights_v, [nqnu, 1, nqnw, nelu, 1, nelw]);
-    quad_weights_v = reshape (quad_weights_v, [], nel);
-
-    quad_weights_w = reshape (qww, 1, 1, nqnw, 1, 1, nelw);
-    quad_weights_w = repmat  (quad_weights_w, [nqnu, nqnv, 1, nelu, nelv, 1]);
-    quad_weights_w = reshape (quad_weights_w, [], nel);
-
-    msh.quad_weights = quad_weights_u .* quad_weights_v .* quad_weights_w;
+    msh.quad_weights = kron (qww, kron (qwv, qwu));
 
     if (abs (sum (msh.quad_weights(:)) - 1) > 1e-10)
       warning ('msh_precompute: inconsistent quadrature formula')
