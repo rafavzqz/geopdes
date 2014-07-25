@@ -85,21 +85,7 @@ function msh_col = msh_evaluate_col (msh, colnum, varargin)
   if (~isempty (msh.qw))
     if (isempty (msh.quad_weights))
       qwu = msh.qw{1}(:,colnum);  qwv = msh.qw{2}; qww = msh.qw{3};
-      quad_weights_u = reshape (qwu, msh.nqn_dir(1), 1, 1, 1, 1, 1);
-      quad_weights_u = repmat  (quad_weights_u, [1, msh.nqn_dir(2), msh.nqn_dir(3), 1, msh.nel_dir(2), msh.nel_dir(3)]);
-      quad_weights_u = reshape (quad_weights_u, [], msh_col.nel);
-
-      quad_weights_v = reshape (qwv, 1, 1, msh.nqn_dir(2), msh.nel_dir(2), 1, 1);
-      quad_weights_v = repmat  (quad_weights_v, [msh.nqn_dir(1), 1, msh.nqn_dir(3), 1, 1, msh.nel_dir(3)]);
-      quad_weights_v = reshape (quad_weights_v, [], msh_col.nel);
-
-      quad_weights_w = reshape (qww, 1, 1, msh.nqn_dir(3), 1, 1, msh.nel_dir(3));
-      quad_weights_w = repmat  (quad_weights_w, [msh.nqn_dir(1), msh.nqn_dir(2), 1, 1, msh.nel_dir(2), 1]);
-      quad_weights_w = reshape (quad_weights_w, [], msh_col.nel);
-
-      msh_col.quad_weights = quad_weights_u .* quad_weights_v .* quad_weights_w;
-
-      clear quad_weights_u quad_weights_v quad_weights_w
+      msh_col.quad_weights = kron (qww, kron (qwv, qwu));
     else
       msh_col.quad_weights = msh.quad_weights(:,msh_col.elem_list);
     end
