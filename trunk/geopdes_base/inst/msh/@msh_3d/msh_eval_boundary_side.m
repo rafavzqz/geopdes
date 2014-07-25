@@ -46,15 +46,7 @@ function msh_side = msh_eval_boundary_side (msh, iside)
 
   msh_side = msh.boundary(iside);
 
-  quad_weights_u = reshape (msh_side.qw{1}, msh_side.nqn_dir(1), 1, msh_side.nel_dir(1), 1);
-  quad_weights_u = repmat  (quad_weights_u, [1, msh_side.nqn_dir(2), 1, msh_side.nel_dir(2)]);
-  quad_weights_u = reshape (quad_weights_u, [], msh_side.nel);
-
-  quad_weights_v = reshape (msh_side.qw{2}, 1, msh_side.nqn_dir(2), 1, msh_side.nel_dir(2));
-  quad_weights_v = repmat  (quad_weights_v, [msh_side.nqn_dir(1), 1, msh_side.nel_dir(1), 1]);
-  quad_weights_v = reshape (quad_weights_v, [], msh_side.nel);
-
-  msh_side.quad_weights = quad_weights_u .* quad_weights_v;
+  msh_side.quad_weights = kron (msh_side.qw{2}, msh_side.qw{1});
   clear quad_weights_u quad_weights_v
 
   quad_nodes_u = reshape (msh_side.qn{1}, msh_side.nqn_dir(1), 1, msh_side.nel_dir(1), 1);
