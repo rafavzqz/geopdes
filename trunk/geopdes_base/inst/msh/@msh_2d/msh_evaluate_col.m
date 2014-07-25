@@ -76,17 +76,7 @@ function msh_col = msh_evaluate_col (msh, colnum)
   if (~isempty (msh.qw))
     if (isempty (msh.quad_weights))
       qwu = msh.qw{1}(:,colnum);  qwv = msh.qw{2};
-      quad_weights_u = reshape (qwu, msh.nqn_dir(1), 1, 1);
-      quad_weights_u = repmat  (quad_weights_u, [1, msh.nqn_dir(2), msh.nel_dir(2)]);
-      quad_weights_u = reshape (quad_weights_u, [], msh.nel_dir(2));
-
-      quad_weights_v = reshape (qwv, 1, msh.nqn_dir(2), msh.nel_dir(2));
-      quad_weights_v = repmat  (quad_weights_v, [msh.nqn_dir(1), 1, 1]);
-      quad_weights_v = reshape (quad_weights_v, [], msh.nel_dir(2));
-
-      msh_col.quad_weights = quad_weights_u .* quad_weights_v;
-
-      clear quad_weights_u quad_weights_v
+      msh_col.quad_weights = kron (qwv, qwu);
     else
       msh_col.quad_weights = msh.quad_weights(:,msh_col.elem_list);
     end
