@@ -1,6 +1,7 @@
 % -*- INTERNAL UNDOCUMENTED FUNCTION -*-
 %
 % Copyright (C) 2009 Rafael Vazquez
+% Copyright (C) 2014 Elena Bulgarello, Carlo de Falco, Sara Frizziero
 % 
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by

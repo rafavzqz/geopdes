@@ -31,8 +31,9 @@
 %       analysis by the macroelement technique
 %      Tech. Report, IMATI-CNR, 2011.
 %
-% Copyright (C) 2009, 2010, 2011 Carlo de Falco
+% Copyright (C) 2009, 2010, 2011, 2014 Carlo de Falco
 % Copyright (C) 2011 Andrea Bressan, Rafael Vazquez
+% Copyright (C) 2014 Elena Bulgarello, Sara Frizziero
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -48,33 +49,51 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function [spv, spp] = sp_bspline_fluid_3d (element_name, ...
-                           knots, nsub_p, degree_p, regularity_p, msh)
+                                           knots, nsub_p, degree_p, regularity_p, msh)
 
-% The pressure space is the same in all the cases
-knotsp = kntrefine (knots, nsub_p-1, degree_p, regularity_p);
-spp = sp_bspline_3d (knotsp, degree_p, msh);
+  %% The pressure space is the same in all the cases
+  knotsp = kntrefine (knots, nsub_p-1, degree_p, regularity_p);
+  spp = sp_bspline_3d (knotsp, degree_p, msh);
 
-switch (lower (element_name))
-  case {'th'}
-    degree_v = degree_p + 1;
-    regularity_v = regularity_p;
-    nsub_v = nsub_p;
-    knots_v = kntrefine (knots, nsub_v-1, degree_v, regularity_v);
-    sp_scalar = sp_bspline_3d (knots_v, degree_v, msh);
-    spv = sp_vector_3d (sp_scalar, sp_scalar, sp_scalar, msh);
+  switch (lower (element_name))
+    case {'th'}
+      degree_v = degree_p + 1;
+      regularity_v = regularity_p;
+      nsub_v = nsub_p;
+      knots_v = kntrefine (knots, nsub_v-1, degree_v, regularity_v);
+      sp_scalar = sp_bspline_3d (knots_v, degree_v, msh);
+      spv = sp_vector_3d (sp_scalar, sp_scalar, sp_scalar, msh);
 
-  case {'sg'}
-    degree_v = degree_p + 1;
-    regularity_v = regularity_p+1;
-    nsub_v = 2*nsub_p;
-    knots_v = kntrefine (knots, nsub_v-1, degree_v, regularity_v);
-    sp_scalar = sp_bspline_3d (knots_v, degree_v, msh);
-    spv = sp_vector_3d (sp_scalar, sp_scalar, sp_scalar, msh);
+    case {'sg'}
+      degree_v = degree_p + 1;
+      regularity_v = regularity_p+1;
+      nsub_v = 2*nsub_p;
+      knots_v = kntrefine (knots, nsub_v-1, degree_v, regularity_v);
+      sp_scalar = sp_bspline_3d (knots_v, degree_v, msh);
+      spv = sp_vector_3d (sp_scalar, sp_scalar, sp_scalar, msh);
 
-  case {'ndl', 'rt'}
-    error ('NDL and RT elements have not been implemented in 3D yet')
-  otherwise
-    error ('sp_bspline_fluid_3d: unknown element type')
-end
+    case {'rt'}
+      degree_v1 = [degree_p(1)+1 degree_p(2) degree_p(3)];
+      degree_v2 = [degree_p(1) degree_p(2)+1 degree_p(3)];
+      degree_v3 = [degree_p(1) degree_p(2) degree_p(3)+1];
+      knots_v1{1}  = [knotsp{1}(1) knotsp{1} knotsp{1}(end)];
+      knots_v1{2}  = knotsp{2};
+      knots_v1{3}  = knotsp{3};
+      knots_v2{1}  = knotsp{1};
+      knots_v2{2}  = [knotsp{2}(1) knotsp{2} knotsp{2}(end)];
+      knots_v2{3}  = knotsp{3};
+      knots_v3{1}  = knotsp{1};
+      knots_v3{2}  = knotsp{2};
+      knots_v3{3}  = [knotsp{3}(1) knotsp{3} knotsp{3}(end)];
+
+      sp1 = sp_bspline_3d (knots_v1, degree_v1, msh);
+      sp2 = sp_bspline_3d (knots_v2, degree_v2, msh);
+      sp3 = sp_bspline_3d (knots_v3, degree_v3, msh);
+      spv = sp_vector_3d_piola_transform (sp1, sp2, sp3, msh);
+    case {'ndl'}
+      error ('NDL elements have not been implemented in 3D yet')
+    otherwise
+      error ('sp_bspline_fluid_3d: unknown element type')
+  end
 
 end
