@@ -13,12 +13,14 @@
 % OUTPUT:
 %
 %   geometry: a structure that contains, at least, the following fields
-%             map:     a function handle to evaluate the parameterization
-%             map_der: a function handle to evaluate the derivatives of the parameterization
+%             map:      a function handle to evaluate the parameterization
+%             map_der:  a function handle to evaluate the derivatives of the parameterization
+%             map_der2: a function handle to evaluate the second derivatives of the parameterization
 %   The structure may contain further information. See the documentation.
 %
 % Copyright (C) 2010 Carlo de Falco
 % Copyright (C) 2013 Rafael Vazquez
+% Copyright (C) 2014 Elena Bulgarello, Carlo de Falco, Sara Frizziero
 % 
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -46,6 +48,7 @@ function geometry = geo_load (in)
     elseif (numel (geometry.nurbs.knots) == 3)
       geometry.map     =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 0);
       geometry.map_der =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 1);
+      geometry.map_der2 =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 2);
     end
 
   elseif (ischar (in))
