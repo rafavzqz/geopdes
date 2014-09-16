@@ -11,12 +11,14 @@
 % OUTPUT:
 %
 %  geometry: a structure containing the following information
-%            map:     a function handle to evaluate the parametrization
-%            map_der: a function handle to evaluate the derivatives of the parametrization
-%            nurbs:   a structure compatible with the NURBS toolbox
+%            map:      a function handle to evaluate the parametrization
+%            map_der:  a function handle to evaluate the derivatives of the parametrization
+%            map_der2: a function handle to evaluate the second derivatives of the parametrization
+%            nurbs:    a structure compatible with the NURBS toolbox
 %
 % Copyright (C) 2009 Carlo de Falco
 % Copyright (C) 2010, 2011 Rafael Vazquez
+% Copyright (C) 2014 Elena Bulgarello, Carlo de Falco, Sara Frizziero
 % 
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -172,6 +174,7 @@ for iptc = 1:npatches
   elseif (dim == 3)
     geom(iptc).map     = @(PTS) geo_3d_nurbs (geom(iptc).nurbs, PTS, 0);
     geom(iptc).map_der = @(PTS) geo_3d_nurbs (geom(iptc).nurbs, PTS, 1);
+    geom(iptc).map_der2 = @(PTS) geo_2d_nurbs (geom(iptc).nurbs, PTS, 2);
   elseif (dim == 1)
     geom(iptc).nurbs.knots = [geom(iptc).nurbs.knots{:}];
     geom(iptc).map     = @(PTS) geo_1d_nurbs (geom(iptc).nurbs, PTS, 0);
