@@ -24,9 +24,11 @@
 %     geo_map       (3 x nqn x nel vector)  physical coordinates of the quadrature nodes
 %     geo_map_jac   (3 x 3 x nqn x nel)     Jacobian matrix of the map evaluated at the quadrature nodes
 %     jacdet        (nqn x nel)             determinant of the Jacobian evaluated in the quadrature points
+%     geo_map_der2  (3 x 3 x 3 x nqn x nel) Hessian matrix of the map evaluated at the quadrature nodes
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2014 Elena Bulgarello, Carlo de Falco, Sara Frizziero
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -48,6 +50,7 @@ function msh = msh_precompute (msh, varargin)
     quad_weights = true;
     geo_map = true;
     geo_map_jac = true;
+    geo_map_der2 = false;
     jacdet = true;
   else
     if (~rem (length (varargin), 2) == 0)
@@ -57,6 +60,7 @@ function msh = msh_precompute (msh, varargin)
     quad_weights = false;
     geo_map = false;
     geo_map_jac = false;
+    geo_map_der2 = false;
     jacdet = false;
     for ii=1:2:length(varargin)-1
       if (strcmpi (varargin{ii}, 'quad_nodes'))
@@ -69,6 +73,8 @@ function msh = msh_precompute (msh, varargin)
         geo_map_jac = varargin{ii+1};
       elseif (strcmpi (varargin{ii}, 'jacdet'))
         jacdet = varargin{ii+1};
+      elseif (strcmpi (varargin{ii}, 'geo_map_der2'))
+        geo_map_der2 = varargin{ii+1};
       else
         error ('msh_precompute: unknown option %s', varargin {ii});
       end
@@ -139,6 +145,13 @@ function msh = msh_precompute (msh, varargin)
       msh.jacdet = abs (geopdes_det__ (jac));
       msh.jacdet = reshape (msh.jacdet, [nqn, nel]);
     end
+  end
+
+  if (~isempty (msh.map_der2) && geo_map_der2)
+    hess = feval (msh.map_der2, {qn{1}(:)', qn{2}(:)', qn{3}(:)'});
+    hess = reshape (hess, [3, 3, 3, nqnu, nelu, nqnv, nelv, nqnw, nelw]);
+    hess = permute (hess, 1:numel(size(hess)));
+    msh.geo_map_der2 = reshape (hess, 3, 3, 3, nqn, nel);
   end
 
 end
