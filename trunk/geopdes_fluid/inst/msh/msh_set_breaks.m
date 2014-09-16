@@ -27,6 +27,7 @@
 %      Tech. Report, IMATI-CNR, 2011.
 %
 % Copyright (C) 2011 Andrea Bressan, Carlo de Falco, Rafael Vazquez
+% Copyright (C) 2014 Elena Bulgarello, Carlo de Falco, Sara Frizziero
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -57,13 +58,16 @@ function [breaks, der2] = msh_set_breaks (elem_name, knots, nsub)
     der2 = false;
     breaks = kntrefine (knots, 2*nsub-1, degree1, reg0);
 
-   case {'ndl', 'rt'}
+   case {'ndl'}
     if (numel (knots) == 2)
       der2 = true;
       breaks = kntrefine (knots, nsub-1, degree1, reg0);
     else
-      error ('NDL and RT elements have not been implemented in 3D yet')
+      error ('NDL elements have not been implemented in 3D yet')
     end
+   case {'rt'}
+     der2 = true;
+     breaks = kntrefine (knots, nsub-1, degree1, reg0);
    otherwise
     error('msh_set_breaks: Unknown element type')
   end
