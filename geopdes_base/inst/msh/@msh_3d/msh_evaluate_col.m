@@ -23,15 +23,18 @@
 %     geo_map       (3 x nqn x nel vector)  physical coordinates of the quadrature nodes
 %     geo_map_jac   (3 x 3 x nqn x nel)     Jacobian matrix of the map evaluated at the quadrature nodes
 %     jacdet        (nqn x nel)             determinant of the Jacobian evaluated in the quadrature points
+%     geo_map_der2  (3 x 3 x 3 x nqn x nel])Hessian matrix of the map evaluated at the quadrature nodes
 %  For more details, see the documentation
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2014 Elena Bulgarello, Carlo de Falco, Sara Frizziero
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
 %    the Free Software Foundation, either version 3 of the License, or
 %    (at your option) any later version.
+
 
 %    This program is distributed in the hope that it will be useful,
 %    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -116,6 +119,18 @@ function msh_col = msh_evaluate_col (msh, colnum, varargin)
     msh_col.jacdet = msh.jacdet(:,msh_col.elem_list);
   end
 
+  if (msh.der2)
+    if (isempty (msh.geo_map_der2))
+      msh_col.geo_map_der2 = feval (msh.map_der2, {qnu(:)', qnv(:)' qnw(:)'});
+      msh_col.geo_map_der2 = reshape (msh_col.geo_map_der2, [3, 3, 3, msh.nqn_dir(1), msh.nqn_dir(2), msh.nel_dir(2), msh.nqn_dir(3), msh.nel_dir(3)]);
+      msh_col.geo_map_der2 = permute (msh_col.geo_map_der2, 1:numel(size(msh_col.geo_map_der2)));
+      msh_col.geo_map_der2 = reshape (msh_col.geo_map_der2, [3, 3, 3, msh.nqn, msh_col.nel]);
+      
+    else
+      msh_col.geo_map_der2 = msh.geo_map_der2(:,:,:,:,msh_col.elem_list);
+    end
+  end
+  
   if (isfield(msh_col, 'quad_weights') && isfield(msh_col, 'jacdet'))
     msh_col.element_size = (sum (msh_col.quad_weights .* ...
                              abs (msh_col.jacdet), 1)).^(1/3);
