@@ -1,5 +1,5 @@
 % SP_WEAK_DRCHLT_BC: compute the matrix and right hand-side to impose
-% the Dirichlet boundary conditions in weak form for the tangetial
+% the Dirichlet boundary conditions in weak form for the tangential
 % component, and in strong form for the normal component. To be used with
 % the 'RT' spaces.
 %
