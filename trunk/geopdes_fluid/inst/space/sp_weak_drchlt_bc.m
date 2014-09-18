@@ -15,7 +15,7 @@
 %  and g the boundary condition to be imposed.
 %
 %
-%   [N_mat, N_rhs, vel, normal_dofs] = solve_nitsche_weak_bc (space, msh, geometry, der2, bnd_sides, bnd_func, coeff, Cpen)
+%   [N_mat, N_rhs, vel, normal_dofs] = sp_weak_drchlt_bc (space, msh, geometry, der2, bnd_sides, bnd_func, coeff, Cpen)
 %
 % INPUTS:
 %     
