@@ -64,6 +64,7 @@ function geometry = geo_load (in)
         elseif (numel (geometry.nurbs.knots) == 3)
           geometry.map     =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 0);
           geometry.map_der =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 1);
+          geometry.map_der2 =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 2);
         end
       else
         geometry.map     = @(PTS) geo_1d_nurbs (geometry.nurbs, PTS, 0);
