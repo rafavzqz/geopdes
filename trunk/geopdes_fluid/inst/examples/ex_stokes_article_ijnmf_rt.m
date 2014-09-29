@@ -1,4 +1,4 @@
-% EX_STOKES_ARTICLE_IJNMF_RT: solve the Stokes problem in the driven cavity with generalized Taylor-Hood elements.
+% EX_STOKES_ARTICLE_IJNMF_RT: solve the Stokes problem in the driven cavity with generalized Raviart-Thomas elements.
 
 % 1) PHYSICAL DATA OF THE PROBLEM
 clear problem_data  
