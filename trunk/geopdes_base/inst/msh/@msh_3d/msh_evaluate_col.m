@@ -123,7 +123,7 @@ function msh_col = msh_evaluate_col (msh, colnum, varargin)
     if (isempty (msh.geo_map_der2))
       msh_col.geo_map_der2 = feval (msh.map_der2, {qnu(:)', qnv(:)' qnw(:)'});
       msh_col.geo_map_der2 = reshape (msh_col.geo_map_der2, [3, 3, 3, msh.nqn_dir(1), msh.nqn_dir(2), msh.nel_dir(2), msh.nqn_dir(3), msh.nel_dir(3)]);
-      msh_col.geo_map_der2 = permute (msh_col.geo_map_der2, 1:numel(size(msh_col.geo_map_der2)));
+      msh_col.geo_map_der2 = permute (msh_col.geo_map_der2, [1 2 3 4 5 7 6 8]);
       msh_col.geo_map_der2 = reshape (msh_col.geo_map_der2, [3, 3, 3, msh.nqn, msh_col.nel]);
       
     else
