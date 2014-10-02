@@ -1,7 +1,7 @@
-% MP_SP_DRCHLT_L2_PROJ_UXN_3D: assign the degrees of freedom of Dirichlet boundaries through an L2 projection.
+% MP_SP_DRCHLT_L2_PROJ_UXN_2D: assign the degrees of freedom of Dirichlet boundaries through an L2 projection.
 %                           The imposed condition reads   uxn = h
 %
-%   [u, dofs] = mp_sp_drchlt_l2_proj_uxn_3d (sp, msh, h, gnum, ornt, boundaries, refs)
+%   [u, dofs] = mp_sp_drchlt_l2_proj_uxn_2d (sp, msh, h, gnum, ornt, boundaries, refs)
 %
 % INPUT:
 %
@@ -9,7 +9,7 @@
 %  msh:   structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)
 %  h:     function handle to compute the Dirichlet condition
 %  gnum:  global numbering of the degrees of freedom (see mp_interface_2d)
-%  ornt:  orientation of the degrees of freedom (see mp_interface_hcurl_3d)
+%  ornt:  orientation of the degrees of freedom (see mp_interface_hcurl_2d)
 %  boundaries: array of strcutures containing the information for the boundaries (see mp_geo_load)
 %  refs:  boundary references on which a Dirichlet condition is imposed
 %
@@ -34,7 +34,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [u, dofs] = mp_sp_drchlt_l2_proj_uxn_3d (sp, msh, h, gnum, ornt, boundaries, refs)
+function [u, dofs] = mp_sp_drchlt_l2_proj_uxn_2d (sp, msh, h, gnum, ornt, boundaries, refs)
 
   dofs = [];
   ndof = max ([gnum{:}]);
@@ -53,19 +53,18 @@ function [u, dofs] = mp_sp_drchlt_l2_proj_uxn_3d (sp, msh, h, gnum, ornt, bounda
       dofs = union (dofs, global_dofs);
 
 
-      [x, y, z] = deal (squeeze (msh_bnd.geo_map(1,:,:)), ...
-                        squeeze (msh_bnd.geo_map(2,:,:)), ...
-                        squeeze (msh_bnd.geo_map(3,:,:)));
+      [x, y] = deal (squeeze (msh_bnd.geo_map(1,:,:)), ...
+                     squeeze (msh_bnd.geo_map(2,:,:)));
 
-      hval = reshape (h (x, y, z, iref), 3, msh_bnd.nqn, msh_bnd.nel);
+      hval = reshape (h (x, y, iref), msh_bnd.nqn, msh_bnd.nel);
 
-      M_side = op_uxn_vxn_3d (sp_bnd, sp_bnd, msh_bnd, ones(size(x)));
+      M_side = op_uxn_vxn_2d (sp_bnd, sp_bnd, msh_bnd, ones(size(x)));
       ornt_bnd = ornt{iptc}(sp_bnd.dofs);
       ornt_matrix = spdiags (ornt_bnd', 0, sp_bnd.ndof, sp_bnd.ndof);
       M_side = ornt_matrix * M_side * ornt_matrix;
       M(global_dofs, global_dofs) = M(global_dofs, global_dofs) + M_side;
 
-      rhs_side = op_f_vxn_3d (sp_bnd, msh_bnd, hval) .* ornt_bnd';
+      rhs_side = op_f_vxn_2d (sp_bnd, msh_bnd, hval) .* ornt_bnd';
       rhs(global_dofs) = rhs(global_dofs) + rhs_side;
 
     end
