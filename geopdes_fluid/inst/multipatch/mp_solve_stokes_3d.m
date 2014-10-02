@@ -85,7 +85,6 @@ end
 [geometry, boundaries, interfaces] = mp_geo_load (geo_name);
 npatch = numel (geometry);
 
-ndofp = 0;
 for iptc = 1:npatch
 % Construct msh structure using the finest mesh
   msh_breaks = msh_set_breaks (element_name, geometry(iptc).nurbs.knots, nsub);
