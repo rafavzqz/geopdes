@@ -108,7 +108,7 @@ function msh_side = msh_eval_boundary_side (msh, iside)
   normal = reshape (normal, [2, msh_side.nqn, 1, msh_side.nel]);
   normal = geopdes_prod__ (Jinv, normal);
   normal = reshape (normal, [2, msh_side.nqn, msh_side.nel]);
-  norms = geopdes_norm__ (normal);
+  norms = reshape (geopdes_norm__ (normal), msh_side.nqn, msh_side.nel);
   msh_side.charlen = (2./norms);
   clear normal norms
 
