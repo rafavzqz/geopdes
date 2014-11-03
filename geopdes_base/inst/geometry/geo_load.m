@@ -41,14 +41,19 @@ function geometry = geo_load (in)
   if (isstruct (in) && isfield (in, 'form') && strcmpi (in.form, 'B-NURBS')) 
 %% geometry is given as a NURBS struct
     geometry.nurbs   = in;
-    if (numel (geometry.nurbs.knots) == 2)
-      geometry.map      =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 0);
-      geometry.map_der  =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 1);
-      geometry.map_der2 =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 2);
-    elseif (numel (geometry.nurbs.knots) == 3)
-      geometry.map     =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 0);
-      geometry.map_der =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 1);
-      geometry.map_der2 =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 2);
+    if (iscell (geometry.nurbs.knots))
+      if (numel (geometry.nurbs.knots) == 2)
+        geometry.map      =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 0);
+        geometry.map_der  =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 1);
+        geometry.map_der2 =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 2);
+      elseif (numel (geometry.nurbs.knots) == 3)
+        geometry.map     =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 0);
+        geometry.map_der =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 1);
+        geometry.map_der2 =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 2);
+      end
+    else
+      geometry.map     = @(PTS) geo_1d_nurbs (geometry.nurbs, PTS, 0);
+      geometry.map_der = @(PTS) geo_1d_nurbs (geometry.nurbs, PTS, 1);
     end
 
   elseif (ischar (in))
