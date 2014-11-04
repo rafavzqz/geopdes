@@ -1,7 +1,6 @@
 % SP_WEAK_DRCHLT_BC: compute the matrix and right hand-side to impose
 % the Dirichlet boundary conditions in weak form for the tangential
-% component, and in strong form for the normal component. To be used with
-% the 'RT' spaces.
+% component. To be used with the 'RT' spaces.
 %
 % The code computes the following terms in the left hand-side
 % 
@@ -15,7 +14,7 @@
 %  and g the boundary condition to be imposed.
 %
 %
-%   [N_mat, N_rhs, vel, normal_dofs] = sp_weak_drchlt_bc (space, msh, geometry, der2, bnd_sides, bnd_func, coeff, Cpen)
+%   [N_mat, N_rhs] = sp_weak_drchlt_bc (space, msh, geometry, der2, bnd_sides, bnd_func, coeff, Cpen)
 %
 % INPUTS:
 %     
@@ -33,8 +32,6 @@
 %
 %     N_mat:       the computed matrix, to be added in the left hand-side
 %     N_rhs:       the computed right hand-side
-%     vel:         assigned value to the normal degrees of freedom
-%     normal_dofs: global numbering of the normal basis functions
 %
 % Copyright (C) 2014 Adriano Cortes, Rafael Vazquez
 %
@@ -51,7 +48,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [A, rhs, u, dofs] = sp_weak_drchlt_bc (space, msh, geometry, der2, bnd_sides, bnd_func, coeff, Cpen)
+function [A, rhs] = sp_weak_drchlt_bc (space, msh, geometry, der2, bnd_sides, bnd_func, coeff, Cpen)
 
   A = spalloc (space.ndof, space.ndof, 3*space.ndof);
   rhs = zeros (space.ndof, 1);
@@ -117,38 +114,5 @@ function [A, rhs, u, dofs] = sp_weak_drchlt_bc (space, msh, geometry, der2, bnd_
     A = A + (B + B' - C);
     rhs = rhs - gradv_n_g + g_cdot_v;
   end
-  
-  
-% The normal boundary condition is imposed strongly
-  M = spalloc (space.ndof, space.ndof, 3*space.ndof);
-  rhs2 = zeros (space.ndof, 1);
-
-  normal_dofs = [];
-  for iside = bnd_sides  
-    msh_side = msh_eval_boundary_side (msh, iside);
-    sp_side = sp_eval_boundary_side (space, msh_side);
-
-    ind = floor ((iside+1)/2); % ind = [1 1 2 2];
-    normal_dofs = union (normal_dofs, space.boundary(iside).comp_dofs{ind});
-
-    for idim = 1:ndim
-      x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
-    end
-    if (ndim == 2)
-      g_func = @(x, y) bnd_func (x, y, iside);
-    elseif (ndim == 3)
-      g_func = @(x, y, z) bnd_func (x, y, z, iside);
-    end
-    g = g_func(x{:});
-    
-    M_loc = op_udotn_vdotn (sp_side, sp_side, msh_side, ones(size(x{1})));
-    rhs_loc = op_fdotn_vdotn (sp_side, msh_side, g);
-    
-    M(sp_side.dofs, sp_side.dofs) = M(sp_side.dofs, sp_side.dofs) + M_loc;
-    rhs2(sp_side.dofs) = rhs2(sp_side.dofs) + rhs_loc;
-  end
-  
-  u = M(normal_dofs, normal_dofs) \ rhs2(normal_dofs);
-  dofs = normal_dofs;
   
 end

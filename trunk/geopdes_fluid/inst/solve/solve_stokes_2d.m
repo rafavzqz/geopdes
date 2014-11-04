@@ -116,8 +116,9 @@ end
 % Apply Dirichlet  boundary conditions. For RT elements the normal
 %  component is imposed strongly, and the tangential one is imposed weakly.
 if (strcmpi (element_name, 'RT'))
-  [N_mat, N_rhs, vel_drchlt, drchlt_dofs] = ...
+  [N_mat, N_rhs] = ...
     sp_weak_drchlt_bc (space_v, msh, geometry, der2, drchlt_sides, h, viscosity, Cpen);
+  [vel_drchlt, drchlt_dofs] = sp_drchlt_l2_proj_udotn (space_v, msh, drchlt_sides, h);
 else
   [vel_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space_v, msh, h, drchlt_sides);
   N_mat = sparse (space_v.ndof, space_v.ndof, 1);
