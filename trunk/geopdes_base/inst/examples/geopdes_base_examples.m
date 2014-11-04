@@ -26,7 +26,7 @@ while (iopt > 0)
             '----------------------\n', ...
             '\n', ...
             '   (1) Examples appearing in the article. \n \n', ...
-            '   (2) Other examples in 2D: Poisson problem. \n \n',...
+            '   (2) Other examples in 2D: Poisson and advection-diffusion problems. \n \n',...
             '   (3) Other examples in 3D: Poisson problem. \n \n']);
 
   iopt = input ('Please choose a number from above or press <Enter> to return: ');
@@ -76,12 +76,14 @@ while (iopt > 0)
                 '       (5) Plate with a hole. \n', ...
                 '       (6) Quarter of a ring with Dirichlet boundary conditions. \n', ...
                 '       (7) Quarter of a ring with mixed boundary conditions. \n \n', ...
+                '   2D advection-diffusion problem, non-isoparametric \n \n', ...
+                '       (8) Unit square domain. \n \n', ...
                 '   2D Laplace eigenvalue problem, non-isoparametric \n \n', ...
-                '       (8) Unit square domain. \n \n']);
+                '       (9) Unit square domain. \n \n']);
 
       iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
 
-      if (~isempty (iopt2) && iopt2 > 0 && iopt2 < 9)
+      if (~isempty (iopt2) && iopt2 > 0 && iopt2 < 10)
         [vexa, filename] = do_example (iopt2+5);
         clc
         fprintf (1, 'You can have a look at the source file: %s \n \n', filename);
@@ -109,7 +111,7 @@ while (iopt > 0)
       iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
 
       if (~isempty (iopt2) && iopt2 > 0 && iopt2 < 4)
-        [vexa, filename] = do_example (13+iopt2);
+        [vexa, filename] = do_example (14+iopt2);
         clc
         fprintf (1, 'You can have a look at the source file: %s \n \n', filename);        
         eval (vexa);
@@ -149,12 +151,14 @@ switch (number)
  case 12
   filename = 'ex_laplace_ring_mixed_bc.m';
  case 13
-  filename = 'ex_laplace_eig_square.m';
+  filename = 'ex_advection_diffusion_square.m';
  case 14
-  filename = 'ex_laplace_iso_thick_ring.m';  
+  filename = 'ex_laplace_eig_square.m';
  case 15
-  filename = 'ex_laplace_cube.m';  
+  filename = 'ex_laplace_iso_thick_ring.m';  
  case 16
+  filename = 'ex_laplace_cube.m';  
+ case 17
   filename = 'ex_laplace_thick_ring.m';  
 end
 
