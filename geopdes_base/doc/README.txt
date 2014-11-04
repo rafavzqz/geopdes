@@ -18,11 +18,11 @@ CONTENTS:
 
   Download and uncompress the file GeoPDEs_full.tar.gz. This file contains 
    all that is necessary to install GeoPDEs:
-   - The NURBS toolbox: nurbs-1.3.6.tar.gz
+   - The NURBS toolbox: nurbs-1.3.8.tar.gz
    - The GeoPDEs packages:
-      geopdes_base-2.0.3.tar.gz, geopdes_elasticity-2.0.2.tar.gz, 
-      geopdes_fluid-2.0.2.tar.gz, geopdes_maxwell-2.0.2.tar.gz, 
-      geopdes_multipatch-2.0.3.tar.gz, geopdes_tsplines-2.0.3.tar.gz
+      geopdes_base-2.0.4.tar.gz, geopdes_elasticity-2.0.4.tar.gz, 
+      geopdes_fluid-2.0.4.tar.gz, geopdes_maxwell-2.0.4.tar.gz, 
+      geopdes_multipatch-2.0.4.tar.gz, geopdes_tsplines-2.0.4.tar.gz
    - The technical report: GeoPDES_report.pdf
    - This README file.
    - For Matlab users, the mex files of the NURBS toolbox: nurbs_mex_files.tar.gz
@@ -71,9 +71,10 @@ CONTENTS:
      system ("tar xzf geopdes_base-<version>.tar.gz")
      pkg install geopdes_base
 
-   If this procedure fails for you please let us know. See the section
-    "HOW TO CONTRIBUTE" below for the preferred procedure for giving
-    feedback.
+   If this procedure fails, you can run GeoPDEs using the M-files, instead 
+     of the compiled oct-files. Simply uncompress and untar the packages, 
+     and add them to your Octave path, including the subfolders (see the
+     Matlab install below).
 
 1.2. MATLAB
 
