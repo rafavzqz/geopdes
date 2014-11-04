@@ -24,6 +24,7 @@ CONTENTS:
       geopdes_fluid-2.0.4.tar.gz, geopdes_maxwell-2.0.4.tar.gz, 
       geopdes_multipatch-2.0.4.tar.gz, geopdes_tsplines-2.0.4.tar.gz
    - The technical report: GeoPDES_report.pdf
+   - A beamer presentation about the package: GeoPDEs_presentation.pdf
    - This README file.
    - For Matlab users, the mex files of the NURBS toolbox: nurbs_mex_files.tar.gz
    - For Matlab users, the file geopdes_setpath.m
