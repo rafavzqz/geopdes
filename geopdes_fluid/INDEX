@@ -7,6 +7,7 @@ Space
  @sp_vector_2d_piola_transform/sp_evaluate_col
  @sp_vector_2d_piola_transform/sp_precompute
  sp_weak_drchlt_bc
+ sp_drchlt_l2_proj_udotn
 Msh
  msh_set_breaks
 Solve
