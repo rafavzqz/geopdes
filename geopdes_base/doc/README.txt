@@ -33,7 +33,7 @@ CONTENTS:
 
 1.1.1 - Install
  
- * Be sure to have installed Octave version 3.2 or higher. 
+ * Be sure to have installed Octave version 3.6.4 or higher. 
     Source code is available from http://www.octave.org, 
     binary packages for Mac OSX and Windows are available
     from http://octave.sf.net, Linux binary packages are
