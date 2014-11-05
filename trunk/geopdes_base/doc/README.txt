@@ -18,7 +18,7 @@ CONTENTS:
 
   Download and uncompress the file GeoPDEs_full.tar.gz. This file contains 
    all that is necessary to install GeoPDEs:
-   - The NURBS toolbox: nurbs-1.3.8.tar.gz
+   - The NURBS toolbox: nurbs-1.3.9.tar.gz
    - The GeoPDEs packages:
       geopdes_base-2.0.4.tar.gz, geopdes_elasticity-2.0.4.tar.gz, 
       geopdes_fluid-2.0.4.tar.gz, geopdes_maxwell-2.0.4.tar.gz, 
