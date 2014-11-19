@@ -9,6 +9,8 @@
 %     values:    values of the field at the selected point
 %     filename:  name of the output file
 %     fieldname: how to name the saved variable in the vtk file
+%     precision:  accepted options are 32 (default), or 64, other
+%                 values are silently ignored
 %
 % OUTPUT:
 %
@@ -32,7 +34,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function msh_to_vtk_b64 (pts, values, filename, fieldname)
+function msh_to_vtk_b64 (pts, values, filename, fieldname, precision)
 
   if (length (size (pts)) == 4)
     dim = 3;
@@ -40,17 +42,22 @@ function msh_to_vtk_b64 (pts, values, filename, fieldname)
     dim = 2;
   end
 
+  if (~ precision == 64)
+    values = single (values);
+    pts = single (values);
+  endif
+  
   str1 = cat (2,'<?xml version="1.0"?> \n', ...
 '<VTKFile type="StructuredGrid" version="0.1"> \n', ...
 '<StructuredGrid WholeExtent="0 %d 0 %d 0 %d"> \n', ...
 '<Piece Extent="0 %d 0 %d 0 %d"> \n', ...
 '<PointData %s="%s">\n', ...
-'<DataArray type="Float64" Name="%s" format="appended" offset="%d" NumberOfComponents="%d" /> \n');
+'<DataArray type="Float%d" Name="%s" format="appended" offset="%d" NumberOfComponents="%d" /> \n');
 
   str2 = cat (2, ...
 '</PointData> \n', ...
 '<Points> \n', ...
-'<DataArray type="Float64" format="appended" offset="%d" NumberOfComponents="3" /> \n');
+'<DataArray type="Float%d" format="appended" offset="%d" NumberOfComponents="3" /> \n');
 
   str3 = cat (2, '\n', ...
 '</Points> \n', ...
@@ -94,14 +101,15 @@ function msh_to_vtk_b64 (pts, values, filename, fieldname)
   fprintf (fid, str1, ...
            npts(1)-1, npts(2)-1, npts(3)-1, ...
            npts(1)-1, npts(2)-1, npts(3)-1,...
-           fieldclass, fieldname, fieldname, offset, ncomp);
+           fieldclass, fieldname, precision,...
+           fieldname, offset, ncomp);
   
   %%fprintf (fid, '%g ', values(:));
   newdata = typecast (values(:), 'uint8')(:);
   data = [data, base64_encode([typecast(int32 (numel (newdata)), 'uint8')(:); newdata])];
   offset = numel (data);
   
-  fprintf (fid, str2, offset);
+  fprintf (fid, str2, precision, offset);
 
   %%fprintf (fid, '%g ', pts(:));
   newdata = typecast (pts(:), 'uint8')(:);
@@ -109,9 +117,9 @@ function msh_to_vtk_b64 (pts, values, filename, fieldname)
   offset = numel (data);
   
   fprintf (fid, str3);
-  fprintf (fid, "  <AppendedData encoding=""base64"">\n");
-  fprintf (fid, "_%s\n", data);
-  fprintf (fid, "  </AppendedData>>\n</VTKFile> \n");
+  fprintf (fid, '  <AppendedData encoding="base64">\n');
+  fprintf (fid, '_%s\n', data);
+  fprintf (fid, '  </AppendedData>>\n</VTKFile> \n');
   
   fclose (fid);
 
