@@ -43,13 +43,14 @@ function msh_to_vtk_raw (pts, values, filename, fieldname, precision)
   end
 
   assert (precision == 64 || precision == 32);
-  if (~ precision == 64)
-    values = single (values);
-    pts = single (values);
+  if (precision == 64)
+    converter = @double;
+  else
+    converter = @single;
   endif
-  
+
   str1 = cat (2,'<?xml version="1.0"?> \n', ...
-'<VTKFile type="StructuredGrid" version="0.1"> \n', ...
+'<VTKFile type="StructuredGrid" version="0.1" byte_order="LittleEndian"> \n', ...
 '<StructuredGrid WholeExtent="0 %d 0 %d 0 %d"> \n', ...
 '<Piece Extent="0 %d 0 %d 0 %d"> \n', ...
 '<PointData %s="%s">\n', ...
@@ -106,20 +107,20 @@ function msh_to_vtk_raw (pts, values, filename, fieldname, precision)
            fieldname, offset, ncomp);
   
   %%fprintf (fid, '%g ', values(:));
-  newdata = typecast (values(:), 'uint8')(:);
+  newdata = typecast (converter (values(:)), 'uint8')(:);
   data = [data; [typecast(int32 (numel (newdata)), 'uint8')(:); newdata]];
   offset = numel (data);
   
   fprintf (fid, str2, precision, offset);
 
   %%fprintf (fid, '%g ', pts(:));
-  newdata = typecast (pts(:), 'uint8')(:);
+  newdata = typecast (converter (pts(:)), 'uint8')(:);
   data = [data; [typecast(int32 (numel (newdata)), 'uint8')(:); newdata]];
   offset = numel (data);
   
   fprintf (fid, str3);
   fprintf (fid, '  <AppendedData encoding="raw">\n');
-  fwrite (fid, '_')
+  fwrite (fid, '_');
   fwrite (fid, data, 'uint8');
   fprintf (fid, '  </AppendedData>>\n</VTKFile> \n');
   
