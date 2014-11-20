@@ -25,6 +25,7 @@ Space
  sp_l2_error
  sp_to_vtk
  sp_to_vtk_b64
+ sp_to_vtk_raw.m
  sp_drchlt_l2_proj
  sp_bspline_1d_param
  sp_bspline_2d
