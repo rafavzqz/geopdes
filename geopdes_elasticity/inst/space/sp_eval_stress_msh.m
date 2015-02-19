@@ -69,13 +69,13 @@ function [stress, F] = sp_eval_stress_msh (u, space, msh, lambda, mu)
     aux_div = reshape (sum (bsxfun (@times, w_div, sp_col.shape_function_divs), 2), ...
                   msh_col.nqn, msh_col.nel);
 
-    mu_col = reshape (mu (x{:}), 1, 1, 1, msh_col.nel);
+    mu_col = reshape (mu (x{:}), 1, 1, msh_col.nqn, msh_col.nel);
     stress(:,:,:,msh_col.elem_list) = bsxfun (@times, mu_col, ...
                          (aux_grad + permute (aux_grad, [2 1 3 4])));
     for idim = 1:ndim
       stress(idim,idim,:,msh_col.elem_list) = ...
         stress(idim,idim,:,msh_col.elem_list) + ...
-        reshape (lambda (x{:}) .* aux_div, 1, 1, 1, msh_col.nel);
+        reshape (lambda (x{:}) .* aux_div, 1, 1, msh_col.nqn, msh_col.nel);
     end
   end
 
