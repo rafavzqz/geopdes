@@ -4,6 +4,8 @@
 clear problem_data 
 % Physical domain, defined as NURBS map given in a text file
 problem_data.geo_name = 'geo_ring.txt';
+% nrb = nrbtestsrf;
+% problem_data.geo_name = nrb;
 
 % Type of boundary conditions for each side of the domain
 problem_data.nmnn_sides   = [];

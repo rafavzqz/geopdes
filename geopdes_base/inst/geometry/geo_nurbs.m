@@ -1,9 +1,9 @@
-% GEO_2D_NURBS: construct a geometry map from a structure of the NURBS toolbox.
+% GEO_NURBS: construct a geometry map from a structure of the NURBS toolbox.
 %
-%   output = geo_2d_nurbs (nurbs, pts, ders)
+%   output = geo_nurbs (nurbs, pts, ders)
 %
 % INPUTS:
-%     
+%
 %   nurbs:  NURBS structure that defines the geometry
 %   pts  :  points where the map has to be evaluated
 %   ders :  number of derivatives to be evaluated (from 0 to 2)
@@ -17,6 +17,8 @@
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2013 Elena Bulgarello, Carlo de Falco, Sara Frizziero
+% Copyright (C) 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -31,47 +33,66 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function varargout = geo_2d_nurbs (nurbs, pts, ders)
+function varargout = geo_nurbs (nurbs, pts, ders)
 
+  ndim = numel (nurbs.order);
+
+  if (any (abs(nurbs.coefs(3,:)) > 1e-12))
+    rdim = 3;
+  elseif (any (abs(nurbs.coefs(2,:)) > 1e-12))
+    rdim = 2;
+  else
+    rdim = 1;
+  end
+
+  if (rdim > ndim)
+    error ('geo_nurbs: the dimensions of your geometry seem to be wrong')
+  end
+  
   switch (ders)
     case 0
       F = nrbeval (nurbs, pts);
-      varargout{1} = F(1:2, :);
+      varargout{1} = F(1:rdim, :);
     case 1
       deriv = nrbderiv (nurbs);
-      [F, jac] = nrbdeval (nurbs, deriv, pts);
+      [~, jac] = nrbdeval (nurbs, deriv, pts);
       if (iscell (pts))
         npts = prod (cellfun (@numel, pts));
-        map_jac = zeros (2, 2, npts);
-        map_jac(1:2, 1, :) = reshape (jac{1}(1:2,:,:), 2, 1, npts);
-        map_jac(1:2, 2, :) = reshape (jac{2}(1:2,:,:), 2, 1, npts);
+        map_jac = zeros (rdim, ndim, npts);
+        for idim = 1:ndim
+          map_jac(1:rdim, idim, :) = reshape (jac{idim}(1:rdim,:,:), rdim, 1, npts);
+        end
       else
-        map_jac = zeros (2, 2, size (pts, 2));
-        map_jac(1:2, 1, :) = reshape (jac{1}(1:2, :), 2, 1, size (pts, 2));
-        map_jac(1:2, 2, :) = reshape (jac{2}(1:2, :), 2, 1, size (pts, 2));
+        map_jac = zeros (rdim, ndim, size (pts, 2));
+        for idim = 1:ndim
+          map_jac(1:rdim, idim, :) = reshape (jac{idim}(1:rdim, :), rdim, 1, size (pts, 2));
+        end
       end
       varargout{1} = map_jac;
+
     case 2
       [deriv, deriv2] = nrbderiv (nurbs);
-      [F, jac, hessian] = nrbdeval (nurbs, deriv, deriv2, pts);
+      [~, ~, hessian] = nrbdeval (nurbs, deriv, deriv2, pts);
 
       if (iscell (pts))
         npts = prod (cellfun (@numel, pts));
-        hess = zeros (2, 2, 2, npts);
-        hess(1:2, 1, 1, :) = reshape (hessian{1,1}(1:2,:,:), 2, 1, 1, npts);
-        hess(1:2, 2, 2, :) = reshape (hessian{2,2}(1:2,:,:), 2, 1, 1, npts);
-        hess(1:2, 1, 2, :) = reshape (hessian{1,2}(1:2,:,:), 2, 1, 1, npts);
-        hess(1:2, 2, 1, :) = reshape (hessian{2,1}(1:2,:,:), 2, 1, 1, npts);
+        hess = zeros (rdim, ndim, ndim, npts);
+        for idim = 1:ndim
+          for jdim = 1:ndim
+            hess(1:rdim, idim, jdim, :) = reshape (hessian{idim,jdim}(1:rdim,:,:), rdim, 1, 1, npts);
+          end
+        end
       else
-        hess = zeros (2, 2, 2, size (pts, 2));
-        hess(1:2, 1, 1, :) = reshape (hessian{1,1}(1:2,:), 2, 1, 1, size (pts, 2));
-        hess(1:2, 2, 2, :) = reshape (hessian{2,2}(1:2,:), 2, 1, 1, size (pts, 2));
-        hess(1:2, 1, 2, :) = reshape (hessian{1,2}(1:2,:), 2, 1, 1, size (pts, 2));
-        hess(1:2, 2, 1, :) = reshape (hessian{2,1}(1:2,:), 2, 1, 1, size (pts, 2));          
+        hess = zeros (rdim, ndim, ndim, size (pts, 2));
+        for idim = 1:ndim
+          for jdim = 1:ndim
+            hess(1:rdim, idim, jdim, :) = reshape (hessian{idim,jdim}(1:rdim,:), rdim, 1, 1, size (pts, 2));
+          end
+        end
       end
       varargout{1} = hess;
     otherwise
-      error ('geo_2d_nurbs: number of derivatives limited to two')
+      error ('geo_nurbs: number of derivatives limited to two')
   end
 
 end

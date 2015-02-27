@@ -22,6 +22,8 @@
 %     msh: object containing the following fields and methods
 %
 %     FIELD_NAME    (SIZE)                  DESCRIPTION
+%     ndim          (scalar)                dimension of the parametric space (equal to 2)
+%     rdim          (scalar)                dimension of the physical space (equal to 2 or 3)
 %     nel           (scalar)                number of elements of the partition
 %     nel_dir       (1 x 2 vector)          number of elements in each parametric direction
 %     nelcol        (scalar)                number of elements in one "column" of the mesh (actually, nel_dir(2))
@@ -79,6 +81,19 @@ function msh = msh_2d (breaks, qn, qw, geo, varargin)
         error ('msh_2d: unknown option %s', varargin {ii});
       end
     end
+  end
+
+  msh.ndim = 2;
+  if (isfield (geo,'rdim'))
+    msh.rdim = geo.rdim;
+  elseif (isfield (geo,'nurbs'))
+    if (any (abs(geo.nurbs.coefs(3,:)) > 1e-12))
+      msh.rdim = 3;
+    else 
+      msh.rdim = 2;
+    end
+  else
+    msh.rdim = 2;
   end
 
   msh.qn = qn;

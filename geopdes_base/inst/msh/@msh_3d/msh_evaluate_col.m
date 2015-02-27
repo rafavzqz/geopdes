@@ -12,6 +12,8 @@
 %     msh_col: structure containing the quadrature rule in one column of the physical domain, which contains the following fields
 %
 %     FIELD_NAME    (SIZE)                  DESCRIPTION
+%     ndim          (scalar)                dimension of the parametric space (equal to 3)
+%     rdim          (scalar)                dimension of the physical space (equal to 3)
 %     colnum        (scalar)                number of the column
 %     nel           (scalar)                number of elements in the column
 %     elem_list     (nel vector)            indices of the elements in the column
@@ -45,6 +47,9 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function msh_col = msh_evaluate_col (msh, colnum, varargin)
+
+  msh_col.ndim = msh.ndim;
+  msh_col.rdim = msh.rdim;
 
   msh_col.colnum = colnum;
 

@@ -19,6 +19,9 @@
 %
 %     FIELD_NAME    (SIZE)                  DESCRIPTION
 %
+%     ndim          (scalar)                dimension of the parametric space (equal to 2)
+%     rdim          (scalar)                dimension of the physical space (equal to 2 or 3)
+%     nqn           (scalar)                number of quadrature nodes per element
 %     quad_nodes    (2 x nqn x nel vector)  coordinates of the quadrature nodes in parametric space
 %     quad_weights  (nqn x nel vector)      weights associated to the quadrature nodes
 %     geo_map       (2 x nqn x nel vector)  physical coordinates of the quadrature nodes
@@ -119,16 +122,16 @@ function msh = msh_precompute (msh, varargin)
 
   if (geo_map)
     F = feval (msh.map, {qn{1}(:)', qn{2}(:)'});
-    F = reshape (F, [2, nqnu, nelu, nqnv, nelv]);
+    F = reshape (F, [msh.rdim, nqnu, nelu, nqnv, nelv]);
     F = permute (F, [1 2 4 3 5]);
-    msh.geo_map = reshape (F, [2, nqn, nel]);
+    msh.geo_map = reshape (F, [msh.rdim, nqn, nel]);
   end
 
   if (geo_map_jac || jacdet)
     jac = feval (msh.map_der, {qn{1}(:)', qn{2}(:)'});
-    jac = reshape (jac, [2, 2, nqnu, nelu, nqnv, nelv]);
+    jac = reshape (jac, [msh.rdim, msh.ndim, nqnu, nelu, nqnv, nelv]);
     jac = permute (jac, [1 2 3 5 4 6]);
-    jac = reshape (jac, 2, 2, nqn, nel);
+    jac = reshape (jac, msh.rdim, msh.ndim, nqn, nel);
     if (geo_map_jac)
       msh.geo_map_jac = jac;
     end
@@ -140,9 +143,9 @@ function msh = msh_precompute (msh, varargin)
 
   if (~isempty (msh.map_der2) && geo_map_der2)
     hess = feval (msh.map_der2, {qn{1}(:)', qn{2}(:)'});
-    hess = reshape (hess, [2, 2, 2, nqnu, nelu, nqnv, nelv]);
+    hess = reshape (hess, [msh.rdim, msh.ndim, msh.ndim, nqnu, nelu, nqnv, nelv]);
     hess = permute (hess, [1 2 3 4 6 5 7]);
-    msh.geo_map_der2 = reshape (hess, 2, 2, 2, nqn, nel);
+    msh.geo_map_der2 = reshape (hess, msh.rdim, msh.ndim, msh.ndim, nqn, nel);
   end
 
 end

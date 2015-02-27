@@ -167,19 +167,9 @@ for iptc = 1:npatches
     geom(iptc).nurbs.coefs(4,:,:,:) = weights;
   end
   
-  if (dim == 2)
-    geom(iptc).map      = @(PTS) geo_2d_nurbs (geom(iptc).nurbs, PTS, 0);
-    geom(iptc).map_der  = @(PTS) geo_2d_nurbs (geom(iptc).nurbs, PTS, 1);
-    geom(iptc).map_der2 = @(PTS) geo_2d_nurbs (geom(iptc).nurbs, PTS, 2);
-  elseif (dim == 3)
-    geom(iptc).map      = @(PTS) geo_3d_nurbs (geom(iptc).nurbs, PTS, 0);
-    geom(iptc).map_der  = @(PTS) geo_3d_nurbs (geom(iptc).nurbs, PTS, 1);
-    geom(iptc).map_der2 = @(PTS) geo_3d_nurbs (geom(iptc).nurbs, PTS, 2);
-  elseif (dim == 1)
-    geom(iptc).nurbs.knots = [geom(iptc).nurbs.knots{:}];
-    geom(iptc).map     = @(PTS) geo_1d_nurbs (geom(iptc).nurbs, PTS, 0);
-    geom(iptc).map_der = @(PTS) geo_1d_nurbs (geom(iptc).nurbs, PTS, 1);
-  end
+  geom(iptc).map      = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 0);
+  geom(iptc).map_der  = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 1);
+  geom(iptc).map_der2 = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 2);
 end
 
 fclose (fid);

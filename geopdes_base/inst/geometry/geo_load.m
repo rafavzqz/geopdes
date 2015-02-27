@@ -41,58 +41,26 @@ function geometry = geo_load (in)
   if (isstruct (in) && isfield (in, 'form') && strcmpi (in.form, 'B-NURBS')) 
 %% geometry is given as a NURBS struct
     geometry.nurbs   = in;
-    if (iscell (geometry.nurbs.knots))
-      if (numel (geometry.nurbs.knots) == 2)
-        geometry.map      =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 0);
-        geometry.map_der  =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 1);
-        geometry.map_der2 =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 2);
-      elseif (numel (geometry.nurbs.knots) == 3)
-        geometry.map     =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 0);
-        geometry.map_der =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 1);
-        geometry.map_der2 =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 2);
-      end
-    else
-      geometry.map     = @(PTS) geo_1d_nurbs (geometry.nurbs, PTS, 0);
-      geometry.map_der = @(PTS) geo_1d_nurbs (geometry.nurbs, PTS, 1);
-    end
+    geometry.map      =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 0);
+    geometry.map_der  =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 1);
+    geometry.map_der2 =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 2);
 
   elseif (ischar (in))
 %% load geometry from a file
     if (strcmpi (in(end-3:end), '.mat'))     
       tmp  = load (in);
       geometry.nurbs   = tmp.geo;
-      if (iscell (geometry.nurbs.knots))
-        if (numel (geometry.nurbs.knots) == 2)
-          geometry.map      =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 0);
-          geometry.map_der  =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 1);
-          geometry.map_der2 =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 2);
-        elseif (numel (geometry.nurbs.knots) == 3)
-          geometry.map     =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 0);
-          geometry.map_der =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 1);
-          geometry.map_der2 =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 2);
-        end
-      else
-        geometry.map     = @(PTS) geo_1d_nurbs (geometry.nurbs, PTS, 0);
-        geometry.map_der = @(PTS) geo_1d_nurbs (geometry.nurbs, PTS, 1);
-      end
+      geometry.map      =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 0);
+      geometry.map_der  =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 1);
+      geometry.map_der2 =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 2);
     elseif (strcmpi (in(end-3:end), '.txt'))
       geometry = geo_read_nurbs (in);
 %% load geometry from an xml file
     elseif (strcmpi (in(end-3:end), '.xml'))
       geometry.nurbs = xml_import (in);
-      if (iscell (geometry.nurbs.knots))
-        if (numel (geometry.nurbs.knots) == 2)
-          geometry.map      =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 0);
-          geometry.map_der  =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 1);
-          geometry.map_der2 =  @(PTS) geo_2d_nurbs (geometry.nurbs, PTS, 2);
-        elseif (numel (geometry.nurbs.knots) == 3)
-          geometry.map     =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 0);
-          geometry.map_der =  @(PTS) geo_3d_nurbs (geometry.nurbs, PTS, 1);
-        end
-      else
-        geometry.map     = @(PTS) geo_1d_nurbs (geometry.nurbs, PTS, 0);
-        geometry.map_der = @(PTS) geo_1d_nurbs (geometry.nurbs, PTS, 1);
-      end
+      geometry.map      =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 0);
+      geometry.map_der  =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 1);
+      geometry.map_der2 =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 2);
     else
       error ('geo_load: unknown file extension');
     end

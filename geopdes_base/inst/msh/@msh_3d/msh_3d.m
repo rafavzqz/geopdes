@@ -20,6 +20,8 @@
 %     msh: object containing the following fields and methods
 %
 %     FIELD_NAME    (SIZE)                  DESCRIPTION
+%     ndim          (scalar)                dimension of the parametric space (equal to 3)
+%     rdim          (scalar)                dimension of the physical space (equal to 3)
 %     nel           (scalar)                number of elements of the partition
 %     nel_dir       (1 x 3 vector)          number of elements in each parametric direction
 %     nelcol        (scalar)                number of elements in one "column" of the mesh (actually, nel_dir(2)*nel_dir(3))
@@ -78,6 +80,9 @@ function msh = msh_3d (breaks, qn, qw, geo, varargin)
       end
     end
   end
+
+  msh.ndim = 3;
+  msh.rdim = 3;
 
   msh.qn = qn;
   msh.qw = qw;

@@ -12,6 +12,8 @@
 %     msh_col: structure containing the quadrature rule in one column of the physical domain, which contains the following fields
 %
 %     FIELD_NAME    (SIZE)                  DESCRIPTION
+%     ndim          (scalar)                dimension of the parametric space (equal to 2)
+%     rdim          (scalar)                dimension of the physical space (equal to 2 or 3)
 %     colnum        (scalar)                number of the column
 %     nel           (scalar)                number of elements in the column
 %     elem_list     (nel vector)            indices of the elements in the column
@@ -43,6 +45,9 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function msh_col = msh_evaluate_col (msh, colnum)
+
+  msh_col.ndim = msh.ndim;
+  msh_col.rdim = msh.rdim;
 
   msh_col.colnum = colnum;
   msh_col.elem_list = colnum + msh.nel_dir(1)*(0:msh.nel_dir(2)-1);
@@ -84,14 +89,14 @@ function msh_col = msh_evaluate_col (msh, colnum)
 
   if (isempty (msh.geo_map))
     F = feval (msh.map, {qnu(:)', qnv(:)'});
-    msh_col.geo_map = reshape (F, [2, msh.nqn, msh.nel_dir(2)]);
+    msh_col.geo_map = reshape (F, [msh.rdim, msh.nqn, msh.nel_dir(2)]);
   else
     msh_col.geo_map = msh.geo_map(:,:,msh_col.elem_list);
   end
   
   if (isempty (msh.geo_map_jac))
     jac = feval (msh.map_der, {qnu(:)', qnv(:)'});
-    msh_col.geo_map_jac = reshape (jac, 2, 2, msh.nqn, msh.nel_dir(2));
+    msh_col.geo_map_jac = reshape (jac, msh.rdim, msh.ndim, msh.nqn, msh.nel_dir(2));
   else
     msh_col.geo_map_jac = msh.geo_map_jac(:,:,:,msh_col.elem_list);
   end
@@ -106,7 +111,7 @@ function msh_col = msh_evaluate_col (msh, colnum)
   if (msh.der2)
     if (isempty (msh.geo_map_der2))
       msh_col.geo_map_der2 = reshape (feval (msh.map_der2, {qnu(:)', qnv(:)'}), ...
-                                         2, 2, 2, msh_col.nqn, msh_col.nel);
+                                         msh.rdim, msh.ndim, msh.ndim, msh_col.nqn, msh_col.nel);
     else
       msh_col.geo_map_der2 = msh.geo_map_der2(:,:,:,:,msh_col.elem_list);
     end
