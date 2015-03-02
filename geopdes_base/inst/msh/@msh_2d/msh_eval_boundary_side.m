@@ -22,7 +22,7 @@
 %     jacdet        (nqn x nel)             determinant of the Jacobian evaluated at the quadrature points
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011, 2014 Rafael Vazquez
+% Copyright (C) 2011, 2014, 2015 Rafael Vazquez
 % Copyright (C) 2014 Adriano Cortes
 %
 %    This program is free software: you can redistribute it and/or modify
@@ -59,24 +59,25 @@ function msh_side = msh_eval_boundary_side (msh, iside)
   F   = feval (msh.map, [qn1(:), qn2(:)]');
   jac = feval (msh.map_der, [qn1(:), qn2(:)]');
 
-  msh_side.geo_map = reshape (F, size (msh_side.quad_nodes));
-  msh_side.geo_map_jac = reshape(jac, 2, 2, msh_side.nqn, msh_side.nel);
-  msh_side.jacdet = geopdes_norm__ (squeeze (msh_side.geo_map_jac(:,ind,:,:)));
+  msh_side.geo_map = reshape (F, msh.rdim, msh_side.nqn, msh_side.nel);
+  msh_side.geo_map_jac = reshape(jac, msh.rdim, msh.ndim, msh_side.nqn, msh_side.nel);
+%   msh_side.jacdet = geopdes_norm__ (squeeze (msh_side.geo_map_jac(:,ind,:,:)));
+  msh_side.jacdet = geopdes_det__ (msh_side.geo_map_jac(:,ind,:,:));
   clear F jac
-  
+
   [JinvT, ~] = geopdes_invT__ (msh_side.geo_map_jac);
-  JinvT = reshape (JinvT, [2, 2, msh_side.nqn, msh_side.nel]);
-  normal = zeros (2, msh_side.nqn, msh_side.nel);
+  JinvT = reshape (JinvT, [msh.rdim, msh.ndim, msh_side.nqn, msh_side.nel]);
+  normal = zeros (msh.ndim, msh_side.nqn, msh_side.nel);
   normal(ind2,:,:) = (-1)^iside;
-  normal = reshape (normal, [2, msh_side.nqn, 1, msh_side.nel]);
+  normal = reshape (normal, [msh.ndim, msh_side.nqn, 1, msh_side.nel]);
   normal = geopdes_prod__ (JinvT, normal);
-  normal = reshape (normal, [2, msh_side.nqn, msh_side.nel]);
-  norms = repmat (reshape (geopdes_norm__ (normal), [1, msh_side.nqn, msh_side.nel]), [2 1 1]);
+  normal = reshape (normal, [msh.rdim, msh_side.nqn, msh_side.nel]);
   %Now normalize
-  normal = normal ./ norms;
-  msh_side.normal = normal;
+  norms = reshape (geopdes_norm__ (normal), [1, msh_side.nqn, msh_side.nel]);
+  msh_side.normal = bsxfun (@rdivide, normal, norms);
   clear JinvT;
 
+if (msh.rdim == msh.ndim)
 % Computation of the normal characteristic length for Nitsche's method
 % Computed as in "Weak Dirichlet boundary condition for wall-bounded
 %  turbulent flows", Y. Bazilevs and T.J.R. Hughes (2007).
@@ -111,5 +112,6 @@ function msh_side = msh_eval_boundary_side (msh, iside)
   norms = reshape (geopdes_norm__ (normal), msh_side.nqn, msh_side.nel);
   msh_side.charlen = (2./norms);
   clear normal norms
+end
 
 end

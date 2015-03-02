@@ -118,7 +118,7 @@ end
 
 if (gradient)
   JinvT = geopdes_invT__ (msh.geo_map_jac);
-  JinvT = reshape (JinvT, [2, 2, msh.nqn, msh.nel]);
+  JinvT = reshape (JinvT, [msh.rdim, msh.ndim, msh.nqn, msh.nel]);
   sp.shape_function_gradients = geopdes_prod__ (JinvT, sp.shape_function_gradients);
 elseif (isfield (sp, 'shape_function_gradients'))
   sp = rmfield (sp, 'shape_function_gradients');

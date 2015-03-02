@@ -31,6 +31,7 @@
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
 % Copyright (C) 2014 Elena Bulgarello, Carlo de Falco, Sara Frizziero
+% Copyright (C) 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -101,18 +102,18 @@ function msh_col = msh_evaluate_col (msh, colnum, varargin)
 
   if (isempty (msh.geo_map))
     F = feval (msh.map, {qnu(:)', qnv(:)', qnw(:)'});
-    F = reshape (F, [3, msh.nqn_dir(1), msh.nqn_dir(2), msh.nel_dir(2), msh.nqn_dir(3), msh.nel_dir(3)]);
+    F = reshape (F, [msh.rdim, msh.nqn_dir(1), msh.nqn_dir(2), msh.nel_dir(2), msh.nqn_dir(3), msh.nel_dir(3)]);
     F = permute (F, [1 2 3 5 4 6]);
-    msh_col.geo_map = reshape (F, [3, msh.nqn, msh_col.nel]);
+    msh_col.geo_map = reshape (F, [msh.rdim, msh.nqn, msh_col.nel]);
   else
     msh_col.geo_map = msh.geo_map(:,:,msh_col.elem_list);
   end
   
   if (isempty (msh.geo_map_jac))
     jac = feval (msh.map_der, {qnu(:)', qnv(:)' qnw(:)'});
-    jac = reshape (jac, [3, 3, msh.nqn_dir(1), msh.nqn_dir(2), msh.nel_dir(2), msh.nqn_dir(3), msh.nel_dir(3)]);
+    jac = reshape (jac, [msh.rdim, msh.ndim, msh.nqn_dir(1), msh.nqn_dir(2), msh.nel_dir(2), msh.nqn_dir(3), msh.nel_dir(3)]);
     jac = permute (jac, [1 2 3 4 6 5 7]);
-    msh_col.geo_map_jac = reshape (jac, 3, 3, msh.nqn, msh_col.nel);
+    msh_col.geo_map_jac = reshape (jac, msh.rdim, msh.ndim, msh.nqn, msh_col.nel);
   else
     msh_col.geo_map_jac = msh.geo_map_jac(:,:,:,msh_col.elem_list);
   end
@@ -127,9 +128,10 @@ function msh_col = msh_evaluate_col (msh, colnum, varargin)
   if (msh.der2)
     if (isempty (msh.geo_map_der2))
       msh_col.geo_map_der2 = feval (msh.map_der2, {qnu(:)', qnv(:)' qnw(:)'});
-      msh_col.geo_map_der2 = reshape (msh_col.geo_map_der2, [3, 3, 3, msh.nqn_dir(1), msh.nqn_dir(2), msh.nel_dir(2), msh.nqn_dir(3), msh.nel_dir(3)]);
+      msh_col.geo_map_der2 = reshape (msh_col.geo_map_der2, [msh.rdim, msh.ndim, msh.ndim, ...
+                                             msh.nqn_dir(1), msh.nqn_dir(2), msh.nel_dir(2), msh.nqn_dir(3), msh.nel_dir(3)]);
       msh_col.geo_map_der2 = permute (msh_col.geo_map_der2, [1 2 3 4 5 7 6 8]);
-      msh_col.geo_map_der2 = reshape (msh_col.geo_map_der2, [3, 3, 3, msh.nqn, msh_col.nel]);
+      msh_col.geo_map_der2 = reshape (msh_col.geo_map_der2, [msh.rdim, msh.ndim, msh.ndim, msh.nqn, msh_col.nel]);
       
     else
       msh_col.geo_map_der2 = msh.geo_map_der2(:,:,:,:,msh_col.elem_list);

@@ -25,6 +25,7 @@
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -76,23 +77,24 @@ function msh_side = msh_eval_boundary_side (msh, iside)
   jac = feval (msh.map_der, [qn1(:), qn2(:), qn3(:)]');
 
   msh_side.geo_map = reshape (F, size (msh_side.quad_nodes));
-  msh_side.geo_map_jac = reshape(jac, 3, 3, msh_side.nqn, msh_side.nel);
+  msh_side.geo_map_jac = reshape(jac, msh.rdim, msh.ndim, msh_side.nqn, msh_side.nel);
 
-  jacdet = geopdes_norm__ (cross ...
-                          (squeeze (msh_side.geo_map_jac(:,ind(1),:,:)), ...
-                           squeeze (msh_side.geo_map_jac(:,ind(2),:,:))));
-  msh_side.jacdet = reshape (jacdet, msh_side.nqn, msh_side.nel);
+%   jacdet = geopdes_norm__ (cross ...
+%                           (squeeze (msh_side.geo_map_jac(:,ind(1),:,:)), ...
+%                            squeeze (msh_side.geo_map_jac(:,ind(2),:,:))));
+%   msh_side.jacdet = reshape (jacdet, msh_side.nqn, msh_side.nel);
+  msh_side.jacdet = geopdes_det__ (msh_side.geo_map_jac(:,ind,:,:));
 
   JinvT = geopdes_invT__ (msh_side.geo_map_jac);
-  JinvT = reshape (JinvT, [3, 3, msh_side.nqn, msh_side.nel]);
+  JinvT = reshape (JinvT, [msh.rdim, msh.ndim, msh_side.nqn, msh_side.nel]);
 
-  normal = zeros (3, msh_side.nqn, 1, msh_side.nel);
+  normal = zeros (msh.ndim, msh_side.nqn, 1, msh_side.nel);
   normal(ind2,:,:,:) = (-1)^iside;
 
   normal = geopdes_prod__ (JinvT, normal);
-  normal = reshape (normal, [3, msh_side.nqn, msh_side.nel]);
-  norms = repmat (reshape (geopdes_norm__ (normal), [1, msh_side.nqn, msh_side.nel]), [3 1 1]);
-  msh_side.normal = normal ./ norms;
+  normal = reshape (normal, [msh.rdim, msh_side.nqn, msh_side.nel]);
+  norms = reshape (geopdes_norm__ (normal), [1, msh_side.nqn, msh_side.nel]);
+  msh_side.normal = bsxfun (@rdivide, normal, norms);
   clear normal norms
 
 end
