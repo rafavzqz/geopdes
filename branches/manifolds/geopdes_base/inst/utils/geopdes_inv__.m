@@ -18,10 +18,14 @@
 % Author: Carlo de Falco <cdf AT users.sourceforge.net>
 
 function [Jinv, det] = geopdes_inv__ (v)
-  det  = (v(1,1,:,:) .* v(2,2,:,:) - v(2,1,:,:) .* v(1,2,:,:));
-  Jinv(1,1,:,:) = v(2,2,:,:)./det;
-  Jinv(2,2,:,:) = v(1,1,:,:)./det;
-  Jinv(1,2,:,:) = -v(1,2,:,:)./det;
-  Jinv(2,1,:,:) = -v(2,1,:,:)./det;
-  det = squeeze (det);
+  if (size(v,1) == 2)
+    det  = (v(1,1,:,:) .* v(2,2,:,:) - v(2,1,:,:) .* v(1,2,:,:));
+    Jinv(1,1,:,:) = v(2,2,:,:)./det;
+    Jinv(2,2,:,:) = v(1,1,:,:)./det;
+    Jinv(1,2,:,:) = -v(1,2,:,:)./det;
+    Jinv(2,1,:,:) = -v(2,1,:,:)./det;
+    det = squeeze (det);
+  elseif (size(v,1) == 3)
+    error ('geopdes_inv__: 3D case not implemented yet')
+  end
 end

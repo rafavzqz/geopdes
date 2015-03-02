@@ -18,25 +18,40 @@
 % <http://www.gnu.org/licenses/>.
 % Author: Carlo de Falco <cdf AT users.sourceforge.net>
 
-function d = geopdes_det__ (v)  
+function d = geopdes_det__ (v)
 
   vsize = size (v);
 
   if (vsize(1) == 2 && vsize(2) == 2)
     d = v(1,1,:,:) .* v(2,2,:,:) - v(2,1,:,:) .* v(1,2,:,:);
+
   elseif (vsize(1) == 3 && vsize(2) == 3)
     d = v(1,1,:,:) .* (v(2,2,:,:) .* v(3,3,:,:) - v(2,3,:,:) .* v(3,2,:,:))...
       + v(1,2,:,:) .* (v(2,3,:,:) .* v(3,1,:,:) - v(2,1,:,:) .* v(3,3,:,:))...
       + v(1,3,:,:) .* (v(2,1,:,:) .* v(3,2,:,:) - v(2,2,:,:) .* v(3,1,:,:));
+  
   elseif (vsize(1) == 3 && vsize(2) == 2)
-    % G = v^t * v
-    G = zeros (2, 2, vsize(3), vsize(4));
-    G(1,1,:,:) = v(1,1,:,:).^2 + v(2,1,:,:).^2 + v(3,1,:,:).^2;
-    G(2,2,:,:) = v(1,2,:,:).^2 + v(2,2,:,:).^2 + v(3,2,:,:).^2;
-    G(1,2,:,:) = v(1,1,:,:).*v(1,2,:,:) + v(2,1,:,:).*v(2,2,:,:) + v(3,1,:,:).v(3,2,:,:);
-    G(2,1,:,:) = G(1,2,:,:);
+    % G = v^t * v, first fundamental form
+    for ii = 1:2
+      for jj = 1:2
+        G(ii,jj,:,:) = sum (v(:,ii,:,:).*v(:,jj,:,:), 1);
+      end
+    end
+    % d = sqrt(det(G))
+    d = sqrt (G(1,1,:,:) .* G(2,2,:,:) - G(2,1,:,:) .* G(1,2,:,:));
     
-    d = G(1,1,:,:) .* G(2,2,:,:) - G(2,1,:,:) .* G(1,2,:,:);
+  elseif (vsize(1) == 2 && vsize(2) == 1)
+    % G = v^t * v
+    G = v(1,1,:,:).^2 + v(2,1,:,:).^2;
+    d = sqrt (G);
+
+  elseif (vsize(1) == 3 && vsize(2) == 1)
+    % G = v^t * v
+    G = v(1,1,:,:).^2 + v(2,1,:,:).^2 + + v(3,1,:,:).^2;
+    d = sqrt (G);
+
+  elseif (vsize(1) == 1 && vsize(2) == 1)
+    d = v(1,1,:,:);
   end
 
   d = squeeze (d);

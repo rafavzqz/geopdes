@@ -48,6 +48,7 @@
 % Copyright (C) 2009, 2010, 2014 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
 % Copyright (C) 2014 Elena Bulgarello, Sara Frizziero
+% Copyright (C) 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by

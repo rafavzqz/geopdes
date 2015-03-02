@@ -19,6 +19,8 @@
 %
 %     FIELD_NAME    (SIZE)                  DESCRIPTION
 %
+%     ndim          (scalar)                dimension of the parametric space (equal to 3)
+%     rdim          (scalar)                dimension of the physical space (equal to 3)
 %     quad_nodes    (3 x nqn x nel vector)  coordinates of the quadrature nodes in parametric space
 %     quad_weights  (nqn x nel vector)      weights associated to the quadrature nodes
 %     geo_map       (3 x nqn x nel vector)  physical coordinates of the quadrature nodes
@@ -29,6 +31,7 @@
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
 % Copyright (C) 2014 Elena Bulgarello, Carlo de Falco, Sara Frizziero
+% Copyright (C) 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -127,16 +130,16 @@ function msh = msh_precompute (msh, varargin)
 
   if (geo_map)
     F = feval (msh.map, {qn{1}(:)', qn{2}(:)', qn{3}(:)'});
-    F = reshape (F, [3, nqnu, nelu, nqnv, nelv, nqnw, nelw]);
+    F = reshape (F, [msh.rdim, nqnu, nelu, nqnv, nelv, nqnw, nelw]);
     F = permute (F, [1 2 4 6 3 5 7]);
-    msh.geo_map = reshape (F, [3, nqn, nel]);
+    msh.geo_map = reshape (F, [msh.rdim, nqn, nel]);
   end
 
   if (geo_map_jac || jacdet)
     jac = feval (msh.map_der, {qn{1}(:)', qn{2}(:)' qn{3}(:)'});
-    jac = reshape (jac, [3, 3, nqnu, nelu, nqnv, nelv, nqnw, nelw]);
+    jac = reshape (jac, [msh.rdim, msh.ndim, nqnu, nelu, nqnv, nelv, nqnw, nelw]);
     jac = permute (jac, [1 2 3 5 7 4 6 8]);
-    jac = reshape (jac, 3, 3, nqn, nel);
+    jac = reshape (jac, msh.rdim, msh.ndim, nqn, nel);
 
     if (geo_map_jac)
       msh.geo_map_jac = jac;
@@ -149,9 +152,9 @@ function msh = msh_precompute (msh, varargin)
 
   if (~isempty (msh.map_der2) && geo_map_der2)
     hess = feval (msh.map_der2, {qn{1}(:)', qn{2}(:)', qn{3}(:)'});
-    hess = reshape (hess, [3, 3, 3, nqnu, nelu, nqnv, nelv, nqnw, nelw]);
+    hess = reshape (hess, [msh.rdim, msh.ndim, msh.ndim, nqnu, nelu, nqnv, nelv, nqnw, nelw]);
     hess = permute (hess, [1 2 3 4 6 8 5 7 9]);
-    msh.geo_map_der2 = reshape (hess, 3, 3, 3, nqn, nel);
+    msh.geo_map_der2 = reshape (hess, msh.rdim, msh.ndim, msh.ndim, nqn, nel);
   end
 
 end
