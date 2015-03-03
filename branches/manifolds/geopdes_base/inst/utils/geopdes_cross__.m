@@ -1,6 +1,5 @@
 % -*- INTERNAL UNDOCUMENTED FUNCTION -*-
 %
-% Copyright (C) 2010 Carlo de Falco
 % Copyright (C) 2015 Rafael Vazquez
 %
 % This program is free software; you can redistribute it and/or modify
@@ -16,13 +15,12 @@
 % You should have received a copy of the GNU General Public License
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
-% Author: Carlo de Falco <cdf AT users.sourceforge.net>
 
-function nrm = geopdes_norm__ (v)
+function w = geopdes_cross__ (u, v)
 
-  vsize = size (v);
-
-  nrm = sqrt (sum (v.^2, 1));
-  nrm = reshape (nrm, vsize(2:end));
-
+  w = zeros (size (u));
+  w(1,:,:) = u(2,:,:) .* v(3,:,:) - u(3,:,:) .* v(2,:,:);
+  w(2,:,:) = u(3,:,:) .* v(1,:,:) - u(1,:,:) .* v(3,:,:);
+  w(3,:,:) = u(1,:,:) .* v(2,:,:) - u(2,:,:) .* v(1,:,:);
+   
 end

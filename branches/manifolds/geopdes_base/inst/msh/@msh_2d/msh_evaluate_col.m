@@ -122,4 +122,11 @@ function msh_col = msh_evaluate_col (msh, colnum)
                            (msh_col.quad_weights .* abs (msh_col.jacdet), 1));
   end
 
+  if (msh.ndim == 2 && msh.rdim == 3)
+    normal = reshape (geopdes_cross__ (msh_col.geo_map_jac(:,1,:,:), ...
+                              msh_col.geo_map_jac(:,2,:,:)), 3, msh_col.nqn, msh_col.nel);
+    norms = reshape (geopdes_norm__ (normal), [1, msh_col.nqn, msh_col.nel]);
+    msh_col.normal = bsxfun (@rdivide, normal, norms);
+  end
+  
 end
