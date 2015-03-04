@@ -36,14 +36,12 @@ function varargout = op_u_v_tp (space1, space2, msh, coeff)
 
   A = spalloc (space2.ndof, space1.ndof, 3*space1.ndof);
 
-  ndim = numel (msh.qn);
-
   for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
     sp1_col = sp_evaluate_col (space1, msh_col);
     sp2_col = sp_evaluate_col (space2, msh_col);
 
-    for idim = 1:ndim
+    for idim = 1:msh.rdim
       x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
     end
 
