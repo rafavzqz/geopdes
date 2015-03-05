@@ -4,10 +4,6 @@
 clear problem_data 
 % Physical domain, defined as NURBS map given in a text file
 problem_data.geo_name = 'geo_ring.txt';
-nrb = nrbrevolve(nrbline([1 0],[2 0]),[],[0 0 1], pi/2);
-nrb.coefs(3,2,2) = 1;
-% nrb = nrbtestsrf;
-problem_data.geo_name = nrb;
 
 % Type of boundary conditions for each side of the domain
 problem_data.nmnn_sides   = [];
@@ -32,7 +28,7 @@ problem_data.graduex = @(x, y) cat (1, ...
 clear method_data
 method_data.degree     = [3 3];       % Degree of the splines
 method_data.regularity = [2 2];       % Regularity of the splines
-method_data.nsub       = [5 5];       % Number of subdivisions
+method_data.nsub       = [9 9];       % Number of subdivisions
 method_data.nquad      = [4 4];       % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
