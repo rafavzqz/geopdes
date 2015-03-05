@@ -42,7 +42,20 @@ function [eu, F] = sp_eval (u, space, geometry, npts, varargin)
     option = varargin{1};
   end
 
+  
   ndim = numel (npts);
+  if (isfield (geometry,'rdim'))
+    rdim = geometry.rdim;
+  elseif (isfield (geometry,'nurbs'))
+    if (any (abs(geometry.nurbs.coefs(3,:)) > 1e-12))
+      rdim = 3;
+    elseif (any (abs(geometry.nurbs.coefs(2,:)) > 1e-12))
+      rdim = 2;
+    else
+      rdim = 1;
+    end
+  end
+
 
 % Temporary solution, to be fixed using "isprop" after defining the
 %  classes with classdef
@@ -58,16 +71,19 @@ function [eu, F] = sp_eval (u, space, geometry, npts, varargin)
   else
     for idim=1:ndim; knt{idim} = [0 1]; end
   end
-
+  
   if (iscell (npts))
     pts = npts;
     npts = cellfun (@numel, pts);
   elseif (isvector (npts))
-    if (ndim == 2)
-      pts = {(linspace (knt{1}(1), knt{1}(end), npts(1))), (linspace (knt{2}(1), knt{2}(end), npts(2)))};
-    elseif (ndim == 3)
-      pts = {(linspace (knt{1}(1), knt{1}(end), npts(1))), (linspace (knt{2}(1), knt{2}(end), npts(2))), (linspace (knt{3}(1), knt{3}(end), npts(3)))};
+    for idim = 1:ndim
+      pts{idim} = linspace (knt{idim}(1), knt{idim}(end), npts(idim));
     end
+%     if (ndim == 2)
+%       pts = {(linspace (knt{1}(1), knt{1}(end), npts(1))), (linspace (knt{2}(1), knt{2}(end), npts(2)))};
+%     elseif (ndim == 3)
+%       pts = {(linspace (knt{1}(1), knt{1}(end), npts(1))), (linspace (knt{2}(1), knt{2}(end), npts(2))), (linspace (knt{3}(1), knt{3}(end), npts(3)))};
+%     end
   end
 
   for jj = 1:ndim
@@ -89,27 +105,29 @@ function [eu, F] = sp_eval (u, space, geometry, npts, varargin)
   switch (lower (option))
     case {'value'}
       [eu, F] = sp_eval_msh (u, sp, msh);
-      F  = reshape (F, [ndim, npts]);
+      F  = reshape (F, [rdim, npts]);
       eu = squeeze (reshape (eu, [sp.ncomp, npts]));
 
     case {'divergence'}
       [eu, F] = sp_eval_div_msh (u, sp, msh);
-      F  = reshape (F, [ndim, npts]);
+      F  = reshape (F, [rdim, npts]);
       eu = reshape (eu, npts);
 
     case {'curl'}
       [eu, F] = sp_eval_curl_msh (u, sp, msh);
-      F  = reshape (F, [ndim, npts]);
-      if (ndim == 2)
+      F  = reshape (F, [rdim, npts]);
+      if (ndim == 2 && rdim == 2)
         eu = reshape (eu, npts);
-      elseif (ndim == 3)
+      elseif (ndim == 3 && rdim == 3)
         eu = reshape (eu, [ndim, npts]);
+      else
+        error ('sp_eval: the evaluation of the curl for 3d surfaces is not implemented yet')
       end
 
     case {'gradient'}
       [eu, F] = sp_eval_grad_msh (u, sp, msh);
-      F  = reshape (F, [ndim, npts]);
-      eu = squeeze (reshape (eu, [sp.ncomp, ndim, npts]));
+      F  = reshape (F, [rdim, npts]);
+      eu = squeeze (reshape (eu, [sp.ncomp, rdim, npts]));
 
     otherwise
       error ('sp_eval: unknown option to evaluate')
