@@ -29,12 +29,10 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [eu, F] = sp_eval_grad_msh (u, space, msh);
+function [eu, F] = sp_eval_grad_msh (u, space, msh)
 
-  ndim = numel (msh.qn);
-
-  F  = zeros (ndim, msh.nqn, msh.nel);
-  eu = zeros (space.ncomp, ndim, msh.nqn, msh.nel);
+  F  = zeros (msh.rdim, msh.nqn, msh.nel);
+  eu = zeros (space.ncomp, msh.rdim, msh.nqn, msh.nel);
 
   for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
@@ -47,17 +45,17 @@ function [eu, F] = sp_eval_grad_msh (u, space, msh);
     weight = reshape (uc_iel, [1, 1, 1, sp_col.nsh_max, msh_col.nel]);
 
     sp_col.shape_function_gradients = ...
-           reshape (sp_col.shape_function_gradients, sp_col.ncomp, ndim, ...
+           reshape (sp_col.shape_function_gradients, sp_col.ncomp, msh.rdim, ...
             msh_col.nqn, sp_col.nsh_max, msh_col.nel);
 
     F(:,:,msh_col.elem_list) = msh_col.geo_map;
     eu(:,:,:,msh_col.elem_list) = reshape (sum (bsxfun (@times, weight, ...
               sp_col.shape_function_gradients), 4), ...
-              sp_col.ncomp, ndim, msh_col.nqn, msh_col.nel);
+              sp_col.ncomp, msh.rdim, msh_col.nqn, msh_col.nel);
   end
 
   if (space.ncomp == 1)
-    eu = reshape (eu, ndim, msh.nqn, msh.nel);
+    eu = reshape (eu, msh.rdim, msh.nqn, msh.nel);
   end
 
 end

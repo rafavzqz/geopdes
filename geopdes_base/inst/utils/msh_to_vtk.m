@@ -32,11 +32,13 @@
 function msh_to_vtk (pts, values, filename, fieldname)
 
   if (length (size (pts)) == 4)
-    dim = 3;
+    ndim = 3;
   else
-    dim = 2;
+    ndim = 2;
   end
 
+  rdim = size (pts, 1);
+  
   str1 = cat (2,'<?xml version="1.0"?> \n', ...
 '<VTKFile type="StructuredGrid" version="0.1"> \n', ...
 '<StructuredGrid WholeExtent="0 %d 0 %d 0 %d"> \n', ...
@@ -57,7 +59,7 @@ function msh_to_vtk (pts, values, filename, fieldname)
 '</VTKFile> \n');
 
 % Even for 2D data, everything is saved in 3D 
-  if (numel (size (values)) == dim)
+  if (numel (size (values)) == ndim)
     fieldclass = 'Scalars';
     ncomp = 1;
   else
@@ -65,14 +67,16 @@ function msh_to_vtk (pts, values, filename, fieldname)
     ncomp = 3;
   end
   
-  if (dim == 3)
+  if (ndim == 3)
     npts = size (squeeze (pts(1,:,:,:)));
   else
     npts = size (squeeze (pts(1,:,:)));
     npts(3) = 1;
-    pts(3,:,:) = 0;
-    if (ncomp == 3)
-      values(3,:,:) = 0;
+    if (rdim == 2)
+      pts(3,:,:) = 0;
+      if (ncomp == 3)
+        values(3,:,:) = 0;
+      end
     end
   end
 

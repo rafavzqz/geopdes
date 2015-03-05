@@ -54,6 +54,7 @@ function msh = msh_precompute (msh, varargin)
     geo_map_jac = true;
     geo_map_der2 = true;
     jacdet = true;
+    normal = true;
   else
     if (~rem (length (varargin), 2) == 0)
       error ('msh_precompute: options must be passed in the [option, value] format');
@@ -77,6 +78,8 @@ function msh = msh_precompute (msh, varargin)
         geo_map_der2 = varargin{ii+1};
       elseif (strcmpi (varargin{ii}, 'jacdet'))
         jacdet = varargin{ii+1};
+      elseif (strcmpi (varargin{ii}, 'normal'))
+        normal = varargin{ii+1};
       else
         error ('msh_precompute: unknown option %s', varargin {ii});
       end
@@ -127,7 +130,7 @@ function msh = msh_precompute (msh, varargin)
     msh.geo_map = reshape (F, [msh.rdim, nqn, nel]);
   end
 
-  if (geo_map_jac || jacdet)
+  if (geo_map_jac || jacdet || normal)
     jac = feval (msh.map_der, {qn{1}(:)', qn{2}(:)'});
     jac = reshape (jac, [msh.rdim, msh.ndim, nqnu, nelu, nqnv, nelv]);
     jac = permute (jac, [1 2 3 5 4 6]);
@@ -138,6 +141,14 @@ function msh = msh_precompute (msh, varargin)
     if (jacdet)
       msh.jacdet = abs (geopdes_det__ (jac));
       msh.jacdet = reshape (msh.jacdet, [nqn, nel]);
+    end
+    if (normal)
+      if (msh.ndim == 2 && msh.rdim == 3)
+        normal = reshape (geopdes_cross__ (msh.geo_map_jac(:,1,:,:), ...
+                              msh.geo_map_jac(:,2,:,:)), 3, msh.nqn, msh.nel);
+        norms = reshape (geopdes_norm__ (normal), [1, msh.nqn, msh.nel]);
+        msh.normal = bsxfun (@rdivide, normal, norms);
+      end
     end
   end
 

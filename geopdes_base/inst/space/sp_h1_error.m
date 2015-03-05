@@ -34,13 +34,13 @@
 
 function [errh1, errl2] = sp_h1_error (sp, msh, u, uex, graduex)
 
-  ndim = numel (msh.qn);
+  rdim = msh.rdim;
 
   errl2 = 0;
   errh1s = 0;
 
   valu = zeros (sp.ncomp, msh.nqn, msh.nelcol);
-  grad_valu = zeros (sp.ncomp, ndim, msh.nqn, msh.nelcol);
+  grad_valu = zeros (sp.ncomp, rdim, msh.nqn, msh.nelcol);
   for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
     sp_col  = sp_evaluate_col (sp, msh_col, 'gradient', true);
@@ -55,10 +55,10 @@ function [errh1, errl2] = sp_h1_error (sp, msh, u, uex, graduex)
     sp_col.shape_functions = reshape (sp_col.shape_functions, ...
            sp.ncomp, msh_col.nqn, sp_col.nsh_max, msh_col.nel);
     sp_col.shape_function_gradients = reshape (sp_col.shape_function_gradients, ...
-           sp.ncomp, ndim, msh_col.nqn, sp_col.nsh_max, msh_col.nel);
+           sp.ncomp, rdim, msh_col.nqn, sp_col.nsh_max, msh_col.nel);
 
     for icmp = 1:sp.ncomp
-      for idim = 1:ndim
+      for idim = 1:rdim
         grad_valu(icmp,idim,:,:) = sum (weight .* reshape (sp_col.shape_function_gradients(icmp,idim,:,:,:), ...
                             msh_col.nqn, sp_col.nsh_max, msh_col.nel), 2);
       end
@@ -66,13 +66,13 @@ function [errh1, errl2] = sp_h1_error (sp, msh, u, uex, graduex)
                             msh_col.nqn, sp_col.nsh_max, msh_col.nel), 2);
     end
 
-    for idim = 1:ndim
+    for idim = 1:rdim
       x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
     end
     w = msh_col.quad_weights .* msh_col.jacdet;
 
     valex  = reshape (feval (uex, x{:}), sp.ncomp, msh_col.nqn, msh_col.nel);
-    grad_valex  = reshape (feval (graduex, x{:}), sp.ncomp, ndim, msh_col.nqn, msh_col.nel);
+    grad_valex  = reshape (feval (graduex, x{:}), sp.ncomp, rdim, msh_col.nqn, msh_col.nel);
 
     errh1s = errh1s + sum (sum (reshape (sum (sum ...
        ((grad_valu - grad_valex).^2, 1), 2), [msh_col.nqn, msh_col.nel]) .* w));

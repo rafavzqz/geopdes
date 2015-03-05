@@ -31,9 +31,7 @@
 
 function [eu, F] = sp_eval_msh (u, space, msh)
 
-  ndim = numel (msh.qn);
-
-  F  = zeros (ndim, msh.nqn, msh.nel);
+  F  = zeros (msh.rdim, msh.nqn, msh.nel);
   eu = zeros (space.ncomp, msh.nqn, msh.nel);
 
   for iel = 1:msh.nel_dir(1)

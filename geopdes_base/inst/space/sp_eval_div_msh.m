@@ -35,9 +35,7 @@ function [eu, F] = sp_eval_div_msh (u, space, msh);
     error ('sp_eval_div_msh: field cannot be scalar')
   end
 
-  ndim = numel (msh.qn);
-
-  F  = zeros (ndim, msh.nqn, msh.nel);
+  F  = zeros (msh.rdim, msh.nqn, msh.nel);
   eu = zeros (msh.nqn, msh.nel);
 
   for iel = 1:msh.nel_dir(1)

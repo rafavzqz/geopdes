@@ -35,10 +35,8 @@ function [eu, F] = sp_eval_curl_msh (u, space, msh);
     error ('sp_eval_curl_msh: field cannot be scalar')
   end
 
-  ndim = numel (msh.qn);
-
-  F  = zeros (ndim, msh.nqn, msh.nel);
-  if (ndim == 2)
+  F  = zeros (msh.rdim, msh.nqn, msh.nel);
+  if (msh.ndim == 2 && msh.rdim == 2)
     eu = zeros (msh.nqn, msh.nel);
 
     for iel = 1:msh.nel_dir(1)
@@ -59,8 +57,8 @@ function [eu, F] = sp_eval_curl_msh (u, space, msh);
            sp_col.shape_function_curls), 2), msh_col.nqn, msh_col.nel);
     end
 
-  elseif (ndim == 3)
-    eu = zeros (ndim, msh.nqn, msh.nel);
+  elseif (msh.ndim == 3 && msh.rdim == 3)
+    eu = zeros (msh.rdim, msh.nqn, msh.nel);
 
     for iel = 1:msh.nel_dir(1)
       msh_col = msh_evaluate_col (msh, iel);
