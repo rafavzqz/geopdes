@@ -108,6 +108,8 @@ function msh = msh_3d (breaks, qn, qw, geo, varargin)
       ind = setdiff (1:3, ceil(iside/2)); 
 
       bndry.side_number = iside;
+      bndry.ndim = msh.ndim - 1;
+      bndry.rdim = msh.rdim;
       bndry.qn = {qn{ind}};
       bndry.qw = {qw{ind}};
 
