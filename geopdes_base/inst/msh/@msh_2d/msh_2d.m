@@ -116,6 +116,8 @@ function msh = msh_2d (breaks, qn, qw, geo, varargin)
       ind = mod (floor ((iside+1)/2), 2) + 1;  %ind = [2 2 1 1];
 
       msh.boundary(iside).side_number = iside;
+      msh.boundary(iside).ndim = msh.ndim - 1;
+      msh.boundary(iside).rdim = msh.rdim;
 
       msh.boundary(iside).breaks = msh.breaks{ind};
       msh.boundary(iside).nel = size (qn{ind},2);

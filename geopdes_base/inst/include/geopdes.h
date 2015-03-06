@@ -25,11 +25,11 @@
 class geopdes_mesh_base
 {
 protected:
-  octave_idx_type nqn_rep, nel_rep, ndir_rep;
+  octave_idx_type nqn_rep, nel_rep, rdim_rep;
 public:
   octave_idx_type nqn  (void) const { return nqn_rep; }
   octave_idx_type nel  (void) const { return nel_rep; }
-  octave_idx_type ndir (void) const { return ndir_rep; }
+  octave_idx_type ndir (void) const { return rdim_rep; }
   virtual double jacdet  (octave_idx_type inode, octave_idx_type iel) const = 0;
   virtual double weights (octave_idx_type inode, octave_idx_type iel) const = 0;
   inline double area (octave_idx_type iel) const {
@@ -89,7 +89,7 @@ public:
 
     nqn_rep  = msh.contents  ("nqn").int_value ();
     nel_rep  = msh.contents  ("nel").int_value ();
-    ndir_rep = msh.contents  ("geo_map_jac").array_value ().dim2 (); 
+    rdim_rep = msh.contents  ("rdim").int_value ();
     jacdet_rep  = msh.contents ("jacdet").matrix_value (); 
     weights_rep = msh.contents ("quad_weights").matrix_value (); 
   }
