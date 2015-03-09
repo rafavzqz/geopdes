@@ -11,21 +11,21 @@
 %
 %     msh_col: structure containing the quadrature rule in one column of the physical domain, which contains the following fields
 %
-%     FIELD_NAME    (SIZE)                  DESCRIPTION
-%     ndim          (scalar)                dimension of the parametric space (equal to 2)
-%     rdim          (scalar)                dimension of the physical space (equal to 2 or 3)
-%     colnum        (scalar)                number of the column
-%     nel           (scalar)                number of elements in the column
-%     elem_list     (nel vector)            indices of the elements in the column
-%     nel_dir       (1 x 2 vector)          number of elements in each parametric direction for the entire mesh
-%     nqn           (scalar)                number of quadrature nodes per element
-%     nqn_dir       (1 x 2 vector)          number of quadrature nodes per element in each parametric direction
-%     quad_nodes    (2 x nqn x nel vector)  coordinates of the quadrature nodes in parametric space
-%     quad_weights  (nqn x nel vector)      weights associated to the quadrature nodes
-%     geo_map       (2 x nqn x nel vector)  physical coordinates of the quadrature nodes
-%     geo_map_jac   (2 x 2 x nqn x nel)     Jacobian matrix of the map evaluated at the quadrature nodes
-%     geo_map_der2  (2 x 2 x 2 x nqn x nel) Second order derivatives of the map evaluated at the quadrature nodes (optional)
-%     jacdet        (nqn x nel)             determinant of the Jacobian evaluated in the quadrature points
+%     FIELD_NAME    (SIZE)                    DESCRIPTION
+%     ndim          (scalar)                  dimension of the parametric space (equal to 2)
+%     rdim          (scalar)                  dimension of the physical space (equal to 2 or 3)
+%     colnum        (scalar)                  number of the column
+%     nel           (scalar)                  number of elements in the column
+%     elem_list     (nel vector)              indices of the elements in the column
+%     nel_dir       (1 x ndim vector)         number of elements in each parametric direction for the entire mesh
+%     nqn           (scalar)                  number of quadrature nodes per element
+%     nqn_dir       (1 x ndim vector)         number of quadrature nodes per element in each parametric direction
+%     quad_nodes    (ndim x nqn x nel vector) coordinates of the quadrature nodes in parametric space
+%     quad_weights  (nqn x nel vector)        weights associated to the quadrature nodes
+%     geo_map       (rdim x nqn x nel vector) physical coordinates of the quadrature nodes
+%     geo_map_jac   (rdim x ndim x nqn x nel)     Jacobian matrix of the map evaluated at the quadrature nodes
+%     geo_map_der2  (rdim x ndim x ndim x nqn x nel) Second order derivatives of the map evaluated at the quadrature nodes (optional)
+%     jacdet        (nqn x nel)               determinant of the Jacobian evaluated in the quadrature points
 %  For more details, see the documentation
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
