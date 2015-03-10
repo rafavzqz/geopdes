@@ -42,8 +42,10 @@
 
 function msh_side = msh_eval_boundary_side (msh, iside)
 
-  ind = setdiff (1:msh.ndim, ceil(iside/2)); % ind = [2 3; 2 3; 1 3; 1 3; 1 2; 1 2] 
-  ind2 = floor ((iside+1)/2); % ind2 = [1 1 2 2 3 3];
+%%    ind  = [2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind  = [2 2 1 1] in 2D;
+%%    ind2 = [1 1 2 2 3 3] in 3D,                  %ind2 = [1 1 2 2] in 2D
+  ind2 = ceil (iside/2);
+  ind = setdiff (1:msh.ndim, ind2);
 
   msh_side = msh.boundary(iside);
 
