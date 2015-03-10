@@ -1,6 +1,7 @@
 % -*- INTERNAL UNDOCUMENTED FUNCTION -*-
 %
 % Copyright (C) 2010 Carlo de Falco
+% Copyright (C) 2015 Rafael Vazquez
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -47,7 +48,7 @@ function [JinvT, det] = geopdes_invT__ (v)
     JinvT(3,3,:,:) =  (v(1,1,:,:).*v(2,2,:,:) - v(1,2,:,:).*v(2,1,:,:))./det;
 
   elseif (vsize(1) == 3 && vsize(2) == 2)
-    % G = v^t * v
+    % G = v^t * v, first fundamental form for v = DF
     for ii = 1:2
       for jj = 1:2
         G(ii,jj,:,:) = sum (v(:,ii,:,:).*v(:,jj,:,:), 1);
@@ -56,7 +57,7 @@ function [JinvT, det] = geopdes_invT__ (v)
     det = sqrt (G(1,1,:,:) .* G(2,2,:,:) - G(2,1,:,:) .* G(1,2,:,:));
     
     Ginv = geopdes_inv__ (G);
-    %  v * G^{-1}, which means DF * {DF^t * DF}-1
+    %  v * G^{-1}, which means DF * {DF^t * DF}^(-1)
     JinvT = zeros (size(v));
     for ii = 1:3
       for jj = 1:2

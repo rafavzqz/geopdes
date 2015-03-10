@@ -23,6 +23,6 @@ function nrm = geopdes_norm__ (v)
   vsize = size (v);
 
   nrm = sqrt (sum (v.^2, 1));
-  nrm = reshape (nrm, vsize(2:end));
+%   nrm = reshape (nrm, vsize(2:end));
 
 end

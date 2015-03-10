@@ -31,7 +31,7 @@ function d = geopdes_det__ (v)
       + v(1,3,:,:) .* (v(2,1,:,:) .* v(3,2,:,:) - v(2,2,:,:) .* v(3,1,:,:));
   
   elseif (vsize(1) == 3 && vsize(2) == 2)
-    % G = v^t * v, first fundamental form
+    % G = v^t * v, first fundamental form for v = DF
     for ii = 1:2
       for jj = 1:2
         G(ii,jj,:,:) = sum (v(:,ii,:,:).*v(:,jj,:,:), 1);
