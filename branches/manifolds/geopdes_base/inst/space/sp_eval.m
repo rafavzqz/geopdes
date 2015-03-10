@@ -42,20 +42,7 @@ function [eu, F] = sp_eval (u, space, geometry, npts, varargin)
     option = varargin{1};
   end
 
-  
   ndim = numel (npts);
-  if (isfield (geometry,'rdim'))
-    rdim = geometry.rdim;
-  elseif (isfield (geometry,'nurbs'))
-    if (any (abs(geometry.nurbs.coefs(3,:)) > 1e-12))
-      rdim = 3;
-    elseif (any (abs(geometry.nurbs.coefs(2,:)) > 1e-12))
-      rdim = 2;
-    else
-      rdim = 1;
-    end
-  end
-
 
 % Temporary solution, to be fixed using "isprop" after defining the
 %  classes with classdef
@@ -95,30 +82,26 @@ function [eu, F] = sp_eval (u, space, geometry, npts, varargin)
     end
   end
 
-  if (ndim == 2)
-    msh = msh_2d ({brk{1}, brk{2}}, pts, [], geometry, 'boundary', false);
-  elseif (ndim == 3)
-    msh = msh_3d ({brk{1}, brk{2}, brk{3}}, pts, [], geometry, 'boundary', false);
-  end
+  msh = msh_geopdes (brk, pts, [], geometry, 'boundary', false);
   sp  = space.constructor (msh);
 
   switch (lower (option))
     case {'value'}
       [eu, F] = sp_eval_msh (u, sp, msh);
-      F  = reshape (F, [rdim, npts]);
+      F  = reshape (F, [msh.rdim, npts]);
       eu = squeeze (reshape (eu, [sp.ncomp, npts]));
 
     case {'divergence'}
       [eu, F] = sp_eval_div_msh (u, sp, msh);
-      F  = reshape (F, [rdim, npts]);
+      F  = reshape (F, [msh.rdim, npts]);
       eu = reshape (eu, npts);
 
     case {'curl'}
       [eu, F] = sp_eval_curl_msh (u, sp, msh);
-      F  = reshape (F, [rdim, npts]);
-      if (ndim == 2 && rdim == 2)
+      F  = reshape (F, [msh.rdim, npts]);
+      if (ndim == 2 && msh.rdim == 2)
         eu = reshape (eu, npts);
-      elseif (ndim == 3 && rdim == 3)
+      elseif (ndim == 3 && msh.rdim == 3)
         eu = reshape (eu, [ndim, npts]);
       else
         error ('sp_eval: the evaluation of the curl for 3d surfaces is not implemented yet')
@@ -126,8 +109,8 @@ function [eu, F] = sp_eval (u, space, geometry, npts, varargin)
 
     case {'gradient'}
       [eu, F] = sp_eval_grad_msh (u, sp, msh);
-      F  = reshape (F, [rdim, npts]);
-      eu = squeeze (reshape (eu, [sp.ncomp, rdim, npts]));
+      F  = reshape (F, [msh.rdim, npts]);
+      eu = squeeze (reshape (eu, [sp.ncomp, msh.rdim, npts]));
 
     otherwise
       error ('sp_eval: unknown option to evaluate')
