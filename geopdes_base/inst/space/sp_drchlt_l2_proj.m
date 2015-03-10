@@ -14,8 +14,8 @@
 %  u:    assigned value to the degrees of freedom
 %  dofs: global numbering of the corresponding basis functions
 %
-% Copyright (C) 2010 Carlo de Falco, Rafael Vazquez
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2010 Carlo de Falco
+% Copyright (C) 2010, 2011, 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -51,19 +51,11 @@ function [u, dofs] = sp_drchlt_l2_proj (sp, msh, h, sides)
     msh_bnd = msh_eval_boundary_side (msh, iside);
     sp_bnd  = sp_eval_boundary_side (sp, msh_bnd);
 
-    if (size (msh_bnd.geo_map, 1) == 2)
-      [x, y] = deal (squeeze (msh_bnd.geo_map(1,:,:)), ...
-                     squeeze (msh_bnd.geo_map(2,:,:)));
-
-      hval = reshape (h (x, y, iside), sp.ncomp, msh_bnd.nqn, msh_bnd.nel);
-
-    elseif (size (msh_bnd.geo_map, 1) == 3)
-      [x, y, z] = deal (squeeze (msh_bnd.geo_map(1,:,:)), ...
-                        squeeze (msh_bnd.geo_map(2,:,:)), ...
-                        squeeze (msh_bnd.geo_map(3,:,:)));
-
-      hval = reshape (h (x, y, z, iside), sp_bnd.ncomp, msh_bnd.nqn, msh_bnd.nel);
+    x = cell (msh.rdim, 1);
+    for idim = 1:msh.rdim
+      x{idim} = squeeze (msh_bnd.geo_map(idim,:,:));
     end
+    hval = reshape (h(x{:}, iside), sp_bnd.ncomp, msh_bnd.nqn, msh_bnd.nel);
 
     [rs, cs, vs] = ...
              op_u_v (sp_bnd, sp_bnd, msh_bnd, ones (msh_bnd.nqn, msh_bnd.nel));
