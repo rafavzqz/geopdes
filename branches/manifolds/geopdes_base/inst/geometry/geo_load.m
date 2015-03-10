@@ -74,7 +74,7 @@ function geometry = geo_load (in)
       geometry.map_der2 =  in{3};
     end
   elseif (isnumeric (in) && all (size (in) == [4, 4]))  
-%% geometry is given as a 4x4 matrix representig an affine transformation
+%% geometry is given as a 4x4 matrix representing an affine transformation
     geometry.map = @(ps) affine_map  (ps, in);
     geometry.map_der = @(ps) affine_map_der  (ps, in);
     geometry.map_der2 = @affine_map_der2;
