@@ -52,7 +52,7 @@ geometry = geo_load ({@ring_polar_map, @ring_polar_map_der});
 breaks{1} ([2:3:end-2,3:3:end-1]) = [];
 breaks{2} ([2:3:end-2,3:3:end-1]) = [];
 [qn, qw]  = msh_set_quad_nodes (breaks, {rule, rule}, [0 1]);
-msh = msh_2d (breaks, qn, qw, geometry);
+msh = msh_geopdes (breaks, qn, qw, geometry);
 
 space = sp_bspline_2d (knots, [2, 2], msh);
 

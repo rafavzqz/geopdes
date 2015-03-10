@@ -74,7 +74,7 @@ geometry  = geo_load (geo_name);
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (zeta, rule);
-msh      = msh_3d (zeta, qn, qw, geometry);
+msh      = msh_geopdes (zeta, qn, qw, geometry);
   
 % Construct space structure
 space    = sp_bspline_3d (knots, degree, msh);

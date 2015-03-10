@@ -34,7 +34,7 @@ geometry = geo_load ({@ring_polar_map, @ring_polar_map_der});
 
 knots = kntuniform ([9 9], [4 4], [3 3]);
 [qn, qw] = msh_set_quad_nodes (knots, msh_gauss_nodes ([5 5]));
-msh = msh_2d (knots, qn, qw, geometry);
+msh = msh_geopdes (knots, qn, qw, geometry);
 
 space = sp_bspline_2d (knots, [4 4], msh);
 
