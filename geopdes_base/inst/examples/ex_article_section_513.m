@@ -20,7 +20,7 @@
 % GeoPDEs: a research tool for IsoGeometric Analysis of PDEs
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011, 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ breaks{2} ([2:3:end-2,3:3:end-1]) = [];
 [qn, qw]  = msh_set_quad_nodes (breaks, {rule, rule}, [0 1]);
 msh = msh_geopdes (breaks, qn, qw, geometry);
 
-space = sp_bspline_2d (knots, [2, 2], msh);
+space = sp_bspline (knots, [2, 2], msh);
 
 mat = op_gradu_gradv_tp (space, space, msh, @(x, y) ones (size (x))); 
 rhs = op_f_v_tp (space, msh, @(x, y) (8-9*sqrt(x.^2+y.^2)).*sin(2*atan(y./x))./(x.^2+y.^2));

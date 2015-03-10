@@ -1,14 +1,14 @@
-% SOLVE_LAPLACE_2D_ISO: Solve a 2d Laplace problem with a NURBS discretization (isoparametric approach). 
+% SOLVE_LAPLACE_ISO: Solve a Laplace problem with a NURBS discretization (isoparametric approach). 
 %
 % The function solves the diffusion problem
 %
-%    - div ( epsilon(x) grad (u)) = f    in Omega = F((0,1)^2)
+%    - div ( epsilon(x) grad (u)) = f    in Omega = F((0,1)^n)
 %                epsilon(x) du/dn = g    on Gamma_N
 %                               u = h    on Gamma_D
 %
 % USAGE:
 %
-%  [geometry, msh, space, u] = solve_laplace_2d_iso (problem_data, method_data)
+%  [geometry, msh, space, u] = solve_laplace_iso (problem_data, method_data)
 %
 % INPUT:
 %
@@ -31,14 +31,14 @@
 % OUTPUT:
 %
 %  geometry: geometry structure (see geo_load)
-%  msh:      mesh object that defines the quadrature rule (see msh_2d)
-%  space:    space object that defines the discrete space (see sp_nurbs_2d)
+%  msh:      mesh object that defines the quadrature rule (see msh_geopdes)
+%  space:    space object that defines the discrete space (see sp_nurbs)
 %  u:        the computed degrees of freedom
 %
-% See also EX_LAPLACE_ISO_RING for an example.
+% See also EX_LAPLACE_ISO_RING and EX_LAPLACE_ISO_THICK_RING for examples.
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
-% Copyright (C) 2011, Rafael Vazquez
+% Copyright (C) 2011, 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function [geometry, msh, space, u] = ...
-              solve_laplace_2d_iso (problem_data, method_data)
+              solve_laplace_iso (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
 data_names = fieldnames (problem_data);
@@ -81,7 +81,7 @@ rule     = msh_gauss_nodes (nquad);
 msh      = msh_geopdes (zeta, qn, qw, geometry);
   
 % Construct space structure
-space  = sp_nurbs_2d (geometry.nurbs, msh);
+space  = sp_nurbs (geometry.nurbs, msh);
   
 % Assemble the matrices
 stiff_mat = op_gradu_gradv_tp (space, space, msh, c_diff);
@@ -92,9 +92,11 @@ for iside = nmnn_sides
   msh_side = msh_eval_boundary_side (msh, iside);
   sp_side  = sp_eval_boundary_side (space, msh_side);
 
-  x = squeeze (msh_side.geo_map(1,:,:));
-  y = squeeze (msh_side.geo_map(2,:,:));
-  gval = reshape (g (x, y, iside), msh_side.nqn, msh_side.nel);
+  x = cell (msh.rdim, 1);
+  for idim = 1:msh.rdim
+    x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
+  end
+  gval = reshape (g (x{:}, iside), msh_side.nqn, msh_side.nel);
 
   rhs(sp_side.dofs) = rhs(sp_side.dofs) + op_f_v (sp_side, msh_side, gval);
 end
@@ -120,3 +122,6 @@ end
 
 %!demo
 %! ex_laplace_iso_ring_mixed_bc
+
+%!demo
+%! ex_laplace_iso_thick_ring

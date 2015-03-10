@@ -86,7 +86,7 @@ rule     = msh_gauss_nodes (nquad);
 msh      = msh_geopdes (zeta, qn, qw, geometry, 'der2', true);
 
 % Construct space structure
-space    = sp_bspline_2d (knots, degree, msh);
+space    = sp_bspline (knots, degree, msh);
 
 % Assemble the matrix and the right-hand side
 mat = op_gradu_gradv_tp (space, space, msh, c_diff);

@@ -14,7 +14,7 @@
 % GeoPDEs: a research tool for IsoGeometric Analysis of PDEs
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011, 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ knots = geometry.nurbs.knots;
 [qn, qw] = msh_set_quad_nodes (knots, msh_gauss_nodes (geometry.nurbs.order));
 msh = msh_geopdes (knots, qn, qw, geometry);
 
-space  = sp_nurbs_2d (geometry.nurbs, msh);
+space  = sp_nurbs (geometry.nurbs, msh);
 
 mat = op_gradu_gradv_tp (space, space, msh, @(x, y) ones (size (x)));
 rhs = op_f_v_tp (space, msh, @(x, y) (8-9*sqrt(x.^2+y.^2)).*sin(2*atan(y./x))./(x.^2+y.^2));

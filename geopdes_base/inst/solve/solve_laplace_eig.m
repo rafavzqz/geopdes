@@ -1,14 +1,14 @@
-% SOLVE_LAPLACE_3D: Solve a 3d Laplace problem with a B-spline discretization (non-isoparametric approach). 
+% SOLVE_LAPLACE_EIG: Solve a Laplace eigenproblem with a B-spline discretization (non-isoparametric approach). 
 %
 % The function solves the diffusion problem
 %
-%    - div ( epsilon(x) grad (u)) = f    in Omega = F((0,1)^3)
-%                epsilon(x) du/dn = g    on Gamma_N
-%                               u = h    on Gamma_D
+%    - div ( epsilon(x) grad (u)) = lambda (mu(x) u)    in Omega = F((0,1)^n)
+%                epsilon(x) du/dn = 0    on Gamma_N
+%                               u = 0    on Gamma_D
 %
 % USAGE:
 %
-%  [geometry, msh, space, u] = solve_laplace_3d (problem_data, method_data)
+%  [geometry, msh, space, lambda, u] = solve_laplace_eig (problem_data, method_data)
 %
 % INPUT:
 %
@@ -17,9 +17,7 @@
 %    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
 %    - drchlt_sides: sides with Dirichlet boundary condition
 %    - c_diff:       diffusion coefficient (epsilon in the equation)
-%    - f:            source term
-%    - g:            function for Neumann condition (if nmnn_sides is not empty)
-%    - h:            function for Dirichlet boundary condition
+%    - c_mass:       mass coefficient (mu in the equation)
 %
 %  method_data : a structure with discretization data. Its fields are:
 %    - degree:     degree of the spline functions.
@@ -31,14 +29,15 @@
 % OUTPUT:
 %
 %  geometry: geometry structure (see geo_load)
-%  msh:      mesh object that defines the quadrature rule (see msh_3d)
-%  space:    space object that defines the discrete space (see sp_bspline_3d)
-%  u:        the computed degrees of freedom
+%  msh:      mesh object that defines the quadrature rule (see msh_geopdes)
+%  space:    space object that defines the discrete space (see sp_bspline)
+%  lambda:   the computed eigenvalues
+%  u:        degrees of freedom of the computed eigenvectors
 %
-% See also EX_LAPLACE_CUBE for an example.
+% See also EX_LAPLACE_EIG_SQUARE for an example.
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
-% Copyright (C) 2011, Rafael Vazquez
+% Copyright (C) 2011, 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -53,8 +52,8 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [geometry, msh, space, u] = ...
-              solve_laplace_3d (problem_data, method_data)
+function [geometry, msh, space, lambda, u] = ...
+              solve_laplace_eig (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
 data_names = fieldnames (problem_data);
@@ -77,39 +76,26 @@ rule     = msh_gauss_nodes (nquad);
 msh      = msh_geopdes (zeta, qn, qw, geometry);
   
 % Construct space structure
-space    = sp_bspline_3d (knots, degree, msh);
+space    = sp_bspline (knots, degree, msh);
   
 % Assemble the matrices
 stiff_mat = op_gradu_gradv_tp (space, space, msh, c_diff);
-rhs       = op_f_v_tp (space, msh, f);
+mass_mat  = op_u_v_tp (space, space, msh, c_mass);
 
-% Apply Neumann boundary conditions
-for iside = nmnn_sides
-  msh_side = msh_eval_boundary_side (msh, iside);
-  sp_side  = sp_eval_boundary_side (space, msh_side);
-
-  x = squeeze (msh_side.geo_map(1,:,:));
-  y = squeeze (msh_side.geo_map(2,:,:));
-  z = squeeze (msh_side.geo_map(3,:,:));
-  gval = reshape (g (x, y, z, iside), msh_side.nqn, msh_side.nel);
-
-  rhs(sp_side.dofs) = rhs(sp_side.dofs) + op_f_v (sp_side, msh_side, gval);
+% Apply homogeneous Dirichlet boundary conditions
+drchlt_dofs = [];
+for iside = 1:numel (drchlt_sides)
+  drchlt_dofs = union (drchlt_dofs, space.boundary(drchlt_sides(iside)).dofs);
 end
-% Apply Dirichlet boundary conditions
-u = zeros (space.ndof, 1);
-[u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space, msh, h, drchlt_sides);
-u(drchlt_dofs) = u_drchlt;
-
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
-rhs(int_dofs) = rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt;
 
-% Solve the linear system
-u(int_dofs) = stiff_mat(int_dofs, int_dofs) \ rhs(int_dofs);
+% Solve the eigenvalue problem
+u = zeros (space.ndof, numel(int_dofs));
+[u(int_dofs, :), lambda] = ...
+    eig (full (stiff_mat(int_dofs, int_dofs)), full (mass_mat(int_dofs, int_dofs)));
+lambda = diag (lambda);
 
 end
 
 %!demo
-%! ex_laplace_cube
-
-%!demo
-%! ex_laplace_thick_ring
+%! ex_laplace_eig_square
