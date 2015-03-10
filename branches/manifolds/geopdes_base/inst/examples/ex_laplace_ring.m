@@ -32,7 +32,7 @@ method_data.nsub       = [9 9];       % Number of subdivisions
 method_data.nquad      = [4 4];       % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
-[geometry, msh, space, u] = solve_laplace_2d (problem_data, method_data);
+[geometry, msh, space, u] = solve_laplace (problem_data, method_data);
 
 % 4) POST-PROCESSING
 % 4.1) EXPORT TO PARAVIEW

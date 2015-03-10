@@ -2,10 +2,8 @@
 
 % 1) PHYSICAL DATA OF THE PROBLEM
 clear problem_data 
-% Physical domain, defined as NURBS map given in a text file
-nrb = nrbextrude (nrbcirc(1, [], 0, pi/2), [0 0 1]);
-% nrb = nrbtestsrf;
-problem_data.geo_name = nrb;
+% Physical domain, defined as NURBS structure from the NURBS toolbox
+problem_data.geo_name = nrbextrude (nrbcirc(1, [], 0, pi/2), [0 0 1]);
 
 % Type of boundary conditions for each side of the domain
 problem_data.nmnn_sides   = [];
@@ -39,7 +37,7 @@ method_data.nsub       = [9 9];       % Number of subdivisions
 method_data.nquad      = [4 4];       % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
-[geometry, msh, space, u] = solve_laplace_2d (problem_data, method_data);
+[geometry, msh, space, u] = solve_laplace (problem_data, method_data);
 
 % 4) POST-PROCESSING
 % 4.1) EXPORT TO PARAVIEW
@@ -62,9 +60,8 @@ surf (X, Y, Z, problem_data.uex (X,Y,Z))
 title ('Exact solution'), axis tight
 
 % Display errors of the computed solution in the L2 and H1 norm
-error_l2 = sp_l2_error (space, msh, u, problem_data.uex)
 [error_h1, error_l2] = ...
            sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex)
 
 %!demo
-%! ex_laplace_ring
+%! ex_laplace_beltrami

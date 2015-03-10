@@ -23,7 +23,7 @@ method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
 % 3) CALL TO THE SOLVER
 
 [geometry, msh, space, lambda, u] = ...
-                 solve_laplace_eig_2d (problem_data, method_data);
+                 solve_laplace_eig (problem_data, method_data);
 
 % 4) POST-PROCESSING
 
