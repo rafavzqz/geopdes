@@ -110,7 +110,7 @@ end
 for idim = 1:msh.ndim
   conn{idim} = conn{idim}(indices);
 end
-connectivity(indices) = sub2ind (space.ndof_dir, conn{:});
+connectivity(indices) = sub2ind ([space.ndof_dir, 1], conn{:}); % The extra 1 makes things work in any dimension
 connectivity = reshape (connectivity, space.nsh_max, msh.nel);
 
 clear conn csize crep indices

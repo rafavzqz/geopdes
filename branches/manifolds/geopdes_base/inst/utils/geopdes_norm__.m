@@ -21,8 +21,11 @@
 function nrm = geopdes_norm__ (v)
 
   vsize = size (v);
+  if (numel (vsize) < 3)
+    vsize(3) = 1;
+  end
 
   nrm = sqrt (sum (v.^2, 1));
-%   nrm = reshape (nrm, vsize(2:end));
+  nrm = reshape (nrm, vsize(2:end));
 
 end
