@@ -6,7 +6,7 @@
 % INPUT:
 %     
 %     u:          vector of dof weights
-%     space:      object defining the discrete space (see sp_bspline_2d)
+%     space:      object defining the discrete space (see sp_vector)
 %     geometry:   geometry structure (see geo_load)
 %     lambda, mu: Lame' parameters
 %     pts:        cell array with coordinates of points along each parametric direction
@@ -18,7 +18,7 @@
 %     F:  grid points in the physical domain, that is, the mapped points
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011, 2012 Rafael Vazquez
+% Copyright (C) 2011, 2012, 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -40,37 +40,47 @@ function [stress, F] = sp_eval_stress (u, space, geometry, npts, lambda, mu)
   end
   
   der2 = false;
-  if (isa (space, 'sp_vector_2d_piola_transform'))
+  if (isa (space, 'sp_vector_piola_transform'))
     der2 = true;
   end
 
   ndim = numel (npts);
 
+% Temporary solution, to be fixed using "isprop" after defining the
+%  classes with classdef
+  knt = cell (ndim, 1);
+  if (isfield (struct(space), 'knots'))
+    for idim=1:ndim
+      knt{idim} = space.knots{idim}(space.degree(idim)+1:end-space.degree(idim));
+    end
+  elseif (isfield (struct(space), 'scalar_spaces'))
+    for idim=1:ndim
+      knt{idim} = space.scalar_spaces{1}.knots{idim}(space.scalar_spaces{1}.degree(idim)+1:end-space.scalar_spaces{1}.degree(idim));
+    end
+  else
+    for idim=1:ndim; knt{idim} = [0 1]; end
+  end
+
+  
   if (iscell (npts))
     pts = npts;
     npts = cellfun (@numel, pts);
   elseif (isvector (npts))
-    if (ndim == 2)
-      pts = {(linspace (0, 1, npts(1))), (linspace (0, 1, npts(2)))};
-    elseif (ndim == 3)
-      pts = {(linspace (0, 1, npts(1))), (linspace (0, 1, npts(2))), (linspace (0, 1, npts(3)))};
+    for idim = 1:ndim
+      pts{idim} = linspace (knt{idim}(1), knt{idim}(end), npts(idim));
     end
   end
 
   for jj = 1:ndim
     pts{jj} = pts{jj}(:)';
     if (numel (pts{jj}) > 1)
-      brk{jj} = [0, pts{jj}(1:end-1) + diff(pts{jj})/2, 1]; 
+      brk{jj} = [knt{jj}(1), pts{jj}(1:end-1) + diff(pts{jj})/2, knt{jj}(end)];
     else
-      brk{jj} = [0 1];
+      brk{jj} = [knt{jj}(1) knt{jj}(end)];
     end
   end
 
-  if (ndim == 2)
-    msh = msh_2d ({brk{1}, brk{2}}, pts, [], geometry, 'boundary', false, 'der2', der2);
-  elseif (ndim == 3)
-    msh = msh_3d ({brk{1}, brk{2}, brk{3}}, pts, [], geometry, 'boundary', false);
-  end
+  msh = msh_cartesian (brk, pts, [], geometry, 'boundary', false, 'der2', der2);
   sp  = space.constructor (msh);
 
   [stress, F] = sp_eval_stress_msh (u, sp, msh, lambda, mu);

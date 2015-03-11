@@ -5,8 +5,8 @@
 % INPUT:
 %     
 %     u:          vector of dof weights
-%     space:      object defining the discrete space (see sp_bspline_3d)
-%     msh:        object defining the points where to evaluate (see msh_3d)
+%     space:      object defining the discrete space (see sp_vector)
+%     msh:        object defining the points where to evaluate (see msh_cartesian)
 %     lambda, mu: Lame' parameters
 %
 % OUTPUT:
@@ -15,7 +15,7 @@
 %     F:  grid points in the physical domain, that is, the mapped points
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011, 2012, 2013 Rafael Vazquez
+% Copyright (C) 2011, 2012, 2013, 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by

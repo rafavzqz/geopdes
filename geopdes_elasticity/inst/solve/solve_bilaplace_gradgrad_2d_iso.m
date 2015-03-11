@@ -35,8 +35,8 @@
 % OUTPUT:
 %
 %  geometry: geometry structure (see geo_load)
-%  msh:      mesh object that defines the quadrature rule (see msh_2d)
-%  space:    space object that defines the discrete space (see sp_nurbs_2d)
+%  msh:      mesh object that defines the quadrature rule (see msh_cartesian)
+%  space:    space object that defines the discrete space (see sp_nurbs)
 %  u:        the computed degrees of freedom
 %
 % See also EX_KIRCHHOFF_RECTANGULAR_PLATE, EX_KIRCHHOFF_RECTANGULAR_PLATE_CLAMPED 
@@ -88,10 +88,10 @@ geometry = geo_load (nurbs);
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (zeta, rule);
-msh      = msh_2d (zeta, qn, qw, geometry,'der2', true);
+msh      = msh_cartesian (zeta, qn, qw, geometry,'der2', true);
   
 % Construct space structure
-space  = sp_nurbs_2d (geometry.nurbs, msh);
+space  = sp_nurbs (geometry.nurbs, msh);
 
 % Assemble the matrices
 stiff_mat = op_gradgradu_gradgradv_tp (space, space, msh, c_diff);
