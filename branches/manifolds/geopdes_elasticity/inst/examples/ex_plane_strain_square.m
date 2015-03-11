@@ -40,7 +40,7 @@ method_data.nsub       = [9 9];     % Number of subdivisions
 method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
-[geometry, msh, space, u] = solve_plane_strain_2d (problem_data, method_data);
+[geometry, msh, space, u] = solve_linear_elasticity (problem_data, method_data);
 
 % 4) POST-PROCESSING. 
 % 4.1) Export to Paraview
