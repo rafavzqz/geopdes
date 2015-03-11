@@ -28,18 +28,20 @@ function sp = bsp_2_nrb__ (sp, msh, W)
     for idim = 1:msh.ndim
       Bdir = W .* reshape (sp.shape_function_gradients(idim,:,:,:), [msh.nqn, sp.nsh_max, msh.nel]);
       Ddir{idim} = repmat (reshape (sum (Bdir, 2), msh.nqn, 1, msh.nel), [1, sp.nsh_max, 1]);
-      sp.shape_function_gradients(idim,:,:,:) = (Bdir - sp.shape_functions .* Ddir{idim}) ./ D;
-    end
+
+      aux_grad{idim} = (Bdir - sp.shape_functions .* Ddir{idim}) ./ D;
+      sp.shape_function_gradients(idim,:,:,:) = aux_grad{idim};
+      end
   end
 
+% With aux_grad I can avoid to reshape
   if (isfield (sp, 'shape_function_hessians'))
     for idim = 1:msh.ndim
       for jdim = 1:msh.ndim
         Bdir2 = W .* reshape (sp.shape_function_hessians(idim,jdim,:,:,:), [msh.nqn, sp.nsh_max, msh.nel]);
         Ddir2 = repmat (reshape (sum (Bdir2, 2), msh.nqn, 1, msh.nel), [1, sp.nsh_max, 1]);
         sp.shape_function_hessians(idim,jdim,:,:,:) = (Bdir2 - sp.shape_functions .* Ddir2 ...
-            - sp.shape_function_gradients(idim,:,:,:) .* Ddir{jdim} ...
-            - sp.shape_function_gradienst(jdim,:,:,:) .* Ddir{idim}) ./ D;
+            - aux_grad{idim} .* Ddir{jdim} - aux_grad{jdim} .* Ddir{idim}) ./ D;
       end
     end
   end
