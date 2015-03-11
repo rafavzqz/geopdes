@@ -51,9 +51,9 @@ function [eu, F] = sp_eval (u, space, geometry, npts, varargin)
     for idim=1:ndim
       knt{idim} = space.knots{idim}(space.degree(idim)+1:end-space.degree(idim));
     end
-  elseif (isfield (struct(space), 'sp1'))
+  elseif (isfield (struct(space), 'scalar_spaces'))
     for idim=1:ndim
-      knt{idim} = space.sp1.knots{idim}(space.sp1.degree(idim)+1:end-space.sp1.degree(idim));
+      knt{idim} = space.scalar_spaces{1}.knots{idim}(space.scalar_spaces{1}.degree(idim)+1:end-space.scalar_spaces{1}.degree(idim));
     end
   else
     for idim=1:ndim; knt{idim} = [0 1]; end
@@ -66,11 +66,6 @@ function [eu, F] = sp_eval (u, space, geometry, npts, varargin)
     for idim = 1:ndim
       pts{idim} = linspace (knt{idim}(1), knt{idim}(end), npts(idim));
     end
-%     if (ndim == 2)
-%       pts = {(linspace (knt{1}(1), knt{1}(end), npts(1))), (linspace (knt{2}(1), knt{2}(end), npts(2)))};
-%     elseif (ndim == 3)
-%       pts = {(linspace (knt{1}(1), knt{1}(end), npts(1))), (linspace (knt{2}(1), knt{2}(end), npts(2))), (linspace (knt{3}(1), knt{3}(end), npts(3)))};
-%     end
   end
 
   for jj = 1:ndim
