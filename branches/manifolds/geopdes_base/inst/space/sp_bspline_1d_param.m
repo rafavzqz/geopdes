@@ -1,6 +1,6 @@
 % SP_BSPLINE_1D_PARAM: Construct a space of B-Splines on the parametric domain in 1D.
 %                      This function is not usually meant to be invoked directly by the user but rather
-%                      through sp_bspline_2d_param or sp_bspline_3d_param.
+%                      through sp_bspline.
 %
 %     sp = sp_bspline_1d_param (knots, degree, nodes, 'option1', value1, ...)
 %

@@ -7,9 +7,9 @@
 %   [rows, cols, values] = op_mat_stab_SUPG_tp (spu, spv, msh, mu, grad_mu, vel)
 %
 % INPUT:
-%   spu:     class representing the space of trial functions (see sp_bspline_2d)
-%   spv:     class representing the space of test functions (see sp_bspline_2d)
-%   msh:     class defining the domain partition and the quadrature rule (see msh_2d)
+%   spu:     class representing the space of trial functions (see sp_bspline)
+%   spv:     class representing the space of test functions (see sp_bspline)
+%   msh:     class defining the domain partition and the quadrature rule (see msh_cartesian)
 %   mu:      function handle for the diffusion coefficient
 %   grad_mu: function handle for the gradient of the diffusion coefficient
 %   vel:   function handle for the advection coefficient( vectorial function )

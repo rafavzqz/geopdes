@@ -19,21 +19,21 @@
 %
 %     msh: object containing the following fields and methods
 %
-%     FIELD_NAME    (SIZE)                  DESCRIPTION
-%     ndim          (scalar)                dimension of the parametric space
-%     rdim          (scalar)                dimension of the physical space
-%     nel           (scalar)                number of elements of the partition
-%     nel_dir       (1 x ndim vector)       number of elements in each parametric direction
-%     nelcol        (scalar)                number of elements in one "column" of the mesh
-%     nqn           (scalar)                number of quadrature nodes per element
-%     nqn_dir       (1 x ndim vector)       number of quadrature nodes per element in each parametric direction
-%     breaks        (1 x ndim cell-array)   unique(breaks)
-%     qn            (1 x ndim cell-array)   quadrature nodes along each direction in parametric domain
-%     qw            (1 x ndim cell-array)   quadrature weights along each direction in parametric space
-%     boundary      (2 * ndim struct-array) it contains a one-dimensional 'msh' structure for each edge of the boundary (only when boundary is set to true)
-%     map           (function handle)       a copy of the map handle of the geometry structure
-%     map_der       (function handle)       a copy of the map_der handle of the geometry structure
-%     map_der2      (function handle)       a copy of the map_der2 handle of the geometry structure
+%     FIELD_NAME    (SIZE)                    DESCRIPTION
+%     ndim          (scalar)                  dimension of the parametric space
+%     rdim          (scalar)                  dimension of the physical space
+%     nel           (scalar)                  number of elements of the partition
+%     nel_dir       (1 x ndim vector)         number of elements in each parametric direction
+%     nelcol        (scalar)                  number of elements in one "column" of the mesh
+%     nqn           (scalar)                  number of quadrature nodes per element
+%     nqn_dir       (1 x ndim vector)         number of quadrature nodes per element in each parametric direction
+%     breaks        (1 x ndim cell-array)     unique(breaks)
+%     qn            (1 x ndim cell-array)     quadrature nodes along each direction in parametric domain
+%     qw            (1 x ndim cell-array)     quadrature weights along each direction in parametric space
+%     boundary      (1 x 2*ndim struct-array) it contains a one-dimensional 'msh' structure for each edge of the boundary (only when boundary is set to true)
+%     map           (function handle)         a copy of the map handle of the geometry structure
+%     map_der       (function handle)         a copy of the map_der handle of the geometry structure
+%     map_der2      (function handle)         a copy of the map_der2 handle of the geometry structure
 %
 %     METHOD NAME
 %     msh_evaluate_col: computes the parameterization (and its derivatives) at

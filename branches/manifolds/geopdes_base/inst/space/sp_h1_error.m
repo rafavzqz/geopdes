@@ -4,8 +4,8 @@
 %
 % INPUT:
 %
-%    space:   object defining the space of discrete functions (see sp_bspline_2d)
-%    msh:     object defining the domain partition and the quadrature rule (see msh_2d)
+%    space:   object defining the space of discrete functions (see sp_bspline)
+%    msh:     object defining the domain partition and the quadrature rule (see msh_cartesian)
 %    u:       vector of dof weights
 %    uex:     function handle to evaluate the exact solution
 %    graduex: function handle to evaluate the gradient of the exact solution

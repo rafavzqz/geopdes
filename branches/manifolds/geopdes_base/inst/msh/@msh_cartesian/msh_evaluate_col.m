@@ -4,7 +4,7 @@
 %
 % INPUTS:
 %
-%    msh:    mesh object (see msh_geopdes)
+%    msh:    mesh object (see msh_cartesian)
 %    colnum: number of the "column", i.e., the element in the first parametric direction.
 %
 % OUTPUT:

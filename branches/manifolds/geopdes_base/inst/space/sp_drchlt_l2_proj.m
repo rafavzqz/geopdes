@@ -4,8 +4,8 @@
 %
 % INPUT:
 %
-%  sp:    object defining the space of discrete functions (see sp_bspline_2d)
-%  msh:   object defining the domain partition and the quadrature rule (see msh_2d)
+%  sp:    object defining the space of discrete functions (see sp_bspline)
+%  msh:   object defining the domain partition and the quadrature rule (see msh_cartesian)
 %  h:     function handle to compute the Dirichlet condition
 %  sides: boundary sides on which a Dirichlet condition is imposed
 %
@@ -51,8 +51,8 @@ function [u, dofs] = sp_drchlt_l2_proj (sp, msh, h, sides)
     msh_bnd = msh_eval_boundary_side (msh, iside);
     sp_bnd  = sp_eval_boundary_side (sp, msh_bnd);
 
-    x = cell (msh.rdim, 1);
-    for idim = 1:msh.rdim
+    x = cell (msh_bnd.rdim, 1);
+    for idim = 1:msh_bnd.rdim
       x{idim} = squeeze (msh_bnd.geo_map(idim,:,:));
     end
     hval = reshape (h(x{:}, iside), sp_bnd.ncomp, msh_bnd.nqn, msh_bnd.nel);

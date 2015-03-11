@@ -6,7 +6,7 @@
 %     
 %     knots:     open knot vector    
 %     degree:    b-spline polynomial degree
-%     msh:       msh object that defines the quadrature rule (see msh_2d)
+%     msh:       msh object that defines the quadrature rule (see msh_cartesian)
 %
 % OUTPUT:
 %

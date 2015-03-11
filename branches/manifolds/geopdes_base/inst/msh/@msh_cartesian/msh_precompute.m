@@ -5,7 +5,7 @@
 %
 % INPUTS:
 %     
-%     msh: mesh object containing the quadrature information (see msh_3d)
+%     msh: mesh object containing the quadrature information (see msh_cartesian)
 %    'option', value: additional optional parameters, available options are:
 %        quad_nodes, quad_weights, geo_map, geo_map_jac, jacdet.
 %     The value must be true or false. All the values are false by default.
@@ -19,8 +19,8 @@
 %
 %     FIELD_NAME    (SIZE)                  DESCRIPTION
 %
-%     ndim          (scalar)                  dimension of the parametric space (equal to 3)
-%     rdim          (scalar)                  dimension of the physical space (equal to 3)
+%     ndim          (scalar)                  dimension of the parametric space
+%     rdim          (scalar)                  dimension of the physical space
 %     nel           (scalar)                  number of elements in the mesh
 %     nel_dir       (1 x ndim vector)         number of elements in each parametric direction for the entire mesh
 %     nqn           (scalar)                  number of quadrature nodes per element

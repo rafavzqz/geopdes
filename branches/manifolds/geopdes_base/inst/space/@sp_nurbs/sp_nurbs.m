@@ -6,7 +6,7 @@
 % INPUTS:
 %
 %     nurbs:     nurbs structure representing a volume
-%     msh:       msh object that defines the quadrature rule (see msh_3d)
+%     msh:       msh object that defines the quadrature rule (see msh_cartesian)
 %     knots:     open knot vector
 %     degree:    nurbs polynomial degree (order minus one)
 %     weights:   weights associated to the basis functions

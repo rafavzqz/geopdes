@@ -4,8 +4,8 @@
 %
 % INPUT:
 %     
-%   spv:   class representing the function space (see sp_bspline_2d)
-%   msh:   class defining the domain partition and the quadrature rule (see msh_2d)
+%   spv:   class representing the function space (see sp_bspline)
+%   msh:   class defining the domain partition and the quadrature rule (see msh_cartesian)
 %   coeff: function handle to compute the source function
 %
 % OUTPUT:
