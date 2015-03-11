@@ -41,13 +41,14 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp = sp_precompute_param (sp, msh, varargin)
+function sp = sp_precompute_param (space, msh, varargin)
 
   if (isempty (varargin))
     nsh = true;
     connectivity = true;
     value = true;
     gradient = true;
+    hessian = false;
   else
     if (~rem (length (varargin), 2) == 0)
       error ('sp_precompute: options must be passed in the [option, value] format');
@@ -56,6 +57,7 @@ function sp = sp_precompute_param (sp, msh, varargin)
     connectivity = false;
     value = false;
     gradient = false;
+    hessian = false;
     for ii=1:2:length(varargin)-1
       if (strcmpi (varargin{ii}, 'connectivity'))
         connectivity = varargin{ii+1};
@@ -65,6 +67,8 @@ function sp = sp_precompute_param (sp, msh, varargin)
         value = varargin{ii+1};
       elseif (strcmpi (varargin{ii}, 'gradient'))
         gradient = varargin{ii+1};
+      elseif (strcmpi (varargin{ii}, 'hessian'))
+        hessian = varargin{ii+1};
       else
         error ('sp_precompute_param: unknown option %s', varargin {ii});
       end

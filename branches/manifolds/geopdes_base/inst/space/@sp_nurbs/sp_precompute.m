@@ -22,7 +22,7 @@
 %    connectivity    (nsh_max x msh.nel vector)         indices of basis functions that do not vanish in each element
 %    shape_functions (msh.nqn x nsh_max x msh.nel)      basis functions evaluated at each quadrature node in each element
 %    shape_function_gradients
-%          (ndim x msh.nqn x nsh_max x msh.nel)         basis function gradients evaluated at each quadrature node in each element
+%          (rdim x msh.nqn x nsh_max x msh.nel)         basis function gradients evaluated at each quadrature node in each element
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011, 2015 Rafael Vazquez
