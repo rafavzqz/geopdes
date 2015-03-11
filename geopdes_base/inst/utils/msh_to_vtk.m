@@ -31,12 +31,7 @@
 
 function msh_to_vtk (pts, values, filename, fieldname)
 
-  if (length (size (pts)) == 4)
-    ndim = 3;
-  else
-    ndim = 2;
-  end
-
+  ndim = numel (size (pts)) - 1;
   rdim = size (pts, 1);
   
   str1 = cat (2,'<?xml version="1.0"?> \n', ...
@@ -59,25 +54,25 @@ function msh_to_vtk (pts, values, filename, fieldname)
 '</VTKFile> \n');
 
 % Even for 2D data, everything is saved in 3D 
-  if (numel (size (values)) == ndim)
+% ndims (or size) do not work properly for the 1D case. I remove singleton
+% dimensions using this trick
+  if (sum (size (values) > 1) == ndim)
     fieldclass = 'Scalars';
     ncomp = 1;
   else
     fieldclass = 'Vectors';
     ncomp = 3;
   end
+
+  size_pts = size (pts);
+  npts = size_pts (2:end);
   
-  if (ndim == 3)
-    npts = size (squeeze (pts(1,:,:,:)));
-  else
-    npts = size (squeeze (pts(1,:,:)));
-    npts(3) = 1;
-    if (rdim == 2)
-      pts(3,:,:) = 0;
-      if (ncomp == 3)
-        values(3,:,:) = 0;
-      end
-    end
+  if (ndim < 3)
+    npts (ndim+1:3) = 1;
+    pts(ndim+1:3,:,:) = 0;
+  end
+  if (ncomp == 3 && rdim < 3)
+    values(rdim+1:3,:,:) = 0;
   end
 
   if (length (filename) < 4 || ~strcmp (filename(end-3:end), '.vts'))

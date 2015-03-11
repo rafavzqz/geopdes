@@ -68,6 +68,10 @@ function sp = sp_nurbs (varargin)
     error ('sp_nurbs: wrong input arguments. See the help for usage');
   end
 
+  if (~iscell (sp.knots))
+    sp.knots = {sp.knots};
+  end
+  
   nodes = msh.qn;
   for idim = 1:msh.ndim
     sp.sp_univ(idim) = sp_bspline_1d_param (sp.knots{idim}, sp.degree(idim), nodes{idim}, 'gradient', true, 'hessian', true);
@@ -113,6 +117,15 @@ function sp = sp_nurbs (varargin)
     end
         
     sp.boundary = boundary;
+
+  elseif (msh.ndim == 1)
+    sp.boundary(1).dofs = 1;
+    sp.boundary(2).dofs = sp.ndof;
+    if (sp.ndof > 1)
+      sp.boundary(1).adjacent_dofs = 2;
+      sp.boundary(2).adjacent_dofs = sp.ndof - 1;
+    end
+    
   else
     sp.boundary = [];
   end
