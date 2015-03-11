@@ -6,7 +6,7 @@
 % INPUT:
 %     
 %     u:         vector of dof weights
-%     space:     object defining the discrete space (see sp_bspline_2d)
+%     space:     object defining the discrete space (see sp_bspline)
 %     geometry:  geometry structure (see geo_load)
 %     pts:       cell array with coordinates of points along each parametric direction
 %     npts:      number of points along each parametric direction
@@ -82,7 +82,7 @@ function [eu, F] = sp_eval (u, space, geometry, npts, varargin)
     end
   end
 
-  msh = msh_geopdes (brk, pts, [], geometry, 'boundary', false);
+  msh = msh_cartesian (brk, pts, [], geometry, 'boundary', false);
   sp  = space.constructor (msh);
 
   switch (lower (option))

@@ -4,11 +4,11 @@
 %
 % INPUTS:
 %     
-%    space:   object defining the space of discrete functions (see sp_bspline_2d)
+%    space:   object defining the space of discrete functions (see sp_bspline)
 %    msh_col: msh structure containing (in the field msh.qn) the points 
 %              along each parametric direction in the parametric 
 %              domain at which to evaluate, i.e. quadrature points 
-%              or points for visualization (see msh_2d/msh_evaluate_col)
+%              or points for visualization (see msh_cartesian/msh_evaluate_col)
 %   'option', value: additional optional parameters, currently available options are:
 %            
 %              Name     |   Default value |  Meaning
@@ -25,7 +25,7 @@
 %    FIELD_NAME      (SIZE)                                 DESCRIPTION
 %    ncomp           (scalar)                               number of components of the functions of the space (actually, 1)
 %    ndof            (scalar)                               total number of degrees of freedom
-%    ndof_dir        (1 x ndim vector)                         degrees of freedom along each direction
+%    ndof_dir        (1 x ndim vector)                      degrees of freedom along each direction
 %    nsh_max         (scalar)                               maximum number of shape functions per element
 %    nsh             (1 x msh_col.nel vector)               actual number of shape functions per each element
 %    connectivity    (nsh_max x msh_col.nel vector)         indices of basis functions that do not vanish in each element

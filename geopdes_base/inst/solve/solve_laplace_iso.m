@@ -31,7 +31,7 @@
 % OUTPUT:
 %
 %  geometry: geometry structure (see geo_load)
-%  msh:      mesh object that defines the quadrature rule (see msh_geopdes)
+%  msh:      mesh object that defines the quadrature rule (see msh_cartesian)
 %  space:    space object that defines the discrete space (see sp_nurbs)
 %  u:        the computed degrees of freedom
 %
@@ -78,7 +78,7 @@ geometry = geo_load (nurbs);
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (zeta, rule);
-msh      = msh_geopdes (zeta, qn, qw, geometry);
+msh      = msh_cartesian (zeta, qn, qw, geometry);
   
 % Construct space structure
 space  = sp_nurbs (geometry.nurbs, msh);
@@ -92,8 +92,8 @@ for iside = nmnn_sides
   msh_side = msh_eval_boundary_side (msh, iside);
   sp_side  = sp_eval_boundary_side (space, msh_side);
 
-  x = cell (msh.rdim, 1);
-  for idim = 1:msh.rdim
+  x = cell (msh_side.rdim, 1);
+  for idim = 1:msh_side.rdim
     x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
   end
   gval = reshape (g (x{:}, iside), msh_side.nqn, msh_side.nel);
