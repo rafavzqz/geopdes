@@ -4,9 +4,9 @@
 %
 % INPUTS:
 %
-%     sp:       space object (see sp_nurbs_3d)
+%     sp:       space object (see sp_nurbs)
 %     msh_side: mesh structure containing the information of the quadrature
-%               rule on the boundary edge (see msh_3d/msh_eval_boundary_side)
+%               rule on the boundary edge (see msh_cartesian/msh_eval_boundary_side)
 %
 % OUTPUT:
 %

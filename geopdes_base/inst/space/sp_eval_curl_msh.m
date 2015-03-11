@@ -5,8 +5,8 @@
 % INPUT:
 %     
 %     u:         vector of dof weights
-%     space:     object defining the discrete space (see sp_vector_3d)
-%     msh:       object defining the points where to evaluate (see msh_3d)
+%     space:     object defining the discrete space (see sp_vector)
+%     msh:       object defining the points where to evaluate (see msh_cartesian)
 %
 % OUTPUT:
 %

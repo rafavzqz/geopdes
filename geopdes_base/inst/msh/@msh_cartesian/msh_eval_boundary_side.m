@@ -4,24 +4,24 @@
 %
 % INPUTS:
 %     
-%    msh:   mesh object (see msh_3d)
-%    iside: number of the boundary side to compute, from 1 to 6 (see the file geo_specs for documentation about face numbering)
+%    msh:   mesh object (see msh_cartesian)
+%    iside: number of the boundary side to compute, from 1 to 2*msh.ndim (see the file geo_specs for documentation about face numbering)
 %
 % OUTPUT:
 %
 %     msh_side: structure that contains the following fields
 %
 %     FIELD_NAME    (SIZE)                  DESCRIPTION
-%     side_number   (scalar)                number of the side
-%     nel           (scalar)                number of elements of the boundary side
-%     nel_dir       (1 x 2 vector)          number of elements in each parametric direction
-%     nqn           (scalar)                number of quadrature nodes per element
-%     nqn_dir       (1 x 2 vector)          number of quadrature nodes per element in each parametric direction
-%     quad_nodes    (3 x nqn x nel vector)  coordinates of the quadrature nodes in parametric domain
-%     quad_weights  (nqn x nel vector)      weights associated to the quadrature nodes
-%     geo_map       (3 x nqn x nel vector)  physical coordinates of the quadrature nodes
-%     geo_map_jac   (3 x 3 x nqn x nel)     Jacobian matrix of the map evaluated at the quadrature nodes
-%     jacdet        (nqn x nel)             element of length, area, volume (if rdim = ndim, determinant of the Jacobian)
+%     side_number   (scalar)                  number of the side
+%     nel           (scalar)                  number of elements of the boundary side
+%     nel_dir       (1 x ndim vector)         number of elements in each parametric direction
+%     nqn           (scalar)                  number of quadrature nodes per element
+%     nqn_dir       (1 x ndim vector)         number of quadrature nodes per element in each parametric direction
+%     quad_nodes    (ndim x nqn x nel vector) coordinates of the quadrature nodes in parametric domain
+%     quad_weights  (nqn x nel vector)        weights associated to the quadrature nodes
+%     geo_map       (rdim x nqn x nel vector) physical coordinates of the quadrature nodes
+%     geo_map_jac   (rdim x ndim x nqn x nel) Jacobian matrix of the map evaluated at the quadrature nodes
+%     jacdet        (nqn x nel)               element of length, area, volume (if rdim = ndim, determinant of the Jacobian)
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011, 2014, 2015 Rafael Vazquez
