@@ -4,11 +4,11 @@
 %
 % INPUTS:
 %
-%    space:   object defining the space of discrete functions (see sp_nurbs_3d)
+%    space:   object defining the space of discrete functions (see sp_nurbs)
 %    msh_col: msh structure containing (in the field msh.qn) the points 
 %              along each parametric direction in the parametric 
 %              domain at which to evaluate, i.e. quadrature points 
-%              or points for visualization (see msh_geopdes/msh_evaluate_col)
+%              or points for visualization (see msh_cartesian/msh_evaluate_col)
 %   'option', value: additional optional parameters, currently available options are:
 %
 %              Name     |   Default value |  Meaning

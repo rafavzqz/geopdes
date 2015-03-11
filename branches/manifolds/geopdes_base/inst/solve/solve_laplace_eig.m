@@ -29,7 +29,7 @@
 % OUTPUT:
 %
 %  geometry: geometry structure (see geo_load)
-%  msh:      mesh object that defines the quadrature rule (see msh_geopdes)
+%  msh:      mesh object that defines the quadrature rule (see msh_cartesian)
 %  space:    space object that defines the discrete space (see sp_bspline)
 %  lambda:   the computed eigenvalues
 %  u:        degrees of freedom of the computed eigenvectors
@@ -73,7 +73,7 @@ geometry  = geo_load (geo_name);
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (zeta, rule);
-msh      = msh_geopdes (zeta, qn, qw, geometry);
+msh      = msh_cartesian (zeta, qn, qw, geometry);
   
 % Construct space structure
 space    = sp_bspline (knots, degree, msh);

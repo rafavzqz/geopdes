@@ -34,8 +34,8 @@
 % OUTPUT:
 %
 %  geometry: geometry structure (see geo_load)
-%  msh:      mesh object that defines the quadrature rule (see msh_2d)
-%  space:    space object that defines the discrete space (see sp_bspline_2d)
+%  msh:      mesh object that defines the quadrature rule (see msh_cartesian)
+%  space:    space object that defines the discrete space (see sp_bspline)
 %  u:        the computed degrees of freedom
 %
 % See also EX_ADVECTION_DIFFUSION_SQUARE for an example.
@@ -83,7 +83,7 @@ geometry  = geo_load (geo_name);
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (zeta, rule);
-msh      = msh_geopdes (zeta, qn, qw, geometry, 'der2', true);
+msh      = msh_cartesian (zeta, qn, qw, geometry, 'der2', true);
 
 % Construct space structure
 space    = sp_bspline (knots, degree, msh);
@@ -105,9 +105,11 @@ if (exist ('nmnn_sides', 'var'))
     msh_side = msh_eval_boundary_side (msh, iside);
     sp_side  = sp_eval_boundary_side (space, msh_side);
 
-    x = squeeze (msh_side.geo_map(1,:,:));
-    y = squeeze (msh_side.geo_map(2,:,:));
-    gval = reshape (g (x, y, iside), msh_side.nqn, msh_side.nel);
+    x = cell (msh_side.rdim, 1);
+    for idim = 1:msh_side.rdim
+      x{idim} = squeeze (msh_side.geo_map(idim,:,:));
+    end
+    gval = reshape (g (x{:}, iside), msh_side.nqn, msh_side.nel);
 
     rhs(sp_side.dofs) = rhs(sp_side.dofs) + op_f_v (sp_side, msh_side, gval);
   end
