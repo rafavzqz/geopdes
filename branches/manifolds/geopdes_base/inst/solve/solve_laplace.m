@@ -140,3 +140,6 @@ end
 
 %!demo
 %! ex_laplace_beltrami
+
+%!demo
+%! ex_laplace_1d
