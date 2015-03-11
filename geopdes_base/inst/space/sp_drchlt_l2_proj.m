@@ -33,6 +33,23 @@
 function [u, dofs] = sp_drchlt_l2_proj (sp, msh, h, sides)
 
   rhs  = zeros (sp.ndof, 1);
+  
+  % In the 1D case, with an open knot vector,  it is not necessary to compute a projection.
+  % For now it only works for scalars
+  if (msh.ndim == 1)
+    dofs = []; u = zeros (numel(sides), 1);
+    for ii = 1:numel(sides)
+      iside = sides(ii);
+      dofs = union (dofs, sp.boundary(iside).dofs);
+      if (iside == 1)
+        u(ii) = h(msh.breaks{1}(1), iside);
+      else
+        u(ii) = h(msh.breaks{1}(end), iside); 
+      end
+    end
+    u = u(:);
+    return
+  end
 
   dofs = [];
   nent = 0;

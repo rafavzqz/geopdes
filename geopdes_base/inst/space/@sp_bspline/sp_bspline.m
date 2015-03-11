@@ -102,6 +102,13 @@ function sp = sp_bspline (knots, degree, msh)
     end
         
     sp.boundary = boundary;
+  elseif (msh.ndim == 1)
+    sp.boundary(1).dofs = 1;
+    sp.boundary(2).dofs = sp.ndof;
+    if (sp.ndof > 1)
+      sp.boundary(1).adjacent_dofs = 2;
+      sp.boundary(2).adjacent_dofs = sp.ndof - 1;
+    end
   else
     sp.boundary = [];
   end

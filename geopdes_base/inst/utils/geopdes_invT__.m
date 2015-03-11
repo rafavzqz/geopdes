@@ -66,6 +66,14 @@ function [JinvT, det] = geopdes_invT__ (v)
       end
     end
     
+  elseif (vsize(1) == 1 && vsize(2) == 1)
+    JinvT = 1./ v(1,1,:,:);
+    det = v(1,1,:,:);
+  elseif (vsize(1) == 2 && vsize(2) == 1)
+      error ('geopdes_JinvT: 2D curves not implemented yet');
+  elseif (vsize(1) == 3 && vsize(2) == 1)
+      error ('geopdes_JinvT: 3D curves not implemented yet');
+    
   end
   
   det = squeeze (det);
