@@ -51,7 +51,7 @@ method_data.nquad      = [3 3 3];     % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
 [geometry, msh, space, u, gnum] = ...
-              mp_solve_linear_elasticity_3d (problem_data, method_data);
+              mp_solve_linear_elasticity (problem_data, method_data);
 
 % 4) POST-PROCESSING. 
 % 4.1) EXPORT TO PARAVIEW

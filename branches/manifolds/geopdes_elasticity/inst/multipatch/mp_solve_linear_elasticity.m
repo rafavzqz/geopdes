@@ -1,4 +1,5 @@
-% MP_SOLVE_LINEAR_ELASTICITY_3D: Solve a linear elasticity problem on a 3-dimensional multipatch domain.
+% MP_SOLVE_LINEAR_ELASTICITY: Solve a linear elasticity problem in a multipatch domain.
+%                             For a planar domain it is the plane strain model.
 %
 % Example to solve the linear elasticity problem
 %
@@ -7,7 +8,7 @@
 %                     u = h    on Gamma_D
 %
 % with   sigma(u) = mu*(grad(u) + grad(u)^t) + lambda*div(u)*I,
-% and the domain \Omega is formed by several patches of the form F((0,1)^3).
+% and the domain \Omega is formed by several patches of the form F((0,1)^n).
 %
 %   u:          displacement vector
 %   sigma:      Cauchy stress tensor
@@ -17,7 +18,7 @@
 % USAGE:
 %
 %  [geometry, msh, space, u, gnum] = 
-%             mp_solve_linear_elasticity_3d (problem_data, method_data)
+%             mp_solve_linear_elasticity (problem_data, method_data)
 %
 % INPUT:
 %
@@ -41,12 +42,13 @@
 % OUTPUT:
 %
 %  geometry: array of geometry structures (see geo_load)
-%  msh:      cell array of mesh objects (see msh_3d)
-%  space:    cell array of space object (see sp_vector_3d)
+%  msh:      cell array of mesh objects (see msh_cartesian)
+%  space:    cell array of space object (see sp_vector)
 %  u:        the computed degrees of freedom
 %  gnum:     global numbering of the degrees of freedom
 %
-% Copyright (C) 2010, 2011 Carlo de Falco, Rafael Vazquez
+% Copyright (C) 2010, 2011 Carlo de Falco
+% Copyright (C) 2010, 2011, 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -62,7 +64,7 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function [geometry, msh, sp, u, gnum] = ...
-              mp_solve_linear_elasticity_3d (problem_data, method_data)
+              mp_solve_linear_elasticity (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
 data_names = fieldnames (problem_data);
@@ -92,15 +94,19 @@ for iptc = 1:npatch
 % Construct msh structure
   rule      = msh_gauss_nodes (nquad);
   [qn, qw]  = msh_set_quad_nodes (geometry(iptc).nurbs.knots, rule);
-  msh{iptc} = msh_3d (geometry(iptc).nurbs.knots, qn, qw, geometry(iptc));
+  msh{iptc} = msh_cartesian (geometry(iptc).nurbs.knots, qn, qw, geometry(iptc));
 
 % Construct space structure
-  sp_scalar = sp_nurbs_3d (geometry(iptc).nurbs, msh{iptc});
-  sp{iptc} = sp_vector_3d (sp_scalar, sp_scalar, sp_scalar, msh{iptc});
+  sp_scalar = sp_nurbs (geometry(iptc).nurbs, msh{iptc});
+  scalar_spaces = cell (msh{iptc}.rdim, 1);
+  for idim = 1:msh{iptc}.rdim
+    scalar_spaces{idim} = sp_scalar;
+  end
+  sp{iptc} = sp_vector (scalar_spaces, msh{iptc});
 end
 
 % Create a correspondence between patches on the interfaces
-[gnum, ndof] = mp_interface_vector_3d (interfaces, sp);
+[gnum, ndof] = mp_interface_vector (interfaces, sp);
 
 % Compute and assemble the matrices
 rhs = zeros (ndof, 1);
@@ -130,10 +136,11 @@ for iref = nmnn_sides
     msh_side = msh_eval_boundary_side (msh{iptc}, iside);
     sp_side  = sp_eval_boundary_side (sp{iptc}, msh_side);
 
-    x = squeeze (msh_side.geo_map(1,:,:));
-    y = squeeze (msh_side.geo_map(2,:,:));
-    z = squeeze (msh_side.geo_map(3,:,:));
-    gval = reshape (g (x, y, z, iref), 3, msh_side.nqn, msh_side.nel);
+    x = cell (msh_side.rdim, 1);
+    for idim = 1:msh_side.rdim
+      x{idim} = squeeze (msh_side.geo_map(idim,:,:));
+    end
+    gval = reshape (g (x{:}, iref), sp.ncomp, msh_side.nqn, msh_side.nel);
     rhs_nmnn = op_f_v (sp_side, msh_side, gval);
     global_dofs = gnum{iptc}(sp_side.dofs);
     rhs(global_dofs) = rhs(global_dofs) + rhs_nmnn;
