@@ -1,0 +1,19 @@
+dirlist        = {"examples", "examples/data_files", "examples/geometry_files", "multipatch"};
+[basename,dir] = fileparts (mfilename ("fullpath"));
+
+if (! exist (fullfile (basename, "inst"), "dir"))
+  ## Run this if the package is installed
+  for ii=1:length(dirlist)
+    addpath ( [ basename "/" dirlist{ii}],"-end")
+  endfor
+else
+  ## Run this if we are testing the package without installation
+  for ii=1:length(dirlist)
+    addpath ([ fileparts(canonicalize_file_name (mfilename ("fullpath"))) "/inst/" dirlist{ii}])
+  endfor
+  ## if the package is not installed, dependencies are not
+  ## automatically taken care of, so we need to load some packages here
+  pkg load nurbs integration 
+endif
+warning('off', 'Octave:fopen-file-in-path');
+clear dirlist basename dir
