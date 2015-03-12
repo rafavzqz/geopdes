@@ -17,22 +17,22 @@
 %            is given all the fields are computed. If an option is given,
 %            only the selected fields will be computed.
 %
-%     FIELD_NAME    (SIZE)                  DESCRIPTION
+%     FIELD_NAME    (SIZE)                     DESCRIPTION
 %
-%     ndim          (scalar)                  dimension of the parametric space
-%     rdim          (scalar)                  dimension of the physical space
-%     nel           (scalar)                  number of elements in the mesh
-%     nel_dir       (1 x ndim vector)         number of elements in each parametric direction for the entire mesh
-%     nqn           (scalar)                  number of quadrature nodes per element
-%     nqn_dir       (1 x ndim vector)         number of quadrature nodes per element in each parametric direction for the entire mesh
-%     quad_nodes    (ndim x nqn x nel vector) coordinates of the quadrature nodes in parametric space
-%     quad_weights  (nqn x nel vector)        weights associated to the quadrature nodes
-%     geo_map       (rdim x nqn x nel vector) physical coordinates of the quadrature nodes
-%     geo_map_jac   (rdim x ndim x nqn x nel) Jacobian matrix of the map evaluated at the quadrature nodes
-%     jacdet        (nqn x nel)               element of length, area, volume (if rdim = ndim, determinant of the Jacobian)
+%     ndim          (scalar)                   dimension of the parametric space
+%     rdim          (scalar)                   dimension of the physical space
+%     nel           (scalar)                   number of elements in the mesh
+%     nel_dir       (1 x ndim vector)          number of elements in each parametric direction for the entire mesh
+%     nqn           (scalar)                   number of quadrature nodes per element
+%     nqn_dir       (1 x ndim vector)          number of quadrature nodes per element in each parametric direction for the entire mesh
+%     quad_nodes    (ndim x nqn x nel vector)  coordinates of the quadrature nodes in parametric space
+%     quad_weights  (nqn x nel vector)         weights associated to the quadrature nodes
+%     geo_map       (rdim x nqn x nel vector)  physical coordinates of the quadrature nodes
+%     geo_map_jac   (rdim x ndim x nqn x nel)  Jacobian matrix of the map evaluated at the quadrature nodes
+%     jacdet        (nqn x nel)                element of length, area, volume (if rdim = ndim, determinant of the Jacobian)
 %     geo_map_der2  (rdim x ndim x ndim x nqn x nel]) Hessian matrix of the map evaluated at the quadrature nodes
 %     normal        (rdim x ndim x nqn x nel]) for 3D surfaces, the exterior normal to the surface
-%     element_size  (1 x nel)                 the size of the element in the physical domain
+%     element_size  (1 x nel)                  the size of the element in the physical domain
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez

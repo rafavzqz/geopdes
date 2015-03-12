@@ -10,10 +10,11 @@
 %     geometry: structure representing the geometrical mapping
 %    'option', value: additional optional parameters, currently available options are:
 %            
-%              Name     |   Default value |  Meaning
-%           ------------+-----------------+-----------
-%             boundary  |      true       |  compute the quadrature rule
-%                       |                 |   also on the boundary
+%              Name     |   Default value     |  Meaning
+%           ------------+---------------------+-----------
+%             boundary  |      true           | compute the quadrature rule
+%                       |                     |   also on the boundary
+%             der2      | depends on geometry | compute second derivatives
 %   
 % OUTPUT:
 %
@@ -87,7 +88,7 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
     end
   end
 
-% To be consisten, in the 1D case we rewrite everything as cell-arrays
+% To be consistent, in the 1D case we rewrite everything as cell-arrays
   if (~iscell (qn))
     qn = {qn};
     qw = {qw};
@@ -143,7 +144,8 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
       bndry.nqn_dir = msh.nqn_dir(ind);
       bndry.nqn = prod (bndry.nqn_dir);
 
-      msh.boundary(iside) = bndry;
+      msh.boundary2(iside) = bndry;
+      msh.boundary(iside) = msh_cartesian (msh.breaks(ind), msh.qn(ind), msh.qw(ind), geo.boundary(iside), 'boundary', false);
 
 % TO DO: update geometry, in such a way that we can do something like
 %   msh.boundary_iside = msh_cartesian (msh.breaks(ind), msh.qn(ind),
@@ -152,7 +154,8 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
 %   msh_side = struct (msh_precompute (msh.boundary(iside)));
     end
   else
-    msh.boundary = [];    
+    msh.boundary2 = [];
+    msh.boundary = [];
   end
 
   msh.map = geo.map;
@@ -174,6 +177,8 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
   msh.geo_map_der2 = [];
   msh.jacdet       = [];
   msh.normal       = [];
+% This is only for boundary values  
+  msh.charlen      = [];
 
   msh = class (msh, 'msh_cartesian');
 
