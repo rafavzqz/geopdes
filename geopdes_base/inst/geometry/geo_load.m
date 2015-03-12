@@ -42,26 +42,17 @@ function geometry = geo_load (in)
   if (isstruct (in) && isfield (in, 'form') && strcmpi (in.form, 'B-NURBS')) 
 %% geometry is given as a NURBS struct
     geometry.nurbs   = in;
-    geometry.map      =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 0);
-    geometry.map_der  =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 1);
-    geometry.map_der2 =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 2);
 
   elseif (ischar (in))
 %% load geometry from a file
     if (strcmpi (in(end-3:end), '.mat'))     
       tmp  = load (in);
       geometry.nurbs   = tmp.geo;
-      geometry.map      =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 0);
-      geometry.map_der  =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 1);
-      geometry.map_der2 =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 2);
     elseif (strcmpi (in(end-3:end), '.txt'))
       geometry = geo_read_nurbs (in);
 %% load geometry from an xml file
     elseif (strcmpi (in(end-3:end), '.xml'))
       geometry.nurbs = xml_import (in);
-      geometry.map      =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 0);
-      geometry.map_der  =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 1);
-      geometry.map_der2 =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 2);
     else
       error ('geo_load: unknown file extension');
     end
@@ -80,6 +71,31 @@ function geometry = geo_load (in)
     geometry.map_der2 = @affine_map_der2;
   else
     error ('geo_load: wrong input type');
+  end
+  
+% In case the geometry is a NURBS structure  
+  if (isfield (geometry, 'nurbs'))
+    if (any (abs(geometry.nurbs.coefs(3,:)) > 1e-12))
+      rdim = 3;
+    elseif (any (abs(geometry.nurbs.coefs(2,:)) > 1e-12))
+      rdim = 2;
+    else
+      rdim = 1;
+    end
+    geometry.rdim = rdim;
+
+    geometry.map      =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 0, rdim);
+    geometry.map_der  =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 1, rdim);
+    geometry.map_der2 =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 2, rdim);
+    
+    bnd = nrbextract (geometry.nurbs);
+    for ibnd = 1:numel (bnd)
+      geometry.boundary(ibnd).nurbs    = bnd(ibnd);
+      geometry.boundary(ibnd).rdim     = rdim;
+      geometry.boundary(ibnd).map      = @(PTS) geo_nurbs (bnd(ibnd), PTS, 0, rdim);
+      geometry.boundary(ibnd).map_der  = @(PTS) geo_nurbs (bnd(ibnd), PTS, 1, rdim);
+      geometry.boundary(ibnd).map_der2 = @(PTS) geo_nurbs (bnd(ibnd), PTS, 2, rdim);
+    end
   end
 
 end

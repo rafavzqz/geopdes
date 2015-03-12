@@ -33,16 +33,18 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function varargout = geo_nurbs (nurbs, pts, ders)
+function varargout = geo_nurbs (nurbs, pts, ders, rdim)
 
   ndim = numel (nurbs.order);
 
-  if (any (abs(nurbs.coefs(3,:)) > 1e-12))
-    rdim = 3;
-  elseif (any (abs(nurbs.coefs(2,:)) > 1e-12))
-    rdim = 2;
-  else
-    rdim = 1;
+  if (nargin < 4)
+    if (any (abs(nurbs.coefs(3,:)) > 1e-12))
+      rdim = 3;
+    elseif (any (abs(nurbs.coefs(2,:)) > 1e-12))
+      rdim = 2;
+    else
+      rdim = 1;
+    end
   end
 
   if (rdim < ndim)

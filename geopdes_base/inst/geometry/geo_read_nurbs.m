@@ -167,9 +167,9 @@ for iptc = 1:npatches
     geom(iptc).nurbs.coefs(4,:,:,:) = weights;
   end
   
-  geom(iptc).map      = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 0);
-  geom(iptc).map_der  = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 1);
-  geom(iptc).map_der2 = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 2);
+%   geom(iptc).map      = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 0);
+%   geom(iptc).map_der  = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 1);
+%   geom(iptc).map_der2 = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 2);
 end
 
 fclose (fid);
