@@ -82,6 +82,7 @@ function sp = sp_vector (scalar_spaces, msh)
         boundary.comp_dofs{icomp} = new_dofs;
         aux = aux + scalar_spaces{icomp}.ndof;
       end
+      boundary.dofs = boundary.dofs(:)';
       
       sp.boundary(iside) = boundary;
     end
