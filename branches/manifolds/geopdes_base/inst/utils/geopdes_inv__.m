@@ -39,15 +39,18 @@ function [Jinv, det] = geopdes_inv__ (v)
     Jinv(3,2,:,:)  = (v(1,2,:,:).*v(3,1,:,:) - v(1,1,:,:).*v(3,2,:,:)) ./ det;
     Jinv(3,3,:,:)  = (v(1,1,:,:).*v(2,2,:,:) - v(1,2,:,:).*v(2,1,:,:)) ./ det;
     det = squeeze (det);
+  elseif (size(v,1) == 1)
+    Jinv = 1./v;
+    det = squeeze (v);
   end
 end
 
 %!test
 %! A = [1 2; 3 4];
 %! Ainv = geopdes_inv__ (A);
-%! assert (Ainv * A, eye(2))
+%! assert (Ainv * A, eye(2), 1e-14)
 %!
 %!test
 %! A = [1 2 3; 4 5 6; 7 8 10];
 %! Ainv = geopdes_inv__ (A);
-%! assert (Ainv * A, eye(3))
+%! assert (Ainv * A, eye(3), 1e-14)
