@@ -40,58 +40,6 @@
 function sp_side = sp_eval_boundary_side (sp, msh_side)
 
   iside = msh_side.side_number;
-  sp_side = sp.boundary(iside);
+  sp_side = sp_precompute (sp.boundary(iside), msh_side);
 
-%%    ind  = [2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind  = [2 2 1 1] in 2D;
-%%    ind2 = [1 1 2 2 3 3] in 3D,                  %ind2 = [1 1 2 2] in 2D
-  ind2 = ceil (iside/2);
-  ind = setdiff (1:msh_side.ndim+1, ind2);
-
-  sp_univ = sp.sp_univ(ind);
-  nsh_dim = {sp_univ.nsh};
-  [nsh_grid{1:msh_side.ndim}] = ndgrid (nsh_dim{:});
-  nsh = 1;
-  for idim = 1:msh_side.ndim
-    nsh = nsh .* nsh_grid{idim};
-  end
-  sp_side.nsh = nsh(:)';
-
-  for idim = 1:msh_side.ndim
-    csize = ones (1, 2*msh_side.ndim);
-    csize([idim, msh_side.ndim+idim]) = [sp_univ(idim).nsh_max, msh_side.nel_dir(idim)];
-    crep = [sp_univ.nsh_max, msh_side.nel_dir];
-    crep([idim, msh_side.ndim+idim]) = 1;
-
-    conn{idim} = reshape (sp_univ(idim).connectivity, csize);
-    conn{idim} = repmat (conn{idim}, crep);
-    conn{idim} = reshape (conn{idim}, [], msh_side.nel);
-  end
-  connectivity = zeros (sp_side.nsh_max, msh_side.nel);
-  indices = ones (size (conn{1}));
-  for idim = 1:msh_side.ndim
-    indices = indices & conn{idim} ~= 0;
-  end
-  for idim = 1:msh_side.ndim
-    conn{idim} = conn{idim}(indices);
-  end
-  connectivity(indices) = sub2ind ([sp_side.ndof_dir, 1], conn{:}); % The extra one makes things work in any dimension
-  sp_side.connectivity = reshape (connectivity, sp_side.nsh_max, msh_side.nel);
-  clear conn csize crep indices connectivity
-
-  for idim = 1:msh_side.ndim
-    ssize = ones (1, 3*msh_side.ndim);
-    ssize([idim, msh_side.ndim+idim, 2*msh_side.ndim+idim]) = [msh_side.nqn_dir(idim), sp_univ(idim).nsh_max, msh_side.nel_dir(idim)];
-    srep = [msh_side.nqn_dir, sp_univ.nsh_max, msh_side.nel_dir];
-    srep([idim, msh_side.ndim+idim, 2*msh_side.ndim+idim]) = 1;
-    shp{idim} = reshape (sp_univ(idim).shape_functions, ssize);
-    shp{idim} = repmat (shp{idim}, srep);
-    shp{idim} = reshape (shp{idim}, msh_side.nqn, sp_side.nsh_max, msh_side.nel);
-  end
-  sp_side.shape_functions = 1;
-  for idim = 1:msh_side.ndim
-    sp_side.shape_functions = sp_side.shape_functions .* shp{idim};
-  end
-
-% TODO: try to define the boundary as another spline space
-%  and compute with sp_precompute
 end

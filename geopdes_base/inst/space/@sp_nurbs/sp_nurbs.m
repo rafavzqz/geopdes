@@ -90,33 +90,36 @@ function sp = sp_nurbs (varargin)
 %%    ind2 = [1 1 2 2 3 3] in 3D,                  %ind2 = [1 1 2 2] in 2D
       ind2 = ceil (iside/2);
       ind = setdiff (1:msh.ndim, ind2);
-
-      boundary(iside).ndof_dir = sp.ndof_dir(ind);
-      boundary(iside).ndof = prod (boundary(iside).ndof_dir);
-      boundary(iside).nsh_dir = sp.nsh_dir(ind);
-      boundary(iside).nsh_max = prod (boundary(iside).nsh_dir);
-      boundary(iside).ncomp = 1;
       
-      [ind_univ{ind}] = ind2sub ([boundary(iside).ndof_dir], 1:boundary(iside).ndof);
+      indices = arrayfun (@(x) 1:x, sp.ndof_dir, 'UniformOutput', false);
       if (rem (iside, 2) == 0)
-        ind_univ{ind2} = sp.ndof_dir(ind2) * ones (1, boundary(iside).ndof);
+        indices{ind2} = sp.ndof_dir(ind2);
       else
-        ind_univ{ind2} = ones (1, boundary(iside).ndof);
+        indices{ind2} = 1;
       end
+      weights = squeeze (sp.weights(indices{:}));
 
-      boundary(iside).dofs = sub2ind (sp.ndof_dir, ind_univ{:});
+      sp.boundary(iside) = sp_nurbs (sp.knots(ind), sp.degree(ind), weights, msh.boundary(iside));
+      
+      [ind_univ{ind}] = ind2sub ([sp.boundary(iside).ndof_dir], 1:sp.boundary(iside).ndof);
+      if (rem (iside, 2) == 0)
+        ind_univ{ind2} = sp.ndof_dir(ind2) * ones (1, sp.boundary(iside).ndof);
+      else
+        ind_univ{ind2} = ones (1, sp.boundary(iside).ndof);
+      end
+      sp.boundary(iside).dofs = sub2ind (sp.ndof_dir, ind_univ{:});
+      sp.boundary(iside).spline_space.dofs = sp.boundary(iside).dofs;
 
       if (sp.ndof_dir(ind2) > 1)
         if (rem (iside, 2) == 0)
-          ind_univ{ind2} = (sp.ndof_dir(ind2) - 1) * ones (1, boundary(iside).ndof);
+          ind_univ{ind2} = (sp.ndof_dir(ind2) - 1) * ones (1, sp.boundary(iside).ndof);
         else
-          ind_univ{ind2} = 2 * ones (1, boundary(iside).ndof);
+          ind_univ{ind2} = 2 * ones (1, sp.boundary(iside).ndof);
         end
-        boundary(iside).adjacent_dofs = sub2ind (sp.ndof_dir, ind_univ{:});
+        sp.boundary(iside).adjacent_dofs = sub2ind (sp.ndof_dir, ind_univ{:});
+        sp.boundary(iside).spline_space.adjacent_dofs = sp.boundary(iside).adjacent_dofs;
       end
     end
-        
-    sp.boundary = boundary;
 
   elseif (msh.ndim == 1)
     sp.boundary(1).dofs = 1;
@@ -134,6 +137,8 @@ function sp = sp_nurbs (varargin)
   sp.connectivity = [];
   sp.shape_functions = [];
   sp.shape_function_gradients = [];
+  sp.dofs = [];
+  sp.adjacent_dofs = [];
 
   sp.spline_space = sp_bspline (sp.knots, sp.degree, msh);
   
