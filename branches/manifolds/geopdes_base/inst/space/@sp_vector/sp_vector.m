@@ -66,25 +66,25 @@ function sp = sp_vector (scalar_spaces, msh)
       for icomp = 1:sp.ncomp
         scalar_bnd{icomp} = scalar_spaces{icomp}.boundary(iside);
       end
+      sp.boundary(iside) = sp_vector (scalar_bnd, msh.boundary(iside));
       
-      boundary.ncomp    = sp.ncomp;
-      boundary.ndof     = sum (cellfun (@(x) x.ndof, scalar_bnd));
-      if (msh.ndim ~= 1)
-        boundary.nsh_max  = sum (cellfun (@(x) x.nsh_max, scalar_bnd));
-      end
+%       boundary.ncomp    = sp.ncomp;
+%       boundary.ndof     = sum (cellfun (@(x) x.ndof, scalar_bnd));
+%       if (msh.ndim ~= 1)
+%         boundary.nsh_max  = sum (cellfun (@(x) x.nsh_max, scalar_bnd));
+%       end
       
       aux = 0;
-      boundary.dofs = [];
+      dofs = [];
       for icomp = 1:sp.ncomp
-        boundary.ndof_dir(icomp,:) = scalar_bnd{icomp}.ndof_dir;
+%         boundary.ndof_dir(icomp,:) = scalar_bnd{icomp}.ndof_dir;
         new_dofs = aux + scalar_bnd{icomp}.dofs;
-        boundary.dofs = union (boundary.dofs, new_dofs);
-        boundary.comp_dofs{icomp} = new_dofs;
+        dofs = union (dofs, new_dofs);
+        comp_dofs{icomp} = new_dofs;
         aux = aux + scalar_spaces{icomp}.ndof;
       end
-      boundary.dofs = boundary.dofs(:)';
-      
-      sp.boundary(iside) = boundary;
+      sp.boundary(iside).dofs = dofs(:)';
+      sp.boundary(iside).comp_dofs = comp_dofs;
     end
   else
     sp.boundary = [];
@@ -96,6 +96,7 @@ function sp = sp_vector (scalar_spaces, msh)
   sp.shape_function_gradients = [];
   sp.shape_function_divs = [];
   sp.shape_function_curls = [];
+  sp.dofs = [];
 
   if (sp.ncomp == 2)
     sp.constructor = @(MSH) sp_vector ({scalar_spaces{1}.constructor(MSH), ...

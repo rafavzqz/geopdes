@@ -128,33 +128,12 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
   
   if (boundary && msh.ndim > 1)
     for iside = 1:2*msh.ndim
-      
 %%    ind =[2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind = [2 2 1 1] in 2D;
       ind = setdiff (1:msh.ndim, ceil(iside/2)); 
 
-      bndry.side_number = iside;
-      bndry.ndim = msh.ndim - 1;
-      bndry.rdim = msh.rdim;
-      bndry.qn = msh.qn(ind);
-      bndry.qw = msh.qw(ind);
-      bndry.breaks = msh.breaks(ind);
-
-      bndry.nel_dir = msh.nel_dir(ind);
-      bndry.nel = prod (bndry.nel_dir);
-      bndry.nqn_dir = msh.nqn_dir(ind);
-      bndry.nqn = prod (bndry.nqn_dir);
-
-      msh.boundary2(iside) = bndry;
       msh.boundary(iside) = msh_cartesian (msh.breaks(ind), msh.qn(ind), msh.qw(ind), geo.boundary(iside), 'boundary', false);
-
-% TO DO: update geometry, in such a way that we can do something like
-%   msh.boundary_iside = msh_cartesian (msh.breaks(ind), msh.qn(ind),
-%     msh.qw(ind), geo.boundary(iside), 'boundary', false)
-% And the, in msh_eval_boundary_side
-%   msh_side = struct (msh_precompute (msh.boundary(iside)));
     end
   else
-    msh.boundary2 = [];
     msh.boundary = [];
   end
 

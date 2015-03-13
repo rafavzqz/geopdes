@@ -37,27 +37,9 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp_bnd = sp_eval_boundary_side (sp, msh_side)
+function sp_side = sp_eval_boundary_side (sp, msh_side)
 
   iside = msh_side.side_number;
-  sp_bnd = sp_eval_boundary_side (sp.spline_space, msh_side);
-
-%%    ind  = [2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind  = [2 2 1 1] in 2D;
-%%    ind2 = [1 1 2 2 3 3] in 3D,                  %ind2 = [1 1 2 2] in 2D
-  ind2 = ceil (iside/2);
-%   ind = setdiff (1:msh_side.ndim+1, ind2);
-
-  for idim = 1:msh_side.ndim+1
-    dofs_dir{idim} = 1:sp.ndof_dir(idim);
-  end
-  
-  if (rem (iside, 2) == 1)
-    dofs_dir{ind2} = 1;
-  elseif (rem (iside, 2) == 0)
-    dofs_dir{ind2} = sp.ndof_dir(ind2);
-  end
-  
-  weights = sp.weights(dofs_dir{:});
-  sp_bnd = bsp_2_nrb__ (sp_bnd, msh_side, weights);
+  sp_side = sp_precompute (sp.boundary(iside), msh_side);
 
 end

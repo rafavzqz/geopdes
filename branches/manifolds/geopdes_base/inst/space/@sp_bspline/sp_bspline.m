@@ -68,7 +68,6 @@ function sp = sp_bspline (knots, degree, msh)
   sp.ndof     = prod (sp.ndof_dir);
   sp.ncomp    = 1;
 
-  
   if (~isempty (msh.boundary))
     for iside = 1:numel (msh.boundary)
 %%    ind  = [2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind  = [2 2 1 1] in 2D;
@@ -76,33 +75,27 @@ function sp = sp_bspline (knots, degree, msh)
       ind2 = ceil (iside/2);
       ind = setdiff (1:msh.ndim, ind2);
 
-      boundary(iside).ndof_dir = sp.ndof_dir(ind);
-      boundary(iside).ndof = prod (boundary(iside).ndof_dir);
-      boundary(iside).nsh_dir = sp.nsh_dir(ind);
-      boundary(iside).nsh_max = prod (boundary(iside).nsh_dir);
-      boundary(iside).ncomp = 1;
+      sp.boundary(iside) = sp_bspline (sp.knots(ind), sp.degree(ind), msh.boundary(iside));
       
-      [ind_univ{ind}] = ind2sub ([boundary(iside).ndof_dir], 1:boundary(iside).ndof);
+      [ind_univ{ind}] = ind2sub ([sp.boundary(iside).ndof_dir], 1:sp.boundary(iside).ndof);
       if (rem (iside, 2) == 0)
-        ind_univ{ind2} = sp.ndof_dir(ind2) * ones (1, boundary(iside).ndof);
+        ind_univ{ind2} = sp.ndof_dir(ind2) * ones (1, sp.boundary(iside).ndof);
       else
-        ind_univ{ind2} = ones (1, boundary(iside).ndof);
+        ind_univ{ind2} = ones (1, sp.boundary(iside).ndof);
       end
-
-      boundary(iside).dofs = sub2ind (sp.ndof_dir, ind_univ{:});
+      sp.boundary(iside).dofs = sub2ind (sp.ndof_dir, ind_univ{:});
 
       if (sp.ndof_dir(ind2) > 1)
         if (rem (iside, 2) == 0)
-          ind_univ{ind2} = (sp.ndof_dir(ind2) - 1) * ones (1, boundary(iside).ndof);
+          ind_univ{ind2} = (sp.ndof_dir(ind2) - 1) * ones (1, sp.boundary(iside).ndof);
         else
-          ind_univ{ind2} = 2 * ones (1, boundary(iside).ndof);
+          ind_univ{ind2} = 2 * ones (1, sp.boundary(iside).ndof);
         end
-        boundary(iside).adjacent_dofs = sub2ind (sp.ndof_dir, ind_univ{:});
+        sp.boundary(iside).adjacent_dofs = sub2ind (sp.ndof_dir, ind_univ{:});
       end
+      
     end
         
-    sp.boundary = boundary;
-
   elseif (msh.ndim == 1)
     sp.boundary(1).dofs = 1;
     sp.boundary(2).dofs = sp.ndof;
@@ -119,6 +112,8 @@ function sp = sp_bspline (knots, degree, msh)
   sp.connectivity = [];
   sp.shape_functions = [];
   sp.shape_function_gradients = [];
+  sp.dofs = [];
+  sp.adjacent_dofs = [];
 
   sp.constructor = @(MSH) sp_bspline (sp.knots, sp.degree, MSH);
   sp = class (sp, 'sp_bspline');

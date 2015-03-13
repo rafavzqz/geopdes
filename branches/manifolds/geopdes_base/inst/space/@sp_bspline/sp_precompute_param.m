@@ -112,7 +112,7 @@ function sp = sp_precompute_param (sp, msh, varargin)
     for idim = 1:msh.ndim
       conn{idim} = conn{idim}(indices);
     end
-    connectivity(indices) = sub2ind (sp.ndof_dir, conn{:});
+    connectivity(indices) = sub2ind ([sp.ndof_dir, 1], conn{:}); % The extra 1 makes things work in any dimension
     sp.connectivity = reshape (connectivity, sp.nsh_max, msh.nel);
     clear conn csize crep indices connectivity
   end
