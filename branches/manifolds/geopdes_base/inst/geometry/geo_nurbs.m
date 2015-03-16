@@ -48,7 +48,7 @@ function varargout = geo_nurbs (nurbs, pts, ders, rdim)
   end
 
   if (rdim < ndim)
-    error ('geo_nurbs: the dimensions of your geometry seem to be wrong')
+    error ('geo_nurbs: the dimensions of the geometry are wrong. rdim < ndim?')
   end
   
   switch (ders)

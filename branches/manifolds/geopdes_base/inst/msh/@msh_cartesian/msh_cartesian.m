@@ -132,6 +132,7 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
       ind = setdiff (1:msh.ndim, ceil(iside/2)); 
 
       msh.boundary(iside) = msh_cartesian (msh.breaks(ind), msh.qn(ind), msh.qw(ind), geo.boundary(iside), 'boundary', false);
+      msh.boundary(iside).rdim = msh.rdim;
     end
   else
     msh.boundary = [];
