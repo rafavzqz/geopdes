@@ -83,6 +83,7 @@ function sp = sp_nurbs (varargin)
   sp.ndof     = prod (sp.ndof_dir);
   sp.ncomp    = 1;
  
+  sp.spline_space = sp_bspline (sp.knots, sp.degree, msh);
 
   if (~isempty (msh.boundary))
     for iside = 1:numel (msh.boundary)
@@ -108,7 +109,9 @@ function sp = sp_nurbs (varargin)
         ind_univ{ind2} = ones (1, sp.boundary(iside).ndof);
       end
       sp.boundary(iside).dofs = sub2ind (sp.ndof_dir, ind_univ{:});
-      sp.boundary(iside).spline_space.dofs = sp.boundary(iside).dofs;
+% This is to avoid a bug in Octave
+      aux = sp.boundary(iside).spline_space;
+      aux.dofs = sp.boundary(iside).dofs;
 
       if (sp.ndof_dir(ind2) > 1)
         if (rem (iside, 2) == 0)
@@ -117,8 +120,9 @@ function sp = sp_nurbs (varargin)
           ind_univ{ind2} = 2 * ones (1, sp.boundary(iside).ndof);
         end
         sp.boundary(iside).adjacent_dofs = sub2ind (sp.ndof_dir, ind_univ{:});
-        sp.boundary(iside).spline_space.adjacent_dofs = sp.boundary(iside).adjacent_dofs;
+        aux.adjacent_dofs = sp.boundary(iside).adjacent_dofs;
       end
+      sp.boundary(iside).spline_space = aux;
     end
 
   elseif (msh.ndim == 1)
@@ -139,9 +143,6 @@ function sp = sp_nurbs (varargin)
   sp.shape_function_gradients = [];
   sp.dofs = [];
   sp.adjacent_dofs = [];
-
-  sp.spline_space = sp_bspline (sp.knots, sp.degree, msh);
-  
 
   sp.constructor = @(MSH) sp_nurbs (sp.knots, sp.degree, sp.weights, MSH);
   sp = class (sp, 'sp_nurbs');
