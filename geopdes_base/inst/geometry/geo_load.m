@@ -64,6 +64,7 @@ function geometry = geo_load (in)
     if (length (in) > 2)
       geometry.map_der2 =  in{3};
     end
+    
   elseif (isnumeric (in) && all (size (in) == [4, 4]))  
 %% geometry is given as a 4x4 matrix representing an affine transformation
     geometry.map = @(ps) affine_map  (ps, in);
@@ -73,7 +74,8 @@ function geometry = geo_load (in)
     error ('geo_load: wrong input type');
   end
   
-% In case the geometry is a NURBS structure  
+% In case the geometry is a NURBS structure, we use the NURBS toolbox
+% This allows to use a rectangular parametric domain, instead of [0,1]^n.
   if (isfield (geometry, 'nurbs'))
     if (any (abs(geometry.nurbs.coefs(3,:)) > 1e-12))
       rdim = 3;
@@ -95,6 +97,11 @@ function geometry = geo_load (in)
       geometry.boundary(ibnd).map      = @(PTS) geo_nurbs (bnd(ibnd), PTS, 0, rdim);
       geometry.boundary(ibnd).map_der  = @(PTS) geo_nurbs (bnd(ibnd), PTS, 1, rdim);
       geometry.boundary(ibnd).map_der2 = @(PTS) geo_nurbs (bnd(ibnd), PTS, 2, rdim);
+    end
+  else
+    for ibnd = 1:6 % This loop should be until 2*ndim, but ndim is not known
+      geometry.boundary(ibnd).map     = @(PTS) boundary_map (geometry.map, ibnd, PTS);
+      geometry.boundary(ibnd).map_der = @(PTS) boundary_map_der (geometry.map_der, ibnd, PTS);
     end
   end
 
@@ -161,6 +168,58 @@ function mps = affine_map_der2  (ps)
   end
   mps  = zeros (ndim, ndim, ndim, nps);
 end
+
+
+% These two functions are to compute boundary entities from the global ones
+function F = boundary_map (map, iside, pts)
+
+%%    ind  = [2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind  = [2 2 1 1] in 2D;
+%%    ind2 = [1 1 2 2 3 3] in 3D,                  %ind2 = [1 1 2 2] in 2D
+  ind2 = ceil (iside/2);
+  
+  if (iscell (pts))
+    ndim = numel (pts) + 1;
+    ind = setdiff (1:ndim, ind2);
+
+    pts_aux(ind) = pts;
+    if (mod (iside, 2) == 1)
+      pts_aux{ind2} = 0;
+    else
+      pts_aux{ind2} = 1;
+    end
+  else
+    error ('For the boundary, a cell array should be passed as the argument')
+  end
+      
+  F = map (pts_aux);
+
+end
+
+function DF = boundary_map_der (map_der, iside, pts)
+
+%%    ind  = [2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind  = [2 2 1 1] in 2D;
+%%    ind2 = [1 1 2 2 3 3] in 3D,                  %ind2 = [1 1 2 2] in 2D
+  ind2 = ceil (iside/2);
+  
+  if (iscell (pts))
+    ndim = numel (pts) + 1;
+    ind = setdiff (1:ndim, ind2);
+
+    pts_aux(ind) = pts;
+    if (mod (iside, 2) == 1)
+      pts_aux{ind2} = 0;
+    else
+      pts_aux{ind2} = 1;
+    end
+  else
+    error ('For the boundary, a cell array should be passed as the argument')
+  end
+      
+  DF = map_der (pts_aux);
+  DF = DF(:,ind,:);
+
+end
+
 
 %!shared g1,g2,x
 %!test
