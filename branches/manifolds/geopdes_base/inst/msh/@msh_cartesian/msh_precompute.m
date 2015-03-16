@@ -72,6 +72,7 @@ function msh = msh_precompute (msh, varargin)
     geo_map_jac = false;
     geo_map_der2 = false;
     jacdet = false;
+    normal = false;
     for ii=1:2:length(varargin)-1
       if (strcmpi (varargin{ii}, 'quad_nodes'))
         quad_nodes = varargin{ii+1};
@@ -85,6 +86,8 @@ function msh = msh_precompute (msh, varargin)
         jacdet = varargin{ii+1};
       elseif (strcmpi (varargin{ii}, 'geo_map_der2'))
         geo_map_der2 = varargin{ii+1};
+      elseif (strcmpi (varargin{ii}, 'normal'))
+        normal = varargin{ii+1};
       else
         error ('msh_precompute: unknown option %s', varargin {ii});
       end
@@ -151,10 +154,10 @@ function msh = msh_precompute (msh, varargin)
   end
 
   if (msh.ndim == 2 && msh.rdim == 3 && normal)
-    normal = reshape (geopdes_cross__ (msh.geo_map_jac(:,1,:,:), ...
+    normals = reshape (geopdes_cross__ (msh.geo_map_jac(:,1,:,:), ...
                               msh.geo_map_jac(:,2,:,:)), msh.rdim, msh.nqn, msh.nel);
-    norms = reshape (geopdes_norm__ (normal), [1, msh.nqn, msh.nel]);
-    msh.normal = bsxfun (@rdivide, normal, norms);
+    norms = reshape (geopdes_norm__ (normals), [1, msh.nqn, msh.nel]);
+    msh.normal = bsxfun (@rdivide, normals, norms);
   end
 
   if (isfield(msh, 'quad_weights') && isfield(msh, 'jacdet'))
