@@ -127,4 +127,37 @@ function [geometry, boundaries, interfaces, subdomains] = mp_geo_load (in)
     error ('mp_geo_load: wrong input type');
   end
 
+  
+  if (isfield (geometry, 'nurbs'))
+    rdim = 0;
+    for iptc = 1:numel (geometry)
+      if (any (abs(geometry(iptc).nurbs.coefs(3,:)) > 1e-12))
+        rdim = 3;
+      elseif (any (abs(geometry(iptc).nurbs.coefs(2,:)) > 1e-12))
+        rdim = max (rdim, 2);
+      else
+        rdim = max (rdim, 1);
+      end
+    end
+    
+    for iptc = 1:numel (geometry)
+      geometry(iptc).rdim = rdim;
+
+      geometry(iptc).map      =  @(PTS) geo_nurbs (geometry(iptc).nurbs, PTS, 0, rdim);
+      geometry(iptc).map_der  =  @(PTS) geo_nurbs (geometry(iptc).nurbs, PTS, 1, rdim);
+      geometry(iptc).map_der2 =  @(PTS) geo_nurbs (geometry(iptc).nurbs, PTS, 2, rdim);
+    
+      bnd = nrbextract (geometry(iptc).nurbs);
+      for ibnd = 1:numel (bnd)
+        geometry(iptc).boundary(ibnd).nurbs    = bnd(ibnd);
+        geometry(iptc).boundary(ibnd).rdim     = rdim;
+        geometry(iptc).boundary(ibnd).map      = @(PTS) geo_nurbs (bnd(ibnd), PTS, 0, rdim);
+        geometry(iptc).boundary(ibnd).map_der  = @(PTS) geo_nurbs (bnd(ibnd), PTS, 1, rdim);
+        geometry(iptc).boundary(ibnd).map_der2 = @(PTS) geo_nurbs (bnd(ibnd), PTS, 2, rdim);
+      end
+    end
+  else
+    error('Multiple patches are only implemented for NURBS geometries')
+  end
+  
 end
