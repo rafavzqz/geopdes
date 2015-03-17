@@ -1,6 +1,7 @@
 % -*- INTERNAL UNDOCUMENTED FUNCTION -*-
 %
 % Copyright (C) 2010 Carlo de Falco
+% Copyright (C) 2015 Rafael Vazquez
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -18,31 +19,10 @@
 % Author: Carlo de Falco <cdf AT users.sourceforge.net>
 
 function [Jinv, det] = geopdes_inv__ (v)
-  if (size(v,1) == 2)
-    det  = (v(1,1,:,:) .* v(2,2,:,:) - v(2,1,:,:) .* v(1,2,:,:));
-    Jinv(1,1,:,:) = v(2,2,:,:)./det;
-    Jinv(2,2,:,:) = v(1,1,:,:)./det;
-    Jinv(1,2,:,:) = -v(1,2,:,:)./det;
-    Jinv(2,1,:,:) = -v(2,1,:,:)./det;
-    det = squeeze (det);
-  elseif (size(v,1) == 3)
-    det = v(1,1,:,:) .* (v(2,2,:,:) .* v(3,3,:,:) - v(2,3,:,:) .* v(3,2,:,:))...
-        + v(1,2,:,:) .* (v(2,3,:,:) .* v(3,1,:,:) - v(2,1,:,:) .* v(3,3,:,:))...
-        + v(1,3,:,:) .* (v(2,1,:,:) .* v(3,2,:,:) - v(2,2,:,:) .* v(3,1,:,:));
-    Jinv(1,1,:,:)  = (v(2,2,:,:).*v(3,3,:,:) - v(2,3,:,:).*v(3,2,:,:)) ./ det;
-    Jinv(1,2,:,:)  = (v(1,3,:,:).*v(3,2,:,:) - v(1,2,:,:).*v(3,3,:,:)) ./ det;
-    Jinv(1,3,:,:)  = (v(1,2,:,:).*v(2,3,:,:) - v(1,3,:,:).*v(2,2,:,:)) ./ det;
-    Jinv(2,1,:,:)  = (v(2,3,:,:).*v(3,1,:,:) - v(2,1,:,:).*v(3,3,:,:)) ./ det;
-    Jinv(2,2,:,:)  = (v(1,1,:,:).*v(3,3,:,:) - v(1,3,:,:).*v(3,1,:,:)) ./ det;
-    Jinv(2,3,:,:)  = (v(1,3,:,:).*v(2,1,:,:) - v(1,1,:,:).*v(2,3,:,:)) ./ det;
-    Jinv(3,1,:,:)  = (v(2,1,:,:).*v(3,2,:,:) - v(2,2,:,:).*v(3,1,:,:)) ./ det;
-    Jinv(3,2,:,:)  = (v(1,2,:,:).*v(3,1,:,:) - v(1,1,:,:).*v(3,2,:,:)) ./ det;
-    Jinv(3,3,:,:)  = (v(1,1,:,:).*v(2,2,:,:) - v(1,2,:,:).*v(2,1,:,:)) ./ det;
-    det = squeeze (det);
-  elseif (size(v,1) == 1)
-    Jinv = 1./v;
-    det = squeeze (v);
-  end
+
+  [JinvT, det] = geopdes_invT__ (v);
+  Jinv = permute (JinvT, [2, 1, 3:numel(size(v))]);
+
 end
 
 %!test
