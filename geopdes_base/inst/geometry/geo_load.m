@@ -89,14 +89,16 @@ function geometry = geo_load (in)
     geometry.map      =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 0, rdim);
     geometry.map_der  =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 1, rdim);
     geometry.map_der2 =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 2, rdim);
-    
-    bnd = nrbextract (geometry.nurbs);
-    for ibnd = 1:numel (bnd)
-      geometry.boundary(ibnd).nurbs    = bnd(ibnd);
-      geometry.boundary(ibnd).rdim     = rdim;
-      geometry.boundary(ibnd).map      = @(PTS) geo_nurbs (bnd(ibnd), PTS, 0, rdim);
-      geometry.boundary(ibnd).map_der  = @(PTS) geo_nurbs (bnd(ibnd), PTS, 1, rdim);
-      geometry.boundary(ibnd).map_der2 = @(PTS) geo_nurbs (bnd(ibnd), PTS, 2, rdim);
+
+    if (numel (geometry.nurbs.order) > 1)
+      bnd = nrbextract (geometry.nurbs);
+      for ibnd = 1:numel (bnd)
+        geometry.boundary(ibnd).nurbs    = bnd(ibnd);
+        geometry.boundary(ibnd).rdim     = rdim;
+        geometry.boundary(ibnd).map      = @(PTS) geo_nurbs (bnd(ibnd), PTS, 0, rdim);
+        geometry.boundary(ibnd).map_der  = @(PTS) geo_nurbs (bnd(ibnd), PTS, 1, rdim);
+        geometry.boundary(ibnd).map_der2 = @(PTS) geo_nurbs (bnd(ibnd), PTS, 2, rdim);
+      end
     end
   else
     for ibnd = 1:6 % This loop should be until 2*ndim, but ndim is not known
