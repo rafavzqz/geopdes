@@ -22,7 +22,10 @@ function d = geopdes_det__ (v)
 
   vsize = size (v);
 
-  if (vsize(1) == 2 && vsize(2) == 2)
+  if (vsize(1) == 1 && vsize(2) == 1)
+    d = v(1,1,:,:);
+
+  elseif (vsize(1) == 2 && vsize(2) == 2)
     d = v(1,1,:,:) .* v(2,2,:,:) - v(2,1,:,:) .* v(1,2,:,:);
 
   elseif (vsize(1) == 3 && vsize(2) == 3)
@@ -30,28 +33,15 @@ function d = geopdes_det__ (v)
       + v(1,2,:,:) .* (v(2,3,:,:) .* v(3,1,:,:) - v(2,1,:,:) .* v(3,3,:,:))...
       + v(1,3,:,:) .* (v(2,1,:,:) .* v(3,2,:,:) - v(2,2,:,:) .* v(3,1,:,:));
   
-  elseif (vsize(1) == 3 && vsize(2) == 2)
+  elseif (vsize(1) > vsize(2))
     % G = v^t * v, first fundamental form for v = DF
-    for ii = 1:2
-      for jj = 1:2
+    for ii = 1:vsize(2)
+      for jj = 1:vsize(2)
         G(ii,jj,:,:) = sum (v(:,ii,:,:).*v(:,jj,:,:), 1);
       end
     end
-    % d = sqrt(det(G))
-    d = sqrt (G(1,1,:,:) .* G(2,2,:,:) - G(2,1,:,:) .* G(1,2,:,:));
     
-  elseif (vsize(1) == 2 && vsize(2) == 1)
-    % G = v^t * v
-    G = v(1,1,:,:).^2 + v(2,1,:,:).^2;
-    d = sqrt (G);
-
-  elseif (vsize(1) == 3 && vsize(2) == 1)
-    % G = v^t * v
-    G = v(1,1,:,:).^2 + v(2,1,:,:).^2 + + v(3,1,:,:).^2;
-    d = sqrt (G);
-
-  elseif (vsize(1) == 1 && vsize(2) == 1)
-    d = v(1,1,:,:);
+    d = sqrt (geopdes_det__ (G));
   end
 
   d = squeeze (d);
