@@ -44,15 +44,19 @@ function sp = sp_precompute (sp, msh, varargin)
 
   if (isempty (varargin))
     gradient = true;
+    hessian = false;
   else
     if (~rem (length (varargin), 2) == 0)
       error ('sp_precompute: options must be passed in the [option, value] format');
     end
 
     gradient = false;
+    hessian = false;
     for ii=1:2:length(varargin)-1
       if (strcmpi (varargin{ii}, 'gradient'))
         gradient = varargin{ii+1};
+      elseif (strcmpi (varargin{ii}, 'hessian'))
+        hessian = varargin{ii+1};
       end
     end    
   end

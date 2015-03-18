@@ -4,8 +4,8 @@
 %
 % INPUTS:
 %     
-%     knots:     open knot vector    
-%     degree:    b-spline polynomial degree
+%     knots:     open knot vector (cell array of size [1, ndim])
+%     degree:    b-spline polynomial degree (vector of size [1, ndim])
 %     msh:       msh object that defines the quadrature rule (see msh_cartesian)
 %
 % OUTPUT:
@@ -112,6 +112,7 @@ function sp = sp_bspline (knots, degree, msh)
   sp.connectivity = [];
   sp.shape_functions = [];
   sp.shape_function_gradients = [];
+  sp.shape_function_hessians = [];
   sp.dofs = [];
   sp.adjacent_dofs = [];
 
