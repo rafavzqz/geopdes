@@ -5,10 +5,10 @@
 %
 % INPUTS:
 %
-%     nurbs:     nurbs structure representing a volume
+%     nurbs:     nurbs structure from the NURBS toolbox (see nrbmak)
 %     msh:       msh object that defines the quadrature rule (see msh_cartesian)
-%     knots:     open knot vector
-%     degree:    nurbs polynomial degree (order minus one)
+%     knots:     open knot vector (cell array of size [1, ndim])
+%     degree:    nurbs polynomial degree (vector of size [1, ndim])
 %     weights:   weights associated to the basis functions
 %
 % OUTPUT:

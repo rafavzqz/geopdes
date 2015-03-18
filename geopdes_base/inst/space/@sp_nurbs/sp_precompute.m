@@ -44,6 +44,7 @@ function sp = sp_precompute (sp, msh, varargin)
 
   if (isempty (varargin))
     gradient = true;
+    hessian = false;
   else
     if (~rem (length (varargin), 2) == 0)
       error ('sp_precompute: options must be passed in the [option, value] format');
@@ -53,6 +54,8 @@ function sp = sp_precompute (sp, msh, varargin)
     for ii=1:2:length(varargin)-1
       if (strcmpi (varargin{ii}, 'gradient'))
         gradient = varargin{ii+1};
+      elseif (strcmpi (varargin{ii}, 'hessian'))
+        hessian = varargin{ii+1};
       end
     end    
   end
@@ -93,8 +96,8 @@ function sp = sp_precompute (sp, msh, varargin)
         end
       end
       sp.shape_function_hessians = shape_function_hessians;
-    else
-      warning ('For manifolds, the second derivatives are not implemented yet')
+%     else
+%       warning ('For manifolds, the second derivatives are not implemented yet')
     end
   end
   

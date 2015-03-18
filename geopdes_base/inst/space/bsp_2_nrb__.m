@@ -19,23 +19,33 @@
 
 function sp = bsp_2_nrb__ (sp, msh, W)
 
+% sp is a struct (called from sp_evaluate_col)
+  if (isstruct (sp))
+    gradient = isfield (sp, 'shape_function_gradients');
+    hessian  = isfield (sp, 'shape_function_hessians');
+% sp is an object (called from sp_precompute_param)
+  else
+    gradient = ~isempty (sp.shape_function_gradients);
+    hessian  = ~isempty (sp.shape_function_hessians);
+  end
+
   W = repmat (reshape (W(sp.connectivity), 1, sp.nsh_max, msh.nel), [msh.nqn, 1, 1]);
   shape_functions = W .* sp.shape_functions;
   D = repmat (reshape (sum (shape_functions, 2), msh.nqn, 1, msh.nel), [1, sp.nsh_max, 1]);
   sp.shape_functions = shape_functions ./ D;
 
-  if (isfield (sp, 'shape_function_gradients'))
+  if (gradient)
     for idim = 1:msh.ndim
       Bdir = W .* reshape (sp.shape_function_gradients(idim,:,:,:), [msh.nqn, sp.nsh_max, msh.nel]);
       Ddir{idim} = repmat (reshape (sum (Bdir, 2), msh.nqn, 1, msh.nel), [1, sp.nsh_max, 1]);
 
       aux_grad{idim} = (Bdir - sp.shape_functions .* Ddir{idim}) ./ D;
       sp.shape_function_gradients(idim,:,:,:) = aux_grad{idim};
-      end
+    end
   end
 
 % With aux_grad I can avoid to reshape
-  if (isfield (sp, 'shape_function_hessians'))
+  if (hessian)
     for idim = 1:msh.ndim
       for jdim = 1:msh.ndim
         Bdir2 = W .* reshape (sp.shape_function_hessians(idim,jdim,:,:,:), [msh.nqn, sp.nsh_max, msh.nel]);

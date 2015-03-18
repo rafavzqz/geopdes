@@ -72,21 +72,23 @@ end
 
 % For NURBS, low order derivatives are used to compute high order derivatives
 % They are removed at the end of the function
+gradient_param = gradient;
+value_param = value;
 if (hessian)
-  gradient = true;
-  value = true;
+  gradient_param = true;
+  value_param = true;
 elseif (gradient)
-  value = true;
+  value_param = true;
 end
 
-sp = sp_evaluate_col_param (space.spline_space, msh, 'value', value, 'gradient', gradient, 'hessian', hessian);
+sp = sp_evaluate_col_param (space.spline_space, msh, 'value', value_param, 'gradient', gradient_param, 'hessian', hessian);
 
 sp = bsp_2_nrb__ (sp, msh, space.weights);
 
-if (~value)
-  sp = rmfield (sp, 'shape_function_values');
+if (value_param && ~value)
+  sp = rmfield (sp, 'shape_functions');
 end
-if (hessian && ~gradient)
+if (gradient_param && ~gradient)
   sp = rmfield (sp, 'shape_function_gradients');
 end
 

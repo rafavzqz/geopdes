@@ -77,23 +77,36 @@ function sp = sp_precompute_param (space, msh, varargin)
 
 % For NURBS, low order derivatives are used to compute high order derivatives
 % They are removed at the end of the function
+% The connectivity is also needed in bsp_2_nrb__
+  conn_param = connectivity;
+  value_param = value;
+  gradient_param = gradient;
   if (hessian)
-    gradient = true;
-    value = true;
+    gradient_param = true;
+    value_param = true;
+    conn_param = true;
   elseif (gradient)
-    value = true;
+    value_param = true;
+    conn_param = true;
+  elseif (value)
+    conn_param = true;
   end
 
-  sp = sp_precompute_param (space.spline_space, msh, varargin{:});
+%   sp = sp_precompute_param (space.spline_space, msh, varargin{:});
+  sp = sp_precompute_param (space.spline_space, msh, 'nsh', nsh, 'connectivity', conn_param, ...
+         'value', value_param, 'gradient', gradient_param, 'hessian', hessian);
 
   if (value || gradient || hessian)
     sp = bsp_2_nrb__ (sp, msh, space.weights);
     
     if (~value)
-      sp = rmfield (sp, 'shape_function_values');
+      sp.shape_functions = [];
     end
-    if (hessian && ~gradient)
-      sp = rmfield (sp, 'shape_function_gradients');
+    if (~gradient)
+      sp.shape_function_gradients = [];
+    end
+    if (~connectivity)
+      sp.connectivity = [];
     end
   end
 

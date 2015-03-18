@@ -67,6 +67,8 @@ function sp = sp_precompute_param (sp, msh, varargin)
         value = varargin{ii+1};
       elseif (strcmpi (varargin{ii}, 'gradient'))
         gradient = varargin{ii+1};
+      elseif (strcmpi (varargin{ii}, 'hessian'))
+        hessian = varargin{ii+1};
       else
         error ('sp_precompute_param: unknown option %s', varargin {ii});
       end
@@ -153,8 +155,9 @@ function sp = sp_precompute_param (sp, msh, varargin)
       sp.shape_function_gradients = reshape (sp.shape_function_gradients, ...
                                     msh.ndim, msh.nqn, sp.nsh_max, msh.nel);
     end
-    
-    if (hessian && isfield (msh, 'geo_map_der2'))
+
+% To be changed with isprop, as soon as classdef is working
+    if (hessian && isfield (struct (msh), 'geo_map_der2'))
       for idim = 1:msh.ndim
         shape_fun_hess = shh{idim};
         for jdim = setdiff (1:msh.ndim, idim)
