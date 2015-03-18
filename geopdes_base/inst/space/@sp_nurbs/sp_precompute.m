@@ -63,6 +63,41 @@ function sp = sp_precompute (sp, msh, varargin)
     sp = sp_precompute_param (sp, msh, varargin{:});
   end
 
+  if (hessian && isfield (msh, 'geo_map_der2'))
+    if (msh.rdim == msh.ndim)
+      if (isempty (msh.geo_map_jac))
+        msh = msh_precompute (msh, 'geo_map_jac', true);
+      end
+      if (isempty (msh.geo_map_der2))
+        msh = msh_precompute (msh, 'geo_map_der2', true);
+      end
+
+      [Jinv, Jinv2] = geopdes_inv_der2__ (msh.geo_map_jac, msh.geo_map_der2);
+      Jinv  = reshape (Jinv, [msh.ndim, msh.rdim, msh.nqn, 1, msh.nel]);
+      JinvT = permute (Jinv, [2 1 3 4 5]);
+      Jinv2 = reshape (Jinv2, [msh.ndim, msh.rdim, msh.rdim, msh.nqn, 1, msh.nel]);
+
+      shg = reshape (sp.shape_function_gradients, [msh.ndim, 1, 1, msh.nqn, space.nsh_max, msh.nel]);
+      shh = reshape (sp.shape_function_hessians, msh.ndim, msh.ndim, msh.nqn, space.nsh_max, msh.nel);
+      shape_function_hessians = zeros (msh.ndim, msh.ndim, msh.nqn, space.nsh_max, msh.nel);
+
+      shh_size = [1, 1, msh.nqn, space.nsh_max, msh.nel];
+      for idim = 1:msh.rdim
+        for jdim = 1:msh.rdim
+          D2v_DF = sum (bsxfun(@times, shh, Jinv(:,idim,:,:,:)),1);
+          DFT_D2v_DF = sum (bsxfun (@times, JinvT(jdim,:,:,:,:), D2v_DF), 2);
+          Dv_D2F = sum (bsxfun (@times, shg, Jinv2(:,idim,jdim,:,:,:)), 1);
+
+          shape_function_hessians(idim,jdim,:,:,:) = reshape (DFT_D2v_DF, shh_size) + ...
+              reshape (Dv_D2F, shh_size);
+        end
+      end
+      sp.shape_function_hessians = shape_function_hessians;
+    else
+      warning ('For manifolds, the second derivatives are not implemented yet')
+    end
+  end
+  
   if (gradient)
     if (isempty (msh.geo_map_jac))
       msh = msh_precompute (msh, 'geo_map_jac', true);

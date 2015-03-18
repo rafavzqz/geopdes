@@ -73,48 +73,31 @@ end
 sp = sp_evaluate_col_param (space, msh, varargin{:});
 
 if (hessian && isfield (msh, 'geo_map_der2'))
-  if (msh.rdim == 2 && msh.ndim == 2)
-    xu = reshape (msh.geo_map_jac(1,1,:,:), msh.nqn, msh.nel);
-    xv = reshape (msh.geo_map_jac(1,2,:,:), msh.nqn, msh.nel);
-    yu = reshape (msh.geo_map_jac(2,1,:,:), msh.nqn, msh.nel);
-    yv = reshape (msh.geo_map_jac(2,2,:,:), msh.nqn, msh.nel);
+  if (msh.rdim == msh.ndim)
+    [Jinv, Jinv2] = geopdes_inv_der2__ (msh.geo_map_jac, msh.geo_map_der2);
+    Jinv  = reshape (Jinv, [msh.ndim, msh.rdim, msh.nqn, 1, msh.nel]);
+    JinvT = permute (Jinv, [2 1 3 4 5]);
+    Jinv2 = reshape (Jinv2, [msh.ndim, msh.rdim, msh.rdim, msh.nqn, 1, msh.nel]);
 
-    xuu = reshape (msh.geo_map_der2(1, 1, 1, :, :), [], msh.nel);
-    yuu = reshape (msh.geo_map_der2(2, 1, 1, :, :), [], msh.nel);
-    xuv = reshape (msh.geo_map_der2(1, 1, 2, :, :), [], msh.nel);
-    yuv = reshape (msh.geo_map_der2(2, 2, 1, :, :), [], msh.nel);
-    xvv = reshape (msh.geo_map_der2(1, 2, 2, :, :), [], msh.nel);
-    yvv = reshape (msh.geo_map_der2(2, 2, 2, :, :), [], msh.nel);
+    shg = reshape (sp.shape_function_gradients, [msh.ndim, 1, 1, msh.nqn, space.nsh_max, msh.nel]);
+    shh = reshape (sp.shape_function_hessians, msh.ndim, msh.ndim, msh.nqn, space.nsh_max, msh.nel);
+    shape_function_hessians = zeros (msh.ndim, msh.ndim, msh.nqn, space.nsh_max, msh.nel);
 
-    [uxx, uxy, uyy, vxx, vxy, vyy] = ...
-          der2_inv_map__ (xu, xv, yu, yv, xuu, xuv, xvv, yuu, yuv, yvv);
+    shh_size = [1, 1, msh.nqn, space.nsh_max, msh.nel];
+    for idim = 1:msh.rdim
+      for jdim = 1:msh.rdim
+        D2v_DF = sum (bsxfun(@times, shh, Jinv(:,idim,:,:,:)),1);
+        DFT_D2v_DF = sum (bsxfun (@times, JinvT(jdim,:,:,:,:), D2v_DF), 2);
+        Dv_D2F = sum (bsxfun (@times, shg, Jinv2(:,idim,jdim,:,:,:)), 1);
 
-    for ii=1:sp.nsh_max
-      bu = reshape (sp.shape_function_gradients(1,:,ii,:), msh.nqn, msh.nel);
-      bv = reshape (sp.shape_function_gradients(2,:,ii,:), msh.nqn, msh.nel);
-      buu = reshape (sp.shape_function_hessians(1,1,:,ii,:), msh.nqn, msh.nel);
-      buv = reshape (sp.shape_function_hessians(1,2,:,ii,:), msh.nqn, msh.nel);
-      bvv = reshape (sp.shape_function_hessians(2,2,:,ii,:), msh.nqn, msh.nel);
-      
-      [bxx, bxy, byy] = der2_basisfun_phys__ (xu(:), xv(:), yu(:), yv(:), ...
-          uxx(:), uxy(:), uyy(:), vxx(:), vxy(:), vyy(:), ...
-          buu(:), buv(:), bvv(:), bu(:), bv(:));
-
-      sh = size (sp.shape_function_hessians(1,1,:,ii,:));
-      shape_function_hessians(1,1,:,ii,:) = reshape (bxx, sh);
-      shape_function_hessians(1,2,:,ii,:) = reshape (bxy, sh);
-      shape_function_hessians(2,1,:,ii,:) = reshape (bxy, sh);
-      shape_function_hessians(2,2,:,ii,:) = reshape (byy, sh);
+        shape_function_hessians(idim,jdim,:,:,:) = reshape (DFT_D2v_DF, shh_size) + ...
+            reshape (Dv_D2F, shh_size);
+      end
     end
     sp.shape_function_hessians = shape_function_hessians;
-
   else
-    warning ('For manifolds and volumes, the second derivatives are only computed in the parametric domain')
+    warning ('For manifolds, the second derivatives are not implemented yet')
   end
-
-  clear shape_function_hessians
-  clear bu bv buu buv bvv xu xv yu yv xuu xuv xvv yuu yuv yvv ...
-           uxx uxy uyy vxx vxy vyy bxx bxy byy
 end
 
 if (gradient)
