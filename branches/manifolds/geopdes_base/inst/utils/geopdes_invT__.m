@@ -1,4 +1,16 @@
-% -*- INTERNAL UNDOCUMENTED FUNCTION -*-
+% geopdes_invT: transpose of the inverse or, for codimension > 0 (rdim > ndim)
+% the transpose of the Moore-Penrose pseudo-inverse.
+%
+% To be used with msh.geo_map_jac, to compute DF^{-T}.
+% In the case of codimension > 0, it computes
+%   J^T = DF * (DF^t * DF)^{-1}
+%   det = sqrt ( det(DF^t * DF)^{-1} )
+%
+%  [JinvT, det] = geopdes_invT__ (geo_map_jac)
+%
+% OUTPUT:
+%   JinvT: the computed matrix evaluated at every point. Size (rdim x ndim x nqn x nel)
+%   det:   the determinatn evaluated at every point. Size (nqn x nel)
 %
 % Copyright (C) 2010 Carlo de Falco
 % Copyright (C) 2015 Rafael Vazquez

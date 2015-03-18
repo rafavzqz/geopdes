@@ -22,14 +22,16 @@ function [Jinv, geo_inv_der2] = geopdes_inv_der2__ (geo_map_jac, geo_map_der2)
 vsize = size (geo_map_jac);
 vsize(end+1:4) = 1;
 
-ndim = vsize(1);
-rdim = vsize(2);
+rdim = vsize(1);
+ndim = vsize(2);
 
 Jinv = geopdes_inv__ (geo_map_jac);
+Jsize = size (Jinv);
+Jsize(end+1:4) = 1;
 
-Jinv1 = reshape (Jinv, [1, vsize]);
-Jinv2 = permute (Jinv1, [1 3 2 4:numel(vsize)+1]);
-Jinv3 = permute (Jinv1, [3 2 1 4:numel(vsize)+1]);
+Jinv1 = reshape (Jinv, [1, Jsize]);
+Jinv2 = permute (Jinv1, [1 3 2 4:numel(Jsize)+1]);
+Jinv3 = permute (Jinv1, [3 2 1 4:numel(Jsize)+1]);
 
 geo_inv_der2 = zeros ([ndim, rdim, rdim, vsize(3:end)]);
 
