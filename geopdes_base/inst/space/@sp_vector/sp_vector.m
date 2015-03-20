@@ -68,12 +68,6 @@ function sp = sp_vector (scalar_spaces, msh)
       end
       sp.boundary(iside) = sp_vector (scalar_bnd, msh.boundary(iside));
       
-%       boundary.ncomp    = sp.ncomp;
-%       boundary.ndof     = sum (cellfun (@(x) x.ndof, scalar_bnd));
-%       if (msh.ndim ~= 1)
-%         boundary.nsh_max  = sum (cellfun (@(x) x.nsh_max, scalar_bnd));
-%       end
-      
       aux = 0;
       dofs = [];
       for icomp = 1:sp.ncomp

@@ -90,13 +90,6 @@ function sp = sp_precompute (sp, msh, varargin)
     end
   end
   
-% % Derivatives are not computed for boundary spaces (at least for now)
-%   if (~isempty (sp.dofs))
-%      gradient = false;
-%      divergence = false;
-%      curl = false;
-%   end
-
 % Precompute everything for each component (already in the physical domain)
 % These structures will not be stored in memory
   scalar_sp = cell (sp.ncomp,1);
