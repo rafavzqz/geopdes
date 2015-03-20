@@ -72,6 +72,7 @@ function [JinvT, det] = geopdes_invT__ (v)
       end
     end
     [Ginv,det] = geopdes_inv__ (G);
+    det = sqrt (det);
 
     %  v * G^{-1}, which means DF * {DF^t * DF}^(-1)
     JinvT = zeros (size(v));
