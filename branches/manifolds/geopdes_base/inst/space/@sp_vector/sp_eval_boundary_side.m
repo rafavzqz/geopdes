@@ -43,21 +43,3 @@ function sp_side = sp_eval_boundary_side (sp, msh_side)
   sp_side = sp_precompute (sp.boundary(iside), msh_side);
 
 end
-%   sp_bnd = sp.boundary(iside);
-% 
-%   
-%   sp_bnd.nsh = zeros (1, msh_side.nel);
-%   sp_bnd.connectivity = [];
-%   sp_bnd.shape_functions = zeros (sp.ncomp, msh_side.nqn, sp_bnd.nsh_max, msh_side.nel);
-% 
-%   aux = 0; aux2 = 0;
-%   for icomp = 1:sp.ncomp
-%     sp_bnd_scalar = sp_eval_boundary_side (sp.scalar_spaces{icomp}, msh_side);
-%     sp_bnd.nsh = sp_bnd.nsh + sp_bnd_scalar.nsh;
-%     sp_bnd.connectivity = [sp_bnd.connectivity; aux+sp_bnd_scalar.connectivity];
-%     sp_bnd.shape_functions(icomp,:,aux2+(1:sp_bnd_scalar.nsh_max),:) = sp_bnd_scalar.shape_functions;
-%     aux  = aux + sp_bnd_scalar.ndof;
-%     aux2 = aux2 + sp_bnd_scalar.nsh_max;
-%   end
-% 
-% end
