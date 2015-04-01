@@ -3,7 +3,7 @@
 % 1) PHYSICAL DATA OF THE PROBLEM
 clear problem_data 
 % Physical domain, defined as NURBS structure from the NURBS toolbox
-problem_data.geo_name = nrbextrude (nrbcirc(1, [], 0, pi/2), [0 0 1]);
+problem_data.geo_name = 'geo_roof.txt';
 
 % Type of boundary conditions for each side of the domain
 problem_data.nmnn_sides   = [];

@@ -45,9 +45,15 @@ line = fgetl (fid);
 while (line ~= -1)
   if (line(1) ~= '#')
     vec = str2num(line);
-    dim = vec(1);
+    ndim = vec(1);
     if (numel (vec) > 1)
-      npatches = vec(2);
+      rdim = vec(2);
+    else
+      rdim = ndim;
+    end
+    
+    if (numel (vec) > 2)
+      npatches = vec(3);
     else
       npatches = 1;
     end
@@ -83,7 +89,7 @@ for iptc = 1:npatches
   vec = str2num (line);
   geom(iptc).nurbs.number = vec;
 
-  for idim = 1:dim
+  for idim = 1:ndim
     line = fgetl (fid);
     while (line(1) == '#')
       line = fgetl (fid);
@@ -91,85 +97,23 @@ for iptc = 1:npatches
     geom(iptc).nurbs.knots{idim} = str2num (line);
   end
 
-  switch (dim)
-   case 2
+  for idim = 1:rdim
     line = fgetl (fid); 
     while (line(1) == '#')
       line = fgetl (fid);
     end
-    cp_x = reshape(str2num (line), geom(iptc).nurbs.number);
-    
-    line = fgetl (fid);
-    while (line(1) == '#')
-      line = fgetl (fid);
-    end
-    cp_y = reshape(str2num (line), geom(iptc).nurbs.number);
-
-    cp_z = zeros(geom(iptc).nurbs.number);
-    
-    line = fgetl (fid);
-    while (line(1) == '#')
-      line = fgetl (fid);
-    end
-    weights = reshape(str2num (line), geom(iptc).nurbs.number);
-
-    geom(iptc).nurbs.coefs(1,:,:) = cp_x;
-    geom(iptc).nurbs.coefs(2,:,:) = cp_y;
-    geom(iptc).nurbs.coefs(3,:,:) = cp_z;
-    geom(iptc).nurbs.coefs(4,:,:) = weights;
-
-   case 3
-    line = fgetl (fid);
-    while (line(1) == '#')
-      line = fgetl (fid);
-    end
-    cp_x = reshape(str2num (line), geom(iptc).nurbs.number);
-
-    line = fgetl (fid);
-    while (line(1) == '#')
-      line = fgetl (fid);
-    end
-    cp_y = reshape(str2num (line), geom(iptc).nurbs.number);
-
-    line = fgetl (fid);
-    while (line(1) == '#')
-      line = fgetl (fid);
-    end
-    cp_z = reshape(str2num (line), geom(iptc).nurbs.number);
-
-    line = fgetl (fid);
-    while (line(1) == '#')
-      line = fgetl (fid);
-    end
-    weights = reshape(str2num (line), geom(iptc).nurbs.number);
-
-    geom(iptc).nurbs.coefs(1,:,:,:) = cp_x;
-    geom(iptc).nurbs.coefs(2,:,:,:) = cp_y;
-    geom(iptc).nurbs.coefs(3,:,:,:) = cp_z;
-    geom(iptc).nurbs.coefs(4,:,:,:) = weights;
-
-   case 1
-    line = fgetl (fid);
-    while (line(1) == '#')
-      line = fgetl (fid);
-    end
-    cp_x = str2num (line);
-
-    line = fgetl (fid);
-    while (line(1) == '#')
-      line = fgetl (fid);
-    end
-    weights = str2num (line);
-
-    geom(iptc).nurbs.coefs(1,:,:,:) = cp_x;
-    geom(iptc).nurbs.coefs(2,:,:,:) = 0;
-    geom(iptc).nurbs.coefs(3,:,:,:) = 0;
-    geom(iptc).nurbs.coefs(4,:,:,:) = weights;
+    cp_coord = reshape(str2num (line), geom(iptc).nurbs.number);
+    geom(iptc).nurbs.coefs(idim,:,:,:) = cp_coord;
   end
+  line = fgetl (fid);
+  while (line(1) == '#')
+    line = fgetl (fid);
+  end
+  geom(iptc).nurbs.coefs(4,:,:,:) = reshape(str2num (line), geom(iptc).nurbs.number);
   
-%   geom(iptc).map      = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 0);
-%   geom(iptc).map_der  = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 1);
-%   geom(iptc).map_der2 = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 2);
+  geom(iptc).map      = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 0, rdim);
+  geom(iptc).map_der  = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 1, rdim);
+  geom(iptc).map_der2 = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 2, rdim);
 end
 
 fclose (fid);
