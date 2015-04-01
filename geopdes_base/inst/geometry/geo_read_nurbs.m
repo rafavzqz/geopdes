@@ -17,9 +17,12 @@
 %            nurbs:    a structure compatible with the NURBS toolbox
 %
 % Copyright (C) 2009 Carlo de Falco
-% Copyright (C) 2010, 2011 Rafael Vazquez
+% Copyright (C) 2010, 2011, 2015 Rafael Vazquez
 % Copyright (C) 2014 Elena Bulgarello, Carlo de Falco, Sara Frizziero
 % 
+% An explanation of the file format can be found in the file
+%  geopdes_base/doc/geo_specs_v10.txt
+%
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
 % the Free Software Foundation; either version 3 of the License, or

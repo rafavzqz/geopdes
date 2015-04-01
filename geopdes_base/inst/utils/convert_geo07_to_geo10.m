@@ -35,7 +35,7 @@ ndim = numel (nrb(1).order);
 if (npatches == 1 && numel (boundaries) == 2*ndim)
   boundaries = [];
 end
-nrbexport (nrb, boundaries, interfaces, subdomains, output_file)
+nrbexport (nrb, interfaces, boundaries, subdomains, output_file)
 
 end
 
@@ -44,7 +44,7 @@ function [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs_07 (file
 
   fid = fopen (filename, 'r');
   if (fid < 0)
-    error ('mp_geo_read_nurbs: cannot open file %s', filename);
+    error ('convert_geo07_to_geo10: cannot open file %s', filename);
   end
   
   line = fgetl (fid);
@@ -57,7 +57,7 @@ function [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs_07 (file
         nintrfc = vec(3);
         nsubd = 0;
         if (nargout == 4)
-          warning ('mp_geo_read_nurbs: no subdomain information is given in the file. The patch number will be used')
+          warning ('convert_geo07_to_geo10: no subdomain information is given in the file. The patch number will be used')
           for ii = 1:npatches
             subdomains(ii).name = sprintf ('Patch %i', ii);
             subdomains(ii).patches = ii;
