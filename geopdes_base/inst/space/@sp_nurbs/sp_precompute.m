@@ -51,6 +51,7 @@ function sp = sp_precompute (sp, msh, varargin)
     end
 
     gradient = false;
+    hessian = false;
     for ii=1:2:length(varargin)-1
       if (strcmpi (varargin{ii}, 'gradient'))
         gradient = varargin{ii+1};

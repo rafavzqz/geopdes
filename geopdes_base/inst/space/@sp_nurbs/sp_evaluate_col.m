@@ -52,6 +52,7 @@ function sp = sp_evaluate_col (space, msh, varargin)
 
 value = true;
 gradient = false;
+grad_param = false;
 hessian = false;
 if (~isempty (varargin))
   if (~rem (length (varargin), 2) == 0)
@@ -62,6 +63,7 @@ if (~isempty (varargin))
       value = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'gradient'))
       gradient = varargin {ii+1};
+      grad_param = gradient;
     elseif (strcmpi (varargin {ii}, 'hessian'))
       hessian = varargin {ii+1};
     else
@@ -70,7 +72,10 @@ if (~isempty (varargin))
   end
 end
 
-sp = sp_evaluate_col_param (space, msh, varargin{:});
+if (hessian)
+  grad_param = true;
+end
+sp = sp_evaluate_col_param (space, msh, 'value', value, 'gradient', grad_param, 'hessian', hessian);
 
 if (hessian && isfield (msh, 'geo_map_der2'))
   [Jinv, Jinv2] = geopdes_inv_der2__ (msh.geo_map_jac, msh.geo_map_der2);
