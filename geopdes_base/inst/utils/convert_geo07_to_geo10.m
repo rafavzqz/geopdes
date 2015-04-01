@@ -1,7 +1,7 @@
-% CONVERT_GEO07_TO_GEO01: converts a GeoPDEs geometry file from version 0.7 (or 0.6)
+% CONVERT_GEO07_TO_GEO10: converts a GeoPDEs geometry file from version 0.7 (or 0.6)
 %            to version 1.0
 %
-% geometry = geo_read_nurbs (input_file, output_file)
+% convert_geo07_to_geo10 (input_file, output_file)
 %
 % INPUT :
 %
@@ -26,7 +26,7 @@
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
 
-function convert_geo07_to_geo01 (input_file, output_file)
+function convert_geo07_to_geo10 (input_file, output_file)
 
 [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs_07 (input_file);
 nrb = [geom.nurbs];
