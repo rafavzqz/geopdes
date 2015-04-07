@@ -13,7 +13,7 @@
 %
 % OUTPUT:
 %
-%     space: object containing the information of the input object, plus the 
+%    space: object containing the information of the input object, plus the 
 %            fields of the old structure, that are listed below. If no option
 %            is given all the fields are computed. If an option is given,
 %            only the selected fields will be computed.
