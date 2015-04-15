@@ -133,7 +133,7 @@ if (divergence && ~(gradient || curl))
 end
 
 if (gradient || curl)
-  shape_fun_grads = zeros (2, 2, msh.nqn, sp.nsh_max, msh.nel);
+  shape_fun_grads = zeros (3, 3, msh.nqn, sp.nsh_max, msh.nel);
 
   xu = reshape (msh.geo_map_jac(1, 1, :, :), msh.nqn, msh.nel);
   xv = reshape (msh.geo_map_jac(1, 2, :, :), msh.nqn, msh.nel);
