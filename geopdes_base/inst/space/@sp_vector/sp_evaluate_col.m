@@ -105,10 +105,9 @@ sp = struct('nsh_max', space.nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
 % From here it will depend on the transformation
 if (value)
   sp.shape_functions = zeros (sp.ncomp, msh.nqn, sp.nsh_max, msh.nel);
-  aux = 0;
   for icomp = 1:space.ncomp
-    sp.shape_functions(icomp,:,aux+(1:sp_col_scalar(icomp).nsh_max),:) = sp_col_scalar(icomp).shape_functions;
-    aux = aux + sp_col_scalar(icomp).nsh_max;
+    indices = space.cumsum_nsh(icomp)+(1:sp_col_scalar(icomp).nsh_max);
+    sp.shape_functions(icomp,:,indices,:) = sp_col_scalar(icomp).shape_functions;
   end
 end
 
@@ -117,11 +116,10 @@ if (gradient || curl || divergence)
 
   JinvT = geopdes_invT__ (msh.geo_map_jac);
   JinvT = reshape (JinvT, [msh.rdim, msh.ndim, msh.nqn, msh.nel]);
-  aux = 0;
   for icomp = 1:space.ncomp
-    shape_fun_grads(icomp,:,:,aux+(1:sp_col_scalar(icomp).nsh_max),:) = ...
+    indices = space.cumsum_nsh(icomp)+(1:sp_col_scalar(icomp).nsh_max);
+    shape_fun_grads(icomp,:,:,indices,:) = ...
         geopdes_prod__ (JinvT, sp_col_scalar(icomp).shape_function_gradients);
-    aux = aux + sp_col_scalar(icomp).nsh_max;
   end
   
   if (gradient)

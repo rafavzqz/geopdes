@@ -53,6 +53,12 @@ function sp = sp_vector (scalar_spaces, msh)
 
   sp.nsh_max = sum (cellfun (@(x) x.nsh_max, scalar_spaces));
   sp.ndof    = sum (cellfun (@(x) x.ndof, scalar_spaces));
+  
+  sp.cumsum_ndof(1) = 0;
+  sp.cumsum_ndof(2:sp.ncomp+1) = cumsum (cellfun (@(x) x.ndof, scalar_spaces));
+  sp.cumsum_nsh(1) = 0;
+  sp.cumsum_nsh(2:sp.ncomp+1) = cumsum (cellfun (@(x) x.nsh_max, scalar_spaces));
+
   aux = 0;
   for icomp = 1:sp.ncomp
     sp.comp_dofs{icomp} = aux+(1:scalar_spaces{icomp}.ndof);
@@ -68,14 +74,11 @@ function sp = sp_vector (scalar_spaces, msh)
       end
       sp.boundary(iside) = sp_vector (scalar_bnd, msh.boundary(iside));
       
-      aux = 0;
       dofs = [];
       for icomp = 1:sp.ncomp
-%         boundary.ndof_dir(icomp,:) = scalar_bnd{icomp}.ndof_dir;
-        new_dofs = aux + scalar_bnd{icomp}.dofs;
+        new_dofs = sp.cumsum_ndof(icomp) + scalar_bnd{icomp}.dofs;
         dofs = union (dofs, new_dofs);
         comp_dofs{icomp} = new_dofs;
-        aux = aux + scalar_spaces{icomp}.ndof;
       end
       sp.boundary(iside).dofs = dofs(:)';
       sp.boundary(iside).comp_dofs = comp_dofs;
