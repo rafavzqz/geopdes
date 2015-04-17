@@ -6,6 +6,7 @@
 % INPUT:
 %     
 %    space: object representing the discrete function space (see sp_bspline or sp_nurbs).
+%    msh: mesh object containing the quadrature information (see msh_cartesian)
 %    'option', value: additional optional parameters, available options are:
 %        nsh, connectivity, value (shape_functions),
 %        gradient (shape_function_gradients), divergence (shape_function_divs),
