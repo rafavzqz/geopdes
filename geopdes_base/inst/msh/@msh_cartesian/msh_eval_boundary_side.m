@@ -39,7 +39,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function msh_side = msh_eval_boundary_side (msh, iside)
+function [msh_side, msh_side_from_interior] = msh_eval_boundary_side (msh, iside)
 
   msh_side = struct (msh_precompute (msh.boundary(iside)));
   msh_side.side_number = iside;
@@ -112,5 +112,24 @@ if (msh.ndim > 1)
   jac_times_qw = bsxfun(@times, jac, reshape (qw, qsize));
   msh_side.charlen = reshape (sum (jac_times_qw, ind2), msh_side.nqn, msh_side.nel);
 end
+
+if (nargout == 2)
+  brk_bnd = msh.breaks; qn_bnd = msh.qn; qw_bnd = msh.qw;
+  ind2 = ceil (iside/2);
+  if (mod (iside, 2) == 1)
+    brk_bnd{ind2} = brk_bnd{ind2}(1:2);
+    qn_bnd{ind2} = brk_bnd{ind2}(1);
+    qw_bnd{ind2} = 1;
+  else
+    brk_bnd{ind2} = brk_bnd{ind2}(end-1:end);
+    qn_bnd{ind2} = brk_bnd{ind2}(end);
+    qw_bnd{ind2} = 1;
+  end
   
+  geo.map = msh.map; geo.map_der = msh.map_der; geo.map_der2 = msh.map_der2;
+  geo.rdim = msh.rdim;
+  msh_side_from_interior = msh_cartesian (brk_bnd, qn_bnd, qw_bnd, geo, 'boundary', false);
+  msh_side_from_interior = msh_precompute (msh_side_from_interior);
+end
+
 end
