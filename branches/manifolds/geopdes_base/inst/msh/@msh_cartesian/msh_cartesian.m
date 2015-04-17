@@ -66,6 +66,8 @@
 
 function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
 
+  breaks = cellfun (@unique, breaks, 'UniformOutput', false);
+
   boundary = true;
   if (~isfield (geo, 'map_der2'))
     msh.der2 = false;
