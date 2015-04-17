@@ -69,6 +69,8 @@ function msh_to_vtk (pts, values, filename, fieldname)
   
   if (ndim < 3)
     npts (ndim+1:3) = 1;
+  end
+  if (rdim < 3)
     pts(ndim+1:3,:,:) = 0;
   end
   if (ncomp == 3 && rdim < 3)
