@@ -1,6 +1,6 @@
 % MSH_EVAL_BOUNDARY_SIDE: evaluate the parameterization in one boundary side of the domain.
 %
-%     msh_side = msh_eval_boundary_side (msh, iside);
+%     [msh_side, msh_side_from_interior] = msh_eval_boundary_side (msh, iside);
 %
 % INPUTS:
 %     
@@ -22,6 +22,10 @@
 %     geo_map       (rdim x nqn x nel vector) physical coordinates of the quadrature nodes
 %     geo_map_jac   (rdim x ndim x nqn x nel) Jacobian matrix of the map evaluated at the quadrature nodes
 %     jacdet        (nqn x nel)               element of length, area, volume (if rdim = ndim, determinant of the Jacobian)
+%
+%     msh_side_from_interior: mesh structure that contains with quadrature
+%       points on the boundary, but which computes information from the
+%       volumetric parametrization, like the derivative in the normal direction
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011, 2014, 2015 Rafael Vazquez
