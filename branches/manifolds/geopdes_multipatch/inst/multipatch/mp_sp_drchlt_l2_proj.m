@@ -8,7 +8,7 @@
 %  msh:        object containing the domain partition and the quadrature rule (see msh_cartesian)
 %  h:          function handle to compute the Dirichlet condition
 %  gnum:       global numbering of the degrees of freedom (see mp_interface)
-%  boundaries: array of strcutures containing the information for the boundaries (see mp_geo_load)
+%  boundaries: array of structures containing the information for the boundaries (see mp_geo_load)
 %  refs:       boundary references on which a Dirichlet condition is imposed
 %
 % OUTPUT:

@@ -150,7 +150,8 @@ function [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs (filenam
     geom(iptc).map_der  = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 1);
     geom(iptc).map_der2 = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 2);
   end
-  
+
+  interfaces = [];
   for intrfc = 1:nintrfc
     line = fgetl (fid);
     while (line(1) == '#')
@@ -190,6 +191,7 @@ function [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs (filenam
     end
   end
 
+  subdomains = [];
   for isub = 1:nsubd
     line = fgetl (fid);
     while (line(1) == '#')
@@ -242,6 +244,11 @@ function [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs (filenam
     end
   elseif (isempty (boundaries))
     warning ('The boundary information has not been assigned.\n')
+  end
+
+  if (isempty(subdomains))
+    subdomains.name = 'WHOLE DOMAIN';
+    subdomains.patches = 1:npatches;
   end
 
   fclose (fid);
