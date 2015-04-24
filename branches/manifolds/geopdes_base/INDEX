@@ -38,6 +38,7 @@ Space
  sp_vector
  @sp_vector/sp_eval_boundary_side
  @sp_vector/sp_evaluate_col
+ @sp_vector/sp_evaluate_col_param
  @sp_vector/sp_precompute
  sp_bspline_nforms
  @sp_bspline_nforms/sp_evaluate_col
