@@ -93,12 +93,9 @@ msh      = msh_cartesian (geometry.nurbs.knots, qn, qw, geometry);
 
 % Construct space structure
 sp_scalar = sp_nurbs (nurbs, msh);
-scalar_spaces = cell (msh.rdim, 1);
-for idim = 1:msh.rdim
-  scalar_spaces{idim} = sp_scalar;
-end
+scalar_spaces = repmat ({sp_scalar}, 1, msh.rdim);
 sp = sp_vector (scalar_spaces, msh);
-clear sp_scalar
+clear sp_scalar scalar_spaces
 
 % Assemble the matrices
 mat    = op_su_ev_tp (sp, sp, msh, lambda_lame, mu_lame); 
