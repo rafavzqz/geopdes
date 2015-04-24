@@ -60,6 +60,7 @@ value = true;
 gradient = false;
 divergence = false;
 curl = false;
+hessian = false;
 if (~isempty (varargin))
   if (~rem (length (varargin), 2) == 0)
     error ('sp_evaluate_col: options must be passed in the [option, value] format');
@@ -73,6 +74,8 @@ if (~isempty (varargin))
       curl = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'divergence'))
       divergence = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'hessian'))
+      hessian = varargin {ii+1};
     else
       error ('sp_evaluate_col_param: unknown option %s', varargin {ii});
     end
@@ -81,7 +84,7 @@ end
 
 first_der = gradient || divergence || curl;
 for icomp = 1:space.ncomp
-  sp_col_scalar(icomp) = sp_evaluate_col_param (space.scalar_spaces{icomp}, msh, 'value', value, 'gradient', first_der);
+  sp_col_scalar(icomp) = sp_evaluate_col_param (space.scalar_spaces{icomp}, msh, 'value', value, 'gradient', first_der, 'hessian', hessian);
 end
 
 ndof_scalar = [sp_col_scalar.ndof];
@@ -112,7 +115,7 @@ if (value)
 end
 
 if (gradient || curl || divergence)
-  shape_fun_grads = zeros (space.ncomp, msh.rdim, msh.nqn, sp.nsh_max, msh.nel);
+  shape_fun_grads = zeros (space.ncomp, msh.ndim, msh.nqn, sp.nsh_max, msh.nel);
 
   for icomp = 1:space.ncomp
     indices = space.cumsum_nsh(icomp)+(1:sp_col_scalar(icomp).nsh_max);
@@ -149,6 +152,14 @@ if (gradient || curl || divergence)
     else
       error('The curl is not implemented in the case that rdim != ncomp')
     end
+  end
+end
+
+if (hessian)
+  sp.shape_function_hessians = zeros (space.ncomp, msh.ndim, msh.ndim, msh.nqn, sp.nsh_max, msh.nel);
+  for icomp = 1:space.ncomp
+    indices = space.cumsum_nsh(icomp)+(1:sp_col_scalar(icomp).nsh_max);
+    sp.shape_function_hessians(icomp,:,:,:,indices,:) = sp_col_scalar(icomp).shape_function_hessians;
   end
 end
 
