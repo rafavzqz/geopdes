@@ -27,7 +27,7 @@
 %     jacdet        (nqn x nel)               element of length, area, volume (if rdim = ndim, determinant of the Jacobian)
 %     geo_map_der2  (rdim x ndim x ndim x nqn x nel]) Hessian matrix of the map evaluated at the quadrature nodes
 %     normal        (rdim x ndim x nqn x nel]) for 3D surfaces, the exterior normal to the surface
-%     element_size  (1 x nel)                 the size of the element in the physical domain
+%
 %  For more details, see the documentation
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
@@ -151,10 +151,10 @@ function msh_col = msh_evaluate_col (msh, colnum, varargin)
     end
   end
   
-  if (isfield(msh_col, 'quad_weights') && isfield(msh_col, 'jacdet'))
-    msh_col.element_size = (sum (msh_col.quad_weights .* ...
-                             abs (msh_col.jacdet), 1)).^(1/msh.ndim);
-  end
+%   if (isfield(msh_col, 'quad_weights') && isfield(msh_col, 'jacdet'))
+%     msh_col.element_size = (sum (msh_col.quad_weights .* ...
+%                              abs (msh_col.jacdet), 1)).^(1/msh.ndim);
+%   end
 
   if (msh.ndim == 2 && msh.rdim == 3)
     normal = reshape (geopdes_cross__ (msh_col.geo_map_jac(:,1,:,:), ...
