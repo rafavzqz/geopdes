@@ -98,7 +98,8 @@ function msh = msh_precompute (msh, varargin)
   if (quad_nodes)
     for idim = 1:msh.ndim
       qsize = ones (1, msh.ndim*2);
-      qsize(2*idim-1:2*idim) = [msh.nqn_dir(idim), msh.nel_dir(idim)];
+%       qsize(2*idim-1:2*idim) = [msh.nqn_dir(idim), msh.nel_dir(idim)];
+      qsize([idim, msh.ndim+idim]) = [msh.nqn_dir(idim), msh.nel_dir(idim)];
       qrep = [msh.nqn_dir(1:msh.ndim), msh.nel_dir(1:msh.ndim)];
       qrep([idim, msh.ndim+idim]) = 1;
       quad_nodes = reshape (msh.qn{idim}, qsize);
@@ -160,9 +161,9 @@ function msh = msh_precompute (msh, varargin)
     msh.normal = bsxfun (@rdivide, normals, norms);
   end
 
-  if (isfield(msh, 'quad_weights') && isfield(msh, 'jacdet'))
-    msh.element_size = (sum (msh.quad_weights .* ...
-                             abs (msh.jacdet), 1)).^(1/msh.ndim);
-  end
+%   if (any (ismember(fieldnames(msh), 'quad_weights')) && any (ismember(fieldnames(msh), 'jacdet')))
+%     msh.element_size = (sum (msh.quad_weights .* ...
+%                              abs (msh.jacdet), 1)).^(1/msh.ndim);
+%   end
 
 end
