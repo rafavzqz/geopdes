@@ -5,7 +5,7 @@
 % INPUTS:
 %     
 %     breaks:   breaks along each direction in parametric space (repetitions are ignored)
-%     qn:       quadrature nodes along each direction in parametric space
+%     qn:       quadrature nodes along each direction in parametric space. For direction j, the size must be nqn_dir(j) x nel_dir(j)
 %     qw:       quadrature weights along each direction in parametric space
 %     geometry: structure representing the geometrical mapping
 %    'option', value: additional optional parameters, currently available options are:
