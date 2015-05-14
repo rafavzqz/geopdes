@@ -59,7 +59,7 @@ function msh = msh_precompute (msh, varargin)
     quad_weights = true;
     geo_map = true;
     geo_map_jac = true;
-    geo_map_der2 = false;
+    geo_map_der2 = true;
     jacdet = true;
     normal = true;
   else
