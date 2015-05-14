@@ -49,7 +49,7 @@ function sp = sp_precompute_param (space, msh, varargin)
     connectivity = true;
     value = true;
     gradient = true;
-    hessian = false;
+    hessian = true;
   else
     if (~rem (length (varargin), 2) == 0)
       error ('sp_precompute: options must be passed in the [option, value] format');
