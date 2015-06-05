@@ -71,7 +71,7 @@ function sp = sp_precompute (sp, msh, varargin)
     sp = sp_precompute_param (sp, msh, varargin{:});
   end
 
-  if (hessian && isfield (msh, 'geo_map_der2'))
+  if (hessian)
     if (msh.rdim == msh.ndim)
       if (isempty (msh.geo_map_jac))
         msh = msh_precompute (msh, 'geo_map_jac', true);
@@ -85,9 +85,9 @@ function sp = sp_precompute (sp, msh, varargin)
       JinvT = permute (Jinv, [2 1 3 4 5]);
       Jinv2 = reshape (Jinv2, [msh.ndim, msh.rdim, msh.rdim, msh.nqn, 1, msh.nel]);
 
-      shg = reshape (sp.shape_function_gradients, [msh.ndim, 1, 1, msh.nqn, space.nsh_max, msh.nel]);
-      shh = reshape (sp.shape_function_hessians, msh.ndim, msh.ndim, msh.nqn, space.nsh_max, msh.nel);
-      shape_function_hessians = zeros (msh.ndim, msh.ndim, msh.nqn, space.nsh_max, msh.nel);
+      shg = reshape (sp.shape_function_gradients, [msh.ndim, 1, 1, msh.nqn, sp.nsh_max, msh.nel]);
+      shh = reshape (sp.shape_function_hessians, msh.ndim, msh.ndim, msh.nqn, sp.nsh_max, msh.nel);
+      shape_function_hessians = zeros (msh.ndim, msh.ndim, msh.nqn, sp.nsh_max, msh.nel);
 
       shh_size = [1, 1, msh.nqn, space.nsh_max, msh.nel];
       for idim = 1:msh.rdim
