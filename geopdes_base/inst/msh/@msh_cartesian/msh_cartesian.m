@@ -66,6 +66,11 @@
 
 function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
 
+% For the 1D case
+  if (~iscell (breaks))
+    breaks = {breaks};
+  end
+
   breaks = cellfun (@unique, breaks, 'UniformOutput', false);
 
   boundary = true;
