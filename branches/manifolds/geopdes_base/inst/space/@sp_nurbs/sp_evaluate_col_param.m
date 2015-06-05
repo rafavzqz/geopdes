@@ -15,6 +15,7 @@
 %           ------------+-----------------+----------------------------------
 %            value      |      true       |  compute shape_functions
 %            gradient   |      false      |  compute shape_function_gradients
+%            hessian    |      false      |  compute shape_function_hessians
 %
 % OUTPUT:
 %
@@ -31,6 +32,8 @@
 %    shape_functions (msh_col.nqn x nsh_max x msh_col.nel)  basis functions evaluated at each quadrature node in each element
 %    shape_function_gradients
 %             (ndim x msh_col.nqn x nsh_max x msh_col.nel)  basis function gradients evaluated at each quadrature node in each element
+%    shape_function_hessians
+%         (ndim x ndim x msh_elems.nqn x nsh_max x msh_elems.nel)  basis function hessians evaluated at each quadrature node in each element
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011, 2015 Rafael Vazquez
