@@ -4,7 +4,7 @@
 %
 % INPUTS:
 %     
-%    space:     object defining the space of discrete functions (see sp_bspline)
+%    space:     object defining the space of discrete functions (see sp_nurbs)
 %    msh_elems: msh structure containing the information of quadrature or
 %               visualization points, for a given list of elements 
 %               (see msh_cartesian/msh_evaluate_element_list)
@@ -74,10 +74,17 @@ if (~isempty (varargin))
   end
 end
 
+% For NURBS, low order derivatives are used to compute high order derivatives
+% They are removed at the end of the function
+grad_param = gradient;
+value_param = value;
 if (hessian)
   grad_param = true;
+  value_param = true;
+elseif (gradient)
+  value_param = true;
 end
-sp = sp_evaluate_element_list_param (space, msh, 'value', value, 'gradient', grad_param, 'hessian', hessian);
+sp = sp_evaluate_element_list_param (space, msh, 'value', value_param, 'gradient', grad_param, 'hessian', hessian);
 
 if (hessian && isfield (msh, 'geo_map_der2'))
   [Jinv, Jinv2] = geopdes_inv_der2__ (msh.geo_map_jac, msh.geo_map_der2);
