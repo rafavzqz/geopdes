@@ -49,6 +49,8 @@
 
 function msh_col = msh_evaluate_element_list (msh, elem_list, varargin)
 
+  elem_list = elem_list(:)';
+
   msh_col.ndim = msh.ndim;
   msh_col.rdim = msh.rdim;
 
