@@ -101,9 +101,11 @@ function sp = sp_precompute (sp, msh, varargin)
         end
       end
       sp.shape_function_hessians = shape_function_hessians;
-    else
-      warning ('For manifolds, the second derivatives are not implemented yet')
+%     else
+%       warning ('For manifolds, the second derivatives are not implemented yet')
     end
+  elseif (isfield (sp, 'shape_function_hessians'))
+    sp = rmfield (sp, 'shape_function_hessians');
   end
   
   if (gradient)
@@ -113,6 +115,8 @@ function sp = sp_precompute (sp, msh, varargin)
     JinvT = geopdes_invT__ (msh.geo_map_jac);
     JinvT = reshape (JinvT, [msh.rdim, msh.ndim, msh.nqn, msh.nel]);
     sp.shape_function_gradients = geopdes_prod__ (JinvT, sp.shape_function_gradients);
+  elseif (isfield (sp, 'shape_function_gradients'))
+    sp = rmfield (sp, 'shape_function_gradients');
   end
 
 end
