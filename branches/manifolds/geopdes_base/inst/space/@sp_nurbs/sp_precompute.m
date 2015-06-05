@@ -46,6 +46,9 @@ function sp = sp_precompute (sp, msh, varargin)
   if (isempty (varargin))
     gradient = true;
     hessian = true;
+    if (msh.ndim ~= msh.rdim)
+      hessian = false;
+    end
   else
     if (~rem (length (varargin), 2) == 0)
       error ('sp_precompute: options must be passed in the [option, value] format');
