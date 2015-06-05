@@ -80,7 +80,7 @@ if (hessian)
 end
 sp = sp_evaluate_col_param (space, msh, 'value', value, 'gradient', grad_param, 'hessian', hessian);
 
-if (hessian && isfield (msh, 'geo_map_der2'))
+if (hessian)
   [Jinv, Jinv2] = geopdes_inv_der2__ (msh.geo_map_jac, msh.geo_map_der2);
   Jinv  = reshape (Jinv, [msh.ndim, msh.rdim, msh.nqn, 1, msh.nel]);
   JinvT = permute (Jinv, [2 1 3 4 5]);
@@ -102,6 +102,8 @@ if (hessian && isfield (msh, 'geo_map_der2'))
     end
   end
   sp.shape_function_hessians = shape_function_hessians;
+elseif (isfield (sp, 'shape_function_hessians'))
+  sp = rmfield (sp, 'shape_function_hessians');
 end
 
 if (gradient)
