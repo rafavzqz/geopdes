@@ -25,8 +25,9 @@
 %     geo_map       (rdim x nqn x nel vector) physical coordinates of the quadrature nodes
 %     geo_map_jac   (rdim x ndim x nqn x nel) Jacobian matrix of the map evaluated at the quadrature nodes
 %     jacdet        (nqn x nel)               element of length, area, volume (if rdim = ndim, determinant of the Jacobian)
-%     geo_map_der2  (rdim x ndim x ndim x nqn x nel]) Hessian matrix of the map evaluated at the quadrature nodes
-%     normal        (rdim x ndim x nqn x nel]) for 3D surfaces, the exterior normal to the surface
+%     geo_map_der2  (rdim x ndim x ndim x nqn x nel) Hessian matrix of the map evaluated at the quadrature nodes
+%     element_size  (1 x nel)                 characteristic size of the elements
+%     normal        (rdim x ndim x nqn x nel) for 3D surfaces, the exterior normal to the surface
 %
 %  For more details, see the documentation
 % 
@@ -151,10 +152,10 @@ function msh_col = msh_evaluate_col (msh, colnum, varargin)
     end
   end
   
-%   if (isfield(msh_col, 'quad_weights') && isfield(msh_col, 'jacdet'))
-%     msh_col.element_size = (sum (msh_col.quad_weights .* ...
-%                              abs (msh_col.jacdet), 1)).^(1/msh.ndim);
-%   end
+  if (isfield(msh_col, 'quad_weights') && isfield(msh_col, 'jacdet'))
+    msh_col.element_size = (sum (msh_col.quad_weights .* ...
+                             abs (msh_col.jacdet), 1)).^(1/msh.ndim);
+  end
 
   if (msh.ndim == 2 && msh.rdim == 3)
     normal = reshape (geopdes_cross__ (msh_col.geo_map_jac(:,1,:,:), ...
