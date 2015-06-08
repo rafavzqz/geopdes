@@ -86,7 +86,11 @@ elseif (gradient)
 end
 sp = sp_evaluate_element_list_param (space, msh, 'value', value_param, 'gradient', grad_param, 'hessian', hessian);
 
-if (hessian && isfield (msh, 'geo_map_der2'))
+if (isempty (msh.elem_list))
+  return
+end
+
+if (hessian)
   [Jinv, Jinv2] = geopdes_inv_der2__ (msh.geo_map_jac, msh.geo_map_der2);
   Jinv  = reshape (Jinv, [msh.ndim, msh.rdim, msh.nqn, 1, msh.nel]);
   JinvT = permute (Jinv, [2 1 3 4 5]);
