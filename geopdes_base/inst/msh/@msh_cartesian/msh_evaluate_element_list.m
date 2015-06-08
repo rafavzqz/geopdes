@@ -61,50 +61,61 @@ function msh_col = msh_evaluate_element_list (msh, elem_list, varargin)
   msh_col.nqn_dir = msh.nqn_dir;
   msh_col.nqn  = msh.nqn;
 
-  msh_col.qn = msh.qn; 
-  msh_col.qw = msh.qw; 
-
   indices = cell (msh.ndim, 1);
   [indices{:}] = ind2sub (msh.nel_dir, elem_list);
   indices = cell2mat (indices);
-  
+
+  if (isempty (elem_list))
+    return
+  end
+
+  qn_elems = arrayfun(@(ii) {msh.qn{ii}(:,indices(ii,:))}, 1:msh.ndim);
+  qqn = cell (1,msh.nel);
   for iel = 1:numel(elem_list)
     for idim = 1:msh.ndim
-      qsize = ones (1, msh.ndim);
-      qsize(idim) = msh_col.nqn_dir(idim);
-      qrep = msh_col.nqn_dir(1:msh.ndim);
-      qrep(idim) = 1;
-      quad_nodes = reshape (msh_col.qn{idim}(:,indices(idim,iel)), qsize);
-      quad_nodes = repmat (quad_nodes, qrep);
-      msh_col.quad_nodes(idim,:,iel) = reshape (quad_nodes, msh_col.nqn, 1);
+      qqn{iel}{idim} = qn_elems{idim}(:,iel);
     end
-    clear qsize qrep quad_nodes
+  end
+
+  for iel = 1:numel(elem_list)
+    reorder = @(x) x(:)';
+    xx = cell (msh.ndim, 1);
+    [xx{:}] = ndgrid (qqn{iel}{:});
+    for idim = 1:msh.ndim
+      quad_nodes(idim,:,iel) = reorder (xx{idim});
+    end
 
     if (~isempty (msh.qw))
       qw = 1;
       for idim = 1:msh.ndim
-        qw = kron (msh_col.qw{idim}(:,indices(idim,iel)), qw);
+        qw = kron (msh.qw{idim}(:,indices(idim,iel)), qw);
       end
       msh_col.quad_weights(:,iel) = qw;
     end
-    
-% Auxiliary vector sizes, to use with reshape and permute
-    reorder = @(x) x(:)';
-%     psize = reorder (msh_col.nqn_dir);
-%     vorder = 1:msh.ndim; % [1 3 5 2 4 6], for ndim = 3
-    qn_elem = arrayfun(@(ii) {msh_col.qn{ii}(:,indices(ii,iel))}, 1:msh.ndim);
-    F = feval (msh.map, cellfun (reorder, qn_elem, 'UniformOutput', false));
-    msh_col.geo_map(:,:,iel) = reshape (F, [msh.rdim, msh.nqn, 1]);
+  end
 
-    jac = feval (msh.map_der, cellfun (reorder, qn_elem, 'UniformOutput', false));
-    msh_col.geo_map_jac(:,:,:,iel) = reshape (jac, msh.rdim, msh.ndim, msh.nqn, 1);
-    
-    if (msh.der2)
-      hess = feval (msh.map_der2, cellfun (reorder, qn_elem, 'UniformOutput', false));
-      msh_col.geo_map_der2(:,:,:,:,iel) = reshape (hess, [msh.rdim, msh.ndim, msh.ndim, msh.nqn, 1]);
+  msh_col.geo_map = zeros (msh.rdim, msh.nqn, msh_col.nel);
+  msh_col.geo_map_jac  = zeros (msh.rdim, msh.ndim, msh.nqn, msh_col.nel);
+
+  F = cellfun (@(x) feval (msh.map, x), qqn, 'UniformOutput', false);
+  jac = cellfun (@(x) feval (msh.map_der, x), qqn, 'UniformOutput', false);
+%  msh.geo_map = reshape (cell2mat (F), msh.rdim, msh.nqn, msh_col.nel);
+%  msh.geo_map_jac = reshape (cell2mat (jac), msh.rdim, msh.ndim, msh.nqn, msh_col.nel); % Needs a reshape
+
+  for iel = 1:numel(elem_list)
+    msh_col.geo_map(:,:,iel) = F{iel};
+    msh_col.geo_map_jac(:,:,:,iel) = jac{iel};
+  end
+
+  if (msh.der2)
+    msh_col.geo_map_der2 = zeros (msh.rdim, msh.ndim, msh.ndim, msh.nqn, msh_col.nel);
+    hess = cellfun (@(x) feval (msh.map_der2, x), qqn, 'UniformOutput', false);
+ %   geo_map_der2 = reshape (cell2mat (hess), msh.rdim, msh.ndim, msh.ndim, msh.nqn, msh_col.nel);
+    for iel = 1:numel(elem_list)
+      msh_col.geo_map_der2(:,:,:,:,iel) = hess{iel};
     end
   end
-  
+
   msh_col.jacdet = abs (geopdes_det__ (msh_col.geo_map_jac));
   msh_col.jacdet = reshape (msh_col.jacdet, [msh_col.nqn, msh_col.nel]);
 
