@@ -70,10 +70,10 @@ function msh_col = msh_evaluate_element_list (msh, elem_list, varargin)
   end
 
   qn_elems = arrayfun(@(ii) {msh.qn{ii}(:,indices(ii,:))}, 1:msh.ndim);
-  qqn = cell (1,msh.nel);
+  qqn = cell (1,msh_col.nel);
   for iel = 1:numel(elem_list)
     for idim = 1:msh.ndim
-      qqn{iel}{idim} = qn_elems{idim}(:,iel);
+      qqn{iel}{idim} = qn_elems{idim}(:,iel)';
     end
   end
 
