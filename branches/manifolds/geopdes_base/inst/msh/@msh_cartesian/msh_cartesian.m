@@ -138,7 +138,11 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
 %%    ind =[2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind = [2 2 1 1] in 2D;
       ind = setdiff (1:msh.ndim, ceil(iside/2)); 
 
-      msh.boundary(iside) = msh_cartesian (msh.breaks(ind), msh.qn(ind), msh.qw(ind), geo.boundary(iside), 'boundary', false);
+      if (isempty (qw))
+        msh.boundary(iside) = msh_cartesian (msh.breaks(ind), msh.qn(ind), [], geo.boundary(iside), 'boundary', false);
+      else
+        msh.boundary(iside) = msh_cartesian (msh.breaks(ind), msh.qn(ind), msh.qw(ind), geo.boundary(iside), 'boundary', false);
+      end
       msh.boundary(iside).rdim = msh.rdim;
     end
   else
