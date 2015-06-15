@@ -78,11 +78,10 @@ function msh_col = msh_evaluate_element_list (msh, elem_list, varargin)
   end
 
   for iel = 1:numel(elem_list)
-    reorder = @(x) x(:)';
     xx = cell (msh.ndim, 1);
     [xx{:}] = ndgrid (qqn{iel}{:});
     for idim = 1:msh.ndim
-      quad_nodes(idim,:,iel) = reorder (xx{idim});
+      quad_nodes(idim,:,iel) = xx{idim}(:)';
     end
 
     if (~isempty (msh.qw))
