@@ -89,7 +89,7 @@ function sp = sp_precompute (sp, msh, varargin)
       shh = reshape (sp.shape_function_hessians, msh.ndim, msh.ndim, msh.nqn, sp.nsh_max, msh.nel);
       shape_function_hessians = zeros (msh.ndim, msh.ndim, msh.nqn, sp.nsh_max, msh.nel);
 
-      shh_size = [1, 1, msh.nqn, space.nsh_max, msh.nel];
+      shh_size = [1, 1, msh.nqn, sp.nsh_max, msh.nel];
       for idim = 1:msh.rdim
         for jdim = 1:msh.rdim
           D2v_DF = sum (bsxfun(@times, shh, Jinv(:,idim,:,:,:)),1);
