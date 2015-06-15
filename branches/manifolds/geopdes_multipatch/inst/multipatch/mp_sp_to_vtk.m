@@ -65,7 +65,7 @@ function mp_sp_to_vtk (u, space, geometry, gnum, npts, filename, fieldname, vara
     filename_patch_without_path = cat (2, filename(ind:end), '_', num2str (iptc));
     filename_patch = cat (2, filename, '_', num2str (iptc));
     fprintf (fid, str2, iptc, filename_patch_without_path);
-    sp_to_vtk (u(gnum{iptc}), space{iptc}, geometry(iptc), npts, ...
+    sp_to_vtk (u(abs(gnum{iptc})).*sign(gnum{iptc})', space{iptc}, geometry(iptc), npts, ...
                            filename_patch, fieldname, varargin{:})
   end
   fprintf (fid, str3);
