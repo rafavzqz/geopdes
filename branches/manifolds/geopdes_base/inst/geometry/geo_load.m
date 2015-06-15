@@ -85,19 +85,26 @@ function geometry = geo_load (in)
       rdim = 1;
     end
     geometry.rdim = rdim;
+    
+    [deriv, deriv2] = nrbderiv (geometry.nurbs);
+    geometry.dnurbs = deriv;
+    geometry.dnurbs2 = deriv2;
 
-    geometry.map      =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 0, rdim);
-    geometry.map_der  =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 1, rdim);
-    geometry.map_der2 =  @(PTS) geo_nurbs (geometry.nurbs, PTS, 2, rdim);
+    geometry.map      =  @(PTS) geo_nurbs (geometry.nurbs, deriv, deriv2, PTS, 0, rdim);
+    geometry.map_der  =  @(PTS) geo_nurbs (geometry.nurbs, deriv, deriv2, PTS, 1, rdim);
+    geometry.map_der2 =  @(PTS) geo_nurbs (geometry.nurbs, deriv, deriv2, PTS, 2, rdim);
 
     if (numel (geometry.nurbs.order) > 1)
       bnd = nrbextract (geometry.nurbs);
       for ibnd = 1:numel (bnd)
+        [deriv, deriv2] = nrbderiv (bnd(ibnd));
         geometry.boundary(ibnd).nurbs    = bnd(ibnd);
+        geometry.boundary(ibnd).dnurbs   = deriv;
+        geometry.boundary(ibnd).dnurbs2  = deriv2;
         geometry.boundary(ibnd).rdim     = rdim;
-        geometry.boundary(ibnd).map      = @(PTS) geo_nurbs (bnd(ibnd), PTS, 0, rdim);
-        geometry.boundary(ibnd).map_der  = @(PTS) geo_nurbs (bnd(ibnd), PTS, 1, rdim);
-        geometry.boundary(ibnd).map_der2 = @(PTS) geo_nurbs (bnd(ibnd), PTS, 2, rdim);
+        geometry.boundary(ibnd).map      = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 0, rdim);
+        geometry.boundary(ibnd).map_der  = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 1, rdim);
+        geometry.boundary(ibnd).map_der2 = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 2, rdim);
       end
     end
   else
