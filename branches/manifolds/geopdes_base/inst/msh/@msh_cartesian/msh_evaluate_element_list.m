@@ -97,24 +97,22 @@ function msh_col = msh_evaluate_element_list (msh, elem_list, varargin)
   msh_col.geo_map = zeros (msh.rdim, msh.nqn, msh_col.nel);
   msh_col.geo_map_jac  = zeros (msh.rdim, msh.ndim, msh.nqn, msh_col.nel);
 
-  F = cellfun (@(x) feval (msh.map, x), qqn, 'UniformOutput', false);
-  jac = cellfun (@(x) feval (msh.map_der, x), qqn, 'UniformOutput', false);
-%  msh.geo_map = reshape (cell2mat (F), msh.rdim, msh.nqn, msh_col.nel);
-%  msh.geo_map_jac = reshape (cell2mat (jac), msh.rdim, msh.ndim, msh.nqn, msh_col.nel); % Needs a reshape
-
-  for iel = 1:numel(elem_list)
-    msh_col.geo_map(:,:,iel) = F{iel};
-    msh_col.geo_map_jac(:,:,:,iel) = jac{iel};
-  end
-
   if (msh.der2)
     msh_col.geo_map_der2 = zeros (msh.rdim, msh.ndim, msh.ndim, msh.nqn, msh_col.nel);
-    hess = cellfun (@(x) feval (msh.map_der2, x), qqn, 'UniformOutput', false);
- %   geo_map_der2 = reshape (cell2mat (hess), msh.rdim, msh.ndim, msh.ndim, msh.nqn, msh_col.nel);
+    [F, jac, hess] = cellfun (@(x) feval (msh.map_der2, x), qqn, 'UniformOutput', false);
     for iel = 1:numel(elem_list)
+      msh_col.geo_map(:,:,iel) = F{iel};
+      msh_col.geo_map_jac(:,:,:,iel) = jac{iel};
       msh_col.geo_map_der2(:,:,:,:,iel) = hess{iel};
     end
+  else
+    [F, jac] = cellfun (@(x) feval (msh.map_der, x), qqn, 'UniformOutput', false);
+    for iel = 1:numel(elem_list)
+      msh_col.geo_map(:,:,iel) = F{iel};
+      msh_col.geo_map_jac(:,:,:,iel) = jac{iel};
+    end
   end
+  
 
   msh_col.jacdet = abs (geopdes_det__ (msh_col.geo_map_jac));
   msh_col.jacdet = reshape (msh_col.jacdet, [msh_col.nqn, msh_col.nel]);
