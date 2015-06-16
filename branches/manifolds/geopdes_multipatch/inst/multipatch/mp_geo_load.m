@@ -142,18 +142,25 @@ function [geometry, boundaries, interfaces, subdomains] = mp_geo_load (in)
     
     for iptc = 1:numel (geometry)
       geometry(iptc).rdim = rdim;
+      
+      [deriv, deriv2] = nrbderiv (geometry(iptc).nurbs);
+      geometry(iptc).dnurbs = deriv;
+      geometry(iptc).dnurbs2 = deriv2;
 
-      geometry(iptc).map      =  @(PTS) geo_nurbs (geometry(iptc).nurbs, PTS, 0, rdim);
-      geometry(iptc).map_der  =  @(PTS) geo_nurbs (geometry(iptc).nurbs, PTS, 1, rdim);
-      geometry(iptc).map_der2 =  @(PTS) geo_nurbs (geometry(iptc).nurbs, PTS, 2, rdim);
+      geometry(iptc).map      =  @(PTS) geo_nurbs (geometry(iptc).nurbs, deriv, deriv2, PTS, 0, rdim);
+      geometry(iptc).map_der  =  @(PTS) geo_nurbs (geometry(iptc).nurbs, deriv, deriv2, PTS, 1, rdim);
+      geometry(iptc).map_der2 =  @(PTS) geo_nurbs (geometry(iptc).nurbs, deriv, deriv2, PTS, 2, rdim);
     
       bnd = nrbextract (geometry(iptc).nurbs);
       for ibnd = 1:numel (bnd)
+        [deriv, deriv2] = nrbderiv (bnd(ibnd));
         geometry(iptc).boundary(ibnd).nurbs    = bnd(ibnd);
+        geometry(iptc).boundary(ibnd).dnurbs   = deriv;
+        geometry(iptc).boundary(ibnd).dnurbs2  = deriv2;
         geometry(iptc).boundary(ibnd).rdim     = rdim;
-        geometry(iptc).boundary(ibnd).map      = @(PTS) geo_nurbs (bnd(ibnd), PTS, 0, rdim);
-        geometry(iptc).boundary(ibnd).map_der  = @(PTS) geo_nurbs (bnd(ibnd), PTS, 1, rdim);
-        geometry(iptc).boundary(ibnd).map_der2 = @(PTS) geo_nurbs (bnd(ibnd), PTS, 2, rdim);
+        geometry(iptc).boundary(ibnd).map      = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 0, rdim);
+        geometry(iptc).boundary(ibnd).map_der  = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 1, rdim);
+        geometry(iptc).boundary(ibnd).map_der2 = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 2, rdim);
       end
     end
   else
