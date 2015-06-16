@@ -96,6 +96,11 @@ for inqn = 1:numel(nodes)
   ders(inqn,:,ind:ind+p) = tders(inqn,:,:);
 end
 
+supp = cell (ndof, 1);
+for ii = 1:ndof
+  [dummy, supp{ii}] = find (connectivity == ii);
+end
+
 shape_functions = reshape (ders(:, 1, :), nqn, nel, []);
 shape_functions = permute (shape_functions, [1, 3, 2]);
 
@@ -103,6 +108,7 @@ sp = struct ('nsh_max', nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
              'connectivity', connectivity, ...
              'shape_functions', shape_functions, ...
              'ncomp', 1);
+sp.supp = supp;
 
 if (gradient)
   shape_function_gradients = reshape (ders(:, 2, :), nqn, nel, []);
