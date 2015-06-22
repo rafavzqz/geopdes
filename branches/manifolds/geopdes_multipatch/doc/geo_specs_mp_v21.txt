@@ -6,15 +6,15 @@
 #  formed by an arbitrary number of lines starting with the symbol "#".
 #
 # HEADER
-# file: geo_specs_mp_v10.txt
-# nurbs geometry v.1.0
+# file: geo_specs_mp_v21.txt
+# nurbs geometry v.2.1
 #
 # Thick L-shaped domain, defined with three patches. The patch in the middle 
 #  (Patch 2) has been rotated with respect to the reference domain.
 # Patches 1 and 3 belong to subdomain 1. Patch 2 belongs to subdomain 2.
 # The faces adjacent to the reentrant edge have reference numbers 1 and 2.
 # The other boundary faces have reference number from 3 to 8.
-# Apr 7th 2015
+# Jun 22nd 2015
 #
 #
 # The first line after the header consists of four integer values
