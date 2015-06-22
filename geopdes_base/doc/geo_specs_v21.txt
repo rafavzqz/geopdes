@@ -12,10 +12,10 @@
 #  formed by an arbitrary number of lines starting with the symbol "#".
 #
 # HEADER
-# file: geo_specs_v10.txt
-# nurbs geometry v.1.0
+# file: geo_specs_v21.txt
+# nurbs geometry v.2.1
 # Example file for one quarter of a thick ring
-# Apr 7th 2015
+# Jun 22nd 2015
 #
 #  The domain is one quarter of a three-dimensional ring, with coordinates
 #   {(x,y,z) : 1 < x^2 + y^2 < 4; 0 < z < 1}.
