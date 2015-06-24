@@ -3,6 +3,7 @@ Geometry
  geo_nurbs
  geo_load
  geo_read_nurbs
+ geo_convert_format
 Mesh
  msh_gauss_nodes
  msh_set_quad_nodes
