@@ -1,7 +1,7 @@
-% CONVERT_GEO07_TO_GEO10: converts a GeoPDEs geometry file from version 0.7 (or 0.6)
-%            to version 1.0
+% GEO_CONVERT_FORMAT: convert a GeoPDEs geometry file from version 0,7 (or 0,6)
+%            to version 2,1
 %
-% convert_geo07_to_geo10 (input_file, output_file)
+% geo_convert_format (input_file, output_file)
 %
 % INPUT :
 %
@@ -26,7 +26,7 @@
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
 
-function convert_geo07_to_geo10 (input_file, output_file)
+function geo_convert_format (input_file, output_file)
 
 [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs_07 (input_file);
 nrb = [geom.nurbs];
@@ -44,7 +44,7 @@ function [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs_07 (file
 
   fid = fopen (filename, 'r');
   if (fid < 0)
-    error ('convert_geo07_to_geo10: cannot open file %s', filename);
+    error ('geo_convert_format: cannot open file %s', filename);
   end
   
   line = fgetl (fid);
@@ -57,7 +57,7 @@ function [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs_07 (file
         nintrfc = vec(3);
         nsubd = 0;
         if (nargout == 4)
-          warning ('convert_geo07_to_geo10: no subdomain information is given in the file. The patch number will be used')
+          warning ('geo_convert_format: no subdomain information is given in the file. The patch number will be used')
           for ii = 1:npatches
             subdomains(ii).name = sprintf ('Patch %i', ii);
             subdomains(ii).patches = ii;
