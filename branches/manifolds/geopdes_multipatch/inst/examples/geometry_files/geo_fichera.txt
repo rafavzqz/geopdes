@@ -1,6 +1,6 @@
-# nurbs mesh v.1.0
+# nurbs mesh v.2.1
 #
-# 01-Apr-2015
+# 24-Jun-2015
 #
  3 3 7 9 1
 PATCH 1 
