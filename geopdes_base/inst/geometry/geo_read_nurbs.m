@@ -99,20 +99,30 @@ for iptc = 1:npatches
     end
     geom(iptc).nurbs.knots{idim} = str2num (line);
   end
+  if (ndim == 1)
+    geom(iptc).nurbs.knots = geom(iptc).nurbs.knots{1};
+  end
 
   for idim = 1:rdim
     line = fgetl (fid); 
     while (line(1) == '#')
       line = fgetl (fid);
     end
-    cp_coord = reshape(str2num (line), geom(iptc).nurbs.number);
-    geom(iptc).nurbs.coefs(idim,:,:,:) = cp_coord;
+    if (ndim > 1)
+      geom(iptc).nurbs.coefs(idim,:,:,:) = reshape (str2num (line), geom(iptc).nurbs.number);
+    else
+      geom(iptc).nurbs.coefs(idim,:,:,:) = str2num (line);
+    end
   end
   line = fgetl (fid);
   while (line(1) == '#')
     line = fgetl (fid);
   end
-  geom(iptc).nurbs.coefs(4,:,:,:) = reshape(str2num (line), geom(iptc).nurbs.number);
+  if (ndim > 1)
+    geom(iptc).nurbs.coefs(4,:,:,:) = reshape (str2num (line), geom(iptc).nurbs.number);
+  else
+    geom(iptc).nurbs.coefs(4,:,:,:) = str2num (line);
+  end
   
   geom(iptc).map      = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 0, rdim);
   geom(iptc).map_der  = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 1, rdim);
