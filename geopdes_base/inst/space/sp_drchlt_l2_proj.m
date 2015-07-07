@@ -64,7 +64,7 @@ function [u, dofs] = sp_drchlt_l2_proj (sp, msh, h, sides)
   
   ncounter = 0;
   for iside = sides
-% Restrict the function handle to the specified side, in any dimension, gside = @(x,y) g(x,y,iside)
+% Restrict the function handle to the specified side, in any dimension, hside = @(x,y) h(x,y,iside)
     hside = @(varargin) h(varargin{:},iside);
     f_one = @(varargin) ones (size(varargin{1}));
     [rs, cs, vs] = ...

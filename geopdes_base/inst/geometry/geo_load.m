@@ -85,7 +85,8 @@ function geometry = geo_load (in)
       rdim = 1;
     end
     geometry.rdim = rdim;
-    
+
+    warning ('off', 'nrbderiv:SecondDerivative')
     [deriv, deriv2] = nrbderiv (geometry.nurbs);
     geometry.dnurbs = deriv;
     geometry.dnurbs2 = deriv2;
@@ -107,6 +108,7 @@ function geometry = geo_load (in)
         geometry.boundary(ibnd).map_der2 = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 2, rdim);
       end
     end
+    warning ('on', 'nrbderiv:SecondDerivative')
   else
     for ibnd = 1:6 % This loop should be until 2*ndim, but ndim is not known
       geometry.boundary(ibnd).map     = @(PTS) boundary_map (geometry.map, ibnd, PTS);
