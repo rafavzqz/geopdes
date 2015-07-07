@@ -64,29 +64,23 @@ function [u, dofs] = sp_drchlt_l2_proj (sp, msh, h, sides)
   
   ncounter = 0;
   for iside = sides
-    
-    msh_bnd = msh_eval_boundary_side (msh, iside);
-    sp_bnd  = sp_eval_boundary_side (sp, msh_bnd);
-
-    x = cell (msh_bnd.rdim, 1);
-    for idim = 1:msh_bnd.rdim
-      x{idim} = squeeze (msh_bnd.geo_map(idim,:,:));
-    end
-    hval = reshape (h(x{:}, iside), sp_bnd.ncomp, msh_bnd.nqn, msh_bnd.nel);
-
+% Restrict the function handle to the specified side, in any dimension, gside = @(x,y) g(x,y,iside)
+    hside = @(varargin) h(varargin{:},iside);
+    f_one = @(varargin) ones (size(varargin{1}));
     [rs, cs, vs] = ...
-             op_u_v (sp_bnd, sp_bnd, msh_bnd, ones (msh_bnd.nqn, msh_bnd.nel));
-
-    rows(ncounter+(1:numel(rs))) = sp_bnd.dofs(rs);
-    cols(ncounter+(1:numel(rs))) = sp_bnd.dofs(cs);
+             op_u_v_tp (sp.boundary(iside), sp.boundary(iside), msh.boundary(iside), f_one);
+    
+    bnd_dofs = sp.boundary(iside).dofs;
+    
+    rows(ncounter+(1:numel(rs))) = bnd_dofs(rs);
+    cols(ncounter+(1:numel(rs))) = bnd_dofs(cs);
     vals(ncounter+(1:numel(rs))) = vs;
     ncounter = ncounter + numel (rs);
 
-    rhs_side = op_f_v (sp_bnd, msh_bnd, hval);
-    rhs(sp_bnd.dofs) = rhs(sp_bnd.dofs) + rhs_side;
+    rhs(bnd_dofs) = rhs(bnd_dofs) + op_f_v_tp (sp.boundary(iside),msh.boundary(iside), hside);
   end
 
-  M = sparse (rows, cols, vals);
+  M = sparse (rows(1:ncounter), cols(1:ncounter), vals(1:ncounter));
   u = M(dofs, dofs) \ rhs(dofs, 1);
 
 end
