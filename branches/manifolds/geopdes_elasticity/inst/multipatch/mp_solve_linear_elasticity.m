@@ -133,16 +133,10 @@ for iref = nmnn_sides
   for bnd_side = 1:boundaries(iref).nsides
     iptc = boundaries(iref).patches(bnd_side);
     iside = boundaries(iref).faces(bnd_side);
-    msh_side = msh_eval_boundary_side (msh{iptc}, iside);
-    sp_side  = sp_eval_boundary_side (sp{iptc}, msh_side);
-
-    x = cell (msh_side.rdim, 1);
-    for idim = 1:msh_side.rdim
-      x{idim} = squeeze (msh_side.geo_map(idim,:,:));
-    end
-    gval = reshape (g (x{:}, iref), sp.ncomp, msh_side.nqn, msh_side.nel);
-    rhs_nmnn = op_f_v (sp_side, msh_side, gval);
-    global_dofs = gnum{iptc}(sp_side.dofs);
+% Restrict the function handle to the specified side, in any dimension, gside = @(x,y) g(x,y,iside)
+    gref = @(varargin) g(varargin{:},iref);
+    global_dofs = gnum{iptc}(sp{iptc}.boundary(iside).dofs);
+    rhs_nmnn = op_f_v_tp (sp{iptc}.boundary(iside), msh{iptc}.boundary(iside), gref);
     rhs(global_dofs) = rhs(global_dofs) + rhs_nmnn;
   end
 end
