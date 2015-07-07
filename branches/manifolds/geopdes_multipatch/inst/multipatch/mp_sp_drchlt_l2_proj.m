@@ -44,22 +44,16 @@ function [u, dofs] = mp_sp_drchlt_l2_proj (sp, msh, h, gnum, boundaries, refs)
       iptc = boundaries(iref).patches(bnd_side);
       iside = boundaries(iref).faces(bnd_side);
 
-      msh_bnd = msh_eval_boundary_side (msh{iptc}, iside);
-      sp_bnd  = sp_eval_boundary_side (sp{iptc}, msh_bnd);
-
-      global_dofs = gnum{iptc}(sp_bnd.dofs);
+      global_dofs = gnum{iptc}(sp{iptc}.boundary(iside).dofs);
       dofs = union (dofs, global_dofs);
+% Restrict the function handle to the specified side, in any dimension, hside = @(x,y) h(x,y,iside)
+      href = @(varargin) h(varargin{:},iside);
+      f_one = @(varargin) ones (size(varargin{1}));
 
-      x = cell (msh_bnd.rdim, 1);
-      for idim = 1:msh_bnd.rdim
-        x{idim} = squeeze (msh_bnd.geo_map(idim,:,:));
-      end
-      hval = reshape (h (x{:}, iref), sp_bnd.ncomp, msh_bnd.nqn, msh_bnd.nel);
-
-      M_side = op_u_v (sp_bnd, sp_bnd, msh_bnd, ones (msh_bnd.nqn, msh_bnd.nel));
+      M_side = op_u_v_tp (sp{iptc}.boundary(iside), sp{iptc}.boundary(iside), msh{iptc}.boundary(iside), f_one);
       M(global_dofs, global_dofs) = M(global_dofs, global_dofs) + M_side;
 
-      rhs_side = op_f_v (sp_bnd, msh_bnd, hval);
+      rhs_side = op_f_v_tp (sp{iptc}.boundary(iside), msh{iptc}.boundary(iside), href);
       rhs(global_dofs) = rhs(global_dofs) + rhs_side;
     end
   end
