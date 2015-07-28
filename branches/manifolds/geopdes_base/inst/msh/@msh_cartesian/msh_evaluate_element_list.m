@@ -112,10 +112,14 @@ function msh_col = msh_evaluate_element_list (msh, elem_list, varargin)
     end
   end
   
-
   msh_col.jacdet = abs (geopdes_det__ (msh_col.geo_map_jac));
   msh_col.jacdet = reshape (msh_col.jacdet, [msh_col.nqn, msh_col.nel]);
 
+  if (isfield(msh_col, 'quad_weights') && isfield(msh_col, 'jacdet'))
+    msh_col.element_size = (sum (msh_col.quad_weights .* ...
+                             abs (msh_col.jacdet), 1)).^(1/msh.ndim);
+  end
+  
   if (msh.ndim == 2 && msh.rdim == 3)
     normal = reshape (geopdes_cross__ (msh_col.geo_map_jac(:,1,:,:), ...
                               msh_col.geo_map_jac(:,2,:,:)), msh_col.rdim, msh_col.nqn, msh_col.nel);
