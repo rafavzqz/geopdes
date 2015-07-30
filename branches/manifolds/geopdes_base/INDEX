@@ -17,6 +17,7 @@ Space
  sp_eval_div_msh
  sp_eval_curl_msh
  sp_eval_grad_msh
+ sp_eval_lapl_msh
  sp_h1_error
  sp_l2_error
  sp_to_vtk

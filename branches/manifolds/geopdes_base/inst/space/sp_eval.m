@@ -107,6 +107,11 @@ function [eu, F] = sp_eval (u, space, geometry, npts, varargin)
       F  = reshape (F, [msh.rdim, npts]);
       eu = squeeze (reshape (eu, [sp.ncomp, msh.rdim, npts]));
 
+    case {'laplacian'}
+      [eu, F] = sp_eval_lapl_msh (u, sp, msh);
+      F  = reshape (F, [msh.rdim, npts]);
+      eu = squeeze (reshape (eu, [sp.ncomp, npts]));
+
     otherwise
       error ('sp_eval: unknown option to evaluate')
   end
