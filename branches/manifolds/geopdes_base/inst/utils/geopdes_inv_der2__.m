@@ -26,6 +26,7 @@ rdim = vsize(1);
 ndim = vsize(2);
 
 Jinv = geopdes_inv__ (geo_map_jac);
+Jinv = reshape (Jinv, [ndim, rdim, vsize(3:end)]);
 Jsize = size (Jinv);
 Jsize(end+1:4) = 1;
 
