@@ -68,7 +68,7 @@ function sp = sp_bspline (knots, degree, msh)
   sp.ndof     = prod (sp.ndof_dir);
   sp.ncomp    = 1;
 
-  if (~isempty (msh.boundary))
+  if (~isempty (msh.boundary) && msh.ndim > 1)
     for iside = 1:numel (msh.boundary)
 %%    ind  = [2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind  = [2 2 1 1] in 2D;
 %%    ind2 = [1 1 2 2 3 3] in 3D,                  %ind2 = [1 1 2 2] in 2D
@@ -96,7 +96,7 @@ function sp = sp_bspline (knots, degree, msh)
       
     end
         
-  elseif (msh.ndim == 1)
+  elseif (~isempty (msh.boundary) && msh.ndim == 1)
     sp.boundary(1).dofs = 1;
     sp.boundary(2).dofs = sp.ndof;
     if (sp.ndof > 1)

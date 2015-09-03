@@ -86,4 +86,3 @@ function [errh1, errl2] = sp_h1_error (sp, msh, u, uex, graduex)
   errl2 = sqrt (errl2);
   
 end
-
