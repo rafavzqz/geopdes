@@ -146,7 +146,8 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
       msh.boundary(iside).rdim = msh.rdim;
     end
   elseif (boundary && msh.ndim == 1)
-    msh.boundary(1:2).ndim = 0;
+    msh.boundary(1).ndim = 0;
+    msh.boundary(2).ndim = 0;
   else
     msh.boundary = [];
   end
