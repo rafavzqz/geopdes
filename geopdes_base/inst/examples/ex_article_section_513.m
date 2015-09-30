@@ -73,3 +73,34 @@ err = sp_l2_error (space, msh, u, @(x,y)(x.^2+y.^2-3*sqrt(x.^2+y.^2)+2).*sin(2.*
 
 %!demo
 %! ex_article_section_513;
+
+%!test
+%! nodes   = [5.168367524056075e-02, 2.149829914261059e-01, ...
+%!            3.547033685486441e-01, 5.000000000000000e-01, ...
+%!            6.452966314513557e-01, 7.850170085738940e-01, ...
+%!            9.483163247594394e-01];
+%! weights = [1.254676875668223e-01, 1.708286087294738e-01, ...
+%!            1.218323586744639e-01, 1.637426900584793e-01, ...
+%!            1.218323586744638e-01, 1.708286087294741e-01, ...
+%!            1.254676875668223e-01];
+%! rule    = [nodes; weights];
+%! geometry = geo_load ({@ring_polar_map, @ring_polar_map_der});
+%! [knots, breaks] = kntuniform ([10 10], [2 2], [1 1]);
+%! breaks{1} ([2:3:end-2,3:3:end-1]) = [];
+%! breaks{2} ([2:3:end-2,3:3:end-1]) = [];
+%! [qn, qw]  = msh_set_quad_nodes (breaks, {rule, rule}, [0 1]);
+%! msh = msh_cartesian (breaks, qn, qw, geometry);
+%! space = sp_bspline (knots, [2, 2], msh);
+%! mat = op_gradu_gradv_tp (space, space, msh, @(x, y) ones (size (x))); 
+%! rhs = op_f_v_tp (space, msh, @(x, y) (8-9*sqrt(x.^2+y.^2)).*sin(2*atan(y./x))./(x.^2+y.^2));
+%! drchlt_dofs = [];
+%! for iside = 1:4
+%! drchlt_dofs = union (drchlt_dofs, space.boundary(iside).dofs);
+%! end
+%! int_dofs = setdiff (1:space.ndof, drchlt_dofs);
+%! u = zeros (space.ndof, 1);
+%! u(int_dofs) = mat(int_dofs, int_dofs) \ rhs(int_dofs);
+%! err = sp_l2_error (space, msh, u, @(x,y)(x.^2+y.^2-3*sqrt(x.^2+y.^2)+2).*sin(2.*atan(y./x)));
+%! assert (msh.nel, 9)
+%! assert (space.ndof, 121)
+%! assert (err, 4.71881595641687e-05, 1e-16)

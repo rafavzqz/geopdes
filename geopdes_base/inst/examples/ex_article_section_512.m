@@ -55,3 +55,23 @@ err = sp_l2_error (space, msh, u, @(x,y)(x.^2+y.^2-3*sqrt(x.^2+y.^2)+2).*sin(2.*
 
 %!demo
 %! ex_article_section_512;
+
+%!test
+%! geometry = geo_load ({@ring_polar_map, @ring_polar_map_der});
+%! knots = kntuniform ([9 9], [4 4], [3 3]);
+%! [qn, qw] = msh_set_quad_nodes (knots, msh_gauss_nodes ([5 5]));
+%! msh = msh_cartesian (knots, qn, qw, geometry);
+%! space = sp_bspline (knots, [4 4], msh);
+%! mat = op_gradu_gradv_tp (space, space, msh, @(x, y) ones (size (x))); 
+%! rhs = op_f_v_tp (space, msh, @(x, y) (8-9*sqrt(x.^2+y.^2)).*sin(2*atan(y./x))./(x.^2+y.^2));
+%! drchlt_dofs = [];
+%! for iside = 1:4
+%! drchlt_dofs = union (drchlt_dofs, space.boundary(iside).dofs);
+%! end
+%! int_dofs = setdiff (1:space.ndof, drchlt_dofs);
+%! u = zeros (space.ndof, 1);
+%! u(int_dofs) = mat(int_dofs, int_dofs) \ rhs(int_dofs);
+%! err = sp_l2_error (space, msh, u, @(x,y)(x.^2+y.^2-3*sqrt(x.^2+y.^2)+2).*sin(2.*atan(y./x)));
+%! assert (msh.nel, 64)
+%! assert (space.ndof, 144)
+%! assert (err, 2.82510645627626e-07, 1e-16)
