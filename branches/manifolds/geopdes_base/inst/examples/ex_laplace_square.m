@@ -60,3 +60,27 @@ title ('Exact solution'), axis tight
 
 %!demo
 %! ex_laplace_square
+
+%!test
+%! problem_data.geo_name = 'geo_square.txt';
+%! problem_data.nmnn_sides   = [];
+%! problem_data.drchlt_sides = [1 2 3 4];
+%! problem_data.c_diff  = @(x, y) ones(size(x));
+%! problem_data.f = @(x, y) zeros (size (x));
+%! problem_data.g = @test_square_g_nmnn;
+%! problem_data.h = @(x, y, ind) exp (x) .* sin(y);
+%! problem_data.uex     = @(x, y) exp (x) .* sin (y);
+%! problem_data.graduex = @(x, y) cat (1, ...
+%!                       reshape (exp(x).*sin(y), [1, size(x)]), ...
+%!                       reshape (exp(x).*cos(y), [1, size(x)]));
+%! method_data.degree     = [3 3];       % Degree of the splines
+%! method_data.regularity = [2 2];       % Regularity of the splines
+%! method_data.nsub       = [9 9];       % Number of subdivisions
+%! method_data.nquad      = [4 4];       % Points for the Gaussian quadrature rule
+%! [geometry, msh, space, u] = solve_laplace (problem_data, method_data);
+%! [error_h1, error_l2] = ...
+%!           sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex);
+%! assert (msh.nel, 81)
+%! assert (space.ndof, 144)
+%! assert (error_h1, 9.86428525677199e-06, 1e-14)
+%! assert (error_l2, 1.68004134750130e-07, 1e-14)

@@ -59,3 +59,26 @@ title ('Exact solution'), axis tight
 
 %!demo
 %! ex_laplace_ring_mixed_bc
+
+%!test
+%! problem_data.geo_name = 'geo_ring.txt';
+%! problem_data.nmnn_sides   = [1 3 4];
+%! problem_data.drchlt_sides = [2];
+%! problem_data.c_diff  = @(x, y) ones(size(x));
+%! problem_data.f = @(x, y) exp(x).*((x.^2 + y.^2 - 1).*sin(x.*y) - 2*y.*cos(x.*y));
+%! problem_data.g = @test_ring_mixed_bc_g_nmnn;
+%! problem_data.h = @(x, y, ind) exp(x).*sin(x.*y);
+%! problem_data.uex     = @(x, y) exp(x) .* sin (x.*y);
+%! problem_data.graduex = @(x, y) cat (1, ...
+%!                reshape ( exp(x).*(sin(x.*y) + y.*cos(x.*y)), [1, size(x)]), ...
+%!                reshape (exp(x).*x.*cos(x.*y), [1, size(x)]));
+%! method_data.degree     = [3 3];       % Degree of the splines
+%! method_data.regularity = [2 2];       % Regularity of the splines
+%! method_data.nsub       = [9 9];       % Number of subdivisions
+%! method_data.nquad      = [4 4];       % Points for the Gaussian quadrature rule
+%! [geometry, msh, space, u] = solve_laplace (problem_data, method_data);
+%! [error_h1, error_l2] = sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex);
+%! assert(msh.nel, 81)
+%! assert(space.ndof, 144)
+%! assert(error_h1, 0.0264700455167273, 1e-14)
+%! assert(error_l2, 0.00158591036112327, 1e-15)
