@@ -68,3 +68,34 @@ error_l2 = sp_l2_error (space, msh, u, problem_data.uex)
 
 %!demo
 %! ex_plane_strain_square
+
+%!test
+%! problem_data.geo_name = nrb4surf([0 0], [1 0], [0 1], [1 1]);
+%! problem_data.nmnn_sides   = [];
+%! problem_data.press_sides  = [];
+%! problem_data.drchlt_sides = [1 2 3 4];
+%! problem_data.symm_sides   = [];
+%! E  =  1; nu = .3; 
+%! problem_data.lambda_lame = @(x, y) ((nu*E)/((1+nu)*(1-2*nu)) * ones (size (x)));
+%! problem_data.mu_lame = @(x, y) (E/(2*(1+nu)) * ones (size (x)));
+%! fx = @(x, y) -(-(problem_data.mu_lame(x, y)*3 + problem_data.lambda_lame(x, y)).*sin(2*pi*x).*sin(2*pi*y) + ...
+%!      (problem_data.mu_lame(x, y) + problem_data.lambda_lame(x, y)).*cos(2*pi*x).*cos(2*pi*y))*(2*pi)^2;
+%! fy = fx;
+%! problem_data.f = @(x, y) cat(1, ...
+%!                 reshape (fx (x,y), [1, size(x)]), ...
+%!                 reshape (fy (x,y), [1, size(x)]));
+%! problem_data.h       = @(x, y, ind) zeros (2, size (x, 1), size (x, 2));
+%! uxex = @(x,y) sin(2*pi*x).*(sin(2*pi*y));
+%! uyex = @(x,y) sin(2*pi*x).*(sin(2*pi*y));
+%! problem_data.uex = @(x, y) cat(1, ...
+%!                 reshape (uxex (x,y), [1, size(x)]), ...
+%!                 reshape (uyex (x,y), [1, size(x)]));
+%! method_data.degree     = [3 3];     % Degree of the bsplines
+%! method_data.regularity = [2 2];     % Regularity of the splines
+%! method_data.nsub       = [9 9];     % Number of subdivisions
+%! method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
+%! [geometry, msh, space, u] = solve_linear_elasticity (problem_data, method_data);
+%! error_l2 = sp_l2_error (space, msh, u, problem_data.uex);
+%! assert (msh.nel, 81)
+%! assert (space.ndof, 288)
+%! assert (error_l2, 2.60376176743492e-04, 1e-17)

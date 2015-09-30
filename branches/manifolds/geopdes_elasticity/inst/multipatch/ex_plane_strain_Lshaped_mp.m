@@ -64,3 +64,64 @@ error_l2 = sqrt (sum (error_l2 .* error_l2))
 
 %!demo
 %! ex_plane_strain_Lshaped_mp
+
+%!test
+%! problem_data.geo_name = 'geo_Lshaped_mp.txt';
+%! problem_data.nmnn_sides   = [];
+%! problem_data.drchlt_sides = [1 2 3 4 5 6];
+%! E  =  1; nu = 0.3; 
+%! problem_data.lambda_lame = @(x, y, z) ((nu*E)/((1+nu)*(1-2*nu)) * ones (size (x))); 
+%! problem_data.mu_lame = @(x, y, z) (E/(2*(1+nu)) * ones (size (x)));
+%! fx = @(x, y) problem_data.lambda_lame (x, y) .* sin(y) + ...
+%!              problem_data.mu_lame(x, y) .* (1 + x) .* sin(y);
+%! fy = @(x, y) problem_data.mu_lame (x, y) .* cos(y) .* (2*x - 1) - ...
+%!              problem_data.lambda_lame (x, y) .* cos(y) .* (1 - x);
+%! problem_data.f  = @(x, y) cat(1, ...
+%!                    reshape (fx (x,y), [1, size(x)]), ...
+%!                    reshape (fy (x,y), [1, size(x)]));
+%! problem_data.h = @(x, y, ind) cat(1, ...
+%!                         reshape (x.*sin(y), [1, size(x)]), ...
+%! 			reshape (x.*cos(y), [1, size(x)]));
+%! uxex = @(x, y) x.*sin(y);
+%! uyex = @(x, y) x.*cos(y);
+%! problem_data.uex  = @(x, y) cat(1, ...
+%! 		      reshape (uxex (x,y), [1, size(x)]), ...
+%! 		      reshape (uyex (x,y), [1, size(x)]));
+%! method_data.degree     = [3 3];     % Degree of the bsplines
+%! method_data.regularity = [2 2];     % Regularity of the splines
+%! method_data.nsub       = [6 6];     % Number of subdivisions
+%! method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
+%! [geometry, msh, space, u, gnum] = ...
+%!               mp_solve_linear_elasticity (problem_data, method_data);
+%! for iptc = 1:numel(geometry)
+%!   error_l2(iptc) = ...
+%!         sp_l2_error (space{iptc}, msh{iptc}, u(gnum{iptc}), problem_data.uex);
+%! end
+%! error_l2 = sqrt (sum (error_l2 .* error_l2));
+%! assert (error_l2, 6.41633220768243e-07, 1e-16)
+%! assert (max([gnum{:}]), numel(u));
+%! assert (max([gnum{:}]), 450);
+%!
+%! problem_data.geo_name = 'geo_Lshaped_mp_b.txt';
+%! [geometry, msh, space, u, gnum] = ...
+%!               mp_solve_linear_elasticity (problem_data, method_data);
+%! for iptc = 1:numel(geometry)
+%!   error_l2(iptc) = ...
+%!         sp_l2_error (space{iptc}, msh{iptc}, u(gnum{iptc}), problem_data.uex);
+%! end
+%! error_l2 = sqrt (sum (error_l2 .* error_l2));
+%! assert (error_l2, 6.41633220768243e-07, 1e-16)
+%! assert (max([gnum{:}]), numel(u));
+%! assert (max([gnum{:}]), 450);
+%!
+%! problem_data.geo_name = 'geo_Lshaped_mp_c.txt';
+%! [geometry, msh, space, u, gnum] = ...
+%!               mp_solve_linear_elasticity (problem_data, method_data);
+%! for iptc = 1:numel(geometry)
+%!   error_l2(iptc) = ...
+%!         sp_l2_error (space{iptc}, msh{iptc}, u(gnum{iptc}), problem_data.uex);
+%! end
+%! error_l2 = sqrt (sum (error_l2 .* error_l2));
+%! assert (error_l2, 6.41633220768243e-07, 1e-16)
+%! assert (max([gnum{:}]), numel(u));
+%! assert (max([gnum{:}]), 450);

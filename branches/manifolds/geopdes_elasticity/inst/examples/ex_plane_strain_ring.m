@@ -62,3 +62,28 @@ error_l2 = sp_l2_error (space, msh, u, problem_data.uex)
 
 %!demo
 %! ex_plane_strain_ring
+
+%!test
+%! problem_data.geo_name = 'geo_ring.txt';
+%! problem_data.nmnn_sides   = [2];
+%! problem_data.drchlt_sides = [];
+%! problem_data.press_sides  = [1];
+%! problem_data.symm_sides   = [3 4];
+%! E  =  1; nu = 0; 
+%! problem_data.lambda_lame = @(x, y) ((nu*E)/((1+nu)*(1-2*nu)) * ones (size (x)));
+%! problem_data.mu_lame = @(x, y) (E/(2*(1+nu)) * ones (size (x)));
+%! P = 1;
+%! problem_data.f = @(x, y) zeros (2, size (x, 1), size (x, 2));
+%! problem_data.g = @(x, y, ind) test_plane_strain_ring_g_nmnn (x, y, P, nu, ind);
+%! problem_data.h = @(x, y, ind) test_plane_strain_ring_uex (x, y, E, nu, P);
+%! problem_data.p = @(x, y, ind) P * ones (size (x));
+%! problem_data.uex = @(x, y) test_plane_strain_ring_uex (x, y, E, nu, P);
+%! method_data.degree     = [3 3];     % Degree of the basis functions
+%! method_data.regularity = [2 2];     % Regularity of the basis functions
+%! method_data.nsub       = [9 9];     % Number of subdivisions
+%! method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
+%! [geometry, msh, space, u] = solve_linear_elasticity (problem_data, method_data);
+%! error_l2 = sp_l2_error (space, msh, u, problem_data.uex);
+%! assert (msh.nel, 81)
+%! assert (space.ndof, 288)
+%! assert (error_l2, 1.53640513551293e-06, 1e-17)
