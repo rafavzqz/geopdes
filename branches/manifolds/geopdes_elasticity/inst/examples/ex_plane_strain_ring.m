@@ -86,4 +86,4 @@ error_l2 = sp_l2_error (space, msh, u, problem_data.uex)
 %! error_l2 = sp_l2_error (space, msh, u, problem_data.uex);
 %! assert (msh.nel, 81)
 %! assert (space.ndof, 288)
-%! assert (error_l2, 1.53640513551293e-06, 1e-17)
+%! assert (error_l2, 1.53640513551293e-06, 1e-16)
