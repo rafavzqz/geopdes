@@ -10,10 +10,6 @@ Solve
  solve_bilaplace_gradgrad_2d_iso
 Geometry
  geo_deform
-Space
- sp_eval_stress
- sp_eval_stress_msh
- sp_to_vtk_stress
 Examples
  ex_plane_strain_square
  ex_plane_strain_square_mixed_bc

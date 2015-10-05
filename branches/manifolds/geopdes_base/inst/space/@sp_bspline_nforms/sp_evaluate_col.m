@@ -55,6 +55,8 @@ if (~isempty (varargin))
   for ii=1:2:length(varargin)-1
     if (strcmpi (varargin {ii}, 'value'))
       value = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'gradient') || strcmpi (varargin {ii}, 'laplacian'))
+%      gradient = varargin {ii+1};
     else
       error ('sp_evaluate_col: unknown option %s', varargin {ii});
     end

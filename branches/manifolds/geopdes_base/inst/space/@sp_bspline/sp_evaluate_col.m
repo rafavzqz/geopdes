@@ -16,6 +16,7 @@
 %            value      |      true       |  compute shape_functions
 %            gradient   |      false      |  compute shape_function_gradients
 %            hessian    |      false      |  compute shape_function_hessians
+%            laplacian  |      false      |  compute shape_function_laplacians
 %
 % OUTPUT:
 %
@@ -55,7 +56,6 @@ function sp = sp_evaluate_col (space, msh, varargin)
 
 value = true;
 gradient = false;
-grad_param = false;
 hessian = false;
 laplacian = false;
 
