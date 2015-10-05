@@ -70,7 +70,7 @@ for iref = 1:numel(interfaces)
   end
   coeff_at_qnodes = visc (x{:});
 
-  charlen = (sum (msh_side(1).charlen, 1).^(1/(ndim-1));
+  charlen = (sum (msh_side(1).charlen, 1).^(1/(ndim-1)));
   charlen = repmat (charlen, msh_side(1).nqn, 1);
   
   for ii = 1:2
