@@ -1,25 +1,28 @@
 % MP_SP_TO_VTK: Export multipatch results to VTK format for plotting.
 %
-%  mp_sp_to_vtk (u, space, geometry, gnum, npts, filename, fieldname, [option])
+%  mp_sp_to_vtk (u, space, geometry, gnum, npts, filename, fieldnames, [option], [lambda_lame, mu_lame])
 %
 % INPUT:
 %     
-%     u:         vector of dof weights
-%     space:     object representing the space of discrete functions (see sp_bspline)
-%     geometry:  geometry structure (see geo_load)
-%     gnum:      array that relates the local numbering on each patch with the global one
-%     npts:      number of points along each parametric direction where to evaluate
-%     filename:  name of the output file. 
-%     fieldname: how to name the saved variable in the vtk file
-%     option:     accepted options are 'value' (default), 'gradient',
-%                  and for vectors also 'curl', 'divergence'
+%     u:           vector of dof weights
+%     space:       object representing the space of discrete functions (see sp_bspline)
+%     geometry:    geometry structure (see geo_load)
+%     gnum:        array that relates the local numbering on each patch with the global one
+%     npts:        number of points along each parametric direction where to evaluate
+%     filename:    name of the output file. 
+%     fieldnames:  how to name the saved variables in the vtk file
+%     options:     cell array with the fields to plot
+%                   accepted options are 'value' (default), 'gradient',
+%                   and for vectors also 'curl', 'divergence', 'stress'
+%     lambda_lame: function handle to the first Lame coefficient (only needed to compute 'stress')
+%     mu_lame:     function handle for the second Lame coefficient (only needed to compute 'stress')
 %
 % OUTPUT:
 %
 %    none    
 % 
 % Copyright (C) 2010 Carlo de Falco, Rafael Vazquez
-% Copyright (C) 2011, 2012 Rafael Vazquez
+% Copyright (C) 2011, 2012, 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by

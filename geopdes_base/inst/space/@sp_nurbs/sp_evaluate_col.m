@@ -15,6 +15,8 @@
 %           ------------+-----------------+----------------------------------
 %            value      |      true       |  compute shape_functions
 %            gradient   |      false      |  compute shape_function_gradients
+%            hessian    |      false      |  compute shape_function_hessians
+%            laplacian  |      false      |  compute shape_function_laplacians
 %
 % OUTPUT:
 %
@@ -52,8 +54,9 @@ function sp = sp_evaluate_col (space, msh, varargin)
 
 value = true;
 gradient = false;
-grad_param = false;
 hessian = false;
+laplacian = false;
+
 if (~isempty (varargin))
   if (~rem (length (varargin), 2) == 0)
     error ('sp_evaluate_col: options must be passed in the [option, value] format');
@@ -66,18 +69,20 @@ if (~isempty (varargin))
       grad_param = true;
     elseif (strcmpi (varargin {ii}, 'hessian'))
       hessian = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'laplacian'))
+      laplacian = varargin {ii+1};
     else
       error ('sp_evaluate_col: unknown option %s', varargin {ii});
     end
   end
 end
 
-if (hessian)
-  grad_param = true;
-end
-sp = sp_evaluate_col_param (space, msh, 'value', value, 'gradient', grad_param, 'hessian', hessian);
+grad_param = gradient || hessian || laplacian;
+hessian_param = hessian || laplacian;
 
-if (hessian)
+sp = sp_evaluate_col_param (space, msh, 'value', value, 'gradient', grad_param, 'hessian', hessian_param);
+
+if (hessian || laplacian)
   [Jinv, Jinv2] = geopdes_inv_der2__ (msh.geo_map_jac, msh.geo_map_der2);
   Jinv  = reshape (Jinv, [msh.ndim, msh.rdim, msh.nqn, 1, msh.nel]);
   JinvT = permute (Jinv, [2 1 3 4 5]);
@@ -98,7 +103,16 @@ if (hessian)
           reshape (Dv_D2F, shh_size);
     end
   end
-  sp.shape_function_hessians = shape_function_hessians;
+  if (hessian)
+    sp.shape_function_hessians = shape_function_hessians;
+  end
+  if (laplacian)
+    sp.shape_function_laplacians = zeros (msh.nqn, space.nsh_max, msh.nel);
+    for idim = 1:msh.rdim
+      sp.shape_function_laplacians = sp.shape_function_laplacians + ...
+          reshape (shape_function_hessians(idim,idim,:,:,:), msh.nqn, space.nsh_max, msh.nel);
+    end
+  end
 elseif (isfield (sp, 'shape_function_hessians'))
   sp = rmfield (sp, 'shape_function_hessians');
 end
