@@ -47,7 +47,7 @@ function [u, dofs] = mp_sp_drchlt_l2_proj (sp, msh, h, gnum, boundaries, refs)
       global_dofs = gnum{iptc}(sp{iptc}.boundary(iside).dofs);
       dofs = union (dofs, global_dofs);
 % Restrict the function handle to the specified side, in any dimension, hside = @(x,y) h(x,y,iside)
-      href = @(varargin) h(varargin{:},iside);
+      href = @(varargin) h(varargin{:},iref);
       f_one = @(varargin) ones (size(varargin{1}));
 
       M_side = op_u_v_tp (sp{iptc}.boundary(iside), sp{iptc}.boundary(iside), msh{iptc}.boundary(iside), f_one);
