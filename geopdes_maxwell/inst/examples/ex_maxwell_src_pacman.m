@@ -63,3 +63,28 @@ title('Exact solution')
 
 %!demo
 %! ex_maxwell_src_pacman
+
+%!test
+%! problem_data.geo_name = 'geo_pacman.txt';
+%! problem_data.nmnn_sides   = [3 4];
+%! problem_data.drchlt_sides = [1 2];
+%! problem_data.c_stiff = @(x, y) ones(size(x));
+%! problem_data.c_mass  = @(x, y) ones(size(x));
+%! k = 1; % Constant that characterizes the singularity
+%! problem_data.f = @(x, y) singular_function (x, y, k);
+%! problem_data.g = @(x, y, ind) zeros([2, size(x)]);
+%! problem_data.h = @(x, y, ind) singular_function (x, y, k);
+%! problem_data.uex     = @(x, y) singular_function (x, y, k);
+%! problem_data.curluex = @(x, y) zeros (size(x));
+%! method_data.degree     = [3 3];     % Degree of the bsplines
+%! method_data.regularity = [2 2];     % Regularity of the splines
+%! method_data.nsub       = [6 6];     % Number of subdivisions
+%! method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
+%! warning ('off', 'geopdes:jacdet_zero_at_quad_node')
+%! warning ('off', 'geopdes:zero_measure_element')
+%! [geometry, msh, space, u] = solve_maxwell_src (problem_data, method_data);
+%! [error_hcurl, error_l2] = sp_hcurl_error (space, msh, u, problem_data.uex, problem_data.curluex);
+%! assert (msh.nel, 108)
+%! assert (space.ndof, 416)
+%! assert (error_l2, 0.0186015375299651, 1e-15)
+%! assert (error_hcurl, 0.0186017702212969, 1e-15)

@@ -61,3 +61,26 @@ title('Exact solution')
 
 %!demo
 %! ex_maxwell_src_Lshaped
+
+%!test
+%! problem_data.geo_name = 'geo_Lshaped_C0.txt';
+%! problem_data.nmnn_sides   = [1 3 4];
+%! problem_data.drchlt_sides = [2];
+%! problem_data.c_mass  = @(x, y) ones(size(x));
+%! problem_data.c_stiff = @(x, y) ones(size(x));
+%! k = 1; % Constant that characterizes the singularity
+%! problem_data.f = @(x, y) singular_function (x, y, k);
+%! problem_data.g = @(x, y, ind) zeros([2, size(x)]);
+%! problem_data.h = @(x, y, ind) singular_function (x, y, k);
+%! problem_data.uex     = @(x, y) singular_function (x, y, k);
+%! problem_data.curluex = @(x, y) zeros (size(x));
+%! method_data.degree     = [3 3];     % Degree of the bsplines
+%! method_data.regularity = [2 2];     % Regularity of the splines
+%! method_data.nsub       = [8 8];     % Number of subdivisions
+%! method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
+%! [geometry, msh, space, u] = solve_maxwell_src (problem_data, method_data);
+%! [error_hcurl, error_l2] = sp_hcurl_error (space, msh, u, problem_data.uex, problem_data.curluex);
+%! assert (msh.nel, 128)
+%! assert (space.ndof, 430)
+%! assert (error_l2, 0.0467860957084692, 1e-15)
+%! assert (error_hcurl, 0.0467926161512472, 1e-15)
