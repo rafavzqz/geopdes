@@ -4,7 +4,7 @@
 clear problem_data 
 % Physical domain, defined as NURBS map given in a text file
 problem_data.geo_name = 'geo_Lshaped_mp.txt';
-problem_data.geo_name = 'geo_Lshaped_mp_b.txt';
+%problem_data.geo_name = 'geo_Lshaped_mp_b.txt';
 %problem_data.geo_name = 'geo_Lshaped_mp_c.txt';
 
 % Type of boundary conditions
