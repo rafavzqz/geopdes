@@ -24,7 +24,7 @@
 %      A. Bressan, G. Sangalli,
 %      Isogeometric discretizations of the Stokes problem: stability
 %       analysis by the macroelement technique
-%      Tech. Report, IMATI-CNR, 2011.
+%      IMA J. Numer. Anal., 2013.
 %
 % Copyright (C) 2011 Andrea Bressan, Carlo de Falco, Rafael Vazquez
 % Copyright (C) 2014 Elena Bulgarello, Carlo de Falco, Sara Frizziero
