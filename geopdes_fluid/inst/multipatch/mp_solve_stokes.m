@@ -122,12 +122,6 @@ for iptc = 1:npatch
   vals_B(ncounterB+(1:numel (rs))) = vs;
   ncounterB = ncounterB + numel (rs);
 
-  [rs, cs, vs] = op_u_v_tp (spp{iptc}, spp{iptc}, msh{iptc}, fun_one); 
-  rows_M(ncounterM+(1:numel (rs))) = gnump{iptc}(rs);
-  cols_M(ncounterM+(1:numel (rs))) = gnump{iptc}(cs);
-  vals_M(ncounterM+(1:numel (rs))) = vs;
-  ncounterM = ncounterM + numel (rs);
-  
   E_loc = op_f_v_tp (spp{iptc}, msh{iptc}, fun_one).';
   E(gnump{iptc}) = E(gnump{iptc}) + E_loc;
 
@@ -140,8 +134,6 @@ A = sparse (rows_A, cols_A, vals_A, ndof, ndof);
 clear rows_A cols_A vals_A
 B = sparse (rows_B, cols_B, vals_B, ndofp, ndof);
 clear rows_B cols_B vals_B
-M = sparse (rows_M, cols_M, vals_M, ndofp, ndofp);
-clear rows_M cols_M vals_M
 
 vel   = zeros (ndof, 1);
 press = zeros (ndofp, 1);
