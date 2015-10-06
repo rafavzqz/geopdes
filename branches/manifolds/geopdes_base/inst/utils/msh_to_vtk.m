@@ -94,7 +94,6 @@ function msh_to_vtk (pts, values, filename, fieldnames)
            npts(1)-1, npts(2)-1, npts(3)-1, ...
            npts(1)-1, npts(2)-1, npts(3)-1);
 
-% Not working for tensors
   for iopt = 1:numel(values)
     if (sum (size (values{iopt}) > 1) == ndim)
       ncomp = 1;
