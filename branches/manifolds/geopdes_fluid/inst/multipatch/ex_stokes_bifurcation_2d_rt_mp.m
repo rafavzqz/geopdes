@@ -22,7 +22,7 @@ problem_data.h  = @test_stokes_bifurcation_mp_h_drchlt;
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 method_data = struct ();
 
-method_data.element_name = 'ndl';     % Element type for discretization
+method_data.element_name = 'rt';     % Element type for discretization
 
 method_data.degree       = [3 3];  % Degree of the splines
 method_data.regularity   = [2 2];  % Regularity of the splines
