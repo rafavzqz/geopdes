@@ -78,7 +78,6 @@ end
 geometry = geo_load (geo_name);
 
 [knots, zeta] = kntrefine (geometry.nurbs.knots, nsub-1, degree, regularity);
-knots{1} = sort ([knots{1} 0.48]); zeta{1} = sort ([zeta{1} 0.48]);
 [knots_hcurl, degree_hcurl] = knt_derham (knots, degree, 'Hcurl');
 
 % Construct msh structure
