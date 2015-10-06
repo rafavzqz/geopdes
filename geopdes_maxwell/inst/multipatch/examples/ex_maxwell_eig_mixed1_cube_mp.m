@@ -3,7 +3,7 @@
 % 1) PHYSICAL DATA OF THE PROBLEM
 clear problem_data
 % Physical domain, defined as NURBS map given in a text file
-problem_data.geo_name = 'geo_2cubesh.txt';
+problem_data.geo_name = 'geo_2cubesa.txt';
 % You can see how the patches should match in the files 
 %  geo_2cubesa{b,c,d,e,f,g,h}.txt
 % In all the eight cases the result must be the same
