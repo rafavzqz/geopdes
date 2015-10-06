@@ -66,7 +66,6 @@ if (~isempty (varargin))
       value = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'gradient'))
       gradient = varargin {ii+1};
-      grad_param = true;
     elseif (strcmpi (varargin {ii}, 'hessian'))
       hessian = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'laplacian'))
