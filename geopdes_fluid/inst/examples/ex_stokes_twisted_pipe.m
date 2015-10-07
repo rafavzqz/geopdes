@@ -43,3 +43,24 @@ fprintf ('The result is saved in the files %s \n and %s \n \n', ...
 vtk_pts = {linspace(0, 1, 10), linspace(0, 1, 10), linspace(0, 1, 10)};
 sp_to_vtk (press, space_p, geometry, vtk_pts, [output_file '_press'], 'press')
 sp_to_vtk (vel,   space_v, geometry, vtk_pts, [output_file '_vel'  ], 'vel')
+
+%!test
+%! problem_data.geo_name = 'geo_twisted_pipe.mat';
+%! problem_data.nmnn_sides   = [1 2];
+%! problem_data.drchlt_sides = [3 4 5 6];
+%! problem_data.viscosity = @(x, y, z) ones (size (x));
+%! fx = @(x, y, z) ones(size(x));
+%! fy = @(x, y, z) zeros(size(x));
+%! fz = @(x, y, z) zeros(size(x));
+%! problem_data.f  = @(x, y, z) cat(1, reshape (fx (x,y,z), [1, size(x)]), reshape (fy (x,y,z), [1, size(x)]), reshape (fz (x,y,z), [1, size(x)]));
+%! problem_data.h  = @(x, y, z, iside) zeros ([3, size(x)]); %Dirichlet boundary condition
+%! problem_data.g  = @(x, y, z, iside) zeros ([3, size(x)]); %Neumann boundary condition
+%! method_data.element_name = 'TH';
+%! method_data.degree       = [2 2 2]; % Degree of the splines (pressure space)
+%! method_data.regularity   = [1 1 1]; % Regularity of the splines
+%! method_data.nsub         = [2 2 2]; % Number of subdivisions
+%! method_data.nquad        = [4 4 4]; % Points for the Gaussian quadrature rule
+%! [geometry, msh, space_v, vel, space_p, press] = solve_stokes (problem_data, method_data);
+%! assert (msh.nel, 192)
+%! assert (space_p.ndof, 576)
+%! assert (space_v.ndof, 8400)

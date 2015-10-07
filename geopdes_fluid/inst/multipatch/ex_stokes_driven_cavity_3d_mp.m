@@ -47,3 +47,20 @@ fprintf ('results being saved in: %s_vel.pvd and %s_press.pvd\n', output_file, o
 mp_sp_to_vtk (vel, space_v, geometry, gnum, vtk_pts, sprintf ('%s_vel', output_file), {'velocity', 'divergence'}, {'value', 'divergence'})
 mp_sp_to_vtk (press, space_p, geometry, gnump, vtk_pts, sprintf ('%s_press', output_file), 'pressure')
 
+%!test
+%! problem_data.geo_name = 'geo_2cubesa.txt';
+%! problem_data.drchlt_sides = 1:6;
+%! problem_data.nmnn_sides = [];
+%! problem_data.viscosity = @(x, y, z) ones (size (x));
+%! problem_data.f  = @(x, y, z) zeros ([3, size(x)]);
+%! problem_data.h  = @test_stokes_3d_symdrivcav_h_drchlt;
+%! method_data.element_name = 'th';     % Element type for discretization
+%! method_data.degree       = [2 2 2];  % Degree of the splines
+%! method_data.regularity   = [1 1 1];  % Regularity of the splines
+%! method_data.nsub         = [2 2 2];  % Number of subdivisions
+%! method_data.nquad        = [4 4 4];  % Points for the Gaussian quadrature rule
+%! [geometry, msh, space_v, vel, gnum, space_p, press, gnump] = ...
+%!                        mp_solve_stokes (problem_data, method_data);
+%! assert (sum (cellfun (@(x) x.nel, msh)), 32)
+%! assert (max ([gnum{:}]), 1980)
+%! assert (max ([gnump{:}]), 168)
