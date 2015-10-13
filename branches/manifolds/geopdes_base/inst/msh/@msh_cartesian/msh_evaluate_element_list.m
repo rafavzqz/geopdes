@@ -66,6 +66,12 @@ function msh_col = msh_evaluate_element_list (msh, elem_list, varargin)
   indices = cell2mat (indices);
 
   if (isempty (elem_list))
+    msh_col.quad_weights = [];
+    msh_col.geo_map = [];
+    msh_col.geo_map_jac = [];
+    msh_col.geo_map_der2 = [];
+    msh_col.jacdet = [];
+    msh_col.element_size = [];
     return
   end
 
