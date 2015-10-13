@@ -1,0 +1,26 @@
+dirlist        = {"examples", "examples/data_files", "examples/geometry_files", ...
+                  "geometry", "utils", "msh", "operators", "solve", "space"};
+
+dir = fileparts (mfilename ("fullpath"));
+
+if (! exist (fullfile (dir, "inst"), "dir"))
+  ## Run this if the package is installed
+  putenv  ("GEOPDES_INCLUDE_DIR", [ "-I" canonicalize_file_name([dir filesep() ".."]) filesep() "include"])
+  for ii=1:length(dirlist)
+    addpath ( [ canonicalize_file_name([dir "/.."]) "/" dirlist{ii}], "-end")
+  endfor
+else
+  ## Run this if we are testing the package without installation        
+  putenv  ("GEOPDES_INCLUDE_DIR", [ "-I" canonicalize_file_name(dir) "/inst/include"])
+  for ii=1:length(dirlist)
+    addpath ([ canonicalize_file_name(dir) "/inst/" dirlist{ii}])
+    addpath ([ canonicalize_file_name(dir) "/src/"])
+  endfor
+  ## if the package is not installed, dependencies are not
+  ## automatically taken care of, so we need to load some packages here
+  pkg load nurbs integration
+endif
+
+warning ("off", "Octave:fopen-file-in-path");
+warning ("off", "Octave:load-file-in-path");
+clear dirlist dir

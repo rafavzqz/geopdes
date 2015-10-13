@@ -1,0 +1,27 @@
+geopdes_elasticity >> Iso-Geometric Analysis for Linear Elasticity Problems
+Operators
+ op_su_ev
+ op_su_ev_tp
+ op_pn_v
+ op_gradgradu_gradgradv
+ op_gradgradu_gradgradv_tp
+Solve
+ solve_linear_elasticity
+ solve_bilaplace_gradgrad_2d_iso
+Geometry
+ geo_deform
+Examples
+ ex_plane_strain_square
+ ex_plane_strain_square_mixed_bc
+ ex_plane_strain_plate
+ ex_plane_strain_ring
+ ex_lin_elast_horseshoe
+ ex_kirchhoff_rectangular_plate
+ ex_kirchhoff_rectangular_plate_clamped
+ ex_kirchhoff_circular_plate
+ ex_kirchhoff_circular_plate_clamped
+ geopdes_elasticity_examples
+Multipatch
+ mp_solve_linear_elasticity
+ ex_plane_strain_Lshaped_mp
+ ex_lin_elast_cube_mp
