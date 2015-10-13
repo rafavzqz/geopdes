@@ -4,8 +4,8 @@
 %
 % INPUT:
 %
-%  sp:    object defining the space of discrete functions (see sp_bspline_2d)
-%  msh:   object defining the domain partition and the quadrature rule (see msh_2d)
+%  sp:    object defining the space of discrete functions (see sp_bspline)
+%  msh:   object defining the domain partition and the quadrature rule (see msh_cartesian)
 %  h:     function handle to compute the Dirichlet condition
 %  sides: boundary sides on which a Dirichlet condition is imposed
 %
@@ -14,8 +14,8 @@
 %  u:    assigned value to the degrees of freedom
 %  dofs: global numbering of the corresponding basis functions
 %
-% Copyright (C) 2010 Carlo de Falco, Rafael Vazquez
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2010 Carlo de Falco
+% Copyright (C) 2010, 2011, 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -33,6 +33,23 @@
 function [u, dofs] = sp_drchlt_l2_proj (sp, msh, h, sides)
 
   rhs  = zeros (sp.ndof, 1);
+  
+  % In the 1D case, with an open knot vector,  it is not necessary to compute a projection.
+  % For now it only works for scalars
+  if (msh.ndim == 1)
+    dofs = []; u = zeros (numel(sides), 1);
+    for ii = 1:numel(sides)
+      iside = sides(ii);
+      dofs = union (dofs, sp.boundary(iside).dofs);
+      if (iside == 1)
+        u(ii) = h(msh.breaks{1}(1), iside);
+      else
+        u(ii) = h(msh.breaks{1}(end), iside); 
+      end
+    end
+    u = u(:);
+    return
+  end
 
   dofs = [];
   nent = 0;
@@ -47,37 +64,23 @@ function [u, dofs] = sp_drchlt_l2_proj (sp, msh, h, sides)
   
   ncounter = 0;
   for iside = sides
-    
-    msh_bnd = msh_eval_boundary_side (msh, iside);
-    sp_bnd  = sp_eval_boundary_side (sp, msh_bnd);
-
-    if (size (msh_bnd.geo_map, 1) == 2)
-      [x, y] = deal (squeeze (msh_bnd.geo_map(1,:,:)), ...
-                     squeeze (msh_bnd.geo_map(2,:,:)));
-
-      hval = reshape (h (x, y, iside), sp.ncomp, msh_bnd.nqn, msh_bnd.nel);
-
-    elseif (size (msh_bnd.geo_map, 1) == 3)
-      [x, y, z] = deal (squeeze (msh_bnd.geo_map(1,:,:)), ...
-                        squeeze (msh_bnd.geo_map(2,:,:)), ...
-                        squeeze (msh_bnd.geo_map(3,:,:)));
-
-      hval = reshape (h (x, y, z, iside), sp_bnd.ncomp, msh_bnd.nqn, msh_bnd.nel);
-    end
-
+% Restrict the function handle to the specified side, in any dimension, hside = @(x,y) h(x,y,iside)
+    hside = @(varargin) h(varargin{:},iside);
+    f_one = @(varargin) ones (size(varargin{1}));
     [rs, cs, vs] = ...
-             op_u_v (sp_bnd, sp_bnd, msh_bnd, ones (msh_bnd.nqn, msh_bnd.nel));
-
-    rows(ncounter+(1:numel(rs))) = sp_bnd.dofs(rs);
-    cols(ncounter+(1:numel(rs))) = sp_bnd.dofs(cs);
+             op_u_v_tp (sp.boundary(iside), sp.boundary(iside), msh.boundary(iside), f_one);
+    
+    bnd_dofs = sp.boundary(iside).dofs;
+    
+    rows(ncounter+(1:numel(rs))) = bnd_dofs(rs);
+    cols(ncounter+(1:numel(rs))) = bnd_dofs(cs);
     vals(ncounter+(1:numel(rs))) = vs;
     ncounter = ncounter + numel (rs);
 
-    rhs_side = op_f_v (sp_bnd, msh_bnd, hval);
-    rhs(sp_bnd.dofs) = rhs(sp_bnd.dofs) + rhs_side;
+    rhs(bnd_dofs) = rhs(bnd_dofs) + op_f_v_tp (sp.boundary(iside),msh.boundary(iside), hside);
   end
 
-  M = sparse (rows, cols, vals);
+  M = sparse (rows(1:ncounter), cols(1:ncounter), vals(1:ncounter));
   u = M(dofs, dofs) \ rhs(dofs, 1);
 
 end

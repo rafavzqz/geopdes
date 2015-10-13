@@ -178,6 +178,16 @@ CONTENTS:
 
 Below is a list of the main changes introduced with each new release
 
+Version geopdes_***-2.1.0
+* Functions modified to work on any dimension (3D surfaces and 1D problems).
+* Added msh_cartesian to replace the old msh_2d and msh_3d.
+* Added sp_bspline and sp_nurbs to replace the old classes for spaces.
+* Replaced the solve_*d files with a dimension-independent version.
+* The boundary entities for msh and space are now objects of the same class as the non-boundary one, with lower dimension.
+* Changed the file format of the geometry, to allow for 3D surfaces.
+* convert_geo07_to_geo10: to convert from the old format to the new one.
+* geopdes_base: functions to evaluate msh and space in a given list of elements.
+
 Version geopdes_***-2.0.4
 * geopdes_base, added functions for the advection-diffusion problem with SUPG stabilization: op_mat_stab_SUPG, op_mat_stab_SUPG_tp, op_rhs_stab_SUPG, op_rhs_stab_SUPG_tp, solve_adv_diff_2d, ex_advection_diffusion_square.
 * geopdes_base, added functions for the bilaplacian: op_laplaceu_laplacev, op_laplaceu_laplacev_tp, solve_bilaplace_2d_iso.

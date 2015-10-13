@@ -4,8 +4,8 @@
 %
 % INPUT:
 %
-%   space: object defining the space of discrete functions (see sp_bspline_2d)
-%   msh:   object defining the domain partition and the quadrature rule (see msh_2d)
+%   space: object defining the space of discrete functions (see sp_bspline)
+%   msh:   object defining the domain partition and the quadrature rule (see msh_cartesian)
 %   u:     vector of dof weights
 %   uex:   function handle to evaluate the exact solution
 %
@@ -32,8 +32,6 @@
 
 function errl2 = sp_l2_error (sp, msh, u, uex)
 
-  ndim = numel (msh.qn);
-
   errl2 = 0;
 
   valu = zeros (sp.ncomp, msh.nqn, msh.nelcol);
@@ -56,7 +54,7 @@ function errl2 = sp_l2_error (sp, msh, u, uex)
                             msh_col.nqn, sp_col.nsh_max, msh_col.nel), 2);
     end
 
-    for idim = 1:ndim
+    for idim = 1:msh.rdim
       x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
     end
     w = msh_col.quad_weights .* msh_col.jacdet;

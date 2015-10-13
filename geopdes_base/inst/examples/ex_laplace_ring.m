@@ -32,7 +32,7 @@ method_data.nsub       = [9 9];       % Number of subdivisions
 method_data.nquad      = [4 4];       % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
-[geometry, msh, space, u] = solve_laplace_2d (problem_data, method_data);
+[geometry, msh, space, u] = solve_laplace (problem_data, method_data);
 
 % 4) POST-PROCESSING
 % 4.1) EXPORT TO PARAVIEW
@@ -60,3 +60,27 @@ title ('Exact solution'), axis tight
 
 %!demo
 %! ex_laplace_ring
+
+%!test
+%! problem_data.geo_name = 'geo_ring.txt';
+%! problem_data.nmnn_sides   = [];
+%! problem_data.drchlt_sides = [1 2 3 4];
+%! problem_data.c_diff  = @(x, y) ones(size(x));
+%! problem_data.f = @(x, y) 2*x.*(22.*x.^2.*y.^2+21.*y.^4-45.*y.^2+x.^4-5.*x.^2+4);
+%! problem_data.h = @(x, y, ind) zeros (size (x));
+%! problem_data.uex     = @(x, y) -(x.^2+y.^2-1).*(x.^2+y.^2.-4).*x.*y.^2;
+%! problem_data.graduex = @(x, y) cat (1, ...
+%!                 reshape (-2*(x.*y).^2.*((x.^2+y.^2-1)+(x.^2+y.^2-4)) - ...
+%!                         (x.^2+y.^2-1).*(x.^2+y.^2-4).*y.^2, [1, size(x)]), ...
+%!                 reshape ( -2*x.*y.^3.*((x.^2+y.^2-1)+(x.^2+y.^2-4)) - ...
+%!                          2*x.*y.*(x.^2+y.^2-1).*(x.^2+y.^2-4), [1, size(x)]));
+%! method_data.degree     = [3 3];       % Degree of the splines
+%! method_data.regularity = [2 2];       % Regularity of the splines
+%! method_data.nsub       = [9 9];       % Number of subdivisions
+%! method_data.nquad      = [4 4];       % Points for the Gaussian quadrature rule
+%! [geometry, msh, space, u] = solve_laplace (problem_data, method_data);
+%! [error_h1, error_l2] = sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex);
+%! assert (msh.nel, 81)
+%! assert (space.ndof, 144)
+%! assert (error_h1, 0.00915973154744079, 1e-16)
+%! assert (error_l2, 2.42737509846690e-04, 1e-16)

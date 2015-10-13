@@ -4,8 +4,8 @@
 %
 % INPUT:
 %
-%    space:   object defining the space of discrete functions (see sp_vector_2d_curl_transform)
-%    msh:     object defining the domain partition and the quadrature rule (see msh_2d)
+%    space:   object defining the space of discrete functions (see sp_vector_curl_transform)
+%    msh:     object defining the domain partition and the quadrature rule (see msh_cartesian)
 %    u:       vector of dof weights
 %    uex:     function handle to evaluate the exact solution
 %    curluex: function handle to evaluate the curl of the exact solution
@@ -32,9 +32,9 @@
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
 
-function [toterr, errl2] = sp_hcurl_error (sp, msh, u, uex, curluex);
+function [toterr, errl2] = sp_hcurl_error (sp, msh, u, uex, curluex)
 
-  ndim = numel (msh.qn);
+  ndim = msh.ndim;
 
   errl2 = 0;
   err_curl = 0;
@@ -65,7 +65,7 @@ function [toterr, errl2] = sp_hcurl_error (sp, msh, u, uex, curluex);
         curl_valu = sum (weight .* sp_col.shape_function_curls, 2);
         curl_valu = reshape (curl_valu, msh_col.nqn, msh_col.nel);
 
-        for idim = 1:ndim
+        for idim = 1:msh.rdim
           x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
         end
         w = msh_col.quad_weights .* msh_col.jacdet;
@@ -105,7 +105,7 @@ function [toterr, errl2] = sp_hcurl_error (sp, msh, u, uex, curluex);
                             msh_col.nqn, sp_col.nsh_max, msh_col.nel), 2);
         end
 
-        for idim = 1:ndim
+        for idim = 1:msh.rdim
           x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
         end
         w = msh_col.quad_weights .* msh_col.jacdet;

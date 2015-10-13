@@ -5,9 +5,9 @@
 %
 % INPUT:
 %
-%  spu:   structure representing the space of trial functions (see sp_bspline_2d_phys)
-%  spv:   structure representing the space of test functions  (see sp_bspline_2d_phys)
-%  msh:   structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)
+%  spu:   structure representing the space of trial functions (see sp_bspline)
+%  spv:   structure representing the space of test functions  (see sp_bspline)
+%  msh:   structure containing the domain partition and the quadrature rule (see msh_cartesian)
 %  coeff: reaction coefficient
 %
 % OUTPUT:

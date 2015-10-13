@@ -28,12 +28,12 @@ problem_data.graduex = @(x, y, z) cat (1, ...
 clear method_data
 method_data.degree     = [3 3 3];       % Degree of the splines
 method_data.regularity = [2 2 2];       % Regularity of the splines
-method_data.nsub       = [3 3 3];       % Number of subdivisions
+method_data.nsub       = [2 3 4];       % Number of subdivisions
 method_data.nquad      = [4 4 4];       % Points for Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
 
-[geometry, msh, space, u] = solve_laplace_3d (problem_data, method_data);
+[geometry, msh, space, u] = solve_laplace (problem_data, method_data);
 
 % 4) POST-PROCESSING
 % 4.1) EXPORT TO PARAVIEW
@@ -51,3 +51,27 @@ sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 
 %!demo
 %! ex_laplace_cube
+
+%!test
+%! problem_data.geo_name = 'geo_cube.txt';
+%! problem_data.nmnn_sides   = [4 5 6];
+%! problem_data.drchlt_sides = [1 2 3];
+%! problem_data.c_diff  = @(x, y, z) ones(size(x));
+%! problem_data.f = @(x, y, z) -exp(x+z).*sin(y);
+%! problem_data.g = @test_cube_g_nmnn;
+%! problem_data.h = @(x, y, z, ind) exp (x + z) .* sin (y);
+%! problem_data.uex     = @(x, y, z) exp (x + z) .* sin (y);
+%! problem_data.graduex = @(x, y, z) cat (1, ...
+%!                           reshape (exp (x + z) .* sin (y), [1, size(x)]), ...
+%!                           reshape (exp (x + z) .* cos (y), [1, size(x)]), ...
+%!                           reshape (exp (x + z) .* sin (y), [1, size(x)]));
+%! method_data.degree     = [3 3 3];       % Degree of the splines
+%! method_data.regularity = [2 2 2];       % Regularity of the splines
+%! method_data.nsub       = [2 3 4];       % Number of subdivisions
+%! method_data.nquad      = [4 4 4];       % Points for Gaussian quadrature rule
+%! [geometry, msh, space, u] = solve_laplace (problem_data, method_data);
+%! [error_h1, error_l2] = sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex);
+%! assert (msh.nel, 24)
+%! assert (space.ndof, 210)
+%! assert (error_h1, 9.59413176469865e-04, 1e-16)
+%! assert (error_l2, 5.76863535414844e-05, 1e-16)

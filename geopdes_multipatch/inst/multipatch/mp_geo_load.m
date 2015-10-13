@@ -41,6 +41,7 @@
 % [1] T. Dokken, E. Quak, V. Skytt, Requirements from Isogeometric Analysis for Changes in Product Design Ontologies. Proceedings of the Focus K3D Conference on Semantic 3D Media and Content, Sophia Antipolis (France), 2010.
 %
 % Copyright (C) 2010, 2011 Carlo de Falco, Rafael Vazquez
+% Copyright (C) 2013, 2015 Rafael Vazquez
 % 
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -93,27 +94,31 @@ function [geometry, boundaries, interfaces, subdomains] = mp_geo_load (in)
       end
       npatch = numel (geometry);
 
-      if (dim == 2)
-        for iptc = 1:npatch
-          geometry(iptc).map      =  ...
-            @(PTS) geo_2d_nurbs (geometry(iptc).nurbs, PTS, 0);
-          geometry(iptc).map_der  =  ...
-            @(PTS) geo_2d_nurbs (geometry(iptc).nurbs, PTS, 1);
-          geometry(iptc).map_der2 =  ...
-            @(PTS) geo_2d_nurbs (geometry(iptc).nurbs, PTS, 2);
-        end
-      elseif (dim == 3)
-        for iptc = 1:npatch
-          geometry(iptc).map      =  ...
-            @(PTS) geo_3d_nurbs (geometry(iptc).nurbs, PTS, 0);
-          geometry(iptc).map_der  =  ...
-            @(PTS) geo_3d_nurbs (geometry(iptc).nurbs, PTS, 1);
-        end
+      for iptc = 1:npatch
+        geometry(iptc).map      =  ...
+          @(PTS) geo_nurbs (geometry(iptc).nurbs, PTS, 0);
+        geometry(iptc).map_der  =  ...
+          @(PTS) geo_nurbs (geometry(iptc).nurbs, PTS, 1);
+        geometry(iptc).map_der2 =  ...
+          @(PTS) geo_nurbs (geometry(iptc).nurbs, PTS, 2);
       end
 
     elseif (strcmpi (in(end-3:end), '.txt'))
 %% load geometry from a txt file
       [geometry, boundaries, interfaces, subdomains] = mp_geo_read_nurbs (in);
+    elseif (strcmpi (in(end-3:end), '.xml'))
+%% load geometry from an xml file
+      [nurbs, boundaries, interfaces] = xml_import (in);
+      dim = numel (nurbs(1).knots);
+      for iptc = 1:numel(nurbs)
+        geometry(iptc).nurbs = nurbs(iptc);
+        geometry(iptc).map      =  ...
+          @(PTS) geo_nurbs (geometry(iptc).nurbs, PTS, 0);
+        geometry(iptc).map_der  =  ...
+          @(PTS) geo_nurbs (geometry(iptc).nurbs, PTS, 1);
+        geometry(iptc).map_der2 =  ...
+          @(PTS) geo_nurbs (geometry(iptc).nurbs, PTS, 2);
+      end
     else
       error ('mp_geo_load: unknown file extension');
     end
@@ -122,4 +127,44 @@ function [geometry, boundaries, interfaces, subdomains] = mp_geo_load (in)
     error ('mp_geo_load: wrong input type');
   end
 
+  
+  if (isfield (geometry, 'nurbs'))
+    rdim = 0;
+    for iptc = 1:numel (geometry)
+      if (any (abs(geometry(iptc).nurbs.coefs(3,:)) > 1e-12))
+        rdim = 3;
+      elseif (any (abs(geometry(iptc).nurbs.coefs(2,:)) > 1e-12))
+        rdim = max (rdim, 2);
+      else
+        rdim = max (rdim, 1);
+      end
+    end
+    
+    for iptc = 1:numel (geometry)
+      geometry(iptc).rdim = rdim;
+      
+      [deriv, deriv2] = nrbderiv (geometry(iptc).nurbs);
+      geometry(iptc).dnurbs = deriv;
+      geometry(iptc).dnurbs2 = deriv2;
+
+      geometry(iptc).map      =  @(PTS) geo_nurbs (geometry(iptc).nurbs, deriv, deriv2, PTS, 0, rdim);
+      geometry(iptc).map_der  =  @(PTS) geo_nurbs (geometry(iptc).nurbs, deriv, deriv2, PTS, 1, rdim);
+      geometry(iptc).map_der2 =  @(PTS) geo_nurbs (geometry(iptc).nurbs, deriv, deriv2, PTS, 2, rdim);
+    
+      bnd = nrbextract (geometry(iptc).nurbs);
+      for ibnd = 1:numel (bnd)
+        [deriv, deriv2] = nrbderiv (bnd(ibnd));
+        geometry(iptc).boundary(ibnd).nurbs    = bnd(ibnd);
+        geometry(iptc).boundary(ibnd).dnurbs   = deriv;
+        geometry(iptc).boundary(ibnd).dnurbs2  = deriv2;
+        geometry(iptc).boundary(ibnd).rdim     = rdim;
+        geometry(iptc).boundary(ibnd).map      = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 0, rdim);
+        geometry(iptc).boundary(ibnd).map_der  = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 1, rdim);
+        geometry(iptc).boundary(ibnd).map_der2 = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 2, rdim);
+      end
+    end
+  else
+    error('Multiple patches are only implemented for NURBS geometries')
+  end
+  
 end

@@ -5,9 +5,9 @@
 %
 % INPUT:
 %
-%   spu:   structure representing the space of trial functions (see sp_bspline_2d/sp_evaluate_col)
-%   spv:   structure representing the space of test functions (see sp_bspline_2d/sp_evaluate_col)
-%   msh:   structure containing the domain partition and the quadrature rule (see msh_2d/msh_evaluate_col)
+%   spu:   structure representing the space of trial functions (see sp_bspline/sp_evaluate_col)
+%   spv:   structure representing the space of test functions (see sp_bspline/sp_evaluate_col)
+%   msh:   structure containing the domain partition and the quadrature rule (see msh_cartesian/msh_evaluate_col)
 %   epsilon: diffusion coefficient
 %
 % OUTPUT:
@@ -43,19 +43,19 @@ function mat = op_laplaceu_laplacev (spu, spv, msh, coeff)
    ndir = size (laplaceu, 2);
  
    for iel = 1:msh.nel
-       if (all (msh.jacdet(:,iel)))
-           mat_loc = zeros (spv.nsh(iel), spu.nsh(iel));
-           for idof = 1:spv.nsh(iel)
-               ishg = reshape(laplacev(:,:,:,idof,iel),spv.ncomp * ndir, []);
-               for jdof = 1:spu.nsh(iel) 
-                   jshg = reshape(laplaceu(:,:,:,jdof,iel),spu.ncomp * ndir, []);
+     if (all (msh.jacdet(:,iel)))
+       mat_loc = zeros (spv.nsh(iel), spu.nsh(iel));
+       for idof = 1:spv.nsh(iel)
+         ishg = reshape(laplacev(:,:,:,idof,iel),spv.ncomp * ndir, []);
+         for jdof = 1:spu.nsh(iel) 
+           jshg = reshape(laplaceu(:,:,:,jdof,iel),spu.ncomp * ndir, []);
            % The cycle on the quadrature points is vectorized
            %for inode = 1:msh.nqn
-               mat_loc(idof, jdof) = mat_loc(idof, jdof) + ...
-                   sum (msh.jacdet(:,iel) .* msh.quad_weights(:, iel) .* ...
-                   sum (ishg([1,1,4,4],:) .* jshg([1,4,1,4],:), 1).' .* coeff(:,iel));
+           mat_loc(idof, jdof) = mat_loc(idof, jdof) + ...
+             sum (msh.jacdet(:,iel) .* msh.quad_weights(:, iel) .* ...
+             sum (ishg([1,1,4,4],:) .* jshg([1,4,1,4],:), 1).' .* coeff(:,iel));
            %end
-               end
+         end
        end
        mat(spv.connectivity(:, iel), spu.connectivity(:, iel)) = ...
          mat(spv.connectivity(:, iel), spu.connectivity(:, iel)) + mat_loc;

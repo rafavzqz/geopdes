@@ -5,9 +5,9 @@
 %
 % INPUT:
 %
-%   spu:     class representing the space of trial functions (see sp_bspline_2d)
-%   spv:     class representing the space of test functions (see sp_bspline_2d)
-%   msh:     class defining the domain partition and the quadrature rule (see msh_2d)
+%   spu:     class representing the space of trial functions (see sp_bspline)
+%   spv:     class representing the space of test functions (see sp_bspline)
+%   msh:     class defining the domain partition and the quadrature rule (see msh_cartesian)
 %   epsilon: function handle to compute the diffusion coefficient
 %
 % OUTPUT:
@@ -37,14 +37,12 @@ function varargout = op_laplaceu_laplacev_tp (space1, space2, msh, coeff)
 
   A = spalloc (space2.ndof, space1.ndof, 3*space1.ndof);
 
-  ndim = numel (msh.qn);
-
   for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
     sp1_col = sp_evaluate_col (space1, msh_col, 'value', false, 'gradient', false, 'hessian', true);
     sp2_col = sp_evaluate_col (space2, msh_col, 'value', false, 'gradient', false, 'hessian', true);
 
-    for idim = 1:ndim
+    for idim = 1:msh.rdim
       x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
     end
 

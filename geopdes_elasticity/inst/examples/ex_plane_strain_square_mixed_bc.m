@@ -29,17 +29,16 @@ method_data.nsub       = [9 9];     % Number of subdivisions
 method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
-[geometry, msh, space, u] = solve_plane_strain_2d (problem_data, method_data);
+[geometry, msh, space, u] = solve_linear_elasticity (problem_data, method_data);
 
 % 4) POST-PROCESSING. 
 % 4.1) Export to Paraview
 output_file = 'plane_strain_mixed_bc_Deg3_Reg2_Sub9';
 
 vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20)};
-fprintf ('results being saved in: %s_displacement\n \n', output_file)
-sp_to_vtk (u, space, geometry, vtk_pts, sprintf ('%s_displacement.vts', output_file), 'displacement')
-sp_to_vtk_stress (u, space, geometry, vtk_pts, problem_data.lambda_lame, ...
-                  problem_data.mu_lame, sprintf ('%s_stress', output_file)); 
+fprintf ('results being saved in: %s \n \n', output_file)
+sp_to_vtk (u, space, geometry, vtk_pts, output_file, {'displacement', 'stress'}, {'value', 'stress'}, ...
+    problem_data.lambda_lame, problem_data.mu_lame)
 
 % 4.2) Plot in Matlab.
 [eu, F] = sp_eval (u, space, geometry, vtk_pts);

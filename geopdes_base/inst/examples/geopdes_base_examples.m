@@ -27,7 +27,7 @@ while (iopt > 0)
             '\n', ...
             '   (1) Examples appearing in the article. \n \n', ...
             '   (2) Other examples in 2D: Poisson and advection-diffusion problems. \n \n',...
-            '   (3) Other examples in 3D: Poisson problem. \n \n']);
+            '   (3) Other examples in 3D surfaces and volumes: Poisson problem. \n \n']);
 
   iopt = input ('Please choose a number from above or press <Enter> to return: ');
   clc;
@@ -106,11 +106,14 @@ while (iopt > 0)
                 '  3D Poisson problem solved with the non-isoparametric approach: \n', ...
                 '   NURBS (or splines) geometry, B-splines discretization \n \n', ...
                 '       (2) Unit cube domain. \n \n', ...
-                '       (3) Thick quarter of a ring. \n \n']);
+                '       (3) Thick quarter of a ring. \n \n', ...
+                '  Laplace-Beltrami problem on a 3D surface, solved with the non-isoparametric approach: \n', ...
+                '   NURBS (or splines) geometry, B-splines discretization \n \n', ...
+                '       (4) One quarter of a cylindrical surface. \n \n']);
       
       iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
 
-      if (~isempty (iopt2) && iopt2 > 0 && iopt2 < 4)
+      if (~isempty (iopt2) && iopt2 > 0 && iopt2 < 5)
         [vexa, filename] = do_example (14+iopt2);
         clc
         fprintf (1, 'You can have a look at the source file: %s \n \n', filename);        
@@ -160,6 +163,8 @@ switch (number)
   filename = 'ex_laplace_cube.m';  
  case 17
   filename = 'ex_laplace_thick_ring.m';  
+ case 18
+  filename = 'ex_laplace_beltrami.m';  
 end
 
 fid = fopen (filename);

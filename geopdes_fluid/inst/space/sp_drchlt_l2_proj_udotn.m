@@ -1,26 +1,21 @@
-% SP_DRCHLT_L2_PROJ_UDOTN: assign the normal degrees of freedom thtough an L2 projection. To be used with the 'RT' spaces.
+% SP_DRCHLT_L2_PROJ_UDOTN: assign the normal degrees of freedom through an L2 projection. To be used with the 'RT' spaces.
 %                           The imposed condition reads   u*n = h*n
 %
-%   [vel, normal_dofs] = sp_drchlt_l2_proj_udotn (space, msh, geometry, der2, bnd_sides, bnd_func, coeff, Cpen)
+%   [vel, normal_dofs] = sp_drchlt_l2_proj_udotn (space, msh, bnd_sides, bnd_func)
 %
 % INPUTS:
 %     
-%    space:     space object (see sp_vector_piola_transform_2d)
-%    msh:       mesh object (see msh_2d)
-%    geometry:  geometry object (see geo_load)
-%    der2:      a logical telling whether to compute the second derivative.
-%               For Raviart-Thomas (div-conforming) elements, it should be true.
+%    space:     space object (see sp_vector_div_transform)
+%    msh:       mesh object (see msh_cartesian)
 %    bnd_sides: boundary sides on which the Dirichlet condition is imposed
 %    bnd_func:  the condition to be imposed (g in the equations)
-%    coeff:     function handle for the viscosity coefficient (mu in the equation)
-%    Cpen:      a penalization term
 %   
 % OUTPUT:
 %
 %     vel:         assigned value to the normal degrees of freedom
 %     normal_dofs: global numbering of the normal basis functions
 %
-% Copyright (C) 2014 Rafael Vazquez
+% Copyright (C) 2014, 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -37,29 +32,26 @@
 
 function [u, dofs] = sp_drchlt_l2_proj_udotn (space, msh, bnd_sides, bnd_func)
 
-  ndim = numel (msh.qn);
-
 % The normal boundary condition is imposed strongly
   M = spalloc (space.ndof, space.ndof, 3*space.ndof);
   rhs2 = zeros (space.ndof, 1);
 
   normal_dofs = [];
-  for iside = bnd_sides  
-    msh_side = msh_eval_boundary_side (msh, iside);
-    sp_side = sp_eval_boundary_side (space, msh_side);
+  for iside = bnd_sides
+    if (isa (space, 'sp_vector_div_transform'))
+      [msh_side, msh_side_from_interior] = msh_eval_boundary_side (msh, iside);
+      sp_side = sp_eval_boundary_side (space, msh_side, msh_side_from_interior);
+    else
+      error ('The function only works with div-conforming spaces')
+    end
 
-    ind = floor ((iside+1)/2); % ind = [1 1 2 2];
-    normal_dofs = union (normal_dofs, space.boundary(iside).comp_dofs{ind});
+    ind = ceil (iside/2); % ind = [1 1 2 2] in 2D; ind = [1 1 2 2 3 3] in 3D
+    normal_dofs = union (normal_dofs, sp_side.comp_dofs{ind});
 
-    for idim = 1:ndim
+    for idim = 1:msh.rdim
       x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
     end
-    if (ndim == 2)
-      g_func = @(x, y) bnd_func (x, y, iside);
-    elseif (ndim == 3)
-      g_func = @(x, y, z) bnd_func (x, y, z, iside);
-    end
-    g = g_func(x{:});
+    g = bnd_func (x{:}, iside);
     
     M_loc = op_udotn_vdotn (sp_side, sp_side, msh_side, ones(size(x{1})));
     rhs_loc = op_fdotn_vdotn (sp_side, msh_side, g);

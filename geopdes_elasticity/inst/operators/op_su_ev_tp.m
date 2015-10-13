@@ -5,9 +5,9 @@
 %
 % INPUT:
 %    
-%   spu:     object representing the space of trial functions (see sp_bspline_2d)
-%   spv:     object representing the space of test functions (see sp_bspline_2d)
-%   msh:     object that defines the domain partition and the quadrature rule (see msh_2d)
+%   spu:     object representing the space of trial functions (see sp_bspline)
+%   spv:     object representing the space of test functions (see sp_bspline)
+%   msh:     object that defines the domain partition and the quadrature rule (see msh_cartesian)
 %   lambda, mu: function handles to compute the Lame' coefficients
 %
 % OUTPUT:
@@ -36,8 +36,6 @@ function varargout = op_su_ev_tp (space1, space2, msh, lambda, mu)
 
   A = spalloc (space2.ndof, space1.ndof, 5*space1.ndof);
 
-  ndim = numel (msh.qn);
-
   for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
     sp1_col = sp_evaluate_col (space1, msh_col, 'value', false, ...
@@ -45,7 +43,7 @@ function varargout = op_su_ev_tp (space1, space2, msh, lambda, mu)
     sp2_col = sp_evaluate_col (space2, msh_col, 'value', false, ...
                                'gradient', true, 'divergence', true);
 
-    for idim = 1:ndim
+    for idim = 1:msh.rdim
       x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
     end
 

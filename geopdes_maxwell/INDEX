@@ -1,17 +1,13 @@
 geopdes_maxwell >> Iso-Geometric Analysis for Maxwell equations
 Space
- sp_vector_2d_curl_transform
- @sp_vector_2d_curl_transform/sp_eval_boundary_side
- @sp_vector_2d_curl_transform/sp_evaluate_col
- @sp_vector_2d_curl_transform/sp_precompute
- sp_vector_3d_curl_transform
- @sp_vector_3d_curl_transform/sp_eval_boundary_side
- @sp_vector_3d_curl_transform/sp_evaluate_col
- @sp_vector_3d_curl_transform/sp_precompute
- sp_bspline_2d_nforms
- @sp_bspline_2d_nforms/sp_evaluate_col
- @sp_bspline_2d_nforms/sp_precompute
- @sp_bspline_2d_nforms/sp_precompute_param
+ sp_vector_curl_transform
+ @sp_vector_curl_transform/sp_eval_boundary_side
+ @sp_vector_curl_transform/sp_evaluate_col
+ @sp_vector_curl_transform/sp_precompute
+ sp_bspline_nforms
+ @sp_bspline_nforms/sp_evaluate_col
+ @sp_bspline_nforms/sp_precompute
+ @sp_bspline_nforms/sp_precompute_param
  sp_hcurl_error
  sp_drchlt_l2_proj_uxn
 Operators
@@ -27,12 +23,9 @@ Operators
  op_f_vxn_2d
  op_f_vxn_3d
 Solve
- solve_maxwell_src_2d
- solve_maxwell_src_3d
- solve_maxwell_eig_2d
- solve_maxwell_eig_3d
- solve_maxwell_eig_mixed1_2d
- solve_maxwell_eig_mixed1_3d
+ solve_maxwell_src
+ solve_maxwell_eig
+ solve_maxwell_eig_mixed1
  solve_maxwell_eig_mixed2_2d
 Examples
  ex_maxwell_src_square
@@ -56,12 +49,10 @@ Examples
  ex_maxwell_eig_mixed2_Lshaped
  geopdes_maxwell_examples
 Multipatch
- mp_interface_hcurl_2d
- mp_interface_hcurl_3d
- mp_solve_maxwell_eig_2d
- mp_solve_maxwell_eig_3d
- mp_solve_maxwell_eig_mixed1_2d
- mp_solve_maxwell_eig_mixed1_3d
+ mp_interface_hcurl
+ mp_solve_maxwell_eig
+ mp_solve_maxwell_eig_mixed1
+ mp_sp_drchlt_l2_proj_uxn_2d
  mp_sp_drchlt_l2_proj_uxn_3d
 Multipatch/Examples
  ex_maxwell_eig_Lshaped_mp
@@ -72,5 +63,3 @@ Multipatch/Examples
  ex_maxwell_eig_mixed1_cube_mp
  ex_maxwell_eig_mixed1_thick_L_mp
  ex_maxwell_eig_mixed1_fichera_mp
-Utilities
- knt_derham

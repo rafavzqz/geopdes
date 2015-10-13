@@ -4,8 +4,8 @@
 %
 % INPUT:
 %     
-%   spv:   class representing the function space (see sp_bspline_2d)
-%   msh:   class defining the domain partition and the quadrature rule (see msh_2d)
+%   spv:   class representing the function space (see sp_bspline)
+%   msh:   class defining the domain partition and the quadrature rule (see msh_cartesian)
 %   coeff: function handle to compute the source function
 %
 % OUTPUT:
@@ -31,13 +31,11 @@ function rhs = op_f_v_tp (space, msh, coeff)
 
   rhs = zeros (space.ndof, 1);
 
-  ndim = numel (msh.qn);
-
   for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
     sp_col  = sp_evaluate_col (space, msh_col);
 
-    for idim = 1:ndim
+    for idim = 1:msh.rdim
       x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
     end
 
