@@ -88,3 +88,5 @@ Examples
  ex_laplace_beltrami
  ex_laplace_eig_square
  ex_advection_diffusion_square
+Utilities
+ knt_derham
