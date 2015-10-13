@@ -1,6 +1,6 @@
 % SP_BSPLINE_1D_PARAM: Construct a space of B-Splines on the parametric domain in 1D.
 %                      This function is not usually meant to be invoked directly by the user but rather
-%                      through sp_bspline_2d_param or sp_bspline_3d_param.
+%                      through sp_bspline.
 %
 %     sp = sp_bspline_1d_param (knots, degree, nodes, 'option1', value1, ...)
 %
@@ -96,13 +96,19 @@ for inqn = 1:numel(nodes)
   ders(inqn,:,ind:ind+p) = tders(inqn,:,:);
 end
 
+supp = cell (ndof, 1);
+for ii = 1:ndof
+  [dummy, supp{ii}] = find (connectivity == ii);
+end
+
 shape_functions = reshape (ders(:, 1, :), nqn, nel, []);
 shape_functions = permute (shape_functions, [1, 3, 2]);
 
 sp = struct ('nsh_max', nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
              'connectivity', connectivity, ...
              'shape_functions', shape_functions, ...
-             'ncomp', 1);
+             'ncomp', 1, 'degree', degree, 'knots', knots);
+sp.supp = supp;
 
 if (gradient)
   shape_function_gradients = reshape (ders(:, 2, :), nqn, nel, []);

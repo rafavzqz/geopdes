@@ -1,0 +1,16 @@
+To cite the GeoPDEs packages, please use
+
+    C. de Falco, A. Reali, and R. Vazquez.
+    Geopdes: A research tool for isogeometric analysis of pdes.
+    Advances in Engineering Software, 42(12):1020-1034, 2011.
+
+The BibTeX entry for LaTeX users is:
+
+@article{geopdes,
+	Author = {C. de Falco and A. Reali and R. V{\'a}zquez},
+	Journal = {Advances in Engineering Software},
+	Number = {12},
+	Pages = {1020-1034},
+	Title = {GeoPDEs: A research tool for Isogeometric Analysis of PDEs},
+	Volume = {42},
+	Year = {2011}}

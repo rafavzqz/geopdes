@@ -5,9 +5,9 @@
 %
 % INPUT: 
 %
-%   spv:     object representing the space of trial functions for the velocity (see sp_vector_2d, sp_vector_2d_piola)
-%   spq:     object representing the space of test functions for the pressure (see sp_bspline_2d)
-%   msh:     object that defines the domain partition and the quadrature rule (see msh_2d)
+%   spv:     object representing the space of trial functions for the velocity (see sp_vector, sp_vector_div_transform)
+%   spq:     object representing the space of test functions for the pressure (see sp_bspline)
+%   msh:     object that defines the domain partition and the quadrature rule (see msh_cartesian)
 %
 % OUTPUT: 
 %

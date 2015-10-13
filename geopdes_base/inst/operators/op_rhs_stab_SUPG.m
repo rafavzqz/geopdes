@@ -7,8 +7,8 @@
 %
 % INPUT:
 %
-%   space: structure representing the space of test functions (see sp_bspline_2d/sp_evaluate_col)
-%   msh:   structure containing the domain partition and the quadrature rule (see msh_2d/msh_evaluate_col)
+%   space: structure representing the space of test functions (see sp_bspline/sp_evaluate_col)
+%   msh:   structure containing the domain partition and the quadrature rule (see msh_cartesian/msh_evaluate_col)
 %   mu:    diffusion coefficient evaluated at the quadrature points
 %   vel: advection coefficient( vectorial function ), evaluated at the quadrature points
 %   coeff: source function evaluated at the quadrature points

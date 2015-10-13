@@ -73,8 +73,8 @@ while (iopt > 0)
     input ('Press <Enter> to continue: ');
   elseif (iopt == 6)
     clc;
-    if (~exist('mp_interface_vector_2d'))
-      fprintf(1, 'Unable to find the file ''mp_interface_vector_2d''.\n');
+    if (~exist('mp_interface_vector'))
+      fprintf(1, 'Unable to find the file ''mp_interface_vector''.\n');
       fprintf(1, 'Be sure to install the latest version of geopdes_multipatch to run this example\n\n');
       input ('Press <Enter> to continue: ');
     else
@@ -85,8 +85,8 @@ while (iopt > 0)
     end
   elseif (iopt == 7)
     clc;
-    if (~exist('mp_interface_vector_3d'))
-      fprintf(1, 'Unable to find the file ''mp_interface_vector_3d''.\n');
+    if (~exist('mp_interface_vector'))
+      fprintf(1, 'Unable to find the file ''mp_interface_vector''.\n');
       fprintf(1, 'Be sure to install the latest version of geopdes_multipatch to run this example\n\n');
       input ('Press <Enter> to continue: ');
     else

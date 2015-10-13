@@ -36,10 +36,14 @@
 %               name:    the name of the subdomain
 %               patches: indices of the patches belonging to the subdomain
 %
-% This format is based on the paper
+% The interface information is based on the paper
 % [1] T. Dokken, E. Quak, V. Skytt, Requirements from Isogeometric Analysis for Changes in Product Design Ontologies. Proceedings of the Focus K3D Conference on Semantic 3D Media and Content, Sophia Antipolis (France), 2010.
 %
-% Copyright (C) 2009 Carlo de Falco, 2010, 2011 Rafael Vazquez
+% An explanation of the file format can be found in the file
+%  geopdes_multipatch/doc/geo_specs_mp_v10.txt
+%
+% Copyright (C) 2009 Carlo de Falco
+% Copyright (C) 2010, 2011, 2015 Rafael Vazquez
 % 
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -66,10 +70,11 @@ function [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs (filenam
   while (line ~= -1)
     if (line(1) ~= '#')
       vec = str2num(line);
-      dim = vec(1);
-      npatches = vec(2);
-      if (numel (vec) == 3)
-        nintrfc = vec(3);
+      ndim = vec(1);
+      rdim = vec(2);
+      npatches = vec(3);
+      if (numel (vec) == 4)
+        nintrfc = vec(4);
         nsubd = 0;
         if (nargout == 4)
           warning ('mp_geo_read_nurbs: no subdomain information is given in the file. The patch number will be used')
@@ -78,9 +83,9 @@ function [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs (filenam
             subdomains(ii).patches = ii;
           end
         end
-      elseif (numel (vec) == 4)
-        nintrfc = vec(3);
-        nsubd = vec(4);
+      elseif (numel (vec) == 5)
+        nintrfc = vec(4);
+        nsubd = vec(5);
       else
         nintrfc = 0;
         interfaces = [];
@@ -119,7 +124,7 @@ function [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs (filenam
     vec = str2num (line);
     geom(iptc).nurbs.number = vec;
 
-    for idim = 1:dim
+    for idim = 1:ndim
       line = fgetl (fid);
       while (line(1) == '#')
         line = fgetl (fid);
@@ -127,75 +132,26 @@ function [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs (filenam
       geom(iptc).nurbs.knots{idim} = str2num (line);
     end
 
-    switch (dim)
-     case 2
+    for idim = 1:rdim
       line = fgetl (fid); 
       while (line(1) == '#')
         line = fgetl (fid);
       end
-      cp_x = reshape(str2num (line), geom(iptc).nurbs.number);
-      
-      line = fgetl (fid);
-      while (line(1) == '#')
-        line = fgetl (fid);
-      end
-      cp_y = reshape(str2num (line), geom(iptc).nurbs.number);
-
-      cp_z = zeros(geom(iptc).nurbs.number);
-      
-      line = fgetl (fid);
-      while (line(1) == '#')
-        line = fgetl (fid);
-      end
-      weights = reshape(str2num (line), geom(iptc).nurbs.number);
-
-      geom(iptc).nurbs.coefs(1,:,:) = cp_x;
-      geom(iptc).nurbs.coefs(2,:,:) = cp_y;
-      geom(iptc).nurbs.coefs(3,:,:) = cp_z;
-      geom(iptc).nurbs.coefs(4,:,:) = weights;
-
-     case 3
-      line = fgetl (fid);
-      while (line(1) == '#')
-        line = fgetl (fid);
-      end
-      cp_x = reshape(str2num (line), geom(iptc).nurbs.number);
-
-      line = fgetl (fid);
-      while (line(1) == '#')
-        line = fgetl (fid);
-      end
-      cp_y = reshape(str2num (line), geom(iptc).nurbs.number);
-
-      line = fgetl (fid);
-      while (line(1) == '#')
-        line = fgetl (fid);
-      end
-      cp_z = reshape(str2num (line), geom(iptc).nurbs.number);
-
-      line = fgetl (fid);
-      while (line(1) == '#')
-        line = fgetl (fid);
-      end
-      weights = reshape(str2num (line), geom(iptc).nurbs.number);
-
-      geom(iptc).nurbs.coefs(1,:,:,:) = cp_x;
-      geom(iptc).nurbs.coefs(2,:,:,:) = cp_y;
-      geom(iptc).nurbs.coefs(3,:,:,:) = cp_z;
-      geom(iptc).nurbs.coefs(4,:,:,:) = weights;
-
+      cp_coord = reshape(str2num (line), geom(iptc).nurbs.number);
+      geom(iptc).nurbs.coefs(idim,:,:,:) = cp_coord;
     end
-      
-    if (dim == 2)
-      geom(iptc).map      = @(PTS) geo_2d_nurbs (geom(iptc).nurbs, PTS, 0);
-      geom(iptc).map_der  = @(PTS) geo_2d_nurbs (geom(iptc).nurbs, PTS, 1);
-      geom(iptc).map_der2 = @(PTS) geo_2d_nurbs (geom(iptc).nurbs, PTS, 2);
-    elseif (dim == 3)
-      geom(iptc).map     = @(PTS) geo_3d_nurbs (geom(iptc).nurbs, PTS, 0);
-      geom(iptc).map_der = @(PTS) geo_3d_nurbs (geom(iptc).nurbs, PTS, 1);
+    line = fgetl (fid);
+    while (line(1) == '#')
+      line = fgetl (fid);
     end
+    geom(iptc).nurbs.coefs(4,:,:,:) = reshape(str2num (line), geom(iptc).nurbs.number);
+          
+    geom(iptc).map      = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 0);
+    geom(iptc).map_der  = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 1);
+    geom(iptc).map_der2 = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 2);
   end
-  
+
+  interfaces = [];
   for intrfc = 1:nintrfc
     line = fgetl (fid);
     while (line(1) == '#')
@@ -216,7 +172,7 @@ function [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs (filenam
     vec = str2num (line);
     interfaces(intrfc).patch2 = vec(1);
     interfaces(intrfc).side2  = vec(2);
-    switch (dim)
+    switch (ndim)
      case 2
        line = fgetl (fid);
        while (line(1) == '#')
@@ -235,6 +191,7 @@ function [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs (filenam
     end
   end
 
+  subdomains = [];
   for isub = 1:nsubd
     line = fgetl (fid);
     while (line(1) == '#')
@@ -279,7 +236,7 @@ function [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs (filenam
   end
 
   if (isempty(boundaries) && npatches == 1)
-    for iface = 1:2*dim
+    for iface = 1:2*ndim
       boundaries(iface).name = ['BOUNDARY ' num2str(iface)];
       boundaries(iface).nsides = 1;
       boundaries(iface).patches = 1;
@@ -287,6 +244,11 @@ function [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs (filenam
     end
   elseif (isempty (boundaries))
     warning ('The boundary information has not been assigned.\n')
+  end
+
+  if (isempty(subdomains))
+    subdomains.name = 'WHOLE DOMAIN';
+    subdomains.patches = 1:npatches;
   end
 
   fclose (fid);

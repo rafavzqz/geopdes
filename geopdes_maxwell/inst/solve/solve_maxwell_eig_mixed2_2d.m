@@ -7,9 +7,12 @@
 %
 % with the variational mixed formulation
 %
-%  \int (epsilon(x) u v) + \int (curl(v) p) = 0,       \forall v \in H_0(curl),
-%                          \int (curl(u) q) = -lambda \int (sqrt(1/mu(x)) p q), 
-%                                                          \forall q \in L^2_0.
+%  \int (epsilon(x) u v) + \int (curl(v) p) = 0,                                \forall v \in H_0(curl),
+%             \int (D q) + \int (curl(u) q) = -lambda \int (sqrt(1/mu(x)) p q), \forall q \in L^2_0,
+%             \int (C p)                    = 0,                                \forall C \in R.
+%
+% This mixed formulation in the 3D case requires a different space for the
+%  multiplier, and is not implemented
 %
 % USAGE:
 %
@@ -35,15 +38,15 @@
 % OUTPUT:
 %
 %  geometry: geometry structure (see geo_load)
-%  msh:      mesh object that defines the quadrature rule (see msh_2d)
-%  space:    space object that defines the discrete functions (see sp_vector_2d_curl_transform)
-%  sp_mul:   space object for the multiplier (see sp_bspline_2d_nforms)
+%  msh:      mesh object that defines the quadrature rule (see msh_cartesian)
+%  space:    space object that defines the discrete functions (see sp_vector_curl_transform)
+%  sp_mul:   space object for the multiplier (see sp_bspline_nforms)
 %  eigv:     the computed eigenvalues
 %  eigf:     degrees of freedom of the associated eigenfunctions
 %
 % See also EX_MAXWELL_EIG_MIXED2_SQUARE for an example
 %
-% Copyright (C) 2010, 2011 Rafael Vazquez
+% Copyright (C) 2010, 2011, 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -75,26 +78,29 @@ end
 geometry = geo_load (geo_name);
 
 [knots, zeta] = kntrefine (geometry.nurbs.knots, nsub-1, degree, regularity);
-[knots_u1, knots_u2, knots_mul, degree1, degree2, degree_mul] = ...
-                                                  knt_derham (knots, degree);
+[knots_hcurl, degree_hcurl] = knt_derham (knots, degree, 'Hcurl');
+[knots_mul, degree_mul] = knt_derham (knots, degree, 'L2');
 
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (zeta, rule);
-msh      = msh_2d (zeta, qn, qw, geometry);
+msh      = msh_cartesian (zeta, qn, qw, geometry);
 
 % Construct the space structures for the field and the Lagrange multiplier
-sp_u1 = sp_bspline_2d (knots_u1, degree1, msh);
-sp_u2 = sp_bspline_2d (knots_u2, degree2, msh);
-space = sp_vector_2d_curl_transform (sp_u1, sp_u2, msh);
-clear sp_u1 sp_u2
-sp_mul = sp_bspline_2d_nforms (knots_mul, degree-1, msh);
+scalar_spaces = cell (msh.ndim, 1);
+for idim = 1:msh.ndim
+  scalar_spaces{idim} = sp_bspline (knots_hcurl{idim}, degree_hcurl{idim}, msh);
+end
+space = sp_vector_curl_transform (scalar_spaces, msh);
+sp_mul = sp_bspline_nforms (knots_mul, degree_mul, msh);
+clear scalar_spaces
 
 % Assemble the matrices
 sqrt_invmu = @(x, y) sqrt (1./c_magn_perm (x, y));
 mass_mat  = op_u_v_tp (space, space, msh, c_elec_perm);
 mass_mul_mat = op_u_v_tp (sp_mul, sp_mul, msh, sqrt_invmu);
 saddle_mat   = op_curlv_p_tp (space, sp_mul, msh, @(x, y) ones (size (x)));
+% E = op_f_v_tp (sp_mul, msh, @(x,y) ones (size(x)));
 
 % Apply homogeneous Dirichlet boundary conditions
 drchlt_dofs = [];
@@ -113,8 +119,9 @@ M = [sparse(numel(int_dofs), numel(int_dofs) + sp_mul.ndof); ...
      sparse(sp_mul.ndof, numel(int_dofs)), -mass_mul_mat];
 
 eigf = zeros (space.ndof + sp_mul.ndof, numel(int_dofs) + sp_mul.ndof);
-[eigf([int_dofs space.ndof+[1:sp_mul.ndof]], :), eigv] = eig (full(A), full(M));
+[eigf([int_dofs space.ndof+(1:sp_mul.ndof)], :), eigv] = eig (full(A), full(M));
 eigv = diag (eigv);
+ 
 
 end
 

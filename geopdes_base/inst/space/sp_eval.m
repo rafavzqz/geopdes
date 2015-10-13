@@ -1,17 +1,20 @@
 % SP_EVAL: Compute the value or the derivatives of a function, given by its degrees of freedom, at a given set of points.
 %
-%   [eu, F] = sp_eval (u, space, geometry, pts, [option]);
-%   [eu, F] = sp_eval (u, space, geometry, npts, [option]);
+%   [eu, F] = sp_eval (u, space, geometry, pts, [option], [lambda_lame, mu_lame]);
+%   [eu, F] = sp_eval (u, space, geometry, npts, [option], [lambda_lame, mu_lame]);
 %
 % INPUT:
 %     
-%     u:         vector of dof weights
-%     space:     object defining the discrete space (see sp_bspline_2d)
-%     geometry:  geometry structure (see geo_load)
-%     pts:       cell array with coordinates of points along each parametric direction
-%     npts:      number of points along each parametric direction
-%     option:    accepted options are 'value' (default), 'gradient',
-%                 and for vectors also 'curl', 'divergence'
+%     u:           vector of dof weights
+%     space:       object defining the discrete space (see sp_bspline)
+%     geometry:    geometry structure (see geo_load)
+%     pts:         cell array with coordinates of points along each parametric direction
+%     npts:        number of points along each parametric direction
+%     options:     cell array with the fields to plot
+%                   accepted options are 'value' (default), 'gradient',
+%                   and for vectors also 'curl', 'divergence', 'stress'
+%     lambda_lame: function handle to the first Lame coefficient (only needed to compute 'stress')
+%     mu_lame:     function handle for the second Lame coefficient (only needed to compute 'stress')
 %
 % OUTPUT:
 %
@@ -19,7 +22,7 @@
 %     F:  grid points in the physical domain, that is, the mapped points
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011, 2012, 2014 Rafael Vazquez
+% Copyright (C) 2011, 2012, 2014, 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -34,13 +37,18 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [eu, F] = sp_eval (u, space, geometry, npts, varargin)
+function [eu, F] = sp_eval (u, space, geometry, npts, options, lambda_lame, mu_lame)
 
-  if (nargin == 4)
-    option = 'value';
-  else
-    option = varargin{1};
+  if (nargin < 5)
+    options = {'value'};
+    lambda_lame = []; mu_lame = [];
+  elseif (nargin < 7)
+    lambda_lame = []; mu_lame = [];
   end
+  if (~iscell (options))
+    options = {options};
+  end
+  nopts = numel (options);
 
   ndim = numel (npts);
 
@@ -51,22 +59,20 @@ function [eu, F] = sp_eval (u, space, geometry, npts, varargin)
     for idim=1:ndim
       knt{idim} = space.knots{idim}(space.degree(idim)+1:end-space.degree(idim));
     end
-  elseif (isfield (struct(space), 'sp1'))
+  elseif (isfield (struct(space), 'scalar_spaces'))
     for idim=1:ndim
-      knt{idim} = space.sp1.knots{idim}(space.sp1.degree(idim)+1:end-space.sp1.degree(idim));
+      knt{idim} = space.scalar_spaces{1}.knots{idim}(space.scalar_spaces{1}.degree(idim)+1:end-space.scalar_spaces{1}.degree(idim));
     end
   else
     for idim=1:ndim; knt{idim} = [0 1]; end
   end
-
+  
   if (iscell (npts))
     pts = npts;
     npts = cellfun (@numel, pts);
   elseif (isvector (npts))
-    if (ndim == 2)
-      pts = {(linspace (knt{1}(1), knt{1}(end), npts(1))), (linspace (knt{2}(1), knt{2}(end), npts(2)))};
-    elseif (ndim == 3)
-      pts = {(linspace (knt{1}(1), knt{1}(end), npts(1))), (linspace (knt{2}(1), knt{2}(end), npts(2))), (linspace (knt{3}(1), knt{3}(end), npts(3)))};
+    for idim = 1:ndim
+      pts{idim} = linspace (knt{idim}(1), knt{idim}(end), npts(idim));
     end
   end
 
@@ -79,40 +85,34 @@ function [eu, F] = sp_eval (u, space, geometry, npts, varargin)
     end
   end
 
-  if (ndim == 2)
-    msh = msh_2d ({brk{1}, brk{2}}, pts, [], geometry, 'boundary', false);
-  elseif (ndim == 3)
-    msh = msh_3d ({brk{1}, brk{2}, brk{3}}, pts, [], geometry, 'boundary', false);
-  end
+  msh = msh_cartesian (brk, pts, [], geometry, 'boundary', false);
   sp  = space.constructor (msh);
 
-  switch (lower (option))
-    case {'value'}
-      [eu, F] = sp_eval_msh (u, sp, msh);
-      F  = reshape (F, [ndim, npts]);
-      eu = squeeze (reshape (eu, [sp.ncomp, npts]));
-
-    case {'divergence'}
-      [eu, F] = sp_eval_div_msh (u, sp, msh);
-      F  = reshape (F, [ndim, npts]);
-      eu = reshape (eu, npts);
-
-    case {'curl'}
-      [eu, F] = sp_eval_curl_msh (u, sp, msh);
-      F  = reshape (F, [ndim, npts]);
-      if (ndim == 2)
-        eu = reshape (eu, npts);
-      elseif (ndim == 3)
-        eu = reshape (eu, [ndim, npts]);
-      end
-
-    case {'gradient'}
-      [eu, F] = sp_eval_grad_msh (u, sp, msh);
-      F  = reshape (F, [ndim, npts]);
-      eu = squeeze (reshape (eu, [sp.ncomp, ndim, npts]));
-
-    otherwise
-      error ('sp_eval: unknown option to evaluate')
+  [eu, F] = sp_eval_msh (u, sp, msh, options, lambda_lame, mu_lame);
+  F  = reshape (F, [msh.rdim, npts]);
+  
+  for iopt = 1:nopts
+    switch (lower (options{iopt}))
+      case {'value', 'laplacian'}
+        eu{iopt} = squeeze (reshape (eu{iopt}, [sp.ncomp, npts]));
+      case {'gradient'}
+        eu{iopt} = squeeze (reshape (eu{iopt}, [sp.ncomp, msh.rdim, npts]));        
+      case {'curl'}
+        if (ndim == 2 && msh.rdim == 2)
+          eu{iopt} = reshape (eu{iopt}, npts);
+        elseif (ndim == 3 && msh.rdim == 3)
+          eu{iopt} = reshape (eu{iopt}, [ndim, npts]);
+        else
+          error ('sp_eval: the evaluation of the curl for 3d surfaces is not implemented yet')
+        end
+      case {'divergence'}
+        eu{iopt} = reshape (eu{iopt}, npts);
+      case {'stress'}
+        eu{iopt} = reshape (eu{iopt}, [sp.ncomp, ndim, npts]);
+    end
   end
 
+  if (nopts == 1)
+    eu = eu{1};
+  end
 end

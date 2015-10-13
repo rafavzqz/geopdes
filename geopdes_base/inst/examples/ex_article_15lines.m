@@ -14,7 +14,7 @@
 % GeoPDEs: a research tool for IsoGeometric Analysis of PDEs
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011, 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -33,9 +33,9 @@ geometry = geo_load ('ring_refined.mat');
 knots = geometry.nurbs.knots;
 
 [qn, qw] = msh_set_quad_nodes (knots, msh_gauss_nodes (geometry.nurbs.order));
-msh = msh_2d (knots, qn, qw, geometry);
+msh = msh_cartesian (knots, qn, qw, geometry);
 
-space  = sp_nurbs_2d (geometry.nurbs, msh);
+space  = sp_nurbs (geometry.nurbs, msh);
 
 mat = op_gradu_gradv_tp (space, space, msh, @(x, y) ones (size (x)));
 rhs = op_f_v_tp (space, msh, @(x, y) (8-9*sqrt(x.^2+y.^2)).*sin(2*atan(y./x))./(x.^2+y.^2));
@@ -54,3 +54,23 @@ err = sp_l2_error (space, msh, u, @(x,y)(x.^2+y.^2-3*sqrt(x.^2+y.^2)+2).*sin(2.*
 
 %!demo
 %! ex_article_15lines;
+
+%!test
+%! geometry = geo_load ('ring_refined.mat');
+%! knots = geometry.nurbs.knots;
+%! [qn, qw] = msh_set_quad_nodes (knots, msh_gauss_nodes (geometry.nurbs.order));
+%! msh = msh_cartesian (knots, qn, qw, geometry);
+%! space  = sp_nurbs (geometry.nurbs, msh);
+%! mat = op_gradu_gradv_tp (space, space, msh, @(x, y) ones (size (x)));
+%! rhs = op_f_v_tp (space, msh, @(x, y) (8-9*sqrt(x.^2+y.^2)).*sin(2*atan(y./x))./(x.^2+y.^2));
+%! drchlt_dofs = [];
+%! for iside = 1:4
+%!  drchlt_dofs = union (drchlt_dofs, space.boundary(iside).dofs);
+%! end
+%! int_dofs = setdiff (1:space.ndof, drchlt_dofs);
+%! u = zeros (space.ndof, 1);
+%! u(int_dofs) = mat(int_dofs, int_dofs) \ rhs(int_dofs);
+%! err = sp_l2_error (space, msh, u, @(x,y)(x.^2+y.^2-3*sqrt(x.^2+y.^2)+2).*sin(2.*atan(y./x)));
+%! assert (msh.nel, 81)
+%! assert (space.ndof, 121)
+%! assert (err, 2.97810343028051e-05, 1e-14)

@@ -31,7 +31,7 @@ method_data.nsub       = [8 8];       % Number of subdivisions
 method_data.nquad      = [4 4];       % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
-[geometry, msh, space, u] = solve_laplace_2d_iso (problem_data, method_data);
+[geometry, msh, space, u] = solve_laplace_iso (problem_data, method_data);
 
 % 4) POST-PROCESSING
 % 4.1) EXPORT TO PARAVIEW
@@ -59,3 +59,26 @@ title ('Exact solution'), axis tight
 
 %!demo
 %! ex_laplace_iso_plate
+
+%!test
+%! problem_data.geo_name = 'geo_plate_with_hole.txt';
+%! problem_data.nmnn_sides   = [3 4];
+%! problem_data.drchlt_sides = [1 2];
+%! problem_data.c_diff  = @(x, y) ones(size(x));
+%! problem_data.f = @(x, y) zeros(size(x));
+%! problem_data.g = @test_plate_mixed_bc_g_nmnn;
+%! problem_data.h = @(x, y, ind)  exp(x).*sin(y);
+%! problem_data.uex     = @(x, y) exp(x).*sin (y);
+%! problem_data.graduex = @(x, y) cat (1, ...
+%!                        reshape (exp(x).*sin(y), [1, size(x)]), ...
+%!                        reshape (exp(x).*cos(y), [1, size(x)]));
+%! method_data.degree     = [3 3];       % Degree of the splines
+%! method_data.regularity = [2 2];       % Regularity of the splines
+%! method_data.nsub       = [8 8];       % Number of subdivisions
+%! method_data.nquad      = [4 4];       % Points for the Gaussian quadrature rule
+%! [geometry, msh, space, u] = solve_laplace_iso (problem_data, method_data);
+%! [error_h1, error_l2] = sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex);
+%! assert (msh.nel, 128)
+%! assert (space.ndof, 231)
+%! assert (error_h1, 6.16178098362953e-04, 1e-16)
+%! assert (error_l2, 4.44336164898602e-05, 1e-16)

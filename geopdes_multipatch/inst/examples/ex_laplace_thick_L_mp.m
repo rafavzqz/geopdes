@@ -35,7 +35,7 @@ method_data.nquad      = [3 3 3];  % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
 [geometry, msh, space, u, gnum] = ...
-               mp_solve_laplace_3d (problem_data, method_data);
+               mp_solve_laplace (problem_data, method_data);
 
 % 4) POST-PROCESSING
 % 4.1) EXPORT TO PARAVIEW
@@ -56,3 +56,45 @@ error_h1 = sqrt (sum (error_h1 .* error_h1))
 
 %!demo
 %! ex_laplace_thick_L_mp
+
+%!test
+%! problem_data.geo_name = 'geo_thickL_mp.txt';
+%! problem_data.nmnn_sides   = [1 2];
+%! problem_data.drchlt_sides = [3 4 5 6 7 8];
+%! problem_data.c_diff  = @(x, y, z) ones(size(x));
+%! problem_data.f = @(x, y, z) exp(x).*cos(z).*(-2*cos(x.*y).*y + sin(x.*y).*(y.^2+x.^2));
+%! problem_data.g = @(x, y, z, ind) test_thick_Lshaped_mp_g_nmnn (x, y, z, ind);
+%! problem_data.h = @(x, y, z, ind) exp (x) .* sin (x.*y) .* cos (z);
+%! problem_data.uex     = @(x, y, z) exp (x) .* sin (x.*y) .* cos (z);
+%! problem_data.graduex = @(x, y, z) cat (1, ...
+%!                reshape (exp (x) .* cos (z) .* (sin (x.*y) + y .* cos (x.*y)), [1, size(x)]), ...
+%!                reshape (exp (x) .* x .* cos (x.*y) .* cos(z), [1, size(x)]), ...
+%!                reshape (-exp (x) .* sin (x.*y) .* sin (z), [1, size(x)]));
+%! method_data.degree     = [2 2 2];  % Degree of the splines
+%! method_data.regularity = [1 1 1];  % Regularity of the splines
+%! method_data.nsub       = [3 3 3];  % Number of subdivisions
+%! method_data.nquad      = [3 3 3];  % Points for the Gaussian quadrature rule
+%! [geometry, msh, space, u, gnum] = mp_solve_laplace (problem_data, method_data);
+%! for iptc = 1:numel (geometry);
+%!   [error_h1(iptc), error_l2(iptc)] = sp_h1_error (space{iptc}, msh{iptc}, ...
+%!      u(gnum{iptc}), problem_data.uex, problem_data.graduex);
+%! end
+%! error_l2 = sqrt (sum (error_l2 .* error_l2));
+%! error_h1 = sqrt (sum (error_h1 .* error_h1));
+%! assert (error_l2, 3.84056445684368e-04, 1e-16)
+%! assert (error_h1, 0.00914879506395633, 1e-15)
+%! assert (max ([gnum{:}]), numel (u))
+%! assert (max ([gnum{:}]), 325)
+%!
+%! problem_data.geo_name = 'geo_thickL_mp_b.txt';
+%! [geometry, msh, space, u, gnum] = mp_solve_laplace (problem_data, method_data);
+%! for iptc = 1:numel (geometry);
+%!   [error_h1(iptc), error_l2(iptc)] = sp_h1_error (space{iptc}, msh{iptc}, ...
+%!      u(gnum{iptc}), problem_data.uex, problem_data.graduex);
+%! end
+%! error_l2 = sqrt (sum (error_l2 .* error_l2));
+%! error_h1 = sqrt (sum (error_h1 .* error_h1));
+%! assert (error_l2, 3.84056445684368e-04, 1e-16)
+%! assert (error_h1, 0.00914879506395633, 1e-15)
+%! assert (max ([gnum{:}]), numel (u))
+%! assert (max ([gnum{:}]), 325)

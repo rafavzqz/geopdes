@@ -5,9 +5,9 @@
 %
 % INPUT:
 %
-%   spu:   structure representing the space of trial functions (see sp_bspline_2d/sp_evaluate_col)
-%   spv:   structure representing the space of test functions (see sp_bspline_2d/sp_evaluate_col)
-%   msh:   structure containing the domain partition and the quadrature rule (see msh_2d/msh_evaluate_col)
+%   spu:   structure representing the space of trial functions (see sp_bspline/sp_evaluate_col)
+%   spv:   structure representing the space of test functions (see sp_bspline/sp_evaluate_col)
+%   msh:   structure containing the domain partition and the quadrature rule (see msh_cartesian/msh_evaluate_col)
 %   epsilon: diffusion coefficient
 %
 % OUTPUT:
@@ -43,22 +43,22 @@ function mat = op_gradgradu_gradgradv (spu, spv, msh, coeff)
    ndir = size (der2u, 2);
  
    for iel = 1:msh.nel
-       if (all (msh.jacdet(:,iel)))
-           mat_loc = zeros (spv.nsh(iel), spu.nsh(iel));
-           for idof = 1:spv.nsh(iel)
-               ishh = reshape(der2v(:,:,:,idof,iel),spv.ncomp * ndir, []);
-               for jdof = 1:spu.nsh(iel) 
-                   jshh = reshape(der2u(:,:,:,jdof,iel),spu.ncomp * ndir, []);
+     if (all (msh.jacdet(:,iel)))
+       mat_loc = zeros (spv.nsh(iel), spu.nsh(iel));
+       for idof = 1:spv.nsh(iel)
+           ishh = reshape(der2v(:,:,:,idof,iel),spv.ncomp * ndir, []);
+           for jdof = 1:spu.nsh(iel) 
+               jshh = reshape(der2u(:,:,:,jdof,iel),spu.ncomp * ndir, []);
            % The cycle on the quadrature points is vectorized
            %for inode = 1:msh.nqn
                mat_loc(idof, jdof) = mat_loc(idof, jdof) + ...
                    sum (msh.jacdet(:,iel) .* msh.quad_weights(:, iel) .* ...
                    sum (ishh([1,4,2,2],:) .* jshh([1,4,2,2],:), 1).' .* coeff(:,iel));
            %end
-               end
+           end
        end
        mat(spv.connectivity(:, iel), spu.connectivity(:, iel)) = ...
-         mat(spv.connectivity(:, iel), spu.connectivity(:, iel)) + mat_loc;
+           mat(spv.connectivity(:, iel), spu.connectivity(:, iel)) + mat_loc;
      else
        warning ('geopdes:jacdet_zero_at_quad_node',...
            'op_gradgradu_gradgradv: singular map in element number %d', iel)

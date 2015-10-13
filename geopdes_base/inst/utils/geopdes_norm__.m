@@ -1,6 +1,7 @@
 % -*- INTERNAL UNDOCUMENTED FUNCTION -*-
 %
 % Copyright (C) 2010 Carlo de Falco
+% Copyright (C) 2015 Rafael Vazquez
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -19,11 +20,12 @@
 
 function nrm = geopdes_norm__ (v)
 
-  if (size (v,1) == 2)
-    nrm = sqrt (squeeze(v(1,:,:) .* v(1,:,:) + v(2,:,:) .* v(2,:,:)));
-  elseif (size (v,1) == 3)
-    nrm = sqrt (squeeze(v(1,:,:) .* v(1,:,:) + ...
-                v(2,:,:) .* v(2,:,:) + v(3,:,:) .* v(3,:,:)));
+  vsize = size (v);
+  if (numel (vsize) < 3)
+    vsize(3) = 1;
   end
+
+  nrm = sqrt (sum (v.^2, 1));
+  nrm = reshape (nrm, vsize(2:end));
 
 end

@@ -4,11 +4,11 @@
 %
 % INPUT:
 %
-%  sp:         object representing the space of trial functions (see sp_bspline_2d)
-%  msh:        object containing the domain partition and the quadrature rule (see msh_2d)
+%  sp:         object representing the space of trial functions (see sp_bspline)
+%  msh:        object containing the domain partition and the quadrature rule (see msh_cartesian)
 %  h:          function handle to compute the Dirichlet condition
-%  gnum:       global numbering of the degrees of freedom (see mp_interface_2d)
-%  boundaries: array of strcutures containing the information for the boundaries (see mp_geo_load)
+%  gnum:       global numbering of the degrees of freedom (see mp_interface)
+%  boundaries: array of structures containing the information for the boundaries (see mp_geo_load)
 %  refs:       boundary references on which a Dirichlet condition is imposed
 %
 % OUTPUT:
@@ -17,7 +17,7 @@
 %  dofs: global numbering of the corresponding basis functions
 %
 % Copyright (C) 2010 Carlo de Falco, Rafael Vazquez
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011, 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -44,30 +44,16 @@ function [u, dofs] = mp_sp_drchlt_l2_proj (sp, msh, h, gnum, boundaries, refs)
       iptc = boundaries(iref).patches(bnd_side);
       iside = boundaries(iref).faces(bnd_side);
 
-      msh_bnd = msh_eval_boundary_side (msh{iptc}, iside);
-      sp_bnd  = sp_eval_boundary_side (sp{iptc}, msh_bnd);
-
-      global_dofs = gnum{iptc}(sp_bnd.dofs);
+      global_dofs = gnum{iptc}(sp{iptc}.boundary(iside).dofs);
       dofs = union (dofs, global_dofs);
+% Restrict the function handle to the specified side, in any dimension, hside = @(x,y) h(x,y,iside)
+      href = @(varargin) h(varargin{:},iref);
+      f_one = @(varargin) ones (size(varargin{1}));
 
-      if (size (msh_bnd.geo_map, 1) == 2)
-        [x, y] = deal (squeeze (msh_bnd.geo_map(1,:,:)), ...
-                       squeeze (msh_bnd.geo_map(2,:,:)));
-
-        hval = reshape (h (x, y, iref), sp_bnd.ncomp, msh_bnd.nqn, msh_bnd.nel);
-
-      elseif (size (msh_bnd.geo_map, 1) == 3)
-        [x, y, z] = deal (squeeze (msh_bnd.geo_map(1,:,:)), ...
-                          squeeze (msh_bnd.geo_map(2,:,:)), ...
-                          squeeze (msh_bnd.geo_map(3,:,:)));
-
-        hval = reshape (h (x, y, z, iref), sp_bnd.ncomp, msh_bnd.nqn, msh_bnd.nel);
-      end
-
-      M_side = op_u_v (sp_bnd, sp_bnd, msh_bnd, ones (msh_bnd.nqn, msh_bnd.nel));
+      M_side = op_u_v_tp (sp{iptc}.boundary(iside), sp{iptc}.boundary(iside), msh{iptc}.boundary(iside), f_one);
       M(global_dofs, global_dofs) = M(global_dofs, global_dofs) + M_side;
 
-      rhs_side = op_f_v (sp_bnd, msh_bnd, hval);
+      rhs_side = op_f_v_tp (sp{iptc}.boundary(iside), msh{iptc}.boundary(iside), href);
       rhs(global_dofs) = rhs(global_dofs) + rhs_side;
     end
   end

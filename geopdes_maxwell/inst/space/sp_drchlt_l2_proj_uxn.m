@@ -5,8 +5,8 @@
 %
 % INPUT:
 %
-%  sp:    class defining the space of discrete functions (see sp_vector_2d_curl_transform)
-%  msh:   class defining the domain partition and the quadrature rule (see msh_2d)
+%  sp:    class defining the space of discrete functions (see sp_vector_curl_transform)
+%  msh:   class defining the domain partition and the quadrature rule (see msh_cartesian)
 %  h:     function handle to compute the Dirichlet condition
 %  sides: boundary sides on which a Dirichlet condition is imposed
 %
@@ -50,7 +50,6 @@ function [u, dofs] = sp_drchlt_l2_proj_uxn (sp, msh, h, sides)
 
   if (sp.ncomp == 2)
     for iside = sides
-
       msh_bnd = msh_eval_boundary_side (msh, iside);
       sp_bnd  = sp_eval_boundary_side (sp, msh_bnd);
 
@@ -59,7 +58,8 @@ function [u, dofs] = sp_drchlt_l2_proj_uxn (sp, msh, h, sides)
 
       hval = reshape (h (x, y, iside), msh_bnd.nqn, msh_bnd.nel);
 
-      [rs, cs, vs] = op_uxn_vxn_2d (sp_bnd, sp_bnd, msh_bnd, ones(msh_bnd.nqn, msh_bnd.nel));
+%       [rs, cs, vs] = op_uxn_vxn_2d (sp_bnd, sp_bnd, msh_bnd, ones(msh_bnd.nqn, msh_bnd.nel));
+      [rs, cs, vs] = op_u_v (sp_bnd, sp_bnd, msh_bnd, ones(msh_bnd.nqn, msh_bnd.nel));
 
       rows(ncounter+(1:numel(rs))) = sp_bnd.dofs(rs);
       cols(ncounter+(1:numel(rs))) = sp_bnd.dofs(cs);
