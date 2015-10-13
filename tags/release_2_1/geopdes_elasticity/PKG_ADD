@@ -1,0 +1,19 @@
+dirlist        = {"examples", "examples/data_files", "geometry", "multipatch", "operators", "solve", "space"};
+
+dirname = fileparts(canonicalize_file_name (mfilename ("fullpath")));
+
+if (! exist (fullfile (dirname, "inst"), "dir"))
+  ## Run this if the package is installed
+  for ii=1:length(dirlist)
+    addpath ( [ dirname "/../" dirlist{ii}],"-end")
+  endfor
+else
+  ## Run this if we are testing the package without installation
+  for ii=1:length(dirlist)
+    addpath ([ dirname "/inst/" dirlist{ii}])
+    addpath ([ dirname "/src/"])
+  endfor
+endif
+warning('off', 'Octave:fopen-file-in-path');
+warning('off', 'Octave:load-file-in-path');
+clear dirlist dirname

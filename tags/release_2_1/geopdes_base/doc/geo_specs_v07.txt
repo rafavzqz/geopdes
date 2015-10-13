@@ -1,0 +1,79 @@
+####################################################
+# Explanation of the format for the geometry files #
+####################################################
+#
+# WARNING
+#  This file format is only valid for single patch geometries.
+#  The file format for multipatch geometries is explained in
+#   the file geo_specs_mp_v07.txt, in the geopdes_multipatch package.
+#
+# FILE STRUCTURE
+# The file starts with a header containing information about the file,
+#  formed by an arbitrary number of lines starting with the symbol "#".
+#
+# HEADER
+# file: geo_specs_v07.txt
+# nurbs geometry v.0.7
+# Example file for one quarter of a thick ring
+# May 25th 2011
+#
+#  The domain is one quarter of a three-dimensional ring, with coordinates
+#   {(x,y,z) : 1 < x^2 + y^2 < 4; 0 < z < 1}.
+#
+# The first line after the header consists of two integer values
+#   N Np     (2 integer values)
+#
+# N  : dimension of the geometry
+# Np : number of patches (optional in single patch geometries)
+#
+3 1
+#
+# Then follows the information for each patch. This consists of the following:
+#
+# The name of the patch (string, optional)
+PATCH 1
+#
+# p(i): the degree in each Cartesian direction (N integers)
+1 2 1
+#
+# ncp(i): the number of control points in each direction (N integers)
+2 3 2
+#
+# knots{i}: knot sequence in the Cartesian direction (ncp(i)+p(i)+1 floats)
+0.00000   0.00000   1.00000   1.00000
+0.00000   0.00000   0.00000   1.00000   1.00000   1.00000
+0.00000   0.00000   1.00000   1.00000
+#
+# cp_x, cp_y, cp_z: coordinates of the weighted control points
+#                   (see Section 4.2 of The NURBS Book, L. Piegl & W. Tiller)
+#   (N rows, each one with prod(ncp) float values)
+#
+1.00000   2.00000   0.707106781186548   1.414213562373095   0.00000   0.00000   1.00000   2.00000   0.707106781186548   1.414213562373095   0.00000   0.00000
+0.00000   0.00000   0.707106781186548   1.414213562373095   1.00000   2.00000   0.00000   0.00000   0.707106781186548   1.414213562373095   1.00000   2.00000
+0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   1.00000   1.00000   0.707106781186548   0.707106781186548   1.00000   1.00000
+#
+# weights: weight associated to each basis function (or control point)
+#          (prod(ncp) float values)
+1.00000   1.00000   0.707106781186548   0.707106781186548   1.00000   1.00000   1.00000   1.00000   0.707106781186548   0.707106781186548   1.00000   1.00000
+#
+#
+# ORDER OF THE CONTROL POINTS
+#
+# The control points are numbered in a reverse lexicographic order: starting
+#  from the origin, we first increase the parametric coordinate x_1 and then 
+#  the parametric coordinate x_2 (and for 3D cases, then the coordinate x_3).
+#
+# BOUNDARY CONDITIONS
+#
+# To impose the boundary conditions, we assign a number to each side of the
+#  parametric domain, which is inherited by the boundaries of the physical one.
+#  The numbers assigned in the parametric domain are the following
+#
+#            2D CASE                        3D CASE
+#    Edge 1, {(u,v) : u = 0}        Face 1, {(u,v,w) : u = 0}
+#    Edge 2, {(u,v) : u = 1}        Face 2, {(u,v,w) : u = 1}
+#    Edge 3, {(u,v) : v = 0}        Face 3, {(u,v,w) : v = 0}
+#    Edge 4, {(u,v) : v = 1}        Face 4, {(u,v,w) : v = 1}
+#                                   Face 5, {(u,v,w) : w = 0}
+#                                   Face 6, {(u,v,w) : w = 1}
+#

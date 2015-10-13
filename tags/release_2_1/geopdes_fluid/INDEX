@@ -1,0 +1,46 @@
+geopdes_fluid >> Iso-Geometric Analysis for Incompressible fluids
+Space
+ sp_bspline_fluid_2d
+ sp_bspline_fluid_3d
+ sp_vector_div_transform
+ @sp_vector_div_transform/sp_eval_boundary_side
+ @sp_vector_div_transform/sp_evaluate_col
+ @sp_vector_div_transform/sp_precompute
+ sp_weak_drchlt_bc
+ sp_drchlt_l2_proj_udotn
+Msh
+ msh_set_breaks
+Solve
+ solve_stokes
+Operators
+ op_div_v_q
+ op_div_v_q_tp
+ op_gradv_n_u
+ op_gradv_n_f
+ op_udotn_vdotn
+ op_fdotn_vdotn
+ op_gradu_v_otimes
+ op_u_otimes_n_v_otimes_n
+Examples
+ ex_stokes_square_th
+ ex_stokes_square_ndl
+ ex_stokes_square_rt
+ ex_stokes_square_sg
+ ex_stokes_annulus_th
+ ex_stokes_annulus_rt
+ ex_stokes_article_ijnmf_th
+ ex_stokes_article_ijnmf_rt
+ ex_stokes_driven_cavity_3d_th
+ ex_stokes_driven_cavity_3d_sg
+ ex_stokes_twisted_pipe
+ geopdes_fluid_examples
+Multipatch
+ mp_solve_stokes
+ mp_solve_stokes_div_conforming
+ mp_interface_hdiv
+ mp_sp_weak_drchlt_bc
+ mp_sp_drchlt_l2_proj_udotn
+ ex_stokes_bifurcation_2d_mp
+ ex_stokes_bifurcation_2d_rt_mp
+ ex_stokes_driven_cavity_3d_mp
+ ex_stokes_driven_cavity_3d_rt_mp
