@@ -25,12 +25,16 @@ Space
  @sp_bspline/sp_eval_boundary_side
  @sp_bspline/sp_evaluate_col
  @sp_bspline/sp_evaluate_col_param
+ @sp_bspline/sp_evaluate_element_list
+ @sp_bspline/sp_evaluate_element_list_param
  @sp_bspline/sp_precompute
  @sp_bspline/sp_precompute_param
  sp_nurbs
  @sp_nurbs/sp_eval_boundary_side
  @sp_nurbs/sp_evaluate_col
  @sp_nurbs/sp_evaluate_col_param
+ @sp_nurbs/sp_evaluate_element_list
+ @sp_nurbs/sp_evaluate_element_list_param
  @sp_nurbs/sp_precompute
  @sp_nurbs/sp_precompute_param
  sp_vector
