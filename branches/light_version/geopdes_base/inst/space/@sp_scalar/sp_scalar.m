@@ -142,6 +142,7 @@ function sp = sp_scalar (knots, degree, weights, msh, transform)
   sp.shape_functions = [];
   sp.shape_function_gradients = [];
   sp.shape_function_hessians = [];
+  sp.shape_function_laplacians = [];
   sp.dofs = [];
   sp.adjacent_dofs = [];
   

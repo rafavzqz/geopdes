@@ -1,22 +1,27 @@
 % SP_H1_ERROR: Evaluate the error in H^1 norm.
 %
-%   [toterr, errl2] = sp_h1_error (space, msh, u, uex, graduex)
+%   [errh1, errl2, errh1s, errh1_elem, errl2_elem, errh1s_elem] = sp_h1_error (space, msh, u, uex, graduex);
 %
 % INPUT:
 %
-%    space:   object defining the space of discrete functions (see sp_bspline)
-%    msh:     object defining the domain partition and the quadrature rule (see msh_cartesian)
-%    u:       vector of dof weights
-%    uex:     function handle to evaluate the exact solution
-%    graduex: function handle to evaluate the gradient of the exact solution
+%     space:    structure representing the space of discrete functions (see sp_bspline_3d_phys)
+%     msh:      structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)
+%     u:        vector of dof weights
+%     uex:      function handle to evaluate the exact solution
+%     graduex:  function handle to evaluate the gradient of the exact solution
 %
 % OUTPUT:
 %
-%     toterr: error in H^1 norm
+%     errh1:  error in H^1 norm
 %     errl2:  error in L^2 norm
+%     errh1s: error in H^1 seminorm
+%     errh1_elem:  error in H^1 norm, for each single element
+%     errl2_elem:  error in L^2 norm, for each single element
+%     errh1s_elem: error in H^1 seminorm, for each single element
 %
 % Copyright (C) 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2015 Eduardo M. Garau, Rafael Vazquez
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -32,57 +37,25 @@
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
 
-function [errh1, errl2] = sp_h1_error (sp, msh, u, uex, graduex)
+function [errh1, errl2, errh1s, errh1_elem, errl2_elem, errh1s_elem] = sp_h1_error (sp, msh, u, uex, graduex)
 
-  rdim = msh.rdim;
+  grad_valu = sp_eval_msh (u, sp, msh, 'gradient');
+  grad_valu = reshape (grad_valu, sp.ncomp, msh.rdim, msh.nqn, msh.nel);
 
-  errl2 = 0;
-  errh1s = 0;
-
-  valu = zeros (sp.ncomp, msh.nqn, msh.nelcol);
-  grad_valu = zeros (sp.ncomp, rdim, msh.nqn, msh.nelcol);
-  for iel = 1:msh.nel_dir(1)
-    msh_col = msh_evaluate_col (msh, iel);
-    sp_col  = sp_evaluate_col (sp, msh_col, 'gradient', true);
-
-    uc_iel = zeros (size (sp_col.connectivity));
-    uc_iel(sp_col.connectivity~=0) = ...
-          u(sp_col.connectivity(sp_col.connectivity~=0));
-
-    weight = repmat (reshape (uc_iel, [1, sp_col.nsh_max, msh_col.nel]), ...
-                                  [msh.nqn, 1, 1]);
-
-    sp_col.shape_functions = reshape (sp_col.shape_functions, ...
-           sp.ncomp, msh_col.nqn, sp_col.nsh_max, msh_col.nel);
-    sp_col.shape_function_gradients = reshape (sp_col.shape_function_gradients, ...
-           sp.ncomp, rdim, msh_col.nqn, sp_col.nsh_max, msh_col.nel);
-
-    for icmp = 1:sp.ncomp
-      for idim = 1:rdim
-        grad_valu(icmp,idim,:,:) = sum (weight .* reshape (sp_col.shape_function_gradients(icmp,idim,:,:,:), ...
-                            msh_col.nqn, sp_col.nsh_max, msh_col.nel), 2);
-      end
-      valu(icmp,:,:) = sum (weight .* reshape (sp_col.shape_functions(icmp,:,:,:), ...
-                            msh_col.nqn, sp_col.nsh_max, msh_col.nel), 2);
-    end
-
-    for idim = 1:rdim
-      x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
-    end
-    w = msh_col.quad_weights .* msh_col.jacdet;
-
-    valex  = reshape (feval (uex, x{:}), sp.ncomp, msh_col.nqn, msh_col.nel);
-    grad_valex  = reshape (feval (graduex, x{:}), sp.ncomp, rdim, msh_col.nqn, msh_col.nel);
-
-    errh1s = errh1s + sum (sum (reshape (sum (sum ...
-       ((grad_valu - grad_valex).^2, 1), 2), [msh_col.nqn, msh_col.nel]) .* w));
-
-    erraux = sum ((valu - valex).^2, 1);
-    errl2  = errl2 + sum (w(:) .* erraux(:));
-
+  for idir = 1:msh.rdim
+    x{idir} = reshape (msh.geo_map(idir,:,:), msh.nqn*msh.nel, 1);
   end
+  grad_valex  = reshape (feval (graduex, x{:}), sp.ncomp, msh.rdim, msh.nqn, msh.nel);
 
-  errh1 = sqrt (errl2 + errh1s);
-  errl2 = sqrt (errl2);
+  w = msh.quad_weights .* msh.jacdet;
+
+  [errl2, errl2_elem] = sp_l2_error (sp, msh, u, uex);
+  errh1s_elem = sum (reshape (sum (sum ((grad_valu - grad_valex).^2, 1), 2), [msh.nqn, msh.nel]) .* w);
+  errh1s = sqrt (sum (errh1s_elem));
+
+  errh1  = sqrt (errl2^2 + errh1s^2);
+
+  errh1_elem  = sqrt (errl2_elem.^2 + errh1s_elem);
+  errh1s_elem = sqrt (errh1s_elem);
   
 end

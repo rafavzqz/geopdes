@@ -42,7 +42,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp = sp_precompute_param (sp, msh, varargin)
+function sp_out = sp_precompute_param (sp, msh, varargin)
 
   if (isempty (varargin))
     nsh = true;
@@ -178,8 +178,10 @@ function sp = sp_precompute_param (sp, msh, varargin)
     
   end
 
-  if (strcmpi (space.space_type, 'NURBS'))
-    sp = bsp_2_nrb__ (sp, msh, space.weights);
+  if (strcmpi (sp.space_type, 'NURBS'))
+    sp = bsp_2_nrb__ (sp, msh, sp.weights);
   end
+  
+  sp_out = struct (sp);
 
 end

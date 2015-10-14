@@ -36,25 +36,26 @@
 
 function [eu, F] = sp_eval_msh (u, space, msh, options, lambda_lame, mu_lame)
 
+  output_cell = true;
   if (nargin < 4)
     options = {'value'};
+    output_cell = false;
   elseif (~iscell (options))
     options = {options};
+    output_cell = false;
   end
 
   nopts = numel (options);
-  F  = zeros (msh.rdim, msh.nqn, msh.nel);
-  eu = cell (nopts, 1);
-  wsize = cell (nopts, 1);
+  eu       = cell (nopts, 1);
+  wsize    = cell (nopts, 1);
+  shp_size = cell (nopts, 1);
+  eusize   = cell (nopts, 1);
+  field    = cell (nopts, 1);
 
-  value = false; grad = false; laplacian = false; curl = false; divergence = false;
-  stress = false;
-  
   for iopt = 1:nopts
     switch (lower (options{iopt}))
       case 'value'
         eu{iopt} = zeros (space.ncomp, msh.nqn, msh.nel);
-        value = true;
         wsize{iopt} = [1 1];
         shp_size{iopt} = space.ncomp;
         field{iopt} = 'shape_functions';
@@ -63,7 +64,6 @@ function [eu, F] = sp_eval_msh (u, space, msh, options, lambda_lame, mu_lame)
 
       case 'gradient'
         eu{iopt} = zeros (space.ncomp, msh.rdim, msh.nqn, msh.nel);
-        grad = true;
         wsize{iopt} = [1 1 1];
         shp_size{iopt} = [space.ncomp, msh.rdim];
         field{iopt} = 'shape_function_gradients';
@@ -72,7 +72,6 @@ function [eu, F] = sp_eval_msh (u, space, msh, options, lambda_lame, mu_lame)
         
       case 'laplacian'
         eu{iopt} = zeros (space.ncomp, msh.nqn, msh.nel);
-        laplacian = true;
         wsize{iopt} = [1 1];
         shp_size{iopt} = space.ncomp;
         field{iopt} = 'shape_function_laplacians';
@@ -96,7 +95,6 @@ function [eu, F] = sp_eval_msh (u, space, msh, options, lambda_lame, mu_lame)
           ind(iopt) = 3;
           eusize{iopt} = {1:msh.rdim, 1:msh.nqn};
         end
-        curl = true;
         field{iopt} = 'shape_function_curls';
         
       case 'divergence'
@@ -104,7 +102,6 @@ function [eu, F] = sp_eval_msh (u, space, msh, options, lambda_lame, mu_lame)
           error ('sp_eval_msh: the divergence is not computed for scalars')
         end
         eu{iopt} = zeros (msh.nqn, msh.nel);
-        divergence = true;
         wsize{iopt} = 1;
         shp_size{iopt} = [];
         field{iopt} = 'shape_function_divs';
@@ -121,7 +118,6 @@ function [eu, F] = sp_eval_msh (u, space, msh, options, lambda_lame, mu_lame)
         eu{iopt} = zeros (space.ncomp, msh.rdim, msh.nqn, msh.nel);
         aux{1} = zeros (space.ncomp, msh.rdim, msh.nqn, msh.nel);
         aux{2} = zeros (msh.nqn, msh.nel);
-        grad = true; divergence = true;
         wsize{iopt} = {[1 1 1], 1};
         shp_size{iopt} = {[space.ncomp, msh.rdim], []};
         field{iopt} = {'shape_function_gradients', 'shape_function_divs'};
@@ -131,55 +127,40 @@ function [eu, F] = sp_eval_msh (u, space, msh, options, lambda_lame, mu_lame)
     end
   end
   
-  
+  F = msh.geo_map;
 
-  for iel = 1:msh.nel_dir(1)
-    msh_col = msh_evaluate_col (msh, iel);
-    if (space.ncomp == 1)
-      sp_col  = sp_evaluate_col (space, msh_col, 'value', value, 'gradient', grad, ...
-          'laplacian', laplacian);
+  uc = zeros (size (space.connectivity));
+  uc(space.connectivity~=0) = ...
+        u(space.connectivity(space.connectivity~=0));
+     
+  for iopt = 1:nopts
+    if (~strcmpi (options{iopt}, 'stress'))
+      weight = reshape (uc, [wsize{iopt}, space.nsh_max, msh.nel]);
+      space.(field{iopt}) = reshape (space.(field{iopt}), ...
+                   [shp_size{iopt}, msh.nqn, space.nsh_max, msh.nel]);
+
+      eu{iopt}(eusize{iopt}{:},:) = reshape (sum (bsxfun (@times, weight, ...
+           space.(field{iopt})), ind(iopt)), [shp_size{iopt}, msh.nqn, msh.nel]);
     else
-      sp_col  = sp_evaluate_col (space, msh_col, 'value', value, 'gradient', grad, ...
-          'curl', curl, 'divergence', divergence);
-    end
-
-    F(:,:,msh_col.elem_list) = msh_col.geo_map;
-
-    uc_iel = zeros (size (sp_col.connectivity));
-    uc_iel(sp_col.connectivity~=0) = ...
-          u(sp_col.connectivity(sp_col.connectivity~=0));
-
-    for iopt = 1:nopts
-      if (~strcmpi (options{iopt}, 'stress'))
-        weight = reshape (uc_iel, [wsize{iopt}, sp_col.nsh_max, msh_col.nel]);
-        sp_col.(field{iopt}) = reshape (sp_col.(field{iopt}), ...
-                     [shp_size{iopt}, msh_col.nqn, sp_col.nsh_max, msh_col.nel]);
-
-        eu{iopt}(eusize{iopt}{:},msh_col.elem_list) = reshape (sum (bsxfun (@times, weight, ...
-             sp_col.(field{iopt})), ind(iopt)), [shp_size{iopt}, msh_col.nqn, msh_col.nel]);
-       
-      else
-        for idim = 1:msh.rdim
-          x{idim} = reshape (F(idim,:,msh_col.elem_list), msh_col.nqn, msh_col.nel);
-        end
-        mu_col = reshape (mu_lame (x{:}), 1, 1, msh_col.nqn, msh_col.nel);
-        lambda_col = lambda_lame (x{:});
-
-        for ii = 1:numel (wsize{iopt})
-          weight = reshape (uc_iel, [wsize{iopt}{ii}, sp_col.nsh_max, msh_col.nel]);
-          sp_col.(field{iopt}{ii}) = reshape (sp_col.(field{iopt}{ii}), ...
-                     [shp_size{iopt}{ii}, msh_col.nqn, sp_col.nsh_max, msh_col.nel]);
-          aux{ii} = reshape (sum (bsxfun (@times, weight, ...
-           sp_col.(field{iopt}{ii})), indaux(ii)), [shp_size{iopt}{ii}, msh_col.nqn, msh_col.nel]);
-        end
-        eu{iopt}(eusize{iopt}{:}, msh_col.elem_list) = ...
-            bsxfun (@times, mu_col, (aux{1} + permute (aux{1}, [2 1 3 4])));
-        for idim = 1:msh.rdim
-          eu{iopt}(idim,idim,:,msh_col.elem_list) = eu{iopt}(idim,idim,:,msh_col.elem_list) + ...
-            reshape (lambda_col .* aux{2}, 1, 1, msh_col.nqn, msh_col.nel);
-        end
+      for idim = 1:msh.rdim
+        x{idim} = reshape (F(idim,:,:), msh.nqn, msh.nel);
       end
-       
+      mu_values = reshape (mu_lame (x{:}), 1, 1, msh.nqn, msh.nel);
+      lambda_values = lambda_lame (x{:});
+      for ii = 1:numel (wsize{iopt})
+        weight = reshape (uc, [wsize{iopt}{ii}, space.nsh_max, msh.nel]);
+        space.(field{iopt}{ii}) = reshape (space.(field{iopt}{ii}), ...
+                   [shp_size{iopt}{ii}, msh.nqn, space.nsh_max, msh.nel]);
+        aux{ii} = reshape (sum (bsxfun (@times, weight, ...
+         space.(field{iopt}{ii})), indaux(ii)), [shp_size{iopt}{ii}, msh.nqn, msh.nel]);
+      end
+      eu{iopt}(eusize{iopt}{:}, msh.elem_list) = ...
+          bsxfun (@times, mu_values, (aux{1} + permute (aux{1}, [2 1 3 4])));
+      for idim = 1:msh.rdim
+        eu{iopt}(idim,idim,:,msh.elem_list) = eu{iopt}(idim,idim,:,msh.elem_list) + ...
+          reshape (lambda_values .* aux{2}, 1, 1, msh.nqn, msh.nel);
+      end
+          
     end
   end
 
@@ -192,6 +173,10 @@ function [eu, F] = sp_eval_msh (u, space, msh, options, lambda_lame, mu_lame)
           eu{iopt} = reshape (eu{iopt}, msh.rdim, msh.nqn, msh.nel);
       end
     end
+  end
+  
+  if (~output_cell)
+    eu = eu{1};
   end
   
 end
