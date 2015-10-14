@@ -42,11 +42,9 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp_out = sp_precompute_param (sp, msh, varargin)
+function sp = sp_precompute_param (sp, msh, varargin)
 
   if (isempty (varargin))
-    nsh = true;
-    connectivity = true;
     value = true;
     gradient = true;
     hessian = true;
@@ -54,17 +52,11 @@ function sp_out = sp_precompute_param (sp, msh, varargin)
     if (~rem (length (varargin), 2) == 0)
       error ('sp_precompute: options must be passed in the [option, value] format');
     end
-    nsh = false;
-    connectivity = false;
     value = false;
     gradient = false;
     hessian = false;
     for ii=1:2:length(varargin)-1
-      if (strcmpi (varargin{ii}, 'connectivity'))
-        connectivity = varargin{ii+1};
-      elseif (strcmpi (varargin{ii}, 'nsh'))
-        nsh = varargin{ii+1};
-      elseif (strcmpi (varargin{ii}, 'value'))
+      if (strcmpi (varargin{ii}, 'value'))
         value = varargin{ii+1};
       elseif (strcmpi (varargin{ii}, 'gradient'))
         gradient = varargin{ii+1};
@@ -75,6 +67,8 @@ function sp_out = sp_precompute_param (sp, msh, varargin)
       end
     end    
   end
+  
+  sp = struct (sp);
 
   sp_univ = sp.sp_univ;
 
@@ -82,43 +76,39 @@ function sp_out = sp_precompute_param (sp, msh, varargin)
     elem_list{idim} = 1:msh.nel_dir(idim);
   end
   
-  if (nsh)
-    for idim = 1:msh.ndim
-      nsh_dim{idim} = sp_univ(idim).nsh(elem_list{idim});
-    end
-
-    [nsh_grid{1:msh.ndim}] = ndgrid (nsh_dim{:});
-    nsh = 1;
-    for idim = 1:msh.ndim
-      nsh = nsh .* nsh_grid{idim};
-    end
-    sp.nsh = nsh(:)';
+  for idim = 1:msh.ndim
+    nsh_dim{idim} = sp_univ(idim).nsh(elem_list{idim});
   end
 
-  if (connectivity)
-    for idim = 1:msh.ndim
-      csize = ones (1, 2*msh.ndim);
-      csize([idim, msh.ndim+idim]) = [sp_univ(idim).nsh_max, msh.nel_dir(idim)];
-      crep = [sp_univ.nsh_max, msh.nel_dir];
-      crep([idim, msh.ndim+idim]) = 1;
-
-      conn{idim} = reshape (sp_univ(idim).connectivity(:,elem_list{idim}), csize);
-      conn{idim} = repmat (conn{idim}, crep);
-      conn{idim} = reshape (conn{idim}, [], msh.nel);
-    end
-
-    connectivity = zeros (sp.nsh_max, msh.nel);
-    indices = ones (size (conn{1}));
-    for idim = 1:msh.ndim
-      indices = indices & conn{idim} ~= 0;
-    end
-    for idim = 1:msh.ndim
-      conn{idim} = conn{idim}(indices);
-    end
-    connectivity(indices) = sub2ind ([sp.ndof_dir, 1], conn{:}); % The extra 1 makes things work in any dimension
-    sp.connectivity = reshape (connectivity, sp.nsh_max, msh.nel);
-    clear conn csize crep indices connectivity
+  [nsh_grid{1:msh.ndim}] = ndgrid (nsh_dim{:});
+  nsh = 1;
+  for idim = 1:msh.ndim
+    nsh = nsh .* nsh_grid{idim};
   end
+  sp.nsh = nsh(:)';
+
+  for idim = 1:msh.ndim
+    csize = ones (1, 2*msh.ndim);
+    csize([idim, msh.ndim+idim]) = [sp_univ(idim).nsh_max, msh.nel_dir(idim)];
+    crep = [sp_univ.nsh_max, msh.nel_dir];
+    crep([idim, msh.ndim+idim]) = 1;
+
+    conn{idim} = reshape (sp_univ(idim).connectivity(:,elem_list{idim}), csize);
+    conn{idim} = repmat (conn{idim}, crep);
+    conn{idim} = reshape (conn{idim}, [], msh.nel);
+  end
+
+  connectivity = zeros (sp.nsh_max, msh.nel);
+  indices = ones (size (conn{1}));
+  for idim = 1:msh.ndim
+    indices = indices & conn{idim} ~= 0;
+  end
+  for idim = 1:msh.ndim
+    conn{idim} = conn{idim}(indices);
+  end
+  connectivity(indices) = sub2ind ([sp.ndof_dir, 1], conn{:}); % The extra 1 makes things work in any dimension
+  sp.connectivity = reshape (connectivity, sp.nsh_max, msh.nel);
+  clear conn csize crep indices connectivity
 
   if (value || gradient || hessian)
     shp = cell(1,msh.ndim); shg = cell(1,msh.ndim); shh = cell(1,msh.ndim);
@@ -182,6 +172,4 @@ function sp_out = sp_precompute_param (sp, msh, varargin)
     sp = bsp_2_nrb__ (sp, msh, sp.weights);
   end
   
-  sp_out = struct (sp);
-
 end

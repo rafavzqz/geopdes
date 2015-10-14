@@ -8,7 +8,7 @@
 %     degree:    spline polynomial degree (vector of size [1, ndim])
 %     weights:   weights associated to the basis functions. For B-splines it should be empty
 %     msh:       msh object that defines the quadrature rule (see msh_cartesian)
-%     transform: string with the transform to the physical domain, one of 
+%     transform: string with the transformation to the physical domain, one of 
 %                 'grad-preserving' (default) and 'integral-preserving', for N-forms.
 %
 % OUTPUT:
@@ -137,12 +137,6 @@ function sp = sp_scalar (knots, degree, weights, msh, transform)
     sp.boundary = [];
   end
 
-  sp.nsh = [];
-  sp.connectivity = [];
-  sp.shape_functions = [];
-  sp.shape_function_gradients = [];
-  sp.shape_function_hessians = [];
-  sp.shape_function_laplacians = [];
   sp.dofs = [];
   sp.adjacent_dofs = [];
   
