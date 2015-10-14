@@ -1,4 +1,4 @@
-% SP_PRECOMPUTE_PARAM: precompute all the fields, as in the space structure of the technical report.
+% SP_PRECOMPUTE_PARAM: precompute all the fields, as in the space structure of the technical report, before mapping to the physical domain.
 %
 %     space = sp_precompute_param (space, msh);
 %     space = sp_precompute_param (space, msh, 'option', value);
@@ -7,11 +7,14 @@
 %     
 %    space: object representing the discrete function space (see sp_bspline or sp_nurbs).
 %    msh: mesh object containing the quadrature information (see msh_cartesian)
-%    'option', value: additional optional parameters, available options are:
-%        nsh, connectivity, value (shape_functions),
-%        gradient (shape_function_gradients), divergence (shape_function_divs),
-%        curl (shape_function_curls).
-%     The value must be true or false. All the values are false by default.
+%   'option', value: additional optional parameters, currently available options are:
+%            
+%              Name     |   Default value |  Meaning
+%           ------------+-----------------+----------------------------------
+%            value      |      true       |  compute shape_functions
+%            gradient   |      false      |  compute shape_function_gradients
+%            divergence |      false      |  compute shape_function_divs
+%            curl       |      false      |  compute shape_function_curls
 %
 % OUTPUT:
 %
@@ -21,14 +24,18 @@
 %            only the selected fields will be computed.
 %
 %    FIELD_NAME      (SIZE)                               DESCRIPTION
+%    ncomp           (scalar)                              number of components of the functions of the space (actually, 3)
+%    ndof            (scalar)                              total number of degrees of freedom
+%    ndof_dir        (ncomp_param x ndim matrix)           for each component, number of degrees of freedom along each direction
+%    nsh_max         (scalar)                              maximum number of shape functions per element
 %    nsh             (1 x msh.nel vector)                  actual number of shape functions per each element
 %    connectivity    (nsh_max x msh.nel vector)            indices of basis functions that do not vanish in each element
-%    shape_functions (ncomp x msh.nqn x nsh_max x msh.nel) basis functions evaluated at each quadrature node in each element
+%    shape_functions (ncomp_param x msh.nqn x nsh_max x msh.nel) basis functions evaluated at each quadrature node in each element
 %    shape_function_gradients
-%             (ncomp x rdim x msh.nqn x nsh_max x msh.nel) basis function gradients evaluated at each quadrature node in each element
-%    shape_function_divs (msh.nqn x nsh_max x msh.nel)     basis function divergence evaluated at each quadrature node in each element
+%             (ncomp_param x rdim x msh.nqn x nsh_max x msh.nel) basis function gradients evaluated at each quadrature node in each element
+%    shape_function_divs (msh.nqn x nsh_max x msh.nel)           basis function divergence evaluated at each quadrature node in each element
 %    shape_function_curls
-%         2D:  (msh.nqn x nsh_max x msh.nel)               basis function curl evaluated at each quadrature node in each element
+%         2D:  (msh.nqn x nsh_max x msh.nel)                     basis function curl evaluated at each quadrature node in each element
 %         3D:  (3 x msh.nqn x nsh_max x msh.nel)        
 %
 % Copyright (C) 2009, 2010 Carlo de Falco

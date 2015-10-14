@@ -13,21 +13,30 @@
 %
 %    sp: object representing the discrete function space of vector-valued functions, with the following fields and methods:
 %
-%        FIELD_NAME      (SIZE)                    DESCRIPTION
-%        ncomp           (scalar)                  number of components of the functions of the space
-%        scalar_spaces   (1 x ncomp cell array)    array of space objects, one for each component
-%        ndof            (scalar)                  total number of degrees of freedom
-%        ndof_dir        (ncomp x ndim matrix)     for each component, number of degrees of freedom along each direction
-%        comp_dofs       (1 x ncomp cell array)    indices of the degrees of freedom for each component
-%        nsh_max         (scalar)                  maximum number of shape functions per element
-%        boundary        (1 x 2*ndim struct array) struct array representing the space of traces of basis functions on each edge
+%        FIELD_NAME      (SIZE)                       DESCRIPTION
+%        ncomp           (scalar)                      number of components of the functions of the space (equal to msh.rdim)
+%        ncomp_param     (scalar)                      number of components of the functions of the space in the parametric domain (usually equal to msh.ndim)
+%        scalar_spaces   (1 x ncomp_param cell array)  array of space objects, one for each component
+%        ndof            (scalar)                      total number of degrees of freedom
+%        ndof_dir        (ncomp_param x ndim matrix)   for each component, number of degrees of freedom along each direction
+%        comp_dofs       (1 x ncomp_param cell array)  indices of the degrees of freedom for each component
+%        nsh_max         (scalar)                      maximum number of shape functions per element
+%        boundary        (1 x 2*ndim struct array)     struct array representing the space of traces of basis functions on each edge
+%        transform       (string)                      one of 'grad-preserving', 'curl-preserving' and 'div-preserving'
+%        dofs            (1 x ndof vector)             only for boundary spaces, degrees of freedom that do not vanish on the boundary
+%        constructor     function handle               function handle to construct the same discrete space in a different msh
 %
-%       METHOD_NAME
-%       sp_evaluate_col: compute the basis functions in one column of the mesh (that is, fixing the element in the first parametric direction).
-%       sp_eval_boundary_side: evaluate the basis functions in one side of the boundary.
-%       sp_precompute:  compute any of the fields related to the discrete
-%                       space (except boundary), in all the quadrature points,
-%                       as in the space structure from previous versions.
+%       METHODS
+%       These methods give a structure with all the functions computed in a certain subset of the mesh
+%        sp_evaluate_col:          compute basis functions (and derivatives) in one column of the mesh, i.e., fixing the element in the first
+%                                    parametric direction
+%        sp_precompute:            compute basis functions and derivatives in the whole mesh (memory consuming)       
+%        sp_eval_boundary_side:    evaluate the basis functions in one side of the boundary.
+%
+%       These methods serve for post-processing, and require a computed vector of degrees of freedom
+%        sp_h1_error:              compute the error in H1 norm
+%        sp_l2_error:              compute the error in L2 norm
+%        sp_eval:                  evaluate the computed solution in a Cartesian grid of points
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011, 2015 Rafael Vazquez

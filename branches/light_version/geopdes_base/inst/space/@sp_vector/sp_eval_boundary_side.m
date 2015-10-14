@@ -14,12 +14,13 @@
 %              (see the article for a detailed description)
 %
 %     FIELD_NAME      (SIZE)                                          DESCRIPTION
-%     ncomp           (scalar)                                        number of components of the functions of the space (actually, 3)
+%     ncomp           (scalar)                                        number of components of the functions of the space
 %     nsh_max         (scalar)                                        maximum number of shape functions per element
 %     nsh             (1 x msh_side.nel vector)                       actual number of shape functions per each element
 %     ndof            (scalar)                                        total number of degrees of freedom
 %     connectivity    (nsh_max x msh_side.nel vector)                 indices of basis functions that do not vanish in each element
 %     shape_functions (ncomp x msh_side.nqn x nsh_max x msh_side.nel) basis functions evaluated at each quadrature node in each element
+%     dofs            (1 x ndof vector)                               numbering of the degrees of freedom in the volumetric space
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011, 2015 Rafael Vazquez
