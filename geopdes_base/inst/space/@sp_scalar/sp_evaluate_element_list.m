@@ -55,8 +55,8 @@ function sp = sp_evaluate_element_list (space, msh, varargin)
 
 value = true;
 gradient = false;
-grad_param = false;
 hessian = false;
+laplacian = false;
 if (~isempty (varargin))
   if (~rem (length (varargin), 2) == 0)
     error ('sp_evaluate_element_list: options must be passed in the [option, value] format');
@@ -66,9 +66,10 @@ if (~isempty (varargin))
       value = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'gradient'))
       gradient = varargin {ii+1};
-      grad_param = gradient;
     elseif (strcmpi (varargin {ii}, 'hessian'))
       hessian = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'laplacian'))
+      laplacian = varargin {ii+1};
     else
       error ('sp_evaluate_element_list: unknown option %s', varargin {ii});
     end
@@ -79,7 +80,7 @@ hessian_param = hessian || laplacian;
 grad_param = gradient || hessian_param;
 value_param = value || gradient_param;
 
-sp = sp_evaluate_element_list_param (space, msh, 'value', value_param, 'gradient', grad_param, 'hessian', hessian);
+sp = sp_evaluate_element_list_param (space, msh, 'value', value_param, 'gradient', grad_param, 'hessian', hessian_param);
 
 if (isempty (msh.elem_list))
   return

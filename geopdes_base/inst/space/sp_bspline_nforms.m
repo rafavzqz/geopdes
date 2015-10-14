@@ -47,25 +47,6 @@
 
 function sp = sp_bspline_nforms (knots, degree, msh)
 
-  sp.knots = knots;
-  sp.degree = degree;
-
-  nodes = msh.qn;
-  for idim = 1:msh.ndim
-    sp.sp_univ(idim) = sp_bspline_1d_param (knots{idim}, degree(idim), nodes{idim}, 'gradient', false, 'hessian', false);
-  end
-
-  sp.nsh_dir  = [sp.sp_univ.nsh_max];
-  sp.nsh_max  = prod (sp.nsh_dir);
-  sp.ndof_dir = [sp.sp_univ.ndof];
-  sp.ndof     = prod (sp.ndof_dir);
-  sp.ncomp    = 1;
-
-  sp.nsh = [];
-  sp.connectivity = [];
-  sp.shape_functions = [];
-
-  sp.constructor = @(MSH) sp_bspline_nforms (sp.knots, sp.degree, MSH);
-  sp = class (sp, 'sp_bspline_nforms');
+  sp = sp_scalar (knots, degree, [], msh, 'integral-preserving');
 
 end

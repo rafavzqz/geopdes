@@ -167,7 +167,7 @@ end
 
 clear shp shg shh
 
-if (strcmpi (sp.space_type, 'NURBS'))
+if (strcmpi (space.space_type, 'NURBS'))
   sp = bsp_2_nrb__ (sp, msh, space.weights);
 end
 
