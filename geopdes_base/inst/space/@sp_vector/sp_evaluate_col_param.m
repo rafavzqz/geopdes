@@ -83,7 +83,7 @@ if (~isempty (varargin))
 end
 
 first_der = gradient || divergence || curl;
-for icomp = 1:space.ncomp
+for icomp = 1:space.ncomp_param
   sp_col_scalar(icomp) = sp_evaluate_col_param (space.scalar_spaces{icomp}, msh, 'value', value, 'gradient', first_der);
 end
 
@@ -93,7 +93,7 @@ ndof = sum (ndof_scalar);
 nsh  = zeros (1, msh.nel);
 connectivity = [];
 aux = 0;
-for icomp = 1:space.ncomp
+for icomp = 1:space.ncomp_param
   ndof_dir(icomp,:) = sp_col_scalar(icomp).ndof_dir;
   nsh = nsh + sp_col_scalar(icomp).nsh(:)';
   
@@ -103,21 +103,20 @@ end
 
 sp = struct('nsh_max', space.nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
             'ndof_dir', ndof_dir, 'connectivity', connectivity, ...
-            'ncomp', space.ncomp);
+            'ncomp', space.ncomp, 'ncomp_param', space.ncomp_param);
 
-% From here it will depend on the transformation
 if (value)
-  sp.shape_functions = zeros (sp.ncomp, msh.nqn, sp.nsh_max, msh.nel);
-  for icomp = 1:space.ncomp
+  sp.shape_functions = zeros (sp.ncomp_param, msh.nqn, sp.nsh_max, msh.nel);
+  for icomp = 1:space.ncomp_param
     indices = space.cumsum_nsh(icomp)+(1:sp_col_scalar(icomp).nsh_max);
     sp.shape_functions(icomp,:,indices,:) = sp_col_scalar(icomp).shape_functions;
   end
 end
 
 if (gradient || curl || divergence)
-  shape_fun_grads = zeros (space.ncomp, msh.ndim, msh.nqn, sp.nsh_max, msh.nel);
+  shape_fun_grads = zeros (space.ncomp_param, msh.ndim, msh.nqn, sp.nsh_max, msh.nel);
 
-  for icomp = 1:space.ncomp
+  for icomp = 1:space.ncomp_param
     indices = space.cumsum_nsh(icomp)+(1:sp_col_scalar(icomp).nsh_max);
     shape_fun_grads(icomp,:,:,indices,:) = sp_col_scalar(icomp).shape_function_gradients;
   end
@@ -128,7 +127,7 @@ if (gradient || curl || divergence)
 
   if (divergence)
     sp.shape_function_divs = zeros (msh.nqn, sp.nsh_max, msh.nel);
-    for icomp = 1:space.ncomp
+    for icomp = 1:space.ncomp_param
       sp.shape_function_divs = sp.shape_function_divs + ...
         reshape (shape_fun_grads(icomp,icomp,:,:,:), msh.nqn, sp.nsh_max, msh.nel);
     end
