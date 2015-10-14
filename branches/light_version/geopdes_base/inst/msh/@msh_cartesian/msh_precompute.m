@@ -166,4 +166,6 @@ function msh = msh_precompute (msh, varargin)
 %                              abs (msh.jacdet), 1)).^(1/msh.ndim);
 %   end
 
+  msh = struct (msh);
+
 end
