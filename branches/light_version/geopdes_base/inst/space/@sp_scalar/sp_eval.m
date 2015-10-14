@@ -116,7 +116,9 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options)
     eu_aux = sp_eval_msh (u, sp_col, msh_col, options);
     
     F(:,:,msh_col.elem_list) = msh_col.geo_map;
-    eu{iopt}(eunum{iopt}{:},msh_col.elem_list) = eu_aux{iopt};
+    for iopt = 1:nopts
+      eu{iopt}(eunum{iopt}{:},msh_col.elem_list) = eu_aux{iopt};
+    end
   end
   
   F = reshape (F, [msh.rdim, npts]);
