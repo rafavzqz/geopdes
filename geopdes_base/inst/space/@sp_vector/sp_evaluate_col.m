@@ -81,84 +81,21 @@ if (~isempty (varargin))
   end
 end
 
-first_der = gradient || divergence || curl;
-for icomp = 1:space.ncomp
-  sp_col_scalar(icomp) = sp_evaluate_col_param (space.scalar_spaces{icomp}, msh, 'value', value, 'gradient', first_der);
-end
+grad_param = gradient || divergence || curl;
+value_param = value || grad_param;
 
-ndof_scalar = [sp_col_scalar.ndof];
+sp = sp_evaluate_col_param (space, msh, 'value', value_param, 'gradient', grad_param, 'curl', curl, 'divergence', divergence);
 
-ndof = sum (ndof_scalar);
-nsh  = zeros (1, msh.nel);
-connectivity = [];
-aux = 0;
-for icomp = 1:space.ncomp
-  ndof_dir(icomp,:) = sp_col_scalar(icomp).ndof_dir;
-  nsh = nsh + sp_col_scalar(icomp).nsh(:)';
-  
-  connectivity = [connectivity; sp_col_scalar(icomp).connectivity+aux];
-  aux = aux + ndof_scalar(icomp);
-end
-
-sp = struct('nsh_max', space.nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
-            'ndof_dir', ndof_dir, 'connectivity', connectivity, ...
-            'ncomp', space.ncomp);
-
-% From here it will depend on the transformation
-if (value)
-  sp.shape_functions = zeros (sp.ncomp, msh.nqn, sp.nsh_max, msh.nel);
-  for icomp = 1:space.ncomp
-    indices = space.cumsum_nsh(icomp)+(1:sp_col_scalar(icomp).nsh_max);
-    sp.shape_functions(icomp,:,indices,:) = sp_col_scalar(icomp).shape_functions;
-  end
-end
-
-if (gradient || curl || divergence)
-  shape_fun_grads = zeros (space.ncomp, msh.rdim, msh.nqn, sp.nsh_max, msh.nel);
-
-  JinvT = geopdes_invT__ (msh.geo_map_jac);
-  JinvT = reshape (JinvT, [msh.rdim, msh.ndim, msh.nqn, msh.nel]);
-  for icomp = 1:space.ncomp
-    indices = space.cumsum_nsh(icomp)+(1:sp_col_scalar(icomp).nsh_max);
-    shape_fun_grads(icomp,:,:,indices,:) = ...
-        geopdes_prod__ (JinvT, sp_col_scalar(icomp).shape_function_gradients);
-  end
-  
-  if (gradient)
-    sp.shape_function_gradients = shape_fun_grads;
-  end
-
-  if (divergence)
-    if (space.ncomp == msh.rdim)
-      sp.shape_function_divs = zeros (msh.nqn, sp.nsh_max, msh.nel);
-      for icomp = 1:space.ncomp
-        sp.shape_function_divs = sp.shape_function_divs + ...
-          reshape (shape_fun_grads(icomp,icomp,:,:,:), msh.nqn, sp.nsh_max, msh.nel);
-      end
-    else
-      error('The divergence is not implemented in the case that rdim != ncomp')
+switch (lower (space.transform))
+  case {'grad-preserving'}
+    sp = sp_vector_grad_preserving_transform (sp, msh, value, gradient, curl, divergence);
+  case {'curl-preserving'}
+    sp = sp_vector_curl_preserving_transform (sp, msh, value, curl);
+    if (gradient || divergence)
+      warning ('Gradient and divergence not implemented for curl-preserving transformation')
     end
-  end
-
-  if (curl)
-    if (space.ncomp == msh.rdim)
-      if (space.ncomp == 2)
-        sp.shape_function_curls = reshape (shape_fun_grads(2,1,:,:,:) - ...
-			 	       shape_fun_grads(1,2,:,:,:), msh.nqn, sp.nsh_max, msh.nel);
-      elseif (space.ncomp == 3)
-        shape_fun_curls = zeros (space.ncomp, msh.nqn, sp.nsh_max, msh.nel);
-        for icomp = 1:space.ncomp
-          ind1 = mod(icomp,3) + 1;
-          ind2 = mod(ind1, 3) + 1;
-          shape_fun_curls(icomp,:,:,:) = reshape (shape_fun_grads(ind2,ind1,:,:,:) - ...
-                     shape_fun_grads(ind1,ind2,:,:,:), 1, msh.nqn, sp.nsh_max, msh.nel);
-        end
-        sp.shape_function_curls = shape_fun_curls;
-      end
-    else
-      error('The curl is not implemented in the case that rdim != ncomp')
-    end
-  end
+  case {'div-preserving'}
+    sp = sp_vector_div_preserving_transform (sp, msh, value, divergence, gradient);
 end
 
 end

@@ -1,7 +1,7 @@
-% SP_PRECOMPUTE: precompute all the fields, as in the space structure of the technical report.
+% SP_PRECOMPUTE_PARAM: precompute all the fields, as in the space structure of the technical report.
 %
-%     space = sp_precompute (space, msh);
-%     space = sp_precompute (space, msh, 'option', value);
+%     space = sp_precompute_param (space, msh);
+%     space = sp_precompute_param (space, msh, 'option', value);
 %
 % INPUT:
 %     
@@ -47,7 +47,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp_out = sp_precompute (sp, msh, varargin)
+function sp_out = sp_precompute_param (sp, msh, varargin)
 
 if (isempty (varargin))
   value = true;
@@ -77,21 +77,77 @@ if (~isstruct (msh))
   msh = msh_precompute (msh);
 end
   
-grad_param = gradient || divergence || curl;
-value_param = value || grad_param;
+first_der = gradient || divergence || curl;
+for icomp = 1:sp.ncomp
+  sp_scalar(icomp) = sp_precompute_param (sp.scalar_spaces{icomp}, msh, 'value', value, 'gradient', first_der);
+end
 
-sp_out = sp_precompute_param (sp, msh, 'value', value_param, 'gradient', grad_param, 'curl', curl, 'divergence', divergence);
+ndof_scalar = [sp_scalar.ndof];
 
-switch (lower (sp.transform))
-  case {'grad-preserving'}
-    sp_out = sp_vector_grad_preserving_transform (sp_out, msh, value, gradient, curl, divergence);
-  case {'curl-preserving'}
-    sp_out = sp_vector_curl_preserving_transform (sp_out, msh, value, curl);
-    if (gradient || divergence)
-      warning ('Gradient and divergence not implemented for curl-preserving transformation')
+ndof = sum (ndof_scalar);
+nsh  = zeros (1, msh.nel);
+connectivity = [];
+aux = 0;
+for icomp = 1:sp.ncomp
+  ndof_dir(icomp,:) = sp_scalar(icomp).ndof_dir;
+  nsh = nsh + sp_scalar(icomp).nsh(:)';
+  
+  connectivity = [connectivity; sp_scalar(icomp).connectivity+aux];
+  aux = aux + ndof_scalar(icomp);
+end
+
+sp_out = struct('nsh_max', sp.nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
+                'ndof_dir', ndof_dir, 'connectivity', connectivity, ...
+                'ncomp', sp.ncomp);
+
+if (value)
+  sp_out.shape_functions = zeros (sp.ncomp, msh.nqn, sp.nsh_max, msh.nel);
+  for icomp = 1:sp.ncomp
+    indices = sp.cumsum_nsh(icomp)+(1:sp_scalar(icomp).nsh_max);
+    sp_out.shape_functions(icomp,:,indices,:) = sp_scalar(icomp).shape_functions;
+  end
+end
+
+if (gradient || divergence || curl)
+  shape_fun_grads = zeros (sp.ncomp, msh.rdim, msh.nqn, sp.nsh_max, msh.nel);
+  aux = 0;
+  for icomp = 1:sp.ncomp
+    shape_fun_grads(icomp,:,:,aux+(1:sp_scalar(icomp).nsh_max),:) = ...
+        scalar_sp{icomp}.shape_function_gradients;
+    aux = aux + scalar_sp{icomp}.nsh_max;
+  end    
+
+  if (gradient)
+    sp_out.shape_function_gradients = shape_fun_grads;
+  end
+    
+  if (divergence)
+    sp_out.shape_function_divs = zeros (msh.nqn, sp.nsh_max, msh.nel);
+    for icomp = 1:sp.ncomp
+      sp_out.shape_function_divs = sp.shape_function_divs + ...
+          reshape (shape_fun_grads(icomp,icomp,:,:,:), msh.nqn, sp.nsh_max, msh.nel);
     end
-  case {'div-preserving'}
-    sp_out = sp_vector_div_preserving_transform (sp_out, msh, value, divergence, gradient);
+  end
+    
+  if (curl)
+    if (sp.ncomp == 2)
+      sp_out.shape_function_curls = reshape (shape_fun_grads(2,1,:,:,:) - ...
+ 		 	       shape_fun_grads(1,2,:,:,:), msh.nqn, sp.nsh_max, msh.nel);
+    elseif (sp.ncomp == 3)
+      shape_fun_curls = zeros (sp.ncomp, msh.nqn, sp.nsh_max, msh.nel);
+      for icomp = 1:sp.ncomp
+        ind1 = mod(icomp,3) + 1;
+        ind2 = mod(ind1, 3) + 1;
+        shape_fun_curls(icomp,:,:,:) = reshape (shape_fun_grads(ind2,ind1,:,:,:) - ...
+                   shape_fun_grads(ind1,ind2,:,:,:), 1, msh.nqn, sp.nsh_max, msh.nel);
+      end
+      sp_out.shape_function_curls = shape_fun_curls;
+    end
+  end
+end
+
+if (isfield (struct (sp), 'dofs'))
+  sp_out.dofs = sp.dofs;
 end
 
 end

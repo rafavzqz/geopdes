@@ -1,5 +1,19 @@
 function sp = sp_grad_preserving_transform (sp, msh, value, gradient, hessian, laplacian)
 
+  if (nargin < 3)
+    value = true;
+  end
+  if (nargin < 4)
+    gradient = false;
+  end
+  if (nargin < 5)
+    hessian = false;
+  end
+  if (nargin < 6)
+    laplacian = false;
+  end
+
+
   if (hessian || laplacian)
     [Jinv, Jinv2] = geopdes_inv_der2__ (msh.geo_map_jac, msh.geo_map_der2);
     Jinv  = reshape (Jinv, [msh.ndim, msh.rdim, msh.nqn, 1, msh.nel]);

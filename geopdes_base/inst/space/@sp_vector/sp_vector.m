@@ -1,11 +1,13 @@
 % SP_VECTOR: Constructor of the class vectorial spaces with a component-wise mapping.
 %
-%     sp = sp_vector (scalar_spaces, msh)
+%     sp = sp_vector (scalar_spaces, msh, [transform])
 %
 % INPUTS:
 %
-%    scalar_space: array of space objects, one for each component (see sp_bspline or sp_nurbs)
+%    scalar_space: array of space objects, one for each component (see sp_scalar)
 %    msh:          mesh object that defines the domain partition and the quadrature rule (see msh_cartesian)
+%    transform:    string with the transform to the physical domain, one of 
+%                   'grad-preserving' (default), 'curl-preserving' and 'div-preserving'.
 %
 % OUTPUT:
 %
@@ -43,7 +45,11 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp = sp_vector (scalar_spaces, msh)
+function sp = sp_vector (scalar_spaces, msh, transform)
+
+  if (nargin == 2)
+    transform = 'grad-preserving';
+  end
 
   sp.ncomp = numel (scalar_spaces);
   if (sp.ncomp ~= msh.rdim)
@@ -87,13 +93,9 @@ function sp = sp_vector (scalar_spaces, msh)
     sp.boundary = [];
   end
 
-  sp.nsh = [];
-  sp.connectivity = [];
-  sp.shape_functions = [];
-  sp.shape_function_gradients = [];
-  sp.shape_function_divs = [];
-  sp.shape_function_curls = [];
   sp.dofs = [];
+
+  sp.transform = transform;
 
   if (sp.ncomp == 2)
     sp.constructor = @(MSH) sp_vector ({scalar_spaces{1}.constructor(MSH), ...
@@ -103,6 +105,7 @@ function sp = sp_vector (scalar_spaces, msh)
                                         scalar_spaces{2}.constructor(MSH), ...
                                         scalar_spaces{3}.constructor(MSH)}, MSH);
   end
+  
   sp = class (sp, 'sp_vector');
 
 end
