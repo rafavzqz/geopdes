@@ -26,16 +26,16 @@
 %    FIELD_NAME      (SIZE)                                     DESCRIPTION
 %    ncomp           (scalar)                                   number of components of the functions of the space (actually, 3)
 %    ndof            (scalar)                                   total number of degrees of freedom
-%    ndof_dir        (ncomp x ndim matrix)                      for each component, number of degrees of freedom along each direction
+%    ndof_dir        (ncomp_param x ndim matrix)                for each component, number of degrees of freedom along each direction
 %    nsh_max         (scalar)                                   maximum number of shape functions per element
 %    nsh             (1 x msh_col.nel vector)                   actual number of shape functions per each element
 %    connectivity    (nsh_max x msh_col.nel vector)             indices of basis functions that do not vanish in each element
-%    shape_functions (ncomp x msh_col.nqn x nsh_max x msh_col.nel)  basis functions evaluated at each quadrature node in each element
+%    shape_functions (ncomp_param x msh_col.nqn x nsh_max x msh_col.nel)  basis functions evaluated at each quadrature node in each element
 %    shape_function_gradients
-%       (ncomp x rdim x msh_col.nqn x nsh_max x msh_col.nel)    basis function gradients evaluated at each quadrature node in each element
-%    shape_function_divs (msh_col.nqn x nsh_max x msh_col.nel)  basis function divergence evaluated at each quadrature node in each element
+%       (ncomp_param x rdim x msh_col.nqn x nsh_max x msh_col.nel) basis function gradients evaluated at each quadrature node in each element
+%    shape_function_divs (msh_col.nqn x nsh_max x msh_col.nel)     basis function divergence evaluated at each quadrature node in each element
 %    shape_function_curls 
-%         2D:  (msh_col.nqn x nsh_max x msh_col.nel)            basis function curl evaluated at each quadrature node in each element
+%         2D:  (msh_col.nqn x nsh_max x msh_col.nel)               basis function curl evaluated at each quadrature node in each element
 %         3D:  (3 x msh_col.nqn x nsh_max x msh_col.nel)        
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
@@ -60,7 +60,6 @@ value = true;
 gradient = false;
 divergence = false;
 curl = false;
-hessian = false;
 if (~isempty (varargin))
   if (~rem (length (varargin), 2) == 0)
     error ('sp_evaluate_col: options must be passed in the [option, value] format');
@@ -74,8 +73,6 @@ if (~isempty (varargin))
       curl = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'divergence'))
       divergence = varargin {ii+1};
-    elseif (strcmpi (varargin {ii}, 'hessian'))
-      hessian = varargin {ii+1};
     else
       error ('sp_evaluate_col_param: unknown option %s', varargin {ii});
     end
@@ -154,12 +151,12 @@ if (gradient || curl || divergence)
   end
 end
 
-if (hessian)
-  sp.shape_function_hessians = zeros (space.ncomp, msh.ndim, msh.ndim, msh.nqn, sp.nsh_max, msh.nel);
-  for icomp = 1:space.ncomp
-    indices = space.cumsum_nsh(icomp)+(1:sp_col_scalar(icomp).nsh_max);
-    sp.shape_function_hessians(icomp,:,:,:,indices,:) = sp_col_scalar(icomp).shape_function_hessians;
-  end
-end
+% if (hessian)
+%   sp.shape_function_hessians = zeros (space.ncomp, msh.ndim, msh.ndim, msh.nqn, sp.nsh_max, msh.nel);
+%   for icomp = 1:space.ncomp
+%     indices = space.cumsum_nsh(icomp)+(1:sp_col_scalar(icomp).nsh_max);
+%     sp.shape_function_hessians(icomp,:,:,:,indices,:) = sp_col_scalar(icomp).shape_function_hessians;
+%   end
+% end
 
 end

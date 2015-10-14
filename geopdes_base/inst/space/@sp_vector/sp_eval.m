@@ -6,19 +6,18 @@
 % INPUT:
 %     
 %     u:           vector of dof weights
-%     space:       object defining the discrete space (see sp_bspline)
+%     space:       object defining the discrete space (see sp_vector)
 %     geometry:    geometry structure (see geo_load)
 %     pts:         cell array with coordinates of points along each parametric direction
 %     npts:        number of points along each parametric direction
 %     options:     cell array with the fields to plot
-%                   accepted options are 'value' (default), 'gradient',
-%                   and for vectors also 'curl', 'divergence', 'stress'
+%                   accepted options are 'value' (default), 'gradient', 'curl', 'divergence', 'stress'
 %     lambda_lame: function handle to the first Lame coefficient (only needed to compute 'stress')
 %     mu_lame:     function handle for the second Lame coefficient (only needed to compute 'stress')
 %
 % OUTPUT:
 %
-%     eu: the function evaluated at the given points 
+%     eu: cell-array with the fields evaluated at the given points 
 %     F:  grid points in the physical domain, that is, the mapped points
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
