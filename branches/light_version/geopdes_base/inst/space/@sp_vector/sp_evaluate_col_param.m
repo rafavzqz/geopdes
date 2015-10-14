@@ -1,6 +1,6 @@
 % SP_EVALUATE_COL_PARAM: compute the basis functions in one column of the mesh in the parametric domain.
 %
-%     sp = sp_evaluate_col (space, msh, colnum, 'option1', value1, ...)
+%     sp = sp_evaluate_col_param (space, msh, colnum, 'option1', value1, ...)
 %
 % INPUTS:
 %     
@@ -84,7 +84,7 @@ end
 
 first_der = gradient || divergence || curl;
 for icomp = 1:space.ncomp
-  sp_col_scalar(icomp) = sp_evaluate_col_param (space.scalar_spaces{icomp}, msh, 'value', value, 'gradient', first_der, 'hessian', hessian);
+  sp_col_scalar(icomp) = sp_evaluate_col_param (space.scalar_spaces{icomp}, msh, 'value', value, 'gradient', first_der);
 end
 
 ndof_scalar = [sp_col_scalar.ndof];
