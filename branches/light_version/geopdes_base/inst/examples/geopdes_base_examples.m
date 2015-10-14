@@ -51,7 +51,8 @@ while (iopt > 0)
       iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
       if (~isempty (iopt2) && iopt2 > 0 && iopt2 < 6)
         vexa = do_example (iopt2);
-        disp (vexa);
+        index = strfind (vexa,'%!') - 1;
+        disp (vexa(1:index(1)));
         eval (vexa);
         input ('Press <Enter> to continue: ');
       end
