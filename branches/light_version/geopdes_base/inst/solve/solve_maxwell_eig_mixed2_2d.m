@@ -91,8 +91,8 @@ scalar_spaces = cell (msh.ndim, 1);
 for idim = 1:msh.ndim
   scalar_spaces{idim} = sp_bspline (knots_hcurl{idim}, degree_hcurl{idim}, msh);
 end
-space = sp_vector_curl_transform (scalar_spaces, msh);
-sp_mul = sp_bspline_nforms (knots_mul, degree_mul, msh);
+space = sp_vector (scalar_spaces, msh, 'curl-preserving');
+sp_mul = sp_bspline (knots_mul, degree_mul, msh, 'integral-preserving');
 clear scalar_spaces
 
 % Assemble the matrices
