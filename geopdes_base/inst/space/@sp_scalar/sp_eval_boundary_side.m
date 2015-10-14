@@ -4,7 +4,7 @@
 %
 % INPUTS:
 %
-%     sp:       space object (see sp_bspline)
+%     sp:       space object (see sp_scalar)
 %     msh_side: mesh structure containing the information of the quadrature
 %               rule on the boundary edge (see msh_cartesian/msh_eval_boundary_side)
 %
@@ -20,6 +20,7 @@
 %     ndof            (scalar)                                 total number of degrees of freedom
 %     connectivity    (nsh_max x msh_side.nel vector)          indices of basis functions that do not vanish in each element
 %     shape_functions (msh_side.nqn x nsh_max x msh_side.nel)  basis functions evaluated at each quadrature node in each element
+%     dofs            (1 x ndof vector)                        numbering of the degrees of freedom in the volumetric space
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011, 2015 Rafael Vazquez

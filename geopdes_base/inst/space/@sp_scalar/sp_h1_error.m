@@ -1,10 +1,10 @@
 % SP_H1_ERROR: Evaluate the error in H^1 norm.
 %
-%   [toterr, errl2] = sp_h1_error (space, msh, u, uex, graduex)
+%   [errh1, errl2, errh1s] = sp_h1_error (space, msh, u, uex, graduex)
 %
 % INPUT:
 %
-%    space:   object defining the space of discrete functions (see sp_bspline)
+%    space:   object defining the space of discrete functions (see sp_scalar)
 %    msh:     object defining the domain partition and the quadrature rule (see msh_cartesian)
 %    u:       vector of dof weights
 %    uex:     function handle to evaluate the exact solution
@@ -12,8 +12,9 @@
 %
 % OUTPUT:
 %
-%     toterr: error in H^1 norm
+%     errh1:  error in H^1 norm
 %     errl2:  error in L^2 norm
+%     errh1s: error in H^1 seminorm
 %
 % Copyright (C) 2010 Carlo de Falco
 % Copyright (C) 2011, 2015 Rafael Vazquez

@@ -28,14 +28,22 @@
 %        ncomp           (scalar)                    number of components of the functions of the space (actually, 1)
 %        boundary        (1 x 2*ndim struct array)   struct array representing the space of traces of basis functions on each edge
 %        transform       (string)                    one of 'grad-preserving' and 'integral-preserving'
+%        dofs            (1 x ndof vector)           only for boundary spaces, degrees of freedom that do not vanish on the boundary
+%        adjacent_dofs   (1 x ndof vector)           only for boundary spaces, degrees of freedom that vanish on the boundary, but its
+%                                                     first derivative does not
+%        constructor     function handle             function handle to construct the same discrete space in a different msh
 %
-%       METHOD_NAME
-%       sp_evaluate_col: compute the basis functions (and derivatives) in one column of the mesh (that is, fixing the element in the first parametric direction).
-%       sp_evaluate_col_param: compute the basis functions (and derivatives) in one column of the mesh in the reference domain.
-%       sp_eval_boundary_side: evaluate the basis functions in one side of the boundary.
-%       sp_precompute:  compute any of the fields related to the discrete
-%                       space (except boundary), in all the quadrature points,
-%                       as in the space structure from previous versions.
+%       METHODS
+%       The following methods give a structure with all the functions computed in a certain subset of the mesh
+%       sp_evaluate_element_list: compute basis functions (and derivatives) in a given list of elements
+%       sp_evaluate_col:          compute basis functions (and derivatives) in one column of the mesh, i.e., fixing the element in the first
+%                                   parametric direction
+%       sp_precompute:            compute basis functions and derivatives in the whole mesh (memory consuming)       
+%       sp_eval_boundary_side:    evaluate the basis functions in one side of the boundary.
+%
+%       sp_h1_error:              compute the error in H1 norm
+%       sp_l2_error:              compute the error in L2 norm
+%       sp_eval:                  evaluate the computed solution in a Cartesian grid of points
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011, 2015 Rafael Vazquez

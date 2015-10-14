@@ -34,7 +34,9 @@
 %    shape_function_gradients
 %       (rdim x msh_col.nqn x nsh_max x msh_col.nel)        basis function gradients evaluated at each quadrature node in each element
 %    shape_function_hessians
-%        rdim x rdim x msh_col.nqn x nsh_max x msh_col.nel) basis function hessians evaluated at each quadrature node in each element
+%       (rdim x rdim x msh_col.nqn x nsh_max x msh_col.nel) basis function hessians evaluated at each quadrature node in each element
+%    shape_function_laplacians 
+%       (msh_col.nqn x nsh_max x msh_col.nel)               basis functions laplacians evaluated at each quadrature node in each element
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011, 2015 Rafael Vazquez
