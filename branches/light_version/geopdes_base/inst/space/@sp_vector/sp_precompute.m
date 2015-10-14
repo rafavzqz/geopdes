@@ -56,7 +56,7 @@ if (isempty (varargin))
   curl = false;
 else
   if (~rem (length (varargin), 2) == 0)
-    error ('sp_evaluate_col: options must be passed in the [option, value] format');
+    error ('sp_precompute: options must be passed in the [option, value] format');
   end
   for ii=1:2:length(varargin)-1
     if (strcmpi (varargin {ii}, 'value'))
