@@ -59,10 +59,8 @@ if (msh.ndim > 1)
 % normal direction (the boundary manifold is not enough).
   qn(ind) = msh_side.qn;
   if (mod (iside, 2) == 0)
-    msh_side.quad_nodes(ind2,:,:) = msh.breaks{ind2}(end);
     qn{ind2} = msh.breaks{ind2}(end);
   else
-    msh_side.quad_nodes(ind2,:,:) = msh.breaks{ind2}(1);
     qn{ind2} = msh.breaks{ind2}(1);
   end
 
