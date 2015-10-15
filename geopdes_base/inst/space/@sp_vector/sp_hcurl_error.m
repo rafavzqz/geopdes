@@ -4,7 +4,7 @@
 %
 % INPUT:
 %
-%    space:   object defining the space of discrete functions (see sp_vector_curl_transform)
+%    space:   object defining the space of discrete functions (see sp_vector)
 %    msh:     object defining the domain partition and the quadrature rule (see msh_cartesian)
 %    u:       vector of dof weights
 %    uex:     function handle to evaluate the exact solution
@@ -33,42 +33,23 @@
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
 
-function [errhcurl, errl2, errcurl] = sp_hcurl_error (sp, msh, u, uex, curluex)
+function [errhcurl, errl2, errcurl] = sp_hcurl_error (space, msh, u, uex, curluex)
 
-  w = msh.quad_weights(:) .* msh.jacdet(:);
-
-  for idim = 1:msh.rdim
-    x{idim} = reshape (msh.geo_map(idim,:,:), msh.nqn*msh.nel, 1);
-  end
-  
-  curl_valex = feval (curluex, x{:});
+  errl2 = 0;
   errcurl = 0;
-  
-  switch (msh.rdim)
-   case {2}
-     valnum = zeros (msh.nqn, msh.nel);
-     for ish = 1:sp.nsh_max
-       valnum = valnum + ...
-         reshape (sp.shape_function_curls(:, ish, :), msh.nqn, msh.nel) .* ...
-         u(repmat(sp.connectivity(ish, :), msh.nqn, 1));
-     end
-     errcurl = errcurl + sum((valnum(:) - curl_valex).^2 .* w);
 
-   case{3}
-    for idir = 1:msh.rdim
-      valnum = zeros (msh.nqn, msh.nel);
-      for ish = 1:sp.nsh_max
-        valnum = valnum + ...
-          reshape (sp.shape_function_curls(idir, :, ish, :), msh.nqn, msh.nel) .* ...
-	      reshape (u(repmat(sp.connectivity(ish,:), msh.nqn, 1)), msh.nqn, msh.nel);
-      end
-      valex = curl_valex(idir, :);
-      errcurl = errcurl + sum ((valnum(:) - valex(:)).^2 .* w);
-    end
+  for iel = 1:msh.nel_dir(1)
+    msh_col = msh_evaluate_col (msh, iel);
+    sp_col  = sp_evaluate_col (space, msh_col, 'value', true, 'curl', true);
+
+    [~, err_l2, err_curl] = sp_hcurl_error (sp_col, msh_col, u, uex, curluex);
+
+    errcurl = errcurl + err_curl.^2;
+    errl2 = errl2 + err_l2.^2;
   end
 
-  errl2  = sp_l2_error (sp, msh, u, uex);
-  errhcurl = sqrt (errl2^2 + errcurl);
+  errhcurl = sqrt (errl2 + errcurl);
+  errl2 = sqrt (errl2);
   errcurl = sqrt (errcurl);
-
+  
 end
