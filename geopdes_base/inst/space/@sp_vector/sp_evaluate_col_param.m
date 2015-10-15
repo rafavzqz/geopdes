@@ -131,22 +131,18 @@ if (gradient || curl || divergence)
   end
 
   if (curl)
-    if (space.ncomp == msh.rdim)
-      if (space.ncomp == 2)
-        sp.shape_function_curls = reshape (shape_fun_grads(2,1,:,:,:) - ...
-			 	       shape_fun_grads(1,2,:,:,:), msh.nqn, sp.nsh_max, msh.nel);
-      elseif (space.ncomp == 3)
-        shape_fun_curls = zeros (space.ncomp, msh.nqn, sp.nsh_max, msh.nel);
-        for icomp = 1:space.ncomp
-          ind1 = mod(icomp,3) + 1;
-          ind2 = mod(ind1, 3) + 1;
-          shape_fun_curls(icomp,:,:,:) = reshape (shape_fun_grads(ind2,ind1,:,:,:) - ...
-                     shape_fun_grads(ind1,ind2,:,:,:), 1, msh.nqn, sp.nsh_max, msh.nel);
-        end
-        sp.shape_function_curls = shape_fun_curls;
+    if (space.ncomp_param == 2)
+      sp.shape_function_curls = reshape (shape_fun_grads(2,1,:,:,:) - ...
+	 	       shape_fun_grads(1,2,:,:,:), msh.nqn, sp.nsh_max, msh.nel);
+    elseif (space.ncomp_param == 3)
+      shape_fun_curls = zeros (space.ncomp, msh.nqn, sp.nsh_max, msh.nel);
+      for icomp = 1:space.ncomp
+        ind1 = mod(icomp,3) + 1;
+        ind2 = mod(ind1, 3) + 1;
+        shape_fun_curls(icomp,:,:,:) = reshape (shape_fun_grads(ind2,ind1,:,:,:) - ...
+                   shape_fun_grads(ind1,ind2,:,:,:), 1, msh.nqn, sp.nsh_max, msh.nel);
       end
-    else
-      error('The curl is not implemented in the case that rdim != ncomp')
+      sp.shape_function_curls = shape_fun_curls;
     end
   end
 end
