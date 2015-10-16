@@ -112,7 +112,7 @@ function geometry = geo_load (in)
   else
     for ibnd = 1:6 % This loop should be until 2*ndim, but ndim is not known
       geometry.boundary(ibnd).map     = @(PTS) boundary_map (geometry.map, ibnd, PTS);
-      geometry.boundary(ibnd).map_der = @(PTS) boundary_map_der (geometry.map_der, ibnd, PTS);
+      geometry.boundary(ibnd).map_der = @(PTS) boundary_map_der (geometry.map, geometry.map_der, ibnd, PTS);
     end
   end
 
@@ -201,12 +201,12 @@ function F = boundary_map (map, iside, pts)
   else
     error ('For the boundary, a cell array should be passed as the argument')
   end
-      
+
   F = map (pts_aux);
 
 end
 
-function DF = boundary_map_der (map_der, iside, pts)
+function varargout = boundary_map_der (map, map_der, iside, pts)
 
 %%    ind  = [2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind  = [2 2 1 1] in 2D;
 %%    ind2 = [1 1 2 2 3 3] in 3D,                  %ind2 = [1 1 2 2] in 2D
@@ -225,9 +225,16 @@ function DF = boundary_map_der (map_der, iside, pts)
   else
     error ('For the boundary, a cell array should be passed as the argument')
   end
-      
+
   DF = map_der (pts_aux);
   DF = DF(:,ind,:);
+  if (nargout == 1)
+    varargout{1} = DF;
+  elseif (nargout == 2)
+    F = map (pts_aux);
+    varargout{1} = F;
+    varargout{2} = DF;
+  end
 
 end
 

@@ -108,16 +108,11 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
   msh.ndim = numel (qn);
   if (isfield (geo,'rdim'))
     msh.rdim = geo.rdim;
-  elseif (isfield (geo,'nurbs'))
-    if (any (abs(geo.nurbs.coefs(3,:)) > 1e-12))
-      msh.rdim = 3;
-    elseif (any (abs(geo.nurbs.coefs(2,:)) > 1e-12))
-      msh.rdim = 2;
-    else
-      msh.rdim = 1;
-    end
   else
-    msh.rdim = msh.ndim;
+    for idim = 1:msh.ndim
+      brk1{idim} = breaks{idim}(1);
+    end
+    msh.rdim = size (feval (geo.map, brk1), 1);
   end
 
   msh.qn = qn;
@@ -163,7 +158,7 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
       warning ('msh_cartesian: a function to compute second order derivatives has not been provided')
     end
   end
-
+  
   msh.quad_nodes   = [];
   msh.quad_weights = [];
   msh.geo_map      = [];
