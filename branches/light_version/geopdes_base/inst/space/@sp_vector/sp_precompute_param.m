@@ -56,12 +56,14 @@
 
 function sp_out = sp_precompute_param (sp, msh, varargin)
 
+gradient = false;
+divergence = false;
+curl = false;
+
 if (isempty (varargin))
   value = true;
-  gradient = false;
-  divergence = false;
-  curl = false;
 else
+  value = false;
   if (~rem (length (varargin), 2) == 0)
     error ('sp_precompute: options must be passed in the [option, value] format');
   end
@@ -108,7 +110,7 @@ sp_out = struct('nsh_max', sp.nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
                 'ncomp', sp.ncomp, 'ncomp_param', sp.ncomp_param);
 
 if (value)
-  sp_out.shape_functions = zeros (sp.ncomp, msh.nqn, sp.nsh_max, msh.nel);
+  sp_out.shape_functions = zeros (sp.ncomp_param, msh.nqn, sp.nsh_max, msh.nel);
   for icomp = 1:sp.ncomp_param
     indices = sp.cumsum_nsh(icomp)+(1:sp_scalar(icomp).nsh_max);
     sp_out.shape_functions(icomp,:,indices,:) = sp_scalar(icomp).shape_functions;
@@ -116,12 +118,12 @@ if (value)
 end
 
 if (gradient || divergence || curl)
-  shape_fun_grads = zeros (sp.ncomp, msh.rdim, msh.nqn, sp.nsh_max, msh.nel);
+  shape_fun_grads = zeros (sp.ncomp_param, msh.rdim, msh.nqn, sp.nsh_max, msh.nel);
   aux = 0;
   for icomp = 1:sp.ncomp_param
     shape_fun_grads(icomp,:,:,aux+(1:sp_scalar(icomp).nsh_max),:) = ...
-        scalar_sp{icomp}.shape_function_gradients;
-    aux = aux + scalar_sp{icomp}.nsh_max;
+        sp_scalar(icomp).shape_function_gradients;
+    aux = aux + sp_scalar(icomp).nsh_max;
   end    
 
   if (gradient)
@@ -131,7 +133,7 @@ if (gradient || divergence || curl)
   if (divergence)
     sp_out.shape_function_divs = zeros (msh.nqn, sp.nsh_max, msh.nel);
     for icomp = 1:sp.ncomp_param
-      sp_out.shape_function_divs = sp.shape_function_divs + ...
+      sp_out.shape_function_divs = sp_out.shape_function_divs + ...
           reshape (shape_fun_grads(icomp,icomp,:,:,:), msh.nqn, sp.nsh_max, msh.nel);
     end
   end

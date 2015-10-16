@@ -54,10 +54,11 @@ function [A, rhs] = sp_weak_drchlt_bc (space, msh, bnd_sides, bnd_func, coeff, C
 % Compute the matrices to impose the tangential boundary condition weakly
   for iside = bnd_sides
 
-    [msh_side, msh_side_from_interior] = msh_eval_boundary_side (msh, iside);
+    msh_side = msh_eval_boundary_side (msh, iside);
+    msh_side_from_interior = msh_boundary_side_from_interior (msh, iside);
 
     sp_bnd = space.constructor (msh_side_from_interior);
-    sp_bnd = struct (sp_precompute (sp_bnd, msh_side_from_interior));
+    sp_bnd = struct (sp_precompute (sp_bnd, msh_side_from_interior, 'value', true, 'gradient', true));
 
     for idim = 1:msh.rdim
       x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);

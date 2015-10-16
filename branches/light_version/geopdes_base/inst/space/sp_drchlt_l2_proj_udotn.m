@@ -30,37 +30,46 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [u, dofs] = sp_drchlt_l2_proj_udotn (space, msh, bnd_sides, bnd_func)
+function [u, dofs] = sp_drchlt_l2_proj_udotn (space, msh, sides, bnd_func)
 
-% The normal boundary condition is imposed strongly
-  M = spalloc (space.ndof, space.ndof, 3*space.ndof);
-  rhs2 = zeros (space.ndof, 1);
+  if (~strcmpi (space.transform, 'div-preserving'))
+    error ('The function only works with div-conforming spaces')
+  end
 
-  normal_dofs = [];
-  for iside = bnd_sides
-    if (isa (space, 'sp_vector_div_transform'))
-      [msh_side, msh_side_from_interior] = msh_eval_boundary_side (msh, iside);
-      sp_side = sp_eval_boundary_side (space, msh_side, msh_side_from_interior);
-    else
-      error ('The function only works with div-conforming spaces')
-    end
+  dofs = [];
+  nent = 0;
+  for iside = sides
+    nent = nent + msh.boundary(iside).nel * space.boundary(iside).nsh_max^2;
+    dofs = union (dofs, space.boundary(iside).dofs);
+  end
 
-    ind = ceil (iside/2); % ind = [1 1 2 2] in 2D; ind = [1 1 2 2 3 3] in 3D
-    normal_dofs = union (normal_dofs, sp_side.comp_dofs{ind});
+  rows = zeros (nent, 1);
+  cols = zeros (nent, 1);
+  vals = zeros (nent, 1);
+  rhs = zeros (space.ndof, 1);
+
+  ncounter = 0;
+  for iside = sides
+    msh_side = msh_eval_boundary_side (msh, iside);
+    sp_side = sp_eval_boundary_side (space, msh_side);
 
     for idim = 1:msh.rdim
       x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
     end
     g = bnd_func (x{:}, iside);
-    
-    M_loc = op_udotn_vdotn (sp_side, sp_side, msh_side, ones(size(x{1})));
-    rhs_loc = op_fdotn_vdotn (sp_side, msh_side, g);
-    
-    M(sp_side.dofs, sp_side.dofs) = M(sp_side.dofs, sp_side.dofs) + M_loc;
-    rhs2(sp_side.dofs) = rhs2(sp_side.dofs) + rhs_loc;
+
+    [rs, cs, vs] = op_u_v (sp_side, sp_side, msh_side, ones(size(x{1})));
+
+    bnd_dofs = space.boundary(iside).dofs;
+    rows(ncounter+(1:numel(rs))) = bnd_dofs(rs);
+    cols(ncounter+(1:numel(rs))) = bnd_dofs(cs);
+    vals(ncounter+(1:numel(rs))) = vs;
+    ncounter = ncounter + numel (rs);
+
+    rhs(bnd_dofs) = rhs(bnd_dofs) + op_f_v (sp_side, msh_side, g);
   end
-  
-  u = M(normal_dofs, normal_dofs) \ rhs2(normal_dofs);
-  dofs = normal_dofs;
-  
+
+  M = sparse (rows(1:ncounter), cols(1:ncounter), vals(1:ncounter));
+  u = M(dofs, dofs) \ rhs(dofs, 1);
+
 end

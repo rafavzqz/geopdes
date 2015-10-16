@@ -81,10 +81,15 @@ end
 geometry = geo_load (geo_name);
 
 % Compute the mesh structure using the finest mesh
-msh_breaks = msh_set_breaks (element_name, geometry.nurbs.knots, nsub);
+switch (upper(element_name))
+  case {'RT', 'TH', 'NDL'}
+    [~, zeta] = kntrefine (geometry.nurbs.knots, nsub-1, degree, regularity);
+  case {'SG'}
+    [~, zeta] = kntrefine (geometry.nurbs.knots, 2*nsub-1, degree, regularity);
+end
 rule       = msh_gauss_nodes (nquad);
-[qn, qw]   = msh_set_quad_nodes (msh_breaks, rule);
-msh        = msh_cartesian (msh_breaks, qn, qw, geometry);
+[qn, qw]   = msh_set_quad_nodes (zeta, rule);
+msh        = msh_cartesian (zeta, qn, qw, geometry);
 
 % Compute the space structures
 [space_v, space_p] = sp_bspline_fluid (element_name, ...
@@ -107,11 +112,14 @@ press = zeros (space_p.ndof, 1);
 % Apply natural boundary conditions
 rhs_nmnn = zeros(space_v.ndof,1);
 for iside = nmnn_sides
+  msh_side = msh_eval_boundary_side (msh, iside);
   if (strcmpi (element_name, 'RT') || strcmpi (element_name, 'NDL'))
-    [msh_side, msh_side_from_interior] = msh_eval_boundary_side (msh, iside);
-    sp_side  = sp_eval_boundary_side (space_v, msh_side, msh_side_from_interior);
+    msh_side_from_interior = msh_boundary_side_from_interior (msh, iside);
+
+    sp_side = space_v.constructor (msh_side_from_interior);
+    sp_side = struct (sp_precompute (sp_side, msh_side_from_interior, 'value', true));
+    sp_side.dofs = 1:sp_side.ndof;
   else
-    msh_side = msh_eval_boundary_side (msh, iside);
     sp_side  = sp_eval_boundary_side (space_v, msh_side);
   end
 

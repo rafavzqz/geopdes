@@ -103,6 +103,9 @@ function sp = sp_vector (scalar_spaces, msh, transform)
       elseif (strcmpi (transform, 'curl-preserving'))
 %%    ind =[2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind = [2 2 1 1] in 2D;
         ind = setdiff (1:msh.ndim, ceil(iside/2)); 
+      elseif (strcmpi (transform, 'div-preserving'))
+%%    ind =[1, 1, 2, 2, 3, 3] in 3D, %ind = [1, 1, 2, 2] in 2D;
+        ind = ceil (iside/2);
       end
       sp.boundary(iside) = sp_vector (scalar_bnd(ind), msh.boundary(iside), transform);
       
@@ -136,5 +139,14 @@ function sp = sp_vector (scalar_spaces, msh, transform)
   end
   
   sp = class (sp, 'sp_vector');
+
+
+  if (strcmpi (transform, 'div-preserving'))
+% Check whether the determinant of the Jacobian is positive
+    aux_msh = msh_evaluate_element_list (msh, 1);
+    if (any (geopdes_det__ (aux_msh.geo_map_jac) < 0))
+      warning ('Negative determinant of the Jacobian. This may cause problems with the div-preserving transform')
+    end
+  end
 
 end
