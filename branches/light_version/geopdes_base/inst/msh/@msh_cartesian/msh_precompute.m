@@ -95,6 +95,8 @@ function msh = msh_precompute (msh, varargin)
     
   end
 
+  msh = struct (msh);
+
   if (quad_nodes)
     for idim = 1:msh.ndim
       qsize = ones (1, msh.ndim*2);
@@ -165,7 +167,5 @@ function msh = msh_precompute (msh, varargin)
 %     msh.element_size = (sum (msh.quad_weights .* ...
 %                              abs (msh.jacdet), 1)).^(1/msh.ndim);
 %   end
-
-  msh = struct (msh);
 
 end

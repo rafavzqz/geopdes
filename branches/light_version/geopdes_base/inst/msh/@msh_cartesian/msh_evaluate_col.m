@@ -83,73 +83,48 @@ function msh_col = msh_evaluate_col (msh, colnum, varargin)
     msh_col.qw{1} = msh.qw{1}(:,colnum);
   end
 
-  if (isempty (msh.quad_nodes))
-    for idim = 1:msh.ndim
-      qsize = ones (1, msh.ndim*2);
-      qsize(2*idim-1:2*idim) = [msh_col.nqn_dir(idim), msh_col.nel_dir(idim)];
-      qrep = [msh_col.nqn_dir(1:msh.ndim), msh_col.nel_dir(1:msh.ndim)];
-      qrep([idim, msh.ndim+idim]) = 1;
-      quad_nodes = reshape (msh_col.qn{idim}, qsize);
-      quad_nodes = repmat (quad_nodes, qrep);
-      msh_col.quad_nodes(idim,:,:) = reshape (quad_nodes, msh_col.nqn, msh_col.nel);
-    end
+  for idim = 1:msh.ndim
+    qsize = ones (1, msh.ndim*2);
+    qsize(2*idim-1:2*idim) = [msh_col.nqn_dir(idim), msh_col.nel_dir(idim)];
+    qrep = [msh_col.nqn_dir(1:msh.ndim), msh_col.nel_dir(1:msh.ndim)];
+    qrep([idim, msh.ndim+idim]) = 1;
+    quad_nodes = reshape (msh_col.qn{idim}, qsize);
+    quad_nodes = repmat (quad_nodes, qrep);
+    msh_col.quad_nodes(idim,:,:) = reshape (quad_nodes, msh_col.nqn, msh_col.nel);
     clear qsize qrep quad_nodes
-  else
-    msh_col.quad_nodes = msh.quad_nodes(:,:,msh_col.elem_list);
   end
 
 
   if (~isempty (msh.qw))
-    if (isempty (msh.quad_weights))
-      qw = 1;
-      for idim = 1:msh.ndim
-        qw = kron (msh_col.qw{idim}, qw);
-      end
-      msh_col.quad_weights = qw;
-    else
-      msh_col.quad_weights = msh.quad_weights(:,msh_col.elem_list);
+    qw = 1;
+    for idim = 1:msh.ndim
+      qw = kron (msh_col.qw{idim}, qw);
     end
+    msh_col.quad_weights = qw;
   end
   
 % Auxiliary vector sizes, to use with reshape and permute
   reorder = @(x) x(:)';
   psize = reorder ([msh_col.nqn_dir; msh_col.nel_dir]);
   vorder = [1:2:msh.ndim*2, 2:2:msh.ndim*2]; % [1 3 5 2 4 6], for ndim = 3
-  if (isempty (msh.geo_map))
-    F = feval (msh.map, cellfun (reorder, msh_col.qn, 'UniformOutput', false));
-    F = reshape (F, [msh.rdim, psize]);
-    F = permute (F, [1, vorder+1]);
-    msh_col.geo_map = reshape (F, [msh.rdim, msh.nqn, msh_col.nel]);
-  else
-    msh_col.geo_map = msh.geo_map(:,:,msh_col.elem_list);
-  end
+  F = feval (msh.map, cellfun (reorder, msh_col.qn, 'UniformOutput', false));
+  F = reshape (F, [msh.rdim, psize]);
+  F = permute (F, [1, vorder+1]);
+  msh_col.geo_map = reshape (F, [msh.rdim, msh.nqn, msh_col.nel]);
   
-  if (isempty (msh.geo_map_jac))
-    jac = feval (msh.map_der, cellfun (reorder, msh_col.qn, 'UniformOutput', false));
-    jac = reshape (jac, [msh.rdim, msh.ndim, psize]);
-    jac = permute (jac, [1 2 vorder+2]);
-    msh_col.geo_map_jac = reshape (jac, msh.rdim, msh.ndim, msh.nqn, msh_col.nel);
-  else
-    msh_col.geo_map_jac = msh.geo_map_jac(:,:,:,msh_col.elem_list);
-  end
+  jac = feval (msh.map_der, cellfun (reorder, msh_col.qn, 'UniformOutput', false));
+  jac = reshape (jac, [msh.rdim, msh.ndim, psize]);
+  jac = permute (jac, [1 2 vorder+2]);
+  msh_col.geo_map_jac = reshape (jac, msh.rdim, msh.ndim, msh.nqn, msh_col.nel);
 
-  if (isempty (msh.jacdet))
-    msh_col.jacdet = abs (geopdes_det__ (msh_col.geo_map_jac));
-    msh_col.jacdet = reshape (msh_col.jacdet, [msh_col.nqn, msh_col.nel]);
-  else
-    msh_col.jacdet = msh.jacdet(:,msh_col.elem_list);
-  end
+  msh_col.jacdet = abs (geopdes_det__ (msh_col.geo_map_jac));
+  msh_col.jacdet = reshape (msh_col.jacdet, [msh_col.nqn, msh_col.nel]);
 
   if (msh.der2)
-    if (isempty (msh.geo_map_der2))
-      msh_col.geo_map_der2 = feval (msh.map_der2, cellfun (reorder, msh_col.qn, 'UniformOutput', false));
-      msh_col.geo_map_der2 = reshape (msh_col.geo_map_der2, [msh.rdim, msh.ndim, msh.ndim, psize]);
-      msh_col.geo_map_der2 = permute (msh_col.geo_map_der2, [1 2 3 vorder+3]);
-      msh_col.geo_map_der2 = reshape (msh_col.geo_map_der2, [msh.rdim, msh.ndim, msh.ndim, msh.nqn, msh_col.nel]);
-      
-    else
-      msh_col.geo_map_der2 = msh.geo_map_der2(:,:,:,:,msh_col.elem_list);
-    end
+    msh_col.geo_map_der2 = feval (msh.map_der2, cellfun (reorder, msh_col.qn, 'UniformOutput', false));
+    msh_col.geo_map_der2 = reshape (msh_col.geo_map_der2, [msh.rdim, msh.ndim, msh.ndim, psize]);
+    msh_col.geo_map_der2 = permute (msh_col.geo_map_der2, [1 2 3 vorder+3]);
+    msh_col.geo_map_der2 = reshape (msh_col.geo_map_der2, [msh.rdim, msh.ndim, msh.ndim, msh.nqn, msh_col.nel]);
   end
   
   if (isfield(msh_col, 'quad_weights') && isfield(msh_col, 'jacdet'))

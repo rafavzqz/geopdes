@@ -159,16 +159,6 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
     end
   end
   
-  msh.quad_nodes   = [];
-  msh.quad_weights = [];
-  msh.geo_map      = [];
-  msh.geo_map_jac  = [];
-  msh.geo_map_der2 = [];
-  msh.jacdet       = [];
-  msh.normal       = [];
-% This is only for boundary values  
-  msh.charlen      = [];
-
   msh = class (msh, 'msh_cartesian');
 
 end
