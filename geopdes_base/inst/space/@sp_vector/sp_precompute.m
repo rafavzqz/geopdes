@@ -57,12 +57,14 @@
 
 function sp_out = sp_precompute (sp, msh, varargin)
 
+gradient = false;
+divergence = false;
+curl = false;
+
 if (isempty (varargin))
   value = true;
-  gradient = false;
-  divergence = false;
-  curl = false;
 else
+  value = false;
   if (~rem (length (varargin), 2) == 0)
     error ('sp_precompute: options must be passed in the [option, value] format');
   end
@@ -99,7 +101,7 @@ switch (lower (sp.transform))
       warning ('Gradient and divergence not implemented for curl-preserving transformation')
     end
   case {'div-preserving'}
-    sp_out = sp_vector_div_preserving_transform (sp_out, msh, value, divergence, gradient);
+    sp_out = sp_vector_div_preserving_transform (sp_out, msh, value, gradient, curl, divergence);
 end
 
 end

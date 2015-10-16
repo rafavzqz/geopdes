@@ -95,7 +95,7 @@ switch (lower (space.transform))
       warning ('Gradient and divergence not implemented for curl-preserving transformation')
     end
   case {'div-preserving'}
-    sp = sp_vector_div_preserving_transform (sp, msh, value, divergence, gradient);
+    sp = sp_vector_div_preserving_transform (sp, msh, value, gradient, curl, divergence);
 end
 
 end

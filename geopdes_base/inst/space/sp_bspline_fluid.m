@@ -96,11 +96,11 @@ switch (lower (element_name))
       end
       scalar_spaces{idim} = sp_bspline (knots_v, degree_v, msh);
     end
-    spv = sp_vector_div_transform (scalar_spaces, msh);
+    spv = sp_vector (scalar_spaces, msh, 'div-preserving');
     clear scalar_spaces
     
     [knotsp, degp] = knt_derham (knots_h1, degree_h1, 'L2');
-    spp = sp_bspline_nforms (knotsp, degp, msh);
+    spp = sp_bspline (knotsp, degp, msh, 'integral-preserving');
 
   case {'rt'}
 % In this case the regularity is assigned first in the velocity space
@@ -112,11 +112,11 @@ switch (lower (element_name))
     for idim = 1:msh.ndim
       scalar_spaces{idim} = sp_bspline (knots_v{idim}, degree_v{idim}, msh);
     end
-    spv = sp_vector_div_transform (scalar_spaces, msh);
+    spv = sp_vector (scalar_spaces, msh, 'div-preserving');
     clear scalar_spaces
 
     [knotsp, degp] = knt_derham (knots_h1, degree_h1, 'L2');
-    spp = sp_bspline_nforms (knotsp, degp, msh);
+    spp = sp_bspline (knotsp, degp, msh, 'integral-preserving');
 
 %     if (nargout == 3)
 %       PI = b2nst__ (spp, knotsp, degree_p, msh);
