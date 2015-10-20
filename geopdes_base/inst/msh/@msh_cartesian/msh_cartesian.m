@@ -164,4 +164,13 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
   
   msh = class (msh, 'msh_cartesian');
 
+  if (~isempty (msh.qw))
+    for idim = 1:msh.ndim
+      dim_length = msh.breaks{idim}(end) - msh.breaks{idim}(1);
+      if (abs (sum (msh.qw{idim}(:)) - dim_length) > 1e-10)
+        warning ('geopdes:check_quadrature', 'msh_cartesian: inconsistent quadrature formula')
+      end
+    end
+  end
+  
 end
