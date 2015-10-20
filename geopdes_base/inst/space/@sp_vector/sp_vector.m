@@ -145,7 +145,9 @@ function sp = sp_vector (scalar_spaces, msh, transform)
 % Check whether the determinant of the Jacobian is positive
     aux_msh = msh_evaluate_element_list (msh, 1);
     if (any (geopdes_det__ (aux_msh.geo_map_jac) < 0))
-      warning ('Negative determinant of the Jacobian. This may cause problems with the div-preserving transform')
+      warning ('geopdes:negative_Jacobian', ...
+     ['Negative determinant of the Jacobian. This may cause problems with the div-preserving transform. \n' ...
+      'For NURBS geometries you can fix this with nrbpermute.'])
     end
   end
 
