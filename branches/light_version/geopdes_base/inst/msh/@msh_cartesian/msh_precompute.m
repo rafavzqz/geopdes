@@ -117,10 +117,6 @@ function msh = msh_precompute (msh, varargin)
       qw = kron (msh.qw{idim}, qw);
     end
     msh.quad_weights = qw;
-    area = prod (cellfun (@(x) x(end) - x(1), msh.breaks));
-    if (abs (sum (msh.quad_weights(:)) - area) > 1e-10)
-      warning ('msh_precompute: inconsistent quadrature formula')
-    end
     clear qw
   end
 

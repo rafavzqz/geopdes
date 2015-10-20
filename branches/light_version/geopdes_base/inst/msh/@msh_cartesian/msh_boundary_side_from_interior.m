@@ -44,7 +44,11 @@ function msh_side_from_interior = msh_boundary_side_from_interior (msh, iside)
   
   geo.map = msh.map; geo.map_der = msh.map_der; geo.map_der2 = msh.map_der2;
   geo.rdim = msh.rdim;
+
+  on_off = warning ('query', 'geopdes:check_quadrature');
+  warning ('off', 'geopdes:check_quadrature');
   msh_side_from_interior = msh_cartesian (brk_bnd, qn_bnd, qw_bnd, geo, 'boundary', false);
+  warning (on_off.state, 'geopdes:check_quadrature');
 %   msh_side_from_interior = msh_precompute (msh_side_from_interior);
 
 end
