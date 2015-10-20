@@ -16,7 +16,6 @@
 % You should have received a copy of the GNU General Public License
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
-% Author: Carlo de Falco <cdf AT users.sourceforge.net>
 
 function nrm = geopdes_norm__ (v)
 
