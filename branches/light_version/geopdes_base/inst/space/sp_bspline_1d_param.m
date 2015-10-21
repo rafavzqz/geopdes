@@ -74,6 +74,7 @@ nel = size (nodes, 2);
 nqn = size (nodes, 1);
 
 nsh = zeros (1, nel);
+connectivity = zeros (p+1, nel);
 for iel=1:nel
   s = findspan (mcp, p, nodes(:, iel)', knots);
   c = numbasisfun (s, nodes(:, iel)', p, knots);
