@@ -16,12 +16,12 @@ problem_data.c_stiff = @(x, y) ones(size(x));
 
 % Source and boundary terms
 k = 1; % Constant that characterizes the singularity
-problem_data.f = @(x, y) singular_function (x, y, k);
+problem_data.f = @(x, y) singular_function_maxwell (x, y, k);
 problem_data.g = @(x, y, ind) zeros([2, size(x)]);
-problem_data.h = @(x, y, ind) singular_function (x, y, k);
+problem_data.h = @(x, y, ind) singular_function_maxwell (x, y, k);
 
 % Exact solution (optional)
-problem_data.uex     = @(x, y) singular_function (x, y, k);
+problem_data.uex     = @(x, y) singular_function_maxwell (x, y, k);
 problem_data.curluex = @(x, y) zeros (size(x));
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
@@ -69,10 +69,10 @@ title('Exact solution')
 %! problem_data.c_mass  = @(x, y) ones(size(x));
 %! problem_data.c_stiff = @(x, y) ones(size(x));
 %! k = 1; % Constant that characterizes the singularity
-%! problem_data.f = @(x, y) singular_function (x, y, k);
+%! problem_data.f = @(x, y) singular_function_maxwell (x, y, k);
 %! problem_data.g = @(x, y, ind) zeros([2, size(x)]);
-%! problem_data.h = @(x, y, ind) singular_function (x, y, k);
-%! problem_data.uex     = @(x, y) singular_function (x, y, k);
+%! problem_data.h = @(x, y, ind) singular_function_maxwell (x, y, k);
+%! problem_data.uex     = @(x, y) singular_function_maxwell (x, y, k);
 %! problem_data.curluex = @(x, y) zeros (size(x));
 %! method_data.degree     = [3 3];     % Degree of the bsplines
 %! method_data.regularity = [2 2];     % Regularity of the splines

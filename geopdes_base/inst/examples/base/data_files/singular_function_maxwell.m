@@ -1,6 +1,6 @@
-% SINGULAR_FUNCTION: auxiliary function to compute the singular solution of the L-shaped domain.
+% SINGULAR_FUNCTION_MAXWELL: auxiliary function to compute the singular solution of the L-shaped domain.
 
-function f = singular_function(x, y, k)
+function f = singular_function_maxwell (x, y, k)
   f = zeros(2, size(x,1), size(x,2));
   [theta, rad] = cart2pol (x, y);
   theta = (theta < 0).*(2*acos(-1) + theta) + (theta >= 0) .* theta;
