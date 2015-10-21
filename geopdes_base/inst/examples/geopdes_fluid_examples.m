@@ -1,7 +1,7 @@
-% GEOPDES_FLUID_EXAMPLES: Run some simple examples on how to use the geopdes_fluid package.
+% GEOPDES_FLUID_EXAMPLES: Run some simple examples for the Stokes problem.
 %
 % Copyright (C) 2006-2009, Thomas Treichl <treichl@users.sourceforge.net>
-% Copyright (C) 2010-2011, Rafael Vazquez
+% Copyright (C) 2010-2015, Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
