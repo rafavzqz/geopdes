@@ -60,12 +60,7 @@ function sp = sp_vector_div_preserving_transform (sp, msh, value, gradient, curl
 % This is still not working fine. One is forced to compute the boundary with
 % msh_eval_boundary_side, instead of using the _tp operators.
   if (value)
-    if (~isfield (msh, 'side_number'))
-      sp.shape_functions = geopdes_prod__ (msh.geo_map_jac, sp.shape_functions);
-    else % For boundary terms
-      normal = reshape (msh.normal, sp.ncomp, msh.nqn, 1, msh.nel) * (-1)^msh.side_number;
-      sp.shape_functions = bsxfun (@times, sp.shape_functions, normal);
-    end
+    sp.shape_functions = geopdes_prod__ (msh.geo_map_jac, sp.shape_functions);
     jacdet = reshape (jacdet, 1, msh.nqn, 1, msh.nel);
     sp.shape_functions = bsxfun (@rdivide, sp.shape_functions, jacdet);
   end

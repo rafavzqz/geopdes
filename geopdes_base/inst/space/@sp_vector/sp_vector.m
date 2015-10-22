@@ -97,17 +97,24 @@ function sp = sp_vector (scalar_spaces, msh, transform)
       for icomp = 1:sp.ncomp_param
         scalar_bnd{icomp} = scalar_spaces{icomp}.boundary(iside);
       end
-
+      
       if (strcmpi (transform, 'grad-preserving'))
         ind = 1:sp.ncomp;
+        sp.boundary(iside) = sp_vector (scalar_bnd(ind), msh.boundary(iside), transform);
+
       elseif (strcmpi (transform, 'curl-preserving'))
-%%    ind =[2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind = [2 2 1 1] in 2D;
-        ind = setdiff (1:msh.ndim, ceil(iside/2)); 
+        ind = setdiff (1:msh.ndim, ceil(iside/2)); % ind =[2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind = [2 2 1 1] in 2D;
+        sp.boundary(iside) = sp_vector (scalar_bnd(ind), msh.boundary(iside), transform);
+
       elseif (strcmpi (transform, 'div-preserving'))
-%%    ind =[1, 1, 2, 2, 3, 3] in 3D, %ind = [1, 1, 2, 2] in 2D;
-        ind = ceil (iside/2);
+        ind = ceil (iside/2); % ind =[1, 1, 2, 2, 3, 3] in 3D, %ind = [1, 1, 2, 2] in 2D;
+        sp_bnd = scalar_bnd{ind};
+        if (iside == 1)
+          sp.boundary = sp_scalar (sp_bnd.knots, sp_bnd.degree, sp_bnd.weights, msh.boundary(iside), 'integral-preserving');
+        else
+          sp.boundary(iside) = sp_scalar (sp_bnd.knots, sp_bnd.degree, sp_bnd.weights, msh.boundary(iside), 'integral-preserving');
+        end
       end
-      sp.boundary(iside) = sp_vector (scalar_bnd(ind), msh.boundary(iside), transform);
       
       dofs = [];
       for icomp = 1:numel(ind)
@@ -115,8 +122,11 @@ function sp = sp_vector (scalar_spaces, msh, transform)
         dofs = union (dofs, new_dofs);
         comp_dofs{icomp} = new_dofs;
       end
+      
       sp.boundary(iside).dofs = dofs(:)';
-      sp.boundary(iside).comp_dofs = comp_dofs;
+      if (~strcmpi (transform, 'div-preserving'))
+        sp.boundary(iside).comp_dofs = comp_dofs;
+      end
     end
   else
     sp.boundary = [];
