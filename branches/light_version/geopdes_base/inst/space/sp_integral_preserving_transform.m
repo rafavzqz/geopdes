@@ -6,10 +6,10 @@ function sp = sp_integral_preserving_transform (sp, msh, value)
   end
   
   if (isfield (sp, 'shape_function_gradients'))
-    rmfield (sp, 'shape_function_gradients')
+    sp = rmfield (sp, 'shape_function_gradients');
   end
   if (isfield (sp, 'shape_function_hessians'))
-    rmfield (sp, 'shape_function_hessians')
+    sp = rmfield (sp, 'shape_function_hessians');
   end
 
 end
