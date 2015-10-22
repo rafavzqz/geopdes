@@ -53,20 +53,28 @@ function [u, dofs] = sp_drchlt_l2_proj_udotn (space, msh, sides, bnd_func)
     msh_side = msh_eval_boundary_side (msh, iside);
     sp_side = sp_eval_boundary_side (space, msh_side);
 
+%     msh_side_from_interior = msh_boundary_side_from_interior (msh, iside);
+%     sp_side = space.constructor (msh_side_from_interior);
+%     sp_side = struct (sp_precompute (sp_side, msh_side_from_interior, 'value', true));
+%     sp_side.dofs = space.boundary(iside).dofs;
+
     for idim = 1:msh.rdim
       x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
     end
     g = bnd_func (x{:}, iside);
 
     [rs, cs, vs] = op_u_v (sp_side, sp_side, msh_side, ones(size(x{1})));
+%     [rs, cs, vs] = op_udotn_vdotn (sp_side, sp_side, msh_side, ones(size(x{1})));
 
     bnd_dofs = space.boundary(iside).dofs;
+%     bnd_dofs = 1:space.ndof;
     rows(ncounter+(1:numel(rs))) = bnd_dofs(rs);
     cols(ncounter+(1:numel(rs))) = bnd_dofs(cs);
     vals(ncounter+(1:numel(rs))) = vs;
     ncounter = ncounter + numel (rs);
 
     rhs(bnd_dofs) = rhs(bnd_dofs) + op_f_v (sp_side, msh_side, g);
+%     rhs(bnd_dofs) = rhs(bnd_dofs) + op_fdotn_vdotn (sp_side, msh_side, g);
   end
 
   M = sparse (rows(1:ncounter), cols(1:ncounter), vals(1:ncounter));
