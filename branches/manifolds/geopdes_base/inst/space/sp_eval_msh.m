@@ -194,4 +194,9 @@ function [eu, F] = sp_eval_msh (u, space, msh, options, lambda_lame, mu_lame)
     end
   end
   
+  % For compatibility with previous versions
+  if (nopts == 1)
+    eu = eu{1};
+  end
+  
 end
