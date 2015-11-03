@@ -91,6 +91,10 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options, lambda_lame, mu_l
   [eu, F] = sp_eval_msh (u, sp, msh, options, lambda_lame, mu_lame);
   F  = reshape (F, [msh.rdim, npts]);
   
+  if (nopts == 1)
+    eu = {eu};
+  end
+  
   for iopt = 1:nopts
     switch (lower (options{iopt}))
       case {'value', 'laplacian'}
