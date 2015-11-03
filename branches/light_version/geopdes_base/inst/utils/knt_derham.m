@@ -1,6 +1,6 @@
 % KNT_DERHAM: construct the knot vectors for discrete B-spline spaces in the De Rham diagram.
 %
-%  USAGE: 2D case
+%  USAGE:
 %
 %     [knots, degree] = knt_derham (knots_h1, degree_h1, output_space)
 %
@@ -22,7 +22,7 @@
 %     degree             vector      (1 x ndim)
 %
 % For H(curl) and H(div) (vectorial spaces) each component of the
-% cell-array contains the same information as for the scalar space
+% cell-array contains the same information for one component of the space.
 % That is, the knot vector is a cell-array of cell-arrays.
 %
 %     NAME               TYPE          SIZE    
@@ -49,6 +49,11 @@ function [knots, degree] = knt_derham (knots_h1, degree_h1, output_space)
 
   if (nargin < 3)
     output_space = 'Hcurl';
+  end
+  
+  if (nargout > 2)
+    error (['Wrong number of output parameters. The use of knt_derham has changed since version 2.1.' ...
+    'Please read the help, or the examples in GeoPDEs, to understand its usage'])
   end
   
   if (~iscell (knots_h1))
