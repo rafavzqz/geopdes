@@ -1,5 +1,5 @@
 dirlist        = {"examples", "examples/data_files", "examples/geometry_files", ...
-                  "geometry", "utils", "msh", "operators", "solve", "space"};
+         "geometry", "utils", "msh", "obsolete", "operators", "solve", "space"};
 
 [basename,dir] = fileparts(fileparts (mfilename ("fullpath")));
 
