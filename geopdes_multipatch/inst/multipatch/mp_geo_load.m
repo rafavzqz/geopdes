@@ -123,6 +123,24 @@ function [geometry, boundaries, interfaces, subdomains] = mp_geo_load (in)
       error ('mp_geo_load: unknown file extension');
     end
 
+  elseif (isstruct (in) && isfield (in, 'form') && strcmpi (in(1).form, 'B-NURBS'))
+    for iptc = 1:numel (in)
+      geometry(iptc) = geo_load (in(iptc));
+    end
+    if (numel (in) > 1)
+      warning ('Automatically creating the interface information with nrbmultipatch')
+      [interfaces, boundaries] = nrbmultipatch (in);
+      subdomains = [];
+    else
+      interfaces = []; subdomains = [];
+      dim = numel (in(1).knots);
+      for iface = 1:2*dim
+        boundaries(iface).name = ['BOUNDARY ' num2str(iface)];
+        boundaries(iface).nsides = 1;
+        boundaries(iface).patches = 1;
+        boundaries(iface).faces = iface;
+      end
+    end
   else
     error ('mp_geo_load: wrong input type');
   end
