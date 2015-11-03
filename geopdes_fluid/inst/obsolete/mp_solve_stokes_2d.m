@@ -5,5 +5,5 @@ function [geometry, msh, spv, vel, gnum, spp, press, gnump] = ...
 warning ('Function MP_SOLVE_STOKES_2D is obsolete. Using MP_SOLVE_STOKES instead')
 
 function [geometry, msh, spv, vel, gnum, spp, press, gnump] = ...
-              mp_solve_stokes (problem_data, method_data)
+   mp_solve_stokes (problem_data, method_data);
 
