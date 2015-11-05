@@ -1,6 +1,6 @@
 % SP_EVALUATE_COL_PARAM: compute the basis functions in one column of the mesh in the parametric domain.
 %
-%     sp = sp_evaluate_col_param (space, msh, colnum, 'option1', value1, ...)
+%     sp = sp_evaluate_col_param (space, msh_col, 'option1', value1, ...)
 %
 % INPUTS:
 %     
@@ -32,7 +32,7 @@
 %    connectivity    (nsh_max x msh_col.nel vector)             indices of basis functions that do not vanish in each element
 %    shape_functions (ncomp_param x msh_col.nqn x nsh_max x msh_col.nel)  basis functions evaluated at each quadrature node in each element
 %    shape_function_gradients
-%       (ncomp_param x rdim x msh_col.nqn x nsh_max x msh_col.nel) basis function gradients evaluated at each quadrature node in each element
+%       (ncomp_param x ndim x msh_col.nqn x nsh_max x msh_col.nel) basis function gradients evaluated at each quadrature node in each element
 %    shape_function_divs (msh_col.nqn x nsh_max x msh_col.nel)     basis function divergence evaluated at each quadrature node in each element
 %    shape_function_curls 
 %         2D:  (msh_col.nqn x nsh_max x msh_col.nel)               basis function curl evaluated at each quadrature node in each element
