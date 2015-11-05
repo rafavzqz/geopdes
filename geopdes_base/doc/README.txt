@@ -178,6 +178,12 @@ CONTENTS:
 
 Below is a list of the main changes introduced with each new release
 
+Version geopdes_***-2.1.1
+* Added obsolete functions sp_eval_*_msh
+* Added error message in knt_derham
+* mp_geo_load: possibility of load a geometry from an array of NURBS structures, using nrbmultipatch to generate interfaces and boundary
+* sp_eval_msh: do not return an array for one single field
+
 Version geopdes_***-2.1.0
 * Functions modified to work on any dimension (3D surfaces and 1D problems).
 * Added msh_cartesian to replace the old msh_2d and msh_3d.
