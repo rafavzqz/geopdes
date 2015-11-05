@@ -32,7 +32,7 @@
 %    connectivity    (nsh_max x msh.nel vector)            indices of basis functions that do not vanish in each element
 %    shape_functions (ncomp_param x msh.nqn x nsh_max x msh.nel) basis functions evaluated at each quadrature node in each element
 %    shape_function_gradients
-%             (ncomp_param x rdim x msh.nqn x nsh_max x msh.nel) basis function gradients evaluated at each quadrature node in each element
+%             (ncomp_param x ndim x msh.nqn x nsh_max x msh.nel) basis function gradients evaluated at each quadrature node in each element
 %    shape_function_divs (msh.nqn x nsh_max x msh.nel)           basis function divergence evaluated at each quadrature node in each element
 %    shape_function_curls
 %         2D:  (msh.nqn x nsh_max x msh.nel)                     basis function curl evaluated at each quadrature node in each element
