@@ -12,11 +12,10 @@
 %
 %   output: for ders = 0, the parametrization F evaluated at pts
 %           for ders = 1, the Jacobian of the parametrization, evaluated at pts
-%           for ders = 2, the Hessian of the parametrization, evaluated at pts
+%
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
-% Copyright (C) 2013 Elena Bulgarello, Carlo de Falco, Sara Frizziero
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -32,6 +31,8 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function varargout = geo_3d_nurbs (nurbs, pts, ders)
+
+
   switch (ders)
     case 0
       F = nrbeval (nurbs, pts);
@@ -42,12 +43,9 @@ function varargout = geo_3d_nurbs (nurbs, pts, ders)
       if (iscell (pts))
         npts = prod (cellfun (@numel, pts));
         map_jac = zeros (3, 3, npts);
-        map_jac(1:3, 1, :) = reshape (jac{1}(1:3, :, :), 3, 1, npts);
-        map_jac(1:3, 2, :) = reshape (jac{2}(1:3, :, :), 3, 1, npts);
-        map_jac(1:3, 3, :) = reshape (jac{3}(1:3, :, :), 3, 1, npts);
-%        map_jac(1:3, 1, :) = reshape (jac{1}, 3, 1, npts);
-%        map_jac(1:3, 2, :) = reshape (jac{2}, 3, 1, npts);
-%        map_jac(1:3, 3, :) = reshape (jac{3}, 3, 1, npts);
+        map_jac(1:3, 1, :) = reshape (jac{1}, 3, 1, npts);
+        map_jac(1:3, 2, :) = reshape (jac{2}, 3, 1, npts);
+        map_jac(1:3, 3, :) = reshape (jac{3}, 3, 1, npts);
       else
         map_jac = zeros (3, 3, size (pts, 2));
         map_jac(1:3, 1, :) = reshape (jac{1}(1:3, :), 3, 1, size (pts, 2));
@@ -55,36 +53,8 @@ function varargout = geo_3d_nurbs (nurbs, pts, ders)
         map_jac(1:3, 3, :) = reshape (jac{3}(1:3, :), 3, 1, size (pts, 2));
       end
       varargout{1} = map_jac;
-    case 2
-      [deriv, deriv2] = nrbderiv (nurbs);
-      [F, jac, hessian] = nrbdeval (nurbs, deriv, deriv2, pts);
-
-      if (iscell (pts))
-        npts = prod (cellfun (@numel, pts));
-        hess = zeros (3, 3, 3, npts);
-        hess(1:3, 1, 1, :) = reshape (hessian{1,1}(1:3,:,:), 3, 1, 1, npts);
-	hess(1:3, 2, 1, :) = reshape (hessian{2,1}(1:3,:,:), 3, 1, 1, npts);
-	hess(1:3, 3, 1, :) = reshape (hessian{3,1}(1:3,:,:), 3, 1, 1, npts);
-	hess(1:3, 1, 2, :) = reshape (hessian{1,2}(1:3,:,:), 3, 1, 1, npts);
-	hess(1:3, 2, 2, :) = reshape (hessian{2,2}(1:3,:,:), 3, 1, 1, npts);
-	hess(1:3, 3, 2, :) = reshape (hessian{3,2}(1:3,:,:), 3, 1, 1, npts);
-	hess(1:3, 1, 3, :) = reshape (hessian{1,3}(1:3,:,:), 3, 1, 1, npts);
-	hess(1:3, 2, 3, :) = reshape (hessian{2,3}(1:3,:,:), 3, 1, 1, npts);
-	hess(1:3, 3, 3, :) = reshape (hessian{3,3}(1:3,:,:), 3, 1, 1, npts);
-       else
-        hess = zeros (3, 3, 3, size (pts, 3));
-        hess(1:3, 1, 1, :) = reshape (hessian{1,1}(1:3,:), 3, 1, 1, size (pts, 3));
-	hess(1:3, 2, 1, :) = reshape (hessian{2,1}(1:3,:), 3, 1, 1, size (pts, 3));
-	hess(1:3, 3, 1, :) = reshape (hessian{3,1}(1:3,:), 3, 1, 1, size (pts, 3));
-	hess(1:3, 1, 2, :) = reshape (hessian{1,2}(1:3,:), 3, 1, 1, size (pts, 3));
-	hess(1:3, 2, 2, :) = reshape (hessian{2,2}(1:3,:), 3, 1, 1, size (pts, 3));
-	hess(1:3, 3, 2, :) = reshape (hessian{3,2}(1:3,:), 3, 1, 1, size (pts, 3));
-	hess(1:3, 1, 3, :) = reshape (hessian{1,3}(1:3,:), 3, 1, 1, size (pts, 3));
-	hess(1:3, 2, 3, :) = reshape (hessian{2,3}(1:3,:), 3, 1, 1, size (pts, 3));
-	hess(1:3, 3, 3, :) = reshape (hessian{3,3}(1:3,:), 3, 1, 1, size (pts, 3));         
-      end
-      varargout{1} = hess;
     otherwise
-      error ('geo_3d_nurbs: number of derivatives limited to two')
+      error ('geo_3d_nurbs: number of derivatives limited to 1 (until now)')
   end
+
 end

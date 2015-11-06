@@ -37,12 +37,6 @@ function [qn, qw] = msh_set_quad_nodes (knots, rule, limits)
     limits = [-1 1];
   end
 
-  flag = 0;
-  if (~iscell (knots))
-    flag = 1;
-    knots = {knots};
-  end
-
   ndir = numel (rule);
   for idir = 1:ndir
     uniqueknots  = unique(knots{idir});
@@ -58,9 +52,5 @@ function [qn, qw] = msh_set_quad_nodes (knots, rule, limits)
     qw{idir} = repmat (w1, 1, nel) .* repmat (du/diff(limits), nqn, 1);
   end
 
-  if (flag)
-    qn = qn{:};
-    qw = qw{:};
-  end
 end
 

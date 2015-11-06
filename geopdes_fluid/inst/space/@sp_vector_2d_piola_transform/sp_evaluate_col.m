@@ -37,7 +37,7 @@
 %    shape_function_curls (msh_col.nqn x nsh_max x msh_col.nel) basis function gradients evaluated at each quadrature node in each element
 %
 % Copyright (C) 2010 Carlo de Falco
-% Copyright (C) 2011, 2013 Rafael Vazquez
+% Copyright (C) 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -107,22 +107,25 @@ jacdet = reshape (geopdes_det__ (msh.geo_map_jac), msh.nqn, msh.nel);
 
 if (value)
   sp.shape_functions = geopdes_prod__ (msh.geo_map_jac, shape_functions);
-  jacdet = reshape (jacdet, 1, msh.nqn, 1, msh.nel);
-  sp.shape_functions = bsxfun (@rdivide, sp.shape_functions, jacdet);
-  jacdet = reshape (jacdet, msh.nqn, msh.nel);
+  for ii=1:sp.nsh_max
+    sp.shape_functions(1,:,ii,:) = reshape (sp.shape_functions(1,:,ii,:), size (jacdet))./jacdet;
+    sp.shape_functions(2,:,ii,:) = reshape (sp.shape_functions(2,:,ii,:), size (jacdet))./jacdet;
+  end
 end
 
 if (divergence && ~(gradient || curl))
-  sp.shape_function_divs = zeros (msh.nqn, sp.nsh_max, msh.nel);
+  shape_fun_divs = zeros (msh.nqn, sp.nsh_max, msh.nel);
 
-  sp.shape_function_divs(:, 1:sp1_col.nsh_max, :) = reshape ...
+  shape_fun_divs(:, 1:sp1_col.nsh_max, :) = reshape ...
      (sp1_col.shape_function_gradients(1,:,:,:), msh.nqn, sp1_col.nsh_max, msh.nel);
-  sp.shape_function_divs(:, sp1_col.nsh_max+1:sp.nsh_max, :) = reshape ...
+  shape_fun_divs(:, sp1_col.nsh_max+1:sp.nsh_max, :) = reshape ...
      (sp2_col.shape_function_gradients(2,:,:,:), msh.nqn, sp2_col.nsh_max, msh.nel);
 
-  jacdet = reshape (jacdet, msh.nqn, 1, msh.nel);
-  sp.shape_function_divs = bsxfun (@rdivide, sp.shape_function_divs, jacdet);
-  jacdet = reshape (jacdet, msh.nqn, msh.nel);
+  for ii=1:sp.nsh_max      
+    shape_fun_divs(:,ii,:) = reshape (shape_fun_divs(:,ii,:), size (jacdet))./jacdet;
+  end
+  sp.shape_function_divs = shape_fun_divs;
+  clear shape_fun_divs
 end
 
 if (gradient || curl)

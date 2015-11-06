@@ -8,10 +8,10 @@ Space
  @sp_vector_3d_curl_transform/sp_eval_boundary_side
  @sp_vector_3d_curl_transform/sp_evaluate_col
  @sp_vector_3d_curl_transform/sp_precompute
- sp_bspline_2d_nforms
- @sp_bspline_2d_nforms/sp_evaluate_col
- @sp_bspline_2d_nforms/sp_precompute
- @sp_bspline_2d_nforms/sp_precompute_param
+ sp_bspline_2d_3forms
+ @sp_bspline_2d_3forms/sp_evaluate_col
+ @sp_bspline_2d_3forms/sp_precompute
+ @sp_bspline_2d_3forms/sp_precompute_param
  sp_hcurl_error
  sp_drchlt_l2_proj_uxn
 Operators

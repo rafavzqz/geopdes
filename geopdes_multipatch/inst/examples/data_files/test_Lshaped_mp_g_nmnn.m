@@ -1,6 +1,6 @@
 % TEST_LSHAPED_MP_G_NMNN: data function for Neumann boundary condition.
 
-function g = test_Lshaped_mp_g_nmnn(x, y, ind)
+function g = test_Lshaped_mp_g_nmnn(x, y, ind, k)
   switch (ind)
    case {1, 6}
      g = exp(x) .* (sin (x.*y) + y .* cos(x.*y));

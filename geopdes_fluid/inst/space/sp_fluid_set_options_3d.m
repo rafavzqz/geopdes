@@ -8,10 +8,9 @@
 % INPUTS:
 %
 %   elem_name:    the type of element. Available choices are 'TH' (Taylor-Hood),
-%                 'SG' (subgrid), 'RT' (Raviart-Thomas). For more details see the 
-%                 references below
+%                  'SG' (subgrid). For more details see the references below
 %   knots:        knot vector to be refined (usually, the one of the geometry)
-%   nsub_p:       number of subdivisions of each interval
+%   nsub_p:       number of subdivisions O QUALCOSA DEL GENERE. DEVO SISTEMARE
 %   degree_p:     degree of the pressure space to be computed later
 %   regularity_p: regularity of the spline pressure space to be computed later
 %
@@ -44,7 +43,6 @@
 %      Tech. Report, IMATI-CNR, 2011.
 %
 % Copyright (C) 2011 Andrea Bressan, Carlo de Falco, Rafael Vazquez
-% Copyright (C) 2014 Elena Bulgarello, Carlo de Falco, Sara Frizziero
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -104,23 +102,21 @@ function [knotsp, knotsv1, degreev1, knotsv2, degreev2, knotsv3, degreev3, der2]
 %    degreev2 = degree_p+1;
 %    degreev3 = degree_p+1;
 
-   case 'rt'
-     der2 = true;
-     knotsv1{1}  = [knotsp{1}(1) knotsp{1} knotsp{1}(end)];
-     knotsv1{2}  = knotsp{2};
-     knotsv1{3}  = knotsp{3};
-     knotsv2{1}  = knotsp{1}; 
-     knotsv2{2}  = [knotsp{2}(1) knotsp{2} knotsp{1}(end)];
-     knotsv2{3}  = knotsp{3};
-     knotsv3{1}  = knotsp{1};
-     knotsv3{2}  = knotsp{2};  
-     knotsv3{3}  = [knotsp{3}(1) knotsp{3} knotsp{3}(end)];
-     degreev1 = [degree_p(1)+1 degree_p(2) degree_p(3)];
-     degreev2 = [degree_p(1) degree_p(2)+1 degree_p(3)];
-     degreev3 = [degree_p(1) degree_p(2) degree_p(3)+1]; 
+%   case 'rt'
+%    der2 = true;
 
-   case {'ndl'}
-    error ('NDL elements have not been implemented in 3D yet')
+%    knotsv1     = knotsp;
+%    knotsv1{1}  = [knotsp{1}(1) knotsp{1} knotsp{1}(end)];
+%    knotsv2     = knotsp;
+%    knotsv2{2}  = [knotsp{2}(1) knotsp{2} knotsp{1}(end)];
+%    knotsv3     = knotsp;    
+%    knotsv3{3}  = [knotsp{3}(1) knotsp{3} knotsp{3}(end)];
+%    degreev1 = [degree_p(1)+1 degree_p(2) degree_p(3)];
+%    degreev2 = [degree_p(1) degree_p(2)+1 degree_p(3)];
+%    degreev3 = [degree_p(1) degree_p(2) degree_p(3)+1]; 
+
+   case {'ndl', 'rt'}
+    error ('NDL and RT elements have not been implemented in 3D yet')
    otherwise
     error('space_set: Unknown element type')
   end

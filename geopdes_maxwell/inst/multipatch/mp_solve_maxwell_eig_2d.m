@@ -114,11 +114,8 @@ for iptc = 1:npatch
   nc_mass = nc_mass + numel (rs);
 end
 
-clear rs cs vs
 stiff_mat = sparse (rows_stiff, cols_stiff, vals_stiff, ndof, ndof);
-clear rows_stiff cols_stiff vals_stiff
 mass_mat  = sparse (rows_mass, cols_mass, vals_mass, ndof, ndof);
-clear rows_mass cols_mass vals_mass
 
 % Apply homogeneous Dirichlet boundary conditions
 drchlt_dofs = [];

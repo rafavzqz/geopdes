@@ -128,10 +128,18 @@ function sp = sp_precompute (sp, msh, varargin)
     sp.shape_function_curls(2,:,(sp1.nsh_max+sp2.nsh_max+1):sp.nsh_max,:)=...
                                    -sp3.shape_function_gradients(1,:,:,:); 
 
-    jacdet = reshape (jacdet, 1, msh.nqn, 1, msh.nel);
-    sp.shape_function_curls = geopdes_prod__ (msh.geo_map_jac, sp.shape_function_curls);
-    sp.shape_function_curls = bsxfun (@rdivide, sp.shape_function_curls, jacdet);
-
+    DFcurl = geopdes_prod__ (msh.geo_map_jac, sp.shape_function_curls);
+    for ii=1:sp.nsh_max
+      DFaux = DFcurl(1,:,ii,:);
+      sp.shape_function_curls(1,:,ii,:) = ...
+        reshape(DFaux(:)./jacdet(:), 1, msh.nqn, 1, msh.nel);
+      DFaux = DFcurl(2,:,ii,:);
+      sp.shape_function_curls(2,:,ii,:) = ...
+        reshape(DFaux(:)./jacdet(:), 1, msh.nqn, 1, msh.nel);
+      DFaux = DFcurl(3,:,ii,:);
+      sp.shape_function_curls(3,:,ii,:) = ...
+        reshape(DFaux(:)./jacdet(:), 1, msh.nqn, 1, msh.nel);
+    end
   end
 
 end

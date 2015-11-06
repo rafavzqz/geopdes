@@ -24,8 +24,6 @@ Space
  sp_h1_error
  sp_l2_error
  sp_to_vtk
- sp_to_vtk_b64
- sp_to_vtk_raw.m
  sp_drchlt_l2_proj
  sp_bspline_1d_param
  sp_bspline_2d
@@ -67,22 +65,12 @@ Operators
  op_gradu_gradv_tp
  op_u_v
  op_u_v_tp
- op_laplaceu_laplacev
- op_laplaceu_laplacev_tp
- op_vel_dot_gradu_v
- op_vel_dot_gradu_v_tp
- op_mat_stab_SUPG
- op_mat_stab_SUPG_tp
- op_rhs_stab_SUPG
- op_rhs_stab_SUPG_tp 
 Solve
  solve_laplace_2d
  solve_laplace_2d_iso
  solve_laplace_3d
  solve_laplace_3d_iso
  solve_laplace_eig_2d
- solve_bilaplace_2d_iso
- solve_adv_diff_2d
 Examples
  geopdes_base_examples
  ex_article_15lines
@@ -101,4 +89,3 @@ Examples
  ex_laplace_thick_ring
  ex_laplace_iso_thick_ring
  ex_laplace_eig_square
- ex_advection_diffusion_square

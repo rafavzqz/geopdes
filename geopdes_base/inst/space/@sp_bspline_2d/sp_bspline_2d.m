@@ -78,13 +78,6 @@ function sp = sp_bspline_2d (knots, degree, msh)
     boundary(2).dofs = sub2ind (sp.ndof_dir, mcp*ones(1,ncp), 1:ncp);
     boundary(3).dofs = sub2ind (sp.ndof_dir, 1:mcp, ones(1,mcp));
     boundary(4).dofs = sub2ind (sp.ndof_dir, 1:mcp, ncp*ones(1,mcp));
-
-    if (mcp > 1 && ncp > 1)
-      boundary(1).adjacent_dofs = sub2ind ([mcp, ncp], 2*ones(1,ncp), 1:ncp);
-      boundary(2).adjacent_dofs = sub2ind ([mcp, ncp], (mcp-1)*ones(1,ncp), 1:ncp);
-      boundary(3).adjacent_dofs = sub2ind ([mcp, ncp], 1:mcp, 2*ones(1,mcp));
-      boundary(4).adjacent_dofs = sub2ind ([mcp, ncp], 1:mcp,(ncp-1)*ones(1,mcp));
-    end
     
     sp.boundary = boundary;
   else

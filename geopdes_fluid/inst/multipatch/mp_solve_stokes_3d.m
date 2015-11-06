@@ -85,6 +85,7 @@ end
 [geometry, boundaries, interfaces] = mp_geo_load (geo_name);
 npatch = numel (geometry);
 
+ndofp = 0;
 for iptc = 1:npatch
 % Construct msh structure using the finest mesh
   msh_breaks = msh_set_breaks (element_name, geometry(iptc).nurbs.knots, nsub);
@@ -127,14 +128,9 @@ for iptc = 1:npatch
   F_loc = op_f_v_tp (spv{iptc}, msh{iptc}, f);
   F(gnum{iptc}) = F(gnum{iptc}) + F_loc;
 end
-
-clear rs cs vs
 A = sparse (rows_A, cols_A, vals_A, ndof, ndof);
-clear rows_A cols_A vals_A
 B = sparse (rows_B, cols_B, vals_B, ndofp, ndof);
-clear rows_B cols_B vals_B
 M = sparse (rows_M, cols_M, vals_M, ndofp, ndofp);
-clear rows_M cols_M vals_M
 E = sum (M, 1) / sum (sum (M));
 
 vel   = zeros (ndof, 1);

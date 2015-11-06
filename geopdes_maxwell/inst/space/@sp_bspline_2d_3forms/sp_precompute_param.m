@@ -6,7 +6,7 @@
 %
 % INPUT:
 %     
-%    space: object representing the discrete function space (see sp_bspline_2d_nforms).
+%    space: object representing the discrete function space (see sp_bspline_2d_3forms).
 %    'option', value: additional optional parameters, the available options are:
 %        nsh, connectivity, value (shape_functions).
 %     The value must be true or false. All the values are false by default.

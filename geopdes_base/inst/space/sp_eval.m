@@ -19,7 +19,7 @@
 %     F:  grid points in the physical domain, that is, the mapped points
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011, 2012, 2014 Rafael Vazquez
+% Copyright (C) 2011, 2012 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -44,38 +44,23 @@ function [eu, F] = sp_eval (u, space, geometry, npts, varargin)
 
   ndim = numel (npts);
 
-% Temporary solution, to be fixed using "isprop" after defining the
-%  classes with classdef
-  knt = cell (ndim, 1);
-  if (isfield (struct(space), 'knots'))
-    for idim=1:ndim
-      knt{idim} = space.knots{idim}(space.degree(idim)+1:end-space.degree(idim));
-    end
-  elseif (isfield (struct(space), 'sp1'))
-    for idim=1:ndim
-      knt{idim} = space.sp1.knots{idim}(space.sp1.degree(idim)+1:end-space.sp1.degree(idim));
-    end
-  else
-    for idim=1:ndim; knt{idim} = [0 1]; end
-  end
-
   if (iscell (npts))
     pts = npts;
     npts = cellfun (@numel, pts);
   elseif (isvector (npts))
     if (ndim == 2)
-      pts = {(linspace (knt{1}(1), knt{1}(end), npts(1))), (linspace (knt{2}(1), knt{2}(end), npts(2)))};
+      pts = {(linspace (0, 1, npts(1))), (linspace (0, 1, npts(2)))};
     elseif (ndim == 3)
-      pts = {(linspace (knt{1}(1), knt{1}(end), npts(1))), (linspace (knt{2}(1), knt{2}(end), npts(2))), (linspace (knt{3}(1), knt{3}(end), npts(3)))};
+      pts = {(linspace (0, 1, npts(1))), (linspace (0, 1, npts(2))), (linspace (0, 1, npts(3)))};
     end
   end
 
   for jj = 1:ndim
     pts{jj} = pts{jj}(:)';
     if (numel (pts{jj}) > 1)
-      brk{jj} = [knt{jj}(1), pts{jj}(1:end-1) + diff(pts{jj})/2, knt{jj}(end)];
+      brk{jj} = [0, pts{jj}(1:end-1) + diff(pts{jj})/2, 1]; 
     else
-      brk{jj} = [knt{jj}(1) knt{jj}(end)];
+      brk{jj} = [0 1];
     end
   end
 

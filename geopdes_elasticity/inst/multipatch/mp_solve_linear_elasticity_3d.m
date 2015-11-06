@@ -83,11 +83,8 @@ for iptc = 1:npatch
   nurbs    = nrbdegelev (geometry(iptc).nurbs, degelev);
   [rknots, zeta, nknots] = kntrefine (nurbs.knots, nsub-1, nurbs.order-1, regularity);
 
-  nurbs    = geo_load (nrbkntins (nurbs, nknots));
-  fields   = fieldnames (nurbs);
-  for ifld = 1:numel (fields)
-      geometry(iptc).(fields{ifld}) = nurbs.(fields{ifld});
-  end
+  nurbs    = nrbkntins (nurbs, nknots);
+  geometry(iptc) = orderfields (geo_load (nurbs), geometry);
 
 % Construct msh structure
   rule      = msh_gauss_nodes (nquad);
@@ -118,9 +115,7 @@ for iptc = 1:npatch
   rhs(gnum{iptc}) = rhs(gnum{iptc}) + rhs_loc;
 end
 
-clear rs cs vs
 mat = sparse (rows, cols, vals, ndof, ndof);
-clear rows cols vals
 
 % Apply Neumann boundary conditions
 for iref = nmnn_sides
@@ -128,7 +123,7 @@ for iref = nmnn_sides
     iptc = boundaries(iref).patches(bnd_side);
     iside = boundaries(iref).faces(bnd_side);
     msh_side = msh_eval_boundary_side (msh{iptc}, iside);
-    sp_side  = sp_eval_boundary_side (sp{iptc}, msh_side);
+    sp_side  = sp_eval_boundary_side (sp, msh_side);
 
     x = squeeze (msh_side.geo_map(1,:,:));
     y = squeeze (msh_side.geo_map(2,:,:));

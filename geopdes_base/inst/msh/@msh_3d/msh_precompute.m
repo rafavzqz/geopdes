@@ -24,11 +24,9 @@
 %     geo_map       (3 x nqn x nel vector)  physical coordinates of the quadrature nodes
 %     geo_map_jac   (3 x 3 x nqn x nel)     Jacobian matrix of the map evaluated at the quadrature nodes
 %     jacdet        (nqn x nel)             determinant of the Jacobian evaluated in the quadrature points
-%     geo_map_der2  (3 x 3 x 3 x nqn x nel) Hessian matrix of the map evaluated at the quadrature nodes
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
-% Copyright (C) 2014 Elena Bulgarello, Carlo de Falco, Sara Frizziero
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -50,7 +48,6 @@ function msh = msh_precompute (msh, varargin)
     quad_weights = true;
     geo_map = true;
     geo_map_jac = true;
-    geo_map_der2 = false;
     jacdet = true;
   else
     if (~rem (length (varargin), 2) == 0)
@@ -60,7 +57,6 @@ function msh = msh_precompute (msh, varargin)
     quad_weights = false;
     geo_map = false;
     geo_map_jac = false;
-    geo_map_der2 = false;
     jacdet = false;
     for ii=1:2:length(varargin)-1
       if (strcmpi (varargin{ii}, 'quad_nodes'))
@@ -73,8 +69,6 @@ function msh = msh_precompute (msh, varargin)
         geo_map_jac = varargin{ii+1};
       elseif (strcmpi (varargin{ii}, 'jacdet'))
         jacdet = varargin{ii+1};
-      elseif (strcmpi (varargin{ii}, 'geo_map_der2'))
-        geo_map_der2 = varargin{ii+1};
       else
         error ('msh_precompute: unknown option %s', varargin {ii});
       end
@@ -117,7 +111,19 @@ function msh = msh_precompute (msh, varargin)
 
   if (~isempty (msh.qw) && quad_weights)
     qwu = msh.qw{1};  qwv = msh.qw{2}; qww = msh.qw{3};
-    msh.quad_weights = kron (qww, kron (qwv, qwu));
+    quad_weights_u = reshape (qwu, nqnu, 1, 1, nelu, 1, 1);
+    quad_weights_u = repmat  (quad_weights_u, [1, nqnv, nqnw, 1, nelv, nelw]);
+    quad_weights_u = reshape (quad_weights_u, [], nel);
+
+    quad_weights_v = reshape (qwv, 1, nqnv, 1, 1, nelv, 1);
+    quad_weights_v = repmat  (quad_weights_v, [nqnu, 1, nqnw, nelu, 1, nelw]);
+    quad_weights_v = reshape (quad_weights_v, [], nel);
+
+    quad_weights_w = reshape (qww, 1, 1, nqnw, 1, 1, nelw);
+    quad_weights_w = repmat  (quad_weights_w, [nqnu, nqnv, 1, nelu, nelv, 1]);
+    quad_weights_w = reshape (quad_weights_w, [], nel);
+
+    msh.quad_weights = quad_weights_u .* quad_weights_v .* quad_weights_w;
 
     if (abs (sum (msh.quad_weights(:)) - 1) > 1e-10)
       warning ('msh_precompute: inconsistent quadrature formula')
@@ -145,13 +151,6 @@ function msh = msh_precompute (msh, varargin)
       msh.jacdet = abs (geopdes_det__ (jac));
       msh.jacdet = reshape (msh.jacdet, [nqn, nel]);
     end
-  end
-
-  if (~isempty (msh.map_der2) && geo_map_der2)
-    hess = feval (msh.map_der2, {qn{1}(:)', qn{2}(:)', qn{3}(:)'});
-    hess = reshape (hess, [3, 3, 3, nqnu, nelu, nqnv, nelv, nqnw, nelw]);
-    hess = permute (hess, [1 2 3 4 6 8 5 7 9]);
-    msh.geo_map_der2 = reshape (hess, 3, 3, 3, nqn, nel);
   end
 
 end

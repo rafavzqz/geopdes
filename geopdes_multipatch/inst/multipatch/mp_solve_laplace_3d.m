@@ -40,7 +40,7 @@
 %  gnum:     global numbering of the degrees of freedom
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2010, 2011, 2013 Rafael Vazquez
+% Copyright (C) 2010, 2011 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -108,7 +108,6 @@ for iptc = 1:npatch
 end
 
 stiff_mat = sparse (rows, cols, vals, ndof, ndof);
-clear rows cols vals rs cs vs
 
 for iref = nmnn_sides
   for bnd_side = 1:boundaries(iref).nsides

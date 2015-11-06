@@ -38,8 +38,8 @@ OUTPUT:\n\
   
   octave_value_list retval;
 
-  geopdes_mesh_normal msh (args(1).scalar_map_value ());
-  geopdes_space       sp  (args(0).scalar_map_value (), msh);
+  geopdes_mesh_normal msh (args(1).map_value ());
+  geopdes_space       sp  (args(0).map_value (), msh);
   dim_vector          idx (sp.ncomp (), msh.nqn (), msh.nel ());
   NDArray             coeff = args(2).array_value ().reshape (idx);
 

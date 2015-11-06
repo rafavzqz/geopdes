@@ -35,13 +35,7 @@ while (iopt > 0)
             '   (5) Horseshoe (thanks to T.J.R. Hughes and his group for the geometry). \n \n', ...
             ' Multipatch examples (they require geopdes_multipatch). \n \n', ...
             '   (6) 2D Plane strain: L-shaped domain, defined with 3 patches. \n', ...
-            '   (7) 3D Linear elasticity: unit cube, defined with 2 patches. \n', ...
-            '\n', ...
-            ' 2D Kirchhoff plate model. \n \n', ...
-            '   (8) Simply supported rectangular plate. \n', ...
-            '   (9) Clamped rectangular plate. \n', ...
-            '  (10) Simply supported circular plate. \n', ...
-            '  (11) Clamped circular plate. \n \n']);
+            '   (7) 3D Linear elasticity: unit cube, defined with 2 patches. \n\n']);
 
   iopt = input ('Please choose a number from above or press <Enter> to return: ');
   clc;
@@ -95,26 +89,6 @@ while (iopt > 0)
       ex_lin_elast_cube_mp;
       input ('Press <Enter> to continue: ');
     end
-  elseif (iopt == 8)
-    clc;
-    fprintf (1, 'You can have a look at the source file: ex_kirchhoff_rectangular_plate.m \n \n');
-    ex_kirchhoff_rectangular_plate;
-    input ('Press <Enter> to continue: ');
-  elseif (iopt == 9)
-    clc;
-    fprintf (1, 'You can have a look at the source file: ex_kirchhoff_rectangular_plate_clamped.m \n \n');
-    ex_kirchhoff_rectangular_plate_clamped;
-    input ('Press <Enter> to continue: ');
-  elseif (iopt == 10)
-    clc;
-    fprintf (1, 'You can have a look at the source file: ex_kirchhoff_circular_plate.m \n \n');
-    ex_kirchhoff_circular_plate;
-    input ('Press <Enter> to continue: ');
-  elseif (iopt == 11)
-    clc;
-    fprintf (1, 'You can have a look at the source file: ex_kirchhoff_circular_plate_clamped.m \n \n');
-    ex_kirchhoff_circular_plate_clamped;
-    input ('Press <Enter> to continue: ');
   end
 end %# while (iopt > 0)
 

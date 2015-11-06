@@ -11,14 +11,12 @@
 % OUTPUT:
 %
 %  geometry: a structure containing the following information
-%            map:      a function handle to evaluate the parametrization
-%            map_der:  a function handle to evaluate the derivatives of the parametrization
-%            map_der2: a function handle to evaluate the second derivatives of the parametrization
-%            nurbs:    a structure compatible with the NURBS toolbox
+%            map:     a function handle to evaluate the parametrization
+%            map_der: a function handle to evaluate the derivatives of the parametrization
+%            nurbs:   a structure compatible with the NURBS toolbox
 %
 % Copyright (C) 2009 Carlo de Falco
 % Copyright (C) 2010, 2011 Rafael Vazquez
-% Copyright (C) 2014 Elena Bulgarello, Carlo de Falco, Sara Frizziero
 % 
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -148,23 +146,6 @@ for iptc = 1:npatches
     geom(iptc).nurbs.coefs(3,:,:,:) = cp_z;
     geom(iptc).nurbs.coefs(4,:,:,:) = weights;
 
-   case 1
-    line = fgetl (fid);
-    while (line(1) == '#')
-      line = fgetl (fid);
-    end
-    cp_x = str2num (line);
-
-    line = fgetl (fid);
-    while (line(1) == '#')
-      line = fgetl (fid);
-    end
-    weights = str2num (line);
-
-    geom(iptc).nurbs.coefs(1,:,:,:) = cp_x;
-    geom(iptc).nurbs.coefs(2,:,:,:) = 0;
-    geom(iptc).nurbs.coefs(3,:,:,:) = 0;
-    geom(iptc).nurbs.coefs(4,:,:,:) = weights;
   end
   
   if (dim == 2)
@@ -172,13 +153,8 @@ for iptc = 1:npatches
     geom(iptc).map_der  = @(PTS) geo_2d_nurbs (geom(iptc).nurbs, PTS, 1);
     geom(iptc).map_der2 = @(PTS) geo_2d_nurbs (geom(iptc).nurbs, PTS, 2);
   elseif (dim == 3)
-    geom(iptc).map      = @(PTS) geo_3d_nurbs (geom(iptc).nurbs, PTS, 0);
-    geom(iptc).map_der  = @(PTS) geo_3d_nurbs (geom(iptc).nurbs, PTS, 1);
-    geom(iptc).map_der2 = @(PTS) geo_3d_nurbs (geom(iptc).nurbs, PTS, 2);
-  elseif (dim == 1)
-    geom(iptc).nurbs.knots = [geom(iptc).nurbs.knots{:}];
-    geom(iptc).map     = @(PTS) geo_1d_nurbs (geom(iptc).nurbs, PTS, 0);
-    geom(iptc).map_der = @(PTS) geo_1d_nurbs (geom(iptc).nurbs, PTS, 1);
+    geom(iptc).map     = @(PTS) geo_3d_nurbs (geom(iptc).nurbs, PTS, 0);
+    geom(iptc).map_der = @(PTS) geo_3d_nurbs (geom(iptc).nurbs, PTS, 1);
   end
 end
 

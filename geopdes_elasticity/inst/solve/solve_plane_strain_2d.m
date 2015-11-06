@@ -135,7 +135,7 @@ for iside = symm_sides
   elseif (all (abs (msh_side.normal(2,:,:)) < 1e-10))
     symm_dofs = union (symm_dofs, sp.boundary(iside).comp_dofs{1});
   else
-    error ('solve_plane_strain_2d: We have only implemented the symmetry condition for boundaries parallel to the axes')
+    error ('ex_nurbs_plane_strain_2d: We have only implemented the symmetry condition for boundaries parallel to the axes')
   end
 end
 

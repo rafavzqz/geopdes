@@ -46,7 +46,15 @@ function msh_side = msh_eval_boundary_side (msh, iside)
 
   msh_side = msh.boundary(iside);
 
-  msh_side.quad_weights = kron (msh_side.qw{2}, msh_side.qw{1});
+  quad_weights_u = reshape (msh_side.qw{1}, msh_side.nqn_dir(1), 1, msh_side.nel_dir(1), 1);
+  quad_weights_u = repmat  (quad_weights_u, [1, msh_side.nqn_dir(2), 1, msh_side.nel_dir(2)]);
+  quad_weights_u = reshape (quad_weights_u, [], msh_side.nel);
+
+  quad_weights_v = reshape (msh_side.qw{2}, 1, msh_side.nqn_dir(2), 1, msh_side.nel_dir(2));
+  quad_weights_v = repmat  (quad_weights_v, [msh_side.nqn_dir(1), 1, msh_side.nel_dir(1), 1]);
+  quad_weights_v = reshape (quad_weights_v, [], msh_side.nel);
+
+  msh_side.quad_weights = quad_weights_u .* quad_weights_v;
   clear quad_weights_u quad_weights_v
 
   quad_nodes_u = reshape (msh_side.qn{1}, msh_side.nqn_dir(1), 1, msh_side.nel_dir(1), 1);
@@ -61,11 +69,10 @@ function msh_side = msh_eval_boundary_side (msh, iside)
   quad_nodes(2, :, :) = quad_nodes_v;
   clear quad_nodes_u quad_nodes_v
 
-  msh_side.quad_nodes = zeros ([3, msh_side.nqn, msh_side.nel]);
   if (mod (iside, 2) == 0)
-    msh_side.quad_nodes(ind2,:,:) = msh.breaks{ind2}(end);
+    msh_side.quad_nodes = ones ([3, msh_side.nqn, msh_side.nel]);
   else
-    msh_side.quad_nodes(ind2,:,:) = msh.breaks{ind2}(1);
+    msh_side.quad_nodes = zeros ([3, msh_side.nqn, msh_side.nel]);
   end
   msh_side.quad_nodes(ind, :, :) = quad_nodes;
 

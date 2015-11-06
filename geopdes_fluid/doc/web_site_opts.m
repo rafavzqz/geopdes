@@ -42,10 +42,7 @@ elseif strcmpi (ws_version, "forge")
 
 opt = get_html_options ("octave-forge");
 
-opt.include_package_news = 0;
-
-%% opt.download_link = "http://downloads.sourceforge.net/geopdes/%name-%version.tar.gz?download";
-opt.download_link = "http://sourceforge.net/project/geopdes/files/GeoPDEs_full.tar.gz/download";
+opt.download_link = "http://downloads.sourceforge.net/geopdes/%name-%version.tar.gz?download";
 
 opt.header = sprintf("<!DOCTYPE html PUBLIC ""-//W3C//DTD XHTML 1.0 Strict//EN""\n\
  ""http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"">\n\

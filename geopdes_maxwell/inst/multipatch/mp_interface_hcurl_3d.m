@@ -141,14 +141,14 @@ function [glob_num, dofs_ornt, ppnumu, ppnumv] = set_same_patch (iptc, intrfc, .
     not_set_p1ub = find (ppnumu{ii}(pos1_ub) == 0);
     not_set_p1vb = find (ppnumv{ii}(pos1_vb) == 0);
     if (~isempty (not_set_p1u) || ~isempty (not_set_p1v))
-      ppnumu{ii}(pos1_u(not_set_p1u)) = ppnumu{intrfc}(new_dofs_u(pos2_u(not_set_p1u)));
-      ppnumv{ii}(pos1_v(not_set_p1v)) = ppnumv{intrfc}(new_dofs_v(pos2_v(not_set_p1v)));
+      ppnumu{ii}(pos1_u(not_set_p1u)) = ppnumu{intrfc}(pos2_u(not_set_p1u));
+      ppnumv{ii}(pos1_v(not_set_p1v)) = ppnumv{intrfc}(pos2_v(not_set_p1v));
       [glob_num, dofs_ornt, ppnumu, ppnumv] = set_same_interface (iptc, ii, ...
           ttformu, ttformv, pos1_u(not_set_p1u), pos1_v(not_set_p1v), ...
           interfaces, glob_num, dofs_ornt, ppnumu, ppnumv, patch_intrfc);
     elseif (~isempty (not_set_p1ub) || ~isempty (not_set_p1vb))
-      ppnumu{ii}(pos1_ub(not_set_p1ub)) = ppnumv{intrfc}(new_dofs_v(pos2_vb(not_set_p1ub)));
-      ppnumv{ii}(pos1_vb(not_set_p1vb)) = ppnumu{intrfc}(new_dofs_u(pos2_ub(not_set_p1vb)));
+      ppnumu{ii}(pos1_ub(not_set_p1ub)) = ppnumv{intrfc}(pos2_vb(not_set_p1ub));
+      ppnumv{ii}(pos1_vb(not_set_p1vb)) = ppnumu{intrfc}(pos2_ub(not_set_p1vb));
       [glob_num, dofs_ornt, ppnumu, ppnumv] = set_same_interface (iptc, ii, ...
           ttformu, ttformv, pos1_ub(not_set_p1ub), pos1_vb(not_set_p1vb), ...
           interfaces, glob_num, dofs_ornt, ppnumu, ppnumv, patch_intrfc);

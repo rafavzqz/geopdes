@@ -6,8 +6,6 @@ Space
  @sp_vector_2d_piola_transform/sp_eval_boundary_side
  @sp_vector_2d_piola_transform/sp_evaluate_col
  @sp_vector_2d_piola_transform/sp_precompute
- sp_weak_drchlt_bc
- sp_drchlt_l2_proj_udotn
 Msh
  msh_set_breaks
 Solve
@@ -16,10 +14,6 @@ Solve
 Operators
  op_div_v_q
  op_div_v_q_tp
- op_gradv_n_u
- op_gradv_n_f
- op_udotn_vdotn
- op_fdotn_vdotn
 Examples
  ex_stokes_square_th
  ex_stokes_square_ndl

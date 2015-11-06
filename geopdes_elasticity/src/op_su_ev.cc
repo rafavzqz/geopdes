@@ -21,7 +21,7 @@
 class geopdes_space_elasticity: public geopdes_space
 {
 public:
-  geopdes_space_elasticity (const octave_scalar_map& refsp, const geopdes_mesh& msh): geopdes_space (refsp, msh) {};
+  geopdes_space_elasticity (const Octave_map& refsp, const geopdes_mesh& msh): geopdes_space (refsp, msh) {};
   inline double shape_function_strain_tensor (octave_idx_type i, octave_idx_type j, octave_idx_type k, 
                                               octave_idx_type m, octave_idx_type n) const
   {
@@ -58,9 +58,9 @@ DEFUN_DLD(op_su_ev, args, nargout,"\n\
   
   octave_value_list retval;
 
-  geopdes_mesh             msh (args(2).scalar_map_value ());
-  geopdes_space_elasticity spu (args(0).scalar_map_value (), msh);
-  geopdes_space_elasticity spv (args(1).scalar_map_value (), msh);
+  geopdes_mesh             msh (args(2).map_value ());
+  geopdes_space_elasticity spu (args(0).map_value (), msh);
+  geopdes_space_elasticity spv (args(1).map_value (), msh);
   Matrix                   lambda = args(3).matrix_value();
   Matrix                   mu     = args(4).matrix_value();
 
@@ -82,6 +82,7 @@ DEFUN_DLD(op_su_ev, args, nargout,"\n\
 
       dim_vector dims (nel * nsh_v * nsh_u, 1);
 
+#if OCTAVE_API_VERSION_NUMBER>37
       Array <octave_idx_type> I (dims, 0);
       octave_idx_type* Iptr = I.fortran_vec ();
 
@@ -90,6 +91,16 @@ DEFUN_DLD(op_su_ev, args, nargout,"\n\
 
       Array <double> V (dims, 0.0);
       double* Vptr = V.fortran_vec ();
+#else
+      ColumnVector I (nel * nsh_v * nsh_u, 0);
+      double* Iptr = I.fortran_vec ();
+
+      ColumnVector J (nel * nsh_v * nsh_u, 0);
+      double* Jptr = J.fortran_vec ();
+
+      ColumnVector V (nel * nsh_v * nsh_u, 0.0);
+      double* Vptr = V.fortran_vec ();
+#endif
       
       SparseMatrix mat;
 

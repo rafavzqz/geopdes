@@ -60,10 +60,6 @@ method_data.regularity   = [ 2  2];  % Regularity of the splines
 method_data.nsub         = [10 10];  % Number of subdivisions
 method_data.nquad        = [ 5  5];  % Points for the Gaussian quadrature rule
 
-% Penalization parameter for Nitsche's method
-factor = 10;
-method_data.Cpen = factor*(min(method_data.degree)+1);
-
 % 3) CALL TO THE SOLVER
 [geometry, msh, space_v, vel, space_p, press] = ...
                        solve_stokes_2d (problem_data, method_data);

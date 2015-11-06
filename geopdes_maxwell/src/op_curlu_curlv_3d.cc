@@ -38,9 +38,9 @@ OUTPUT: \n\
   
   octave_value_list retval;
 
-  geopdes_mesh  msh (args(2).scalar_map_value ());
-  geopdes_space spu (args(0).scalar_map_value (), msh);
-  geopdes_space spv (args(1).scalar_map_value (), msh);
+  geopdes_mesh  msh (args(2).map_value ());
+  geopdes_space spu (args(0).map_value (), msh);
+  geopdes_space spv (args(1).map_value (), msh);
   Matrix coeff   = args(3).matrix_value();
 
   if (!error_state)
@@ -48,6 +48,7 @@ OUTPUT: \n\
 
       const octave_idx_type nel = msh.nel (), nqn = msh.nqn (), ndof_spu = spu.ndof (), nsh_max_spu = spu.nsh_max (), ndof_spv = spv.ndof (), nsh_max_spv = spv.nsh_max ();
 
+#if OCTAVE_API_VERSION_NUMBER>37
       dim_vector dims (nel * nsh_max_spv * nsh_max_spu, 1);
       Array <octave_idx_type> I (dims, 0);
       octave_idx_type* Iptr = I.fortran_vec ();
@@ -57,7 +58,17 @@ OUTPUT: \n\
 
       Array <double> V (dims, 0.0);
       double* Vptr = V.fortran_vec ();
+#else
+      ColumnVector I (nel * nsh_max_spv * nsh_max_spu, 0);
+      double* Iptr = I.fortran_vec ();
 
+      ColumnVector J (nel * nsh_max_spv * nsh_max_spu, 0);
+      double* Jptr = J.fortran_vec ();
+
+      ColumnVector V (nel * nsh_max_spv * nsh_max_spu, 0.0);
+      double* Vptr = V.fortran_vec ();
+#endif
+            
       SparseMatrix mat;
 
       octave_idx_type counter = 0, iel, inode, idof, jdof, icmp;

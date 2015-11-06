@@ -1,6 +1,6 @@
-% SP_BSPLINE_2D_NFORMS: Constructor of the class of a tensor-product space of B-Splines in 2D, using a transformation for N-forms.
+% SP_BSPLINE_2D_3FORMS: Constructor of the class of a tensor-product space of B-Splines in 2D, using a transformation for 3-forms.
 %
-%     sp = sp_bspline_2d_nforms (knots, degree, msh)
+%     sp = sp_bspline_2d_3forms (knots, degree, msh)
 %
 % INPUTS:
 %     
@@ -44,7 +44,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp = sp_bspline_2d_nforms (knots, degree, msh)
+function sp = sp_bspline_2d_3forms (knots, degree, msh)
 
   sp.knots = knots;
   sp.degree = degree;
@@ -59,11 +59,7 @@ function sp = sp_bspline_2d_nforms (knots, degree, msh)
   sp.ndof_dir = [sp.spu.ndof, sp.spv.ndof];
   sp.ncomp    = 1;
 
-  sp.nsh = [];
-  sp.connectivity = [];
-  sp.shape_functions = [];
-
-  sp.constructor = @(MSH) sp_bspline_2d_nforms (sp.knots, sp.degree, MSH);
-  sp = class (sp, 'sp_bspline_2d_nforms');
+  sp.constructor = @(MSH) sp_bspline_2d_3forms (sp.knots, sp.degree, MSH);
+  sp = class (sp, 'sp_bspline_2d_3forms');
 
 end

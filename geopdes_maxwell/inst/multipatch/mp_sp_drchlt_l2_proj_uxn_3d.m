@@ -1,17 +1,16 @@
 % MP_SP_DRCHLT_L2_PROJ_UXN_3D: assign the degrees of freedom of Dirichlet boundaries through an L2 projection.
 %                           The imposed condition reads   uxn = h
 %
-%   [u, dofs] = mp_sp_drchlt_l2_proj_uxn_3d (sp, msh, h, gnum, ornt, boundaries, refs)
+%   [u, dofs] = mp_sp_drchlt_l2_proj_uxn_3d (sp, msh, h, gnum, boundaries, refs)
 %
 % INPUT:
 %
 %  sp:    structure representing the space of trial functions (see sp_bspline_2d_phys)
 %  msh:   structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)
 %  h:     function handle to compute the Dirichlet condition
-%  gnum:  global numbering of the degrees of freedom (see mp_interface_2d)
-%  ornt:  orientation of the degrees of freedom (see mp_interface_hcurl_3d)
+%  gnum:       global numbering of the degrees of freedom (see mp_interface_2d)
 %  boundaries: array of strcutures containing the information for the boundaries (see mp_geo_load)
-%  refs:  boundary references on which a Dirichlet condition is imposed
+%  refs:       boundary references on which a Dirichlet condition is imposed
 %
 % OUTPUT:
 %

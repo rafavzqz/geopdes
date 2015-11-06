@@ -31,7 +31,6 @@
 %     boundary      (1 x 6 struct-array)    it contains a one-dimensional 'msh' structure for each edge of the boundary (only when boundary is set to true)
 %     map           (function handle)       a copy of the map handle of the geometry structure
 %     map_der       (function handle)       a copy of the map_der handle of the geometry structure
-%     map_der2      (function handle)       a copy of the map_der2 handle of the geometry structure
 %
 %     METHOD NAME
 %     msh_evaluate_col: computes the parameterization (and its derivatives) at
@@ -43,9 +42,8 @@
 %                       to the quadrature rule, or all of them (except boundary)
 %                       as in the mesh structure from previous versions.
 %
-% Copyright (C) 2009, 2010, 2014 Carlo de Falco
+% Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
-% Copyright (C) 2014 Elena Bulgarello, Sara Frizziero
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -63,15 +61,12 @@
 function msh = msh_3d (breaks, qn, qw, geo, varargin)
 
   boundary = true;
-  msh.der2 = false;
   if (~isempty (varargin))
     if (~rem (length (varargin), 2) == 0)
       error ('msh_3d: options must be passed in the [option, value] format');
     end
     for ii=1:2:length(varargin)-1
-      if (strcmpi (varargin {ii}, 'der2'))
-        msh.der2 = varargin {ii+1};
-      elseif (strcmpi (varargin {ii}, 'boundary'))
+      if (strcmpi (varargin {ii}, 'boundary'))
         boundary = varargin {ii+1};
       else
         error ('msh_3d: unknown option %s', varargin {ii});
@@ -91,9 +86,10 @@ function msh = msh_3d (breaks, qn, qw, geo, varargin)
   msh.nel = prod (msh.nel_dir);
   msh.nelcol = msh.nel_dir(2) * msh.nel_dir(3);
 
-  msh.nqn_dir(1) = size (qn{1},1); 
-  msh.nqn_dir(2) = size (qn{2},1);
-  msh.nqn_dir(3) = size (qn{3},1);
+  qnu = qn{1};  qnv = qn{2}; qnw = qn{3};
+  msh.nqn_dir(1) = size (qnu,1); 
+  msh.nqn_dir(2) = size (qnv,1);
+  msh.nqn_dir(3) = size (qnw,1);
   msh.nqn  = prod (msh.nqn_dir);
   
   if (boundary)
@@ -119,20 +115,10 @@ function msh = msh_3d (breaks, qn, qw, geo, varargin)
   msh.map = geo.map;
   msh.map_der = geo.map_der;
 
-  if (isfield (geo, 'map_der2'))
-    msh.map_der2 = geo.map_der2;
-  else
-    msh.map_der2 = [];
-    if (msh.der2)
-      warning ('msh_3d: a function to compute second order derivatives has not been provided')
-    end
-  end
-
   msh.quad_nodes   = [];
   msh.quad_weights = [];
   msh.geo_map      = [];
   msh.geo_map_jac  = [];
-  msh.geo_map_der2 = [];
   msh.jacdet       = [];
 
   msh = class (msh, 'msh_3d');

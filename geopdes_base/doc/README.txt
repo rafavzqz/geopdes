@@ -1,5 +1,5 @@
 CONTENTS:
-1: CONTENTS AND INSTALLATION
+1: INSTALLATION
   1.1: OCTAVE
     1.1.1 - Install
     1.1.2 - Note for Windows users
@@ -14,39 +14,32 @@ CONTENTS:
 
 -----------------------------------------------------
 
-1. CONTENTS AND INSTALLATION
+1. INSTALLATION
 
-  Download and uncompress the file GeoPDEs_full.tar.gz. This file contains 
-   all that is necessary to install GeoPDEs:
-   - The NURBS toolbox: nurbs-1.3.9.tar.gz
-   - The GeoPDEs packages:
-      geopdes_base-2.0.4.tar.gz, geopdes_elasticity-2.0.4.tar.gz, 
-      geopdes_fluid-2.0.4.tar.gz, geopdes_maxwell-2.0.4.tar.gz, 
-      geopdes_multipatch-2.0.4.tar.gz, geopdes_tsplines-2.0.4.tar.gz
-   - The technical report: GeoPDES_report.pdf
-   - A beamer presentation about the package: GeoPDEs_presentation.pdf
-   - This README file.
-   - For Matlab users, the mex files of the NURBS toolbox: nurbs_mex_files.tar.gz
-   - For Matlab users, the file geopdes_setpath.m
-   
-    
 1.1. OCTAVE
 
 1.1.1 - Install
  
- * Be sure to have installed Octave version 3.6.4 or higher. 
-    Source code is available from http://www.octave.org, 
-    binary packages for Mac OSX and Windows are available
-    from http://octave.sf.net, Linux binary packages are
+ * Install Octave version 3.2 or higher. Source code is available from
+    http://www.octave.org, binary packages for Mac OSX and Windows are
+    available from http://octave.sf.net, Linux binary packages are
     included with all major binary distributions.
 
- * Install the "nurbs" package by typing at the octave prompt
-    pkg install nurbs-<version>.tar.gz
-    pkg load nurbs
+ * Install the "nurbs" package available on
+    http://octave.sf.net: 
+   - download the latest release of nurbs-<version>.tar.gz
+   - type, at the octave prompt
+      pkg install nurbs-<version>.tar.gz
+      pkg load nurbs
 
+ * Download the geopdes_base-<version>.tar.gz package from 
+    http://geopdes.sf.net/functions/geopdes_base
+ 
  * Install geopdes_base package by typing at the octave prompt
-    pkg install geopdes_base-<version>.tar.gz
-    pkg load geopdes_base
+   pkg install geopdes_base-<version>.tar.gz
+
+ * Load the package:
+   pkg load geopdes_base
 
  * After installing the geopdes_base package, the other packages 
     can be installed in an analogous way.
@@ -59,8 +52,8 @@ CONTENTS:
     can create problems when installing geopdes_base. The procedure to 
     install the package in Windows is as follows: 
 
- * Install octave and the nurbs package, like in
-    steps 1 to 2 of Section 1.1.1.
+ * Install octave, the nurbs package, and download geopdes_base, like in
+    steps 1 to 3 of Section 1.1.1.
 
  * Be sure to put the file geopdes_base-<version>.tar.gz to a folder 
     without blanks in the name, for instance, c:\tmp
@@ -72,24 +65,30 @@ CONTENTS:
      system ("tar xzf geopdes_base-<version>.tar.gz")
      pkg install geopdes_base
 
-   If this procedure fails, you can run GeoPDEs using the M-files, instead 
-     of the compiled oct-files. Simply uncompress and untar the packages, 
-     and add them to your Octave path, including the subfolders (see the
-     Matlab install below).
+   If this procedure fails for you please let us know. See the section
+    "HOW TO CONTRIBUTE" below for the preferred procedure for giving
+    feedback.
 
 1.2. MATLAB
 
  * Install the "nurbs" package available on http://octave.sf.net:
-   - uncompress and untar the file nurbs-<version>.tar.gz. 
+   - download the latest release of nurbs.tar.gz available on 
+      http://octave.sf.net
+   - uncompress and untar the file. We recommend you to do this in the
+      toolbox folder of Matlab.
 
  * Install the mex-files for the "nurbs" package (OPTIONAL):
-   - uncompress and untar the file nurbs_mex_files.tar.gz in the folder 
-      "nurbs/inst" of the nurbs package
+   - download the C functions for matlab "nurbs_mex_files.tar.gz" from
+      http://sourceforge.net/projects/geopdes/files
+   - uncompress and untar the file in the folder "nurbs/inst" of the 
+      nurbs package
    - in Matlab, go to the folder "nurbs/inst" and run the script file 'compile'.
       This will compile the files and save the nurbs package to your Matlab path
 
  * Install the geopdes_base package:
-   - uncompress and untar the file geopdes_base-<version>.tar.gz
+   - download the latest release of geopdes_base.tar.gz from 
+       http://geopdes.sf.net/functions/geopdes_base
+   - uncompress and untar the file
    - add the directory "geopdes_base/inst" and its subfolders to
       Matlab's default path (see below)
 
@@ -97,6 +96,7 @@ CONTENTS:
     package must be also installed in order to make them work.
 
  * For convenience, you can set the path using the script "geopdes_setpath.m".
+   - download the function from http://sourceforge.net/projects/geopdes/files
    - replace "my_path" by the path of the folder where you saved the packages
    - run the script, typing "geopdes_setpath" in Matlab command window
    
@@ -177,20 +177,6 @@ CONTENTS:
 4: CHANGELOG
 
 Below is a list of the main changes introduced with each new release
-
-Version geopdes_***-2.0.4
-* geopdes_base, added functions for the advection-diffusion problem with SUPG stabilization: op_mat_stab_SUPG, op_mat_stab_SUPG_tp, op_rhs_stab_SUPG, op_rhs_stab_SUPG_tp, solve_adv_diff_2d, ex_advection_diffusion_square.
-* geopdes_base, added functions for the bilaplacian: op_laplaceu_laplacev, op_laplaceu_laplacev_tp, solve_bilaplace_2d_iso.
-* geopdes_elasticity, added functions for the bilaplacian: op_gradgradu_gradgradv, op_gradgradu_gradgradv_tp, solve_bilaplace_gradgrad_2d_iso, ex_kirchhoff_*.
-* geopdes_fluid, added functions for the Nitsche's method: sp_weak_dirichlet_bc, op_udotn_vdotn, op_fdotn_vdotn, op_gradv_n_u, op_gradv_n_f.
-* solve_stokes_2d, sp_bspline_fluid_2d: modified to use Nitsche's method.
-* msh_2d/msh_eval_boundary_side: added computation of the normal characteristic length.
-* sp_eval_stress: modified to work also with the Piola transformation.
-
-Version geopdes_***-2.0.3
-
-* In geopdes.h, "quad_nodes" replaced by "geo_map_jac" to check the dimension.
-* Fixed bug in the functions mp_interface_#d
 
 Version geopdes_***-2.0.2
 

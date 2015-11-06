@@ -30,6 +30,7 @@
 function [glob_num, glob_ndof] = mp_interface_vector_3d (interfaces, sp)
 
   if (~isempty (interfaces))
+    glob_ndof = 0;
     glob_num = cell (numel (sp), 1);
     patch_intrfc = cell (numel (sp), 1);
     ttform   = cell (numel (sp), numel (interfaces));
@@ -115,7 +116,7 @@ function [glob_num, ppnum] = set_same_patch (iptc, intrfc, ttform, new_dofs, ...
     [common_dofs, pos1, pos2] = intersect (ttform{iptc, ii}, intrfc_dofs);
     not_set = find (ppnum{ii}(pos1) == 0);
     if (~isempty (not_set))
-      ppnum{ii}(pos1(not_set)) = ppnum{intrfc}(new_dofs(pos2(not_set)));
+      ppnum{ii}(pos1(not_set)) = ppnum{intrfc}(pos2(not_set));
       [glob_num, ppnum] = set_same_interface (iptc, ii, ttform, ...
                       pos1(not_set), interfaces, glob_num, ppnum, patch_intrfc);
     end
