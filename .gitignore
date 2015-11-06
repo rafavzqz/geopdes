@@ -1,0 +1,10 @@
+# Temporary files and vtk files
+*~
+*.vts
+*.vtu
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.swp
