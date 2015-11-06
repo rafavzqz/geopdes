@@ -80,7 +80,7 @@ end
 
 hessian_param = hessian || laplacian;
 grad_param = gradient || hessian_param;
-value_param = value || gradient_param;
+value_param = value || grad_param;
 
 sp = sp_evaluate_element_list_param (space, msh, 'value', value_param, 'gradient', grad_param, 'hessian', hessian_param);
 
