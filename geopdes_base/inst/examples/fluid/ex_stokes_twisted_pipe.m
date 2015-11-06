@@ -24,8 +24,7 @@ problem_data.g  = @(x, y, z, iside) zeros ([3, size(x)]); %Neumann boundary cond
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
-method_data.element_name = 'RT';
-method_data.Cpen = 10;
+method_data.element_name = 'TH';
 method_data.degree       = [2 2 2]; % Degree of the splines (pressure space)
 method_data.regularity   = [1 1 1]; % Regularity of the splines
 method_data.nsub         = [2 2 2]; % Number of subdivisions
