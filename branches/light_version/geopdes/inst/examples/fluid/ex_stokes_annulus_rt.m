@@ -4,7 +4,6 @@
 clear problem_data  
 % Physical domain, defined as NURBS map given in a text file
 % problem_data.geo_name = 'annulus.mat';
-problem_data.geo_name = nrbtransp (nrbrevolve(nrbline ([1 0], [2 0]),[0 0 0], [0 0 1], pi/4));
 srf = nrbtransp (nrbrevolve(nrbline ([1 0], [2 0]),[0 0 0], [0 0 1], pi/4));
 problem_data.geo_name = srf;
 
