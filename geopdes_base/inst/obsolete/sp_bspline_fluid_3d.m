@@ -1,3 +1,4 @@
+% -*- INTERNAL UNDOCUMENTED FUNCTION -*-
 function [spv, spp] = sp_bspline_fluid_3d (element_name, ...
                    knots, nsub_p, degree_p, regularity_p, msh)
 
