@@ -94,47 +94,51 @@ function sp = sp_scalar (knots, degree, weights, msh, transform)
   sp.ndof     = prod (sp.ndof_dir);
   sp.ncomp    = 1;
 
-  if (~isempty (msh.boundary) && msh.ndim > 1 && strcmpi (transform, 'grad-preserving'))
-    for iside = 1:numel (msh.boundary)
+  if (msh.ndim > 1 && strcmpi (transform, 'grad-preserving'))
+
+    for iside = 1:2*msh.ndim
 %%    ind  = [2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind  = [2 2 1 1] in 2D;
 %%    ind2 = [1 1 2 2 3 3] in 3D,                  %ind2 = [1 1 2 2] in 2D
       ind2 = ceil (iside/2);
       ind = setdiff (1:msh.ndim, ind2);
 
-      if (strcmpi (sp.space_type, 'spline'))
-        weights = [];
-      elseif (strcmpi (sp.space_type, 'nurbs'))
-        indices = arrayfun (@(x) 1:x, sp.ndof_dir, 'UniformOutput', false);
-        if (rem (iside, 2) == 0)
-          indices{ind2} = sp.ndof_dir(ind2);
-        else
-          indices{ind2} = 1;
+      if (~isempty (msh.boundary))
+        if (strcmpi (sp.space_type, 'spline'))
+          weights = [];
+        elseif (strcmpi (sp.space_type, 'nurbs'))
+          indices = arrayfun (@(x) 1:x, sp.ndof_dir, 'UniformOutput', false);
+          if (rem (iside, 2) == 0)
+            indices{ind2} = sp.ndof_dir(ind2);
+          else
+            indices{ind2} = 1;
+          end
+          weights = squeeze (sp.weights(indices{:}));
         end
-        weights = squeeze (sp.weights(indices{:}));
+        sp.boundary(iside) = sp_scalar (sp.knots(ind), sp.degree(ind), weights, msh.boundary(iside));
       end
-      sp.boundary(iside) = sp_scalar (sp.knots(ind), sp.degree(ind), weights, msh.boundary(iside));
-
       
-      [ind_univ{ind}] = ind2sub ([sp.boundary(iside).ndof_dir], 1:sp.boundary(iside).ndof);
+      bnd_ndof_dir = sp.ndof_dir(ind);
+      bnd_ndof = prod (bnd_ndof_dir);
+      [ind_univ{ind}] = ind2sub (bnd_ndof_dir, 1:bnd_ndof);
       if (rem (iside, 2) == 0)
-        ind_univ{ind2} = sp.ndof_dir(ind2) * ones (1, sp.boundary(iside).ndof);
+        ind_univ{ind2} = sp.ndof_dir(ind2) * ones (1, bnd_ndof);
       else
-        ind_univ{ind2} = ones (1, sp.boundary(iside).ndof);
+        ind_univ{ind2} = ones (1, bnd_ndof);
       end
       sp.boundary(iside).dofs = sub2ind (sp.ndof_dir, ind_univ{:});
 
       if (sp.ndof_dir(ind2) > 1)
         if (rem (iside, 2) == 0)
-          ind_univ{ind2} = (sp.ndof_dir(ind2) - 1) * ones (1, sp.boundary(iside).ndof);
+          ind_univ{ind2} = (sp.ndof_dir(ind2) - 1) * ones (1, bnd_ndof);
         else
-          ind_univ{ind2} = 2 * ones (1, sp.boundary(iside).ndof);
+          ind_univ{ind2} = 2 * ones (1, bnd_ndof);
         end
         sp.boundary(iside).adjacent_dofs = sub2ind (sp.ndof_dir, ind_univ{:});
       end
       
     end
         
-  elseif (~isempty (msh.boundary) && msh.ndim == 1)
+  elseif (msh.ndim == 1)
     sp.boundary(1).dofs = 1;
     sp.boundary(2).dofs = sp.ndof;
     if (sp.ndof > 1)

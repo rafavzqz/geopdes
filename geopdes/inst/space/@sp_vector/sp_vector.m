@@ -90,9 +90,9 @@ function sp = sp_vector (scalar_spaces, msh, transform)
     aux = aux + scalar_spaces{icomp}.ndof;
     sp.ndof_dir(icomp,:) = scalar_spaces{icomp}.ndof_dir;
   end
-  
-  if (~isempty (msh.boundary))
-    for iside = 1:numel(msh.boundary)
+
+  if (msh.ndim > 1)
+    for iside = 1:2*msh.ndim
 
       for icomp = 1:sp.ncomp_param
         scalar_bnd{icomp} = scalar_spaces{icomp}.boundary(iside);
@@ -100,22 +100,28 @@ function sp = sp_vector (scalar_spaces, msh, transform)
       
       if (strcmpi (transform, 'grad-preserving'))
         ind = 1:sp.ncomp;
-        sp.boundary(iside) = sp_vector (scalar_bnd(ind), msh.boundary(iside), transform);
+        if (~isempty (msh.boundary))
+          sp.boundary(iside) = sp_vector (scalar_bnd(ind), msh.boundary(iside), transform);
+        end
 
       elseif (strcmpi (transform, 'curl-preserving'))
         ind = setdiff (1:msh.ndim, ceil(iside/2)); % ind =[2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind = [2 2 1 1] in 2D;
-        sp.boundary(iside) = sp_vector (scalar_bnd(ind), msh.boundary(iside), transform);
+        if (~isempty (msh.boundary))
+          sp.boundary(iside) = sp_vector (scalar_bnd(ind), msh.boundary(iside), transform);
+        end
 
       elseif (strcmpi (transform, 'div-preserving'))
         ind = ceil (iside/2); % ind =[1, 1, 2, 2, 3, 3] in 3D, %ind = [1, 1, 2, 2] in 2D;
-        sp_bnd = scalar_bnd{ind};
-        if (iside == 1)
-          sp.boundary = sp_scalar (sp_bnd.knots, sp_bnd.degree, sp_bnd.weights, msh.boundary(iside), 'integral-preserving');
-        else
-          sp.boundary(iside) = sp_scalar (sp_bnd.knots, sp_bnd.degree, sp_bnd.weights, msh.boundary(iside), 'integral-preserving');
+        if (~isempty (msh.boundary))
+          sp_bnd = scalar_bnd{ind};
+          if (iside == 1)
+            sp.boundary = sp_scalar (sp_bnd.knots, sp_bnd.degree, sp_bnd.weights, msh.boundary(iside), 'integral-preserving');
+          else
+            sp.boundary(iside) = sp_scalar (sp_bnd.knots, sp_bnd.degree, sp_bnd.weights, msh.boundary(iside), 'integral-preserving');
+          end
         end
       end
-      
+
       dofs = [];
       for icomp = 1:numel(ind)
         new_dofs = sp.cumsum_ndof(ind(icomp)) + scalar_bnd{ind(icomp)}.dofs;
