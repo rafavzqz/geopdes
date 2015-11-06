@@ -4,89 +4,100 @@ Geometry
  geo_load
  geo_read_nurbs
  geo_convert_format
+ geo_deform
 Mesh
  msh_gauss_nodes
  msh_set_quad_nodes
  msh_cartesian
  @msh_cartesian/msh_eval_boundary_side
  @msh_cartesian/msh_evaluate_col
+ @msh_cartesian/msh_evaluate_element_list
  @msh_cartesian/msh_precompute
+ @msh_cartesian/msh_boundary_side_from_interior
 Space
- sp_eval
  sp_eval_msh
  sp_h1_error
  sp_l2_error
+ sp_hcurl_error
  sp_to_vtk
  sp_to_vtk_b64
  sp_to_vtk_raw.m
+ sp_weak_drchlt_bc
  sp_drchlt_l2_proj
- sp_bspline_1d_param
  sp_bspline
- @sp_bspline/sp_eval_boundary_side
- @sp_bspline/sp_evaluate_col
- @sp_bspline/sp_evaluate_col_param
- @sp_bspline/sp_evaluate_element_list
- @sp_bspline/sp_evaluate_element_list_param
- @sp_bspline/sp_precompute
- @sp_bspline/sp_precompute_param
  sp_nurbs
- @sp_nurbs/sp_eval_boundary_side
- @sp_nurbs/sp_evaluate_col
- @sp_nurbs/sp_evaluate_col_param
- @sp_nurbs/sp_evaluate_element_list
- @sp_nurbs/sp_evaluate_element_list_param
- @sp_nurbs/sp_precompute
- @sp_nurbs/sp_precompute_param
+ sp_bspline_fluid
+ sp_bspline_1d_param
+ sp_grad_preserving_transform
+ sp_integral_presering_transform
+ sp_vector_grad_preserving_transform
+ sp_vector_curl_preserving_transform
+ sp_vector_div_preserving_transform 
+ sp_scalar
+ @sp_scalar/sp_eval_boundary_side
+ @sp_scalar/sp_eval
+ @sp_scalar/sp_evaluate_col
+ @sp_scalar/sp_evaluate_col_param
+ @sp_scalar/sp_evaluate_element_list
+ @sp_scalar/sp_evaluate_element_list_param
+ @sp_scalar/sp_h1_error
+ @sp_scalar/sp_l2_error
+ @sp_scalar/sp_precompute
+ @sp_scalar/sp_precompute_param
  sp_vector
  @sp_vector/sp_eval_boundary_side
+ @sp_vector/sp_eval
  @sp_vector/sp_evaluate_col
  @sp_vector/sp_evaluate_col_param
+ @sp_vector/sp_h1_error
+ @sp_vector/sp_l2_error
+ @sp_vector/sp_hcurl_error
  @sp_vector/sp_precompute
- sp_bspline_nforms
- @sp_bspline_nforms/sp_evaluate_col
- @sp_bspline_nforms/sp_evaluate_col_param
- @sp_bspline_nforms/sp_precompute
- @sp_bspline_nforms/sp_precompute_param
+ @sp_vector/sp_precompute_param
 Operators
  op_f_v
- op_f_v_tp
  op_gradu_gradv
- op_gradu_gradv_tp
  op_u_v
- op_u_v_tp
  op_laplaceu_laplacev
- op_laplaceu_laplacev_tp
  op_vel_dot_gradu_v
- op_vel_dot_gradu_v_tp
  op_mat_stab_SUPG
- op_mat_stab_SUPG_tp
  op_rhs_stab_SUPG
- op_rhs_stab_SUPG_tp 
+ op_curlu_curlv_2d
+ op_curlu_curlv_3d
+ op_curlv_p
+ op_div_v_q
+ op_fdotn_vdotn
+ op_f_vxn_2d
+ op_f_vxn_3d
+ op_uxn_vxn_2d
+ op_uxn_vxn_3d
+ op_gradgradu_gradgradv
+ op_gradu_v_otimes_n
+ op_gradv_n_f
+ op_gradv_n_u
+ op_pn_v
+ op_su_ev
+ op_udotn_vdotn
+ op_u_otimes_n_v_otimes_n
+ op_v_gradp
 Solve
  solve_laplace
  solve_laplace_iso
  solve_laplace_eig
  solve_bilaplace_2d_iso
+ solve_bilaplace_gradgrad_2d_iso
  solve_adv_diff_2d
+ solve_linear_elasticity
+ solve_maxwell_eig
+ solve_maxwell_eig_mixed1
+ solve_maxwell_eig_mixed2_2d
+ solve_maxwell_src
+ solve_stokes
 Examples
  geopdes_base_examples
- ex_article_15lines
- ex_article_section_511
- ex_article_section_512
- ex_article_section_513
- ex_article_section_514
- ex_laplace_square
- ex_laplace_plate
- ex_laplace_ring
- ex_laplace_ring_mixed_bc
- ex_laplace_iso_plate
- ex_laplace_iso_ring
- ex_laplace_iso_ring_mixed_bc
- ex_laplace_cube
- ex_laplace_thick_ring
- ex_laplace_iso_thick_ring
- ex_laplace_beltrami
- ex_laplace_eig_square
- ex_advection_diffusion_square
+ geopdes_elasticity_examples
+ geopdes_fluid_examples
+ geopdes_maxwell_examples
 Utilities
  knt_derham
+ msh_to_vtk
