@@ -7,16 +7,12 @@ clear problem_data
 srf = nrbtransp (nrbrevolve(nrbline ([1 0], [2 0]),[0 0 0], [0 0 1], pi/4));
 problem_data.geo_name = srf;
 
-load myfile
-problem_data.geo_name = geo;
-% problem_data.geo_name = 'geo_thick_ring.txt';
-
 % Type of boundary conditions for each side of the domain
-problem_data.drchlt_sides = 1:6;
+problem_data.drchlt_sides = 1:4;
 problem_data.nmnn_sides = [];
 
 % Physical parameters
-problem_data.viscosity = @(x, y,z) ones (size (x));
+problem_data.viscosity = @(x, y) ones (size (x));
 
 % Force term
 fx = @(x, y) (4*(20*(98-57*x.^2).*y.^7+42*x.*(34*x.^2-75).*y.^6 ...
@@ -58,44 +54,13 @@ problem_data.gradvelex = @test_stokes_annulus_graduex;
 
 problem_data.pressex = @(x, y) (-(pi/8) + atan (y./x));
 
-
-
-% Force term
-fx = @(x, y,z) (6 * x + y .* cos(x .* y) + 2 * cos(y) .* sin(x));
-fy = @(x, y,z) (x .* cos(x .* y) - 2 * cos(x) .* sin(y));
-fz = @(x, y,z) zeros (size(x));
-problem_data.f  = @(x, y,z) cat(1, ...
-                reshape (fx (x,y,z), [1, size(x)]), ...
-                reshape (fy (x,y,z), [1, size(x)]), ...
-                reshape (fz (x,y,z), [1, size(x)]));
-
-% Boundary terms
-uxex = @(x, y,z) (sin(x) .* cos(y));
-uyex = @(x, y,z) (-sin(y) .* cos(x));
-uzex = @(x, y,z) zeros(size(x));
-
-problem_data.h = @(x, y, z,iside) cat(1, ...
-                  reshape (uxex (x,y,z), [1, size(x)]), ...
-                  reshape (uyex (x,y,z), [1, size(x)]), ...
-                  reshape (uzex (x,y,z), [1, size(x)]));
-
-% Exact solution, to compute the errors
-problem_data.velex = @(x, y,z) cat(1, ...
-                  reshape (uxex (x,y,z), [1, size(x)]), ...
-                  reshape (uyex (x,y,z), [1, size(x)]), ...
-                  reshape (uzex (x,y,z), [1, size(x)]));
-
-problem_data.pressex = @(x, y,z) (3 * x.^2 + sin(x .* y) - 1.239811742000564725943866);
-
-problem_data.gradvelex = @test_stokes_square_bc_graduex;
-
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
 method_data.element_name = 'rt';     % Element type for discretization
-method_data.degree       = [ 2 2 2];  % Degree of the splines (pressure space)
-method_data.regularity   = [ 1 1 1];  % Regularity of the splines (pressure space)
-method_data.nsub         = [ 4 4 4];  % Number of subdivisions
-method_data.nquad        = [ 4 4 4];  % Points for the Gaussian quadrature rule
+method_data.degree       = [ 3  3];  % Degree of the splines (pressure space)
+method_data.regularity   = [ 2  2];  % Regularity of the splines (pressure space)
+method_data.nsub         = [10 10];  % Number of subdivisions
+method_data.nquad        = [ 5  5];  % Points for the Gaussian quadrature rule
 
 % Penalization parameter for Nitsche's method
 factor = 10;
@@ -108,10 +73,8 @@ method_data.Cpen = factor*(min(method_data.degree)+1);
 % 4) POST-PROCESSING
 % 4.1) COMPARISON WITH EXACT SOLUTION
 error_l2_p = sp_l2_error (space_p, msh, press, problem_data.pressex)
-% [error_h1_v, error_l2_v] = ...
-%    sp_h1_error (space_v, msh, vel, problem_data.velex, problem_data.gradvelex)
-error_l2_v = ...
-   sp_l2_error (space_v, msh, vel, problem_data.velex)
+[error_h1_v, error_l2_v] = ...
+   sp_h1_error (space_v, msh, vel, problem_data.velex, problem_data.gradvelex)
 
 
 % 4.2) EXPORT TO PARAVIEW
@@ -120,10 +83,8 @@ output_file = 'ANNULUS_RT_Deg3_Reg2_Sub10';
 fprintf ('The result is saved in the files %s \n and %s \n \n', ...
            [output_file '_vel'], [output_file '_press']);
 vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20)};
-vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20), linspace(0, 1, 20)};
 sp_to_vtk (press, space_p, geometry, vtk_pts, [output_file '_press'], 'press')
 sp_to_vtk (vel,   space_v, geometry, vtk_pts, [output_file '_vel'  ], {'velocity', 'divergence'}, {'value', 'divergence'})
-return
 
 % 4.3) PLOT IN MATLAB
 [eu, F]  = sp_eval (vel, space_v, geometry, vtk_pts);
