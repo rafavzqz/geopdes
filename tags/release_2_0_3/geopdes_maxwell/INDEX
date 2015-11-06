@@ -1,0 +1,76 @@
+geopdes_maxwell >> Iso-Geometric Analysis for Maxwell equations
+Space
+ sp_vector_2d_curl_transform
+ @sp_vector_2d_curl_transform/sp_eval_boundary_side
+ @sp_vector_2d_curl_transform/sp_evaluate_col
+ @sp_vector_2d_curl_transform/sp_precompute
+ sp_vector_3d_curl_transform
+ @sp_vector_3d_curl_transform/sp_eval_boundary_side
+ @sp_vector_3d_curl_transform/sp_evaluate_col
+ @sp_vector_3d_curl_transform/sp_precompute
+ sp_bspline_2d_3forms
+ @sp_bspline_2d_3forms/sp_evaluate_col
+ @sp_bspline_2d_3forms/sp_precompute
+ @sp_bspline_2d_3forms/sp_precompute_param
+ sp_hcurl_error
+ sp_drchlt_l2_proj_uxn
+Operators
+ op_curlu_curlv_2d
+ op_curlu_curlv_3d
+ op_curlu_curlv_tp
+ op_curlv_p
+ op_curlv_p_tp
+ op_v_gradp
+ op_v_gradp_tp
+ op_uxn_vxn_2d
+ op_uxn_vxn_3d
+ op_f_vxn_2d
+ op_f_vxn_3d
+Solve
+ solve_maxwell_src_2d
+ solve_maxwell_src_3d
+ solve_maxwell_eig_2d
+ solve_maxwell_eig_3d
+ solve_maxwell_eig_mixed1_2d
+ solve_maxwell_eig_mixed1_3d
+ solve_maxwell_eig_mixed2_2d
+Examples
+ ex_maxwell_src_square
+ ex_maxwell_src_Lshaped
+ ex_maxwell_src_ring
+ ex_maxwell_src_pacman
+ ex_maxwell_src_cube
+ ex_maxwell_src_thick_ring
+ ex_maxwell_src_camembert
+ ex_maxwell_eig_square
+ ex_maxwell_eig_Lshaped
+ ex_maxwell_eig_curvedL
+ ex_maxwell_eig_ring_1eighth
+ ex_maxwell_eig_cube
+ ex_maxwell_eig_thick_L
+ ex_maxwell_eig_mixed1_square
+ ex_maxwell_eig_mixed1_Lshaped
+ ex_maxwell_eig_mixed1_cube
+ ex_maxwell_eig_mixed1_thick_L
+ ex_maxwell_eig_mixed2_square
+ ex_maxwell_eig_mixed2_Lshaped
+ geopdes_maxwell_examples
+Multipatch
+ mp_interface_hcurl_2d
+ mp_interface_hcurl_3d
+ mp_solve_maxwell_eig_2d
+ mp_solve_maxwell_eig_3d
+ mp_solve_maxwell_eig_mixed1_2d
+ mp_solve_maxwell_eig_mixed1_3d
+ mp_sp_drchlt_l2_proj_uxn_3d
+Multipatch/Examples
+ ex_maxwell_eig_Lshaped_mp
+ ex_maxwell_eig_cube_mp
+ ex_maxwell_eig_thick_L_mp
+ ex_maxwell_eig_fichera_mp
+ ex_maxwell_eig_mixed1_Lshaped_mp
+ ex_maxwell_eig_mixed1_cube_mp
+ ex_maxwell_eig_mixed1_thick_L_mp
+ ex_maxwell_eig_mixed1_fichera_mp
+Utilities
+ knt_derham

@@ -1,0 +1,17 @@
+dirlist        = {"examples", "examples/data_files", "examples/geometry_files", ...
+                  "geometry", "utils", "msh", "operators", "solve", "space"};
+
+[basename,dir] = fileparts(fileparts (mfilename ("fullpath")));
+
+for ii=1:length(dirlist)
+  if (! exist (fullfile (basename, "inst"), "dir"))
+    ## Run this if the package is installed
+    rmpath ( [ basename "/" dirlist{ii}])
+  else
+    ## Run this if we are testing the package without installation
+    rmpath ([ fileparts(canonicalize_file_name (mfilename ("fullpath"))) "/inst/" dirlist{ii}])
+    rmpath ([ fileparts(canonicalize_file_name (mfilename ("fullpath"))) "/src/"])
+  end
+end
+
+clear dirlist basename dir

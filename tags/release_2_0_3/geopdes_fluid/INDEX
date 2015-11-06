@@ -1,0 +1,34 @@
+geopdes_fluid >> Iso-Geometric Analysis for Incompressible fluids
+Space
+ sp_bspline_fluid_2d
+ sp_bspline_fluid_3d
+ sp_vector_2d_piola_transform
+ @sp_vector_2d_piola_transform/sp_eval_boundary_side
+ @sp_vector_2d_piola_transform/sp_evaluate_col
+ @sp_vector_2d_piola_transform/sp_precompute
+Msh
+ msh_set_breaks
+Solve
+ solve_stokes_2d
+ solve_stokes_3d
+Operators
+ op_div_v_q
+ op_div_v_q_tp
+Examples
+ ex_stokes_square_th
+ ex_stokes_square_ndl
+ ex_stokes_square_rt
+ ex_stokes_square_sg
+ ex_stokes_annulus_th
+ ex_stokes_annulus_rt
+ ex_stokes_article_ijnmf_th
+ ex_stokes_article_ijnmf_rt
+ ex_stokes_driven_cavity_3d_th
+ ex_stokes_driven_cavity_3d_sg
+ ex_stokes_twisted_pipe
+ geopdes_fluid_examples
+Multipatch
+ mp_solve_stokes_2d
+ mp_solve_stokes_3d
+ ex_stokes_bifurcation_2d_mp
+ ex_stokes_driven_cavity_3d_mp

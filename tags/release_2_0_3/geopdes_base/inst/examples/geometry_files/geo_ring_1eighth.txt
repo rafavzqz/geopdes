@@ -1,0 +1,15 @@
+# nurbs mesh v.0.6
+# 
+# NURBS representation of one eighth of a ring
+# This domain appears in Monique Dauge's benchmark for Maxwell problem
+#  http://perso.univ-rennes1.fr/monique.dauge/core/index.html
+# 9th April 2010
+#
+2 1
+1 2
+2 3
+0.00000   0.00000   1.00000   1.00000
+0.00000   0.00000   0.00000   1.00000   1.00000   1.00000
+2.00000   3.00000   1.847759065022573   2.771638597533860   1.414213562373095   2.121320343559642
+0.00000   0.00000   0.765366864730180   1.148050297095269   1.414213562373095   2.121320343559642
+1         1         0.923879532511287   0.923879532511287   1                   1

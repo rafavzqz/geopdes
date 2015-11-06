@@ -1,0 +1,10 @@
+Name: geopdes_elasticity
+Version: 2.0.2
+Date: 2012-02-08
+Author: Carlo de Falco, Rafael Vazquez and Alessandro Reali
+Maintainer: Rafael Vazquez
+Title: Iso-Geometric Analysis for Linear Elasticity Problems
+Description: A research tool for Iso-Geometric Analysis of PDEs. Module for Linear Elasticity Problems.
+Depends: geopdes_base (>= 2.0.2), octave (>= 3.2.3), nurbs (>= 1.3.5)
+Autoload: yes
+License: GPLv3
