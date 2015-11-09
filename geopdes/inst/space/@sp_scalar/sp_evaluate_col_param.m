@@ -175,8 +175,10 @@ end
 
 clear shp shg shh
 
-if (strcmpi (space.space_type, 'NURBS'))
-  sp = bsp_2_nrb__ (sp, msh, space.weights);
+if (value || gradient || hessian)
+  if (strcmpi (space.space_type, 'NURBS'))
+    sp = bsp_2_nrb__ (sp, msh, space.weights);
+  end
 end
     
 end

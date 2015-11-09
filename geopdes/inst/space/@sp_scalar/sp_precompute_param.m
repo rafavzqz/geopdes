@@ -175,10 +175,9 @@ function sp = sp_precompute_param (sp, msh, varargin)
       end
     end
     
-  end
-
-  if (strcmpi (sp.space_type, 'NURBS'))
-    sp = bsp_2_nrb__ (sp, msh, sp.weights);
+    if (strcmpi (sp.space_type, 'NURBS'))
+      sp = bsp_2_nrb__ (sp, msh, sp.weights);
+    end
   end
   
 end

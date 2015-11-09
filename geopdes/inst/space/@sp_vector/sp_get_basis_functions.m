@@ -1,14 +1,14 @@
-% SP_GET_NEIGHBORS: Compute the indices of functions that share one element in the support of a given list of functions
+% SP_GET_BASIS_FUNCTIONS: Compute the indices of tensor-product B-splines acting on a list of cells.
 %
-% neighbors_indices = sp_get_neighbors (space, msh, indices)
+% fun_indices = sp_get_basis_functions (space, msh, indices)
 %
 % INPUT:
 %    space:   object defining the space of discrete functions (see sp_bspline)
 %    msh:     object defining the domain partition and the quadrature rule (see msh_cartesian)
-%    indices: indices of the functions.
+%    indices: indices of the cells.
 %
 % OUTPUT:
-%    neighbors_indices: indices of the functions that interact with the given ones.
+%    fun_indices: indices of the basis functions acting on the cells.
 %
 % Copyright (C) 2015 Rafael Vazquez
 %
@@ -25,13 +25,10 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function neighbors_indices = sp_get_neighbors (space, msh, fun_indices)
+function function_indices = sp_get_basis_functions (space, msh, cell_indices)
 
 space = sp_precompute_param (space, msh, 'value', false);
-conn_indices = arrayfun (@(x) find (space.connectivity == x), fun_indices, 'UniformOutput', false);
-[~, indices_per_function] = cellfun (@(x) ind2sub ([space.nsh_max, msh.nel], x), conn_indices, 'UniformOutput', false);
-cell_indices = unique (vertcat (indices_per_function{:}));
-
-neighbors_indices = unique (space.connectivity (:,cell_indices));
+function_indices = space.connectivity (:,cell_indices);
+function_indices = unique (function_indices(:));
 
 end
