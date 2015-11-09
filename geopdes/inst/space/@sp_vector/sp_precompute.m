@@ -25,7 +25,7 @@
 %            only the selected fields will be computed.
 %
 %    FIELD_NAME      (SIZE)                               DESCRIPTION
-%    ncomp           (scalar)                              number of components of the functions of the space (actually, 3)
+%    ncomp           (scalar)                              number of components of the functions of the space
 %    ndof            (scalar)                              total number of degrees of freedom
 %    ndof_dir        (ncomp x ndim matrix)                 for each component, number of degrees of freedom along each direction
 %    nsh_max         (scalar)                              maximum number of shape functions per element
