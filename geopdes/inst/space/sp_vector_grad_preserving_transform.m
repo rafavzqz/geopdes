@@ -1,3 +1,56 @@
+% SP_VECTOR_GRAD_PRESERVING_TRANSFORM: apply the grad-preserving transform to the functions in the parametric domain
+%
+%     sp = sp_vector_grad_preserving_transform (space, msh, value, gradient, curl, divergence)
+%
+% INPUTS:
+%     
+%    space:   structure with the information in the parametric domain
+%    msh:     msh structure containing the information of the parametrization
+%              in the points where basis functions have to be computed
+%    value, gradient, curl, divergence: additional optional parameters, either true or false
+%            
+%              Name     |   Default value |  Meaning
+%           ------------+-----------------+----------------------------------
+%            value      |      true       |  compute shape_functions
+%            gradient   |      false      |  compute shape_function_gradients
+%            curl       |      false      |  compute shape_function_curls
+%            divergence |      false      |  compute shape_function_divs
+%
+% OUTPUT:
+%
+%    sp: struct representing the discrete function space, with the following fields:
+%              (see the article for a detailed description)
+%
+%    FIELD_NAME      (SIZE)                                     DESCRIPTION
+%    ncomp           (scalar)                                   number of components of the functions of the space
+%    ndof            (scalar)                                   total number of degrees of freedom
+%    ndof_dir        (ncomp x ndim matrix)                      for each component, number of degrees of freedom along each direction
+%    nsh_max         (scalar)                                   maximum number of shape functions per element
+%    nsh             (1 x msh_col.nel vector)                   actual number of shape functions per each element
+%    connectivity    (nsh_max x msh_col.nel vector)             indices of basis functions that do not vanish in each element
+%    shape_functions (ncomp x msh_col.nqn x nsh_max x msh_col.nel)  basis functions evaluated at each quadrature node in each element
+%    shape_function_gradients
+%       (ncomp x rdim x msh_col.nqn x nsh_max x msh_col.nel)    basis function gradients evaluated at each quadrature node in each element
+%    shape_function_divs (msh_col.nqn x nsh_max x msh_col.nel)  basis function divergence evaluated at each quadrature node in each element
+%    shape_function_curls 
+%         2D:  (msh_col.nqn x nsh_max x msh_col.nel)            basis function curl evaluated at each quadrature node in each element
+%         3D:  (3 x msh_col.nqn x nsh_max x msh_col.nel)        
+%
+% Copyright (C) 2015 Rafael Vazquez
+%
+%    This program is free software: you can redistribute it and/or modify
+%    it under the terms of the GNU General Public License as published by
+%    the Free Software Foundation, either version 3 of the License, or
+%    (at your option) any later version.
+
+%    This program is distributed in the hope that it will be useful,
+%    but WITHOUT ANY WARRANTY; without even the implied warranty of
+%    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+%    GNU General Public License for more details.
+%
+%    You should have received a copy of the GNU General Public License
+%    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 function sp = sp_vector_grad_preserving_transform (sp, msh, value, gradient, curl, divergence)
 
   if (nargin < 3)
