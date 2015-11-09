@@ -23,10 +23,6 @@ function sp = bsp_2_nrb__ (sp, msh, W)
   if (isstruct (sp))
     gradient = isfield (sp, 'shape_function_gradients');
     hessian  = isfield (sp, 'shape_function_hessians');
-% sp is an object (called from sp_precompute_param)
-  else
-    gradient = ~isempty (sp.shape_function_gradients);
-    hessian  = ~isempty (sp.shape_function_hessians);
   end
 
   W = repmat (reshape (W(sp.connectivity), 1, sp.nsh_max, msh.nel), [msh.nqn, 1, 1]);
