@@ -34,17 +34,22 @@
 %        constructor     function handle             function handle to construct the same discrete space in a different msh
 %
 %       METHODS
-%       These methods give a structure with all the functions computed in a certain subset of the mesh
-%        sp_evaluate_element_list: compute basis functions (and derivatives) in a given list of elements
-%        sp_evaluate_col:          compute basis functions (and derivatives) in one column of the mesh, i.e., fixing the element in the first
+%       Methods that give a structure with all the functions computed in a certain subset of the mesh
+%         sp_evaluate_element_list: compute basis functions (and derivatives) in a given list of elements
+%         sp_evaluate_col:          compute basis functions (and derivatives) in one column of the mesh, i.e., fixing the element in the first
 %                                    parametric direction
-%        sp_precompute:            compute basis functions and derivatives in the whole mesh (memory consuming)       
-%        sp_eval_boundary_side:    evaluate the basis functions in one side of the boundary.
+%         sp_precompute:            compute basis functions and derivatives in the whole mesh (memory consuming)       
+%         sp_eval_boundary_side:    evaluate the basis functions in one side of the boundary.
 %
-%       These methods serve for post-processing, and require a computed vector of degrees of freedom
-%        sp_h1_error:              compute the error in H1 norm
-%        sp_l2_error:              compute the error in L2 norm
-%        sp_eval:                  evaluate the computed solution in a Cartesian grid of points
+%       Methods for post-processing, which require a computed vector of degrees of freedom
+%         sp_h1_error: compute the error in H1 norm
+%         sp_l2_error: compute the error in L2 norm
+%         sp_eval:     evaluate the computed solution in a Cartesian grid of points
+%
+%       Methods for basic connectivity operations
+%         sp_get_basis_functions: compute the functions that do not vanish in a given list of elements
+%         sp_get_cells:           compute the cells on which a list of functions do not vanish
+%         sp_get_neighbors:       compute the neighbors, functions that share at least one element with a given one
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011, 2015 Rafael Vazquez
