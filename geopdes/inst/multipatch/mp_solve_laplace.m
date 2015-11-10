@@ -91,7 +91,7 @@ end
 
 msh_ptc = msh;
 
-msh = msh_multipatch (msh);
+msh = msh_multipatch (msh, boundaries);
 space = sp_multipatch (sp, msh, interfaces);
 
 % Compute and assemble the matrices 

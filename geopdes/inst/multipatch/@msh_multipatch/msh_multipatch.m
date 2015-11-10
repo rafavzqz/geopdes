@@ -43,7 +43,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function msh = msh_multipatch (meshes)
+function msh = msh_multipatch (meshes, boundaries)
 
   aux = struct ([meshes{:}]);
   
@@ -54,7 +54,27 @@ function msh = msh_multipatch (meshes)
   msh.nel = sum ([aux.nel]);
   msh.nel_per_patch = [aux.nel];
   msh.msh_patch = meshes;
+
+  msh.patch_numbers = [];
+  msh.side_numbers  = [];
   
-% All the boundary info is still missing  
-  msh = class (msh, 'msh_multipatch');  
+  if (nargin == 2 && ~isempty (meshes{1}.boundary))
+    nsides = 0;
+    for iref = 1:numel (boundaries)
+      patch_numbers(nsides+(1:boundaries(iref).nsides)) = boundaries(iref).patches;
+      side_numbers(nsides+(1:boundaries(iref).nsides)) = boundaries(iref).faces;
+      nsides = nsides + boundaries(iref).nsides;
+    end
+    for ind = 1:nsides
+      msh_bnd{ind} = meshes{patch_numbers(ind)}.boundary(side_numbers(ind));
+    end
+    msh.boundary = msh_multipatch (msh_bnd);
+    msh.boundary.patch_numbers = patch_numbers;
+    msh.boundary.side_numbers  = side_numbers;
+  else
+    msh.boundary = [];
+  end
+
+  msh = class (msh, 'msh_multipatch');
+  
 end
