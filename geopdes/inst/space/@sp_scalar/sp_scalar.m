@@ -26,8 +26,8 @@
 %        nsh_max         (scalar)                    maximum number of shape functions per element
 %        nsh_dir         (1 x ndim vector)           maximum number of univariate shape functions per element in each parametric direction
 %        ncomp           (scalar)                    number of components of the functions of the space (actually, 1)
-%        boundary        (1 x 2*ndim struct array)   struct array representing the space of traces of basis functions on each edge
-%        transform       (string)                    one of 'grad-preserving' and 'integral-preserving'
+%        boundary        (1 x 2*ndim struct array)   struct array representing the space of traces of basis functions on each boundary side
+%        transform       (string)                    one between 'grad-preserving' and 'integral-preserving'
 %        dofs            (1 x ndof vector)           only for boundary spaces, degrees of freedom that do not vanish on the boundary
 %        adjacent_dofs   (1 x ndof vector)           only for boundary spaces, degrees of freedom that vanish on the boundary, but its
 %                                                     first derivative does not

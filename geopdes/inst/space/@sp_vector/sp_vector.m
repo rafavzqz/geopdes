@@ -21,7 +21,7 @@
 %        ndof_dir        (ncomp_param x ndim matrix)   for each component, number of degrees of freedom along each direction
 %        comp_dofs       (1 x ncomp_param cell array)  indices of the degrees of freedom for each component
 %        nsh_max         (scalar)                      maximum number of shape functions per element
-%        boundary        (1 x 2*ndim struct array)     struct array representing the space of traces of basis functions on each edge
+%        boundary        (1 x 2*ndim struct array)     struct array representing the space of traces of basis functions on each boundary side
 %        transform       (string)                      one of 'grad-preserving', 'curl-preserving' and 'div-preserving'
 %        dofs            (1 x ndof vector)             only for boundary spaces, degrees of freedom that do not vanish on the boundary
 %        constructor     function handle               function handle to construct the same discrete space in a different msh
