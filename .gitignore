@@ -2,6 +2,7 @@
 *~
 *.vts
 *.vtu
+*.pvd
 *.aux
 *.bbl
 *.blg
