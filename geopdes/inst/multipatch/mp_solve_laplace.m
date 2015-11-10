@@ -55,7 +55,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [geometry, msh, sp, u, gnum] = ...
+function [geometry, msh, space, u, gnum] = ...
               mp_solve_laplace (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
@@ -89,26 +89,18 @@ for iptc = 1:npatch
   sp{iptc} = sp_bspline (knots{iptc}, degree, msh{iptc});
 end
 
-% Create a correspondence between patches on the interfaces
-[gnum, ndof] = mp_interface (interfaces, sp);
+msh_ptc = msh;
+
+msh = msh_multipatch (msh);
+space = sp_multipatch (sp, msh, interfaces);
 
 % Compute and assemble the matrices 
-rhs = zeros (ndof, 1);
+rhs = zeros (space.ndof, 1);
 
-ncounter = 0;
-for iptc = 1:npatch
-  [rs, cs, vs] = op_gradu_gradv_tp (sp{iptc}, sp{iptc}, msh{iptc}, c_diff);
-  rows(ncounter+(1:numel (rs))) = gnum{iptc}(rs);
-  cols(ncounter+(1:numel (rs))) = gnum{iptc}(cs);
-  vals(ncounter+(1:numel (rs))) = vs;
-  ncounter = ncounter + numel (rs);
+stiff_mat = op_gradu_gradv_mp (space, space, msh, c_diff);
+rhs = op_f_v_mp (space, msh, f);
 
-  rhs_loc = op_f_v_tp (sp{iptc}, msh{iptc}, f);
-  rhs(gnum{iptc}) = rhs(gnum{iptc}) + rhs_loc;
-end
-
-stiff_mat = sparse (rows, cols, vals, ndof, ndof);
-clear rows cols vals rs cs vs
+[gnum, ndof] = mp_interface (interfaces, sp);
 
 for iref = nmnn_sides
   for bnd_side = 1:boundaries(iref).nsides
@@ -117,14 +109,14 @@ for iref = nmnn_sides
 % Restrict the function handle to the specified side, in any dimension, gside = @(x,y) g(x,y,iside)
     gref = @(varargin) g(varargin{:},iref);
     global_dofs = gnum{iptc}(sp{iptc}.boundary(iside).dofs);
-    rhs_nmnn = op_f_v_tp (sp{iptc}.boundary(iside), msh{iptc}.boundary(iside), gref);
+    rhs_nmnn = op_f_v_tp (sp{iptc}.boundary(iside), msh_ptc{iptc}.boundary(iside), gref);
     rhs(global_dofs) = rhs(global_dofs) + rhs_nmnn;
   end
 end
 
 % Apply Dirichlet boundary conditions
 u = zeros (ndof, 1);
-[u_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj (sp, msh, h, gnum, boundaries, drchlt_sides);
+[u_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj (sp, msh_ptc, h, gnum, boundaries, drchlt_sides);
 u(drchlt_dofs) = u_drchlt;
 
 int_dofs = setdiff (1:ndof, drchlt_dofs);

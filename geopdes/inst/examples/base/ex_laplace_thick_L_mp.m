@@ -38,21 +38,15 @@ method_data.nquad      = [3 3 3];  % Points for the Gaussian quadrature rule
                mp_solve_laplace (problem_data, method_data);
 
 % 4) POST-PROCESSING
-% 4.1) EXPORT TO PARAVIEW
+% EXPORT TO PARAVIEW
 output_file = 'thickL_mp_BSP_Deg2_Reg1_Sub3';
 
 vtk_pts = {linspace(0, 1, 10), linspace(0, 1, 10), linspace(0, 1, 20)};
 fprintf ('The result is saved in the file %s.pvd \n \n', output_file);
 mp_sp_to_vtk (u, space, geometry, gnum, vtk_pts, output_file, 'u')
 
-% 4.2) PLOT IN MATLAB. COMPARISON WITH THE EXACT SOLUTION
-npatch = numel (geometry);
-for iptc = 1:npatch
-  [error_h1(iptc), error_l2(iptc)] = sp_h1_error (space{iptc}, msh{iptc}, ...
-     u(gnum{iptc}), problem_data.uex, problem_data.graduex);
-end
-error_l2 = sqrt (sum (error_l2 .* error_l2))
-error_h1 = sqrt (sum (error_h1 .* error_h1))
+% COMPARISON WITH THE EXACT SOLUTION
+[error_h1, error_l2] = sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex)
 
 %!demo
 %! ex_laplace_thick_L_mp

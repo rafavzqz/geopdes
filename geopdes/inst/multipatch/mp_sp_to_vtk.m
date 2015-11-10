@@ -64,12 +64,17 @@ function mp_sp_to_vtk (u, space, geometry, gnum, npts, filename, fieldname, vara
   fprintf (fid, str1);
   ind = union (find (filename == '/', 1, 'last'), find (filename == '\', 1, 'last')) + 1;
   if (isempty (ind)); ind = 1; end
-  for iptc = 1:numel(geometry)
+  for iptc = 1:space.npatch
     filename_patch_without_path = cat (2, filename(ind:end), '_', num2str (iptc));
     filename_patch = cat (2, filename, '_', num2str (iptc));
     fprintf (fid, str2, iptc, filename_patch_without_path);
-    sp_to_vtk (u(abs(gnum{iptc})).*sign(gnum{iptc})', space{iptc}, geometry(iptc), npts, ...
+    if (isempty (space.dofs_ornt))
+      sp_to_vtk (u(space.gnum{iptc}), space.sp_patch{iptc}, geometry(iptc), npts, ...
                            filename_patch, fieldname, varargin{:})
+    else
+      sp_to_vtk (u(space.gnum{iptc}) .* space.dofs_ornt{iptc}', space.sp_patch{iptc}, geometry(iptc), npts, ...
+                           filename_patch, fieldname, varargin{:})
+    end
   end
   fprintf (fid, str3);
 
