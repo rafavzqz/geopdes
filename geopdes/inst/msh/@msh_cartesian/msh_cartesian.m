@@ -45,6 +45,8 @@
 %     msh_precompute:   compute, for the entire mesh, any of the fields related
 %                       to the quadrature rule, or all of them (except boundary)
 %                       as in the mesh structure from previous versions.
+%     msh_evaluate_element_list: compute the parameterization (and its derivatives) at
+%                       the quadrature points in a given list of elements.
 %     msh_boundary_side_from_interior: create a msh object, with quadrature
 %                       points only on one boundary side. Useful to apply boundary
 %                       conditions in weak form.
