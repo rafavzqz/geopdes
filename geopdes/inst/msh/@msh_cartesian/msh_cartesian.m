@@ -31,7 +31,7 @@
 %     breaks        (1 x ndim cell-array)     unique(breaks)
 %     qn            (1 x ndim cell-array)     quadrature nodes along each direction in parametric domain
 %     qw            (1 x ndim cell-array)     quadrature weights along each direction in parametric space
-%     boundary      (1 x 2*ndim struct-array) it contains a one-dimensional 'msh' structure for each edge of the boundary (only when boundary is set to true)
+%     boundary      (1 x 2*ndim struct-array) it contains a (ndim-1)-dimensional 'msh_cartesian' object for each side of the boundary (only when boundary is set to true)
 %     map           (function handle)         a copy of the map handle of the geometry structure
 %     map_der       (function handle)         a copy of the map_der handle of the geometry structure
 %     map_der2      (function handle)         a copy of the map_der2 handle of the geometry structure
