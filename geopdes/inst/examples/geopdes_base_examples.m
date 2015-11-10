@@ -27,7 +27,8 @@ while (iopt > 0)
             '\n', ...
             '   (1) Examples appearing in the article. \n \n', ...
             '   (2) Other examples in 2D: Poisson and advection-diffusion problems. \n \n',...
-            '   (3) Other examples in 3D surfaces and volumes: Poisson problem. \n \n']);
+            '   (3) Other examples in 3D surfaces and volumes: Poisson problem. \n \n',...
+            '   (4) Multipatch examples for Poisson problem. \n \n']);
 
   iopt = input ('Please choose a number from above or press <Enter> to return: ');
   clc;
@@ -122,6 +123,48 @@ while (iopt > 0)
         input ('Press <Enter> to continue: ');
       end
     end %# while (iopt2 > 0)
+
+  elseif (iopt == 4)
+    iopt2 = 1; 
+    while (iopt2 > 0)
+      clc;
+      fprintf (1, ...
+        ['GeoPDEs examples menu: multipatch examples for Poisson problem\n', ...
+         '-------------------------------------------------------------- \n', ...
+         '\n', ...
+         '2D examples \n \n', ...
+         '   (1) L-shaped domain, defined with 3 patches. \n \n',...
+         '3D examples \n \n', ...
+         '   (2) Unit cube, defined with 2 patches. \n \n',...
+         '   (3) Thick L-shaped domain, defined with 3 patches. \n \n']);
+      
+      iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
+      if (~isempty(iopt2))
+        switch iopt2
+         case 1
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_laplace_lshaped_mp \n \n');
+          fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
+          ex_laplace_Lshaped_mp;
+          input ('Press <Enter> to continue: ');
+
+         case 2
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_laplace_cube_mp \n \n');
+          fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
+          ex_laplace_cube_mp;
+          input ('Press <Enter> to continue: ');
+
+         case 3
+          clc;
+          fprintf (1, 'You can have a look at the source file: ex_laplace_thick_L_mp \n \n');
+          fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
+          ex_laplace_thick_L_mp;
+          input ('Press <Enter> to continue: ');
+        end %switch
+      end %if
+    end %# while (iopt2 > 0)
+  
   end
 
 end %# while (iopt > 0)
