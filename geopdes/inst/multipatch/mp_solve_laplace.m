@@ -10,7 +10,7 @@
 %
 % USAGE:
 %
-%  [geometry, msh, space, u, gnum] = 
+%  [geometry, msh, space, u] = 
 %          mp_solve_laplace (problem_data, method_data)
 %
 % INPUT:
@@ -37,7 +37,6 @@
 %  msh:      cell array of mesh objects (see msh_cartesian)
 %  space:    cell array of space objects (see sp_bspline)
 %  u:        the computed degrees of freedom
-%  gnum:     global numbering of the degrees of freedom
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2010, 2011, 2013, 2015 Rafael Vazquez
@@ -55,7 +54,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [geometry, msh, space, u, gnum] = ...
+function [geometry, msh, space, u] = ...
               mp_solve_laplace (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
@@ -89,16 +88,12 @@ for iptc = 1:npatch
   sp{iptc} = sp_bspline (knots{iptc}, degree, msh{iptc});
 end
 
-msh_ptc = msh;
-
 msh = msh_multipatch (msh, boundaries);
 space = sp_multipatch (sp, msh, interfaces, boundary_interfaces);
 
 % Compute and assemble the matrices 
 stiff_mat = op_gradu_gradv_mp (space, space, msh, c_diff);
 rhs = op_f_v_mp (space, msh, f);
-
-[gnum, ndof] = mp_interface (interfaces, sp);
 
 Nbnd = cumsum ([0, boundaries.nsides]);
 for iref = nmnn_sides
@@ -109,11 +104,11 @@ for iref = nmnn_sides
 end
 
 % Apply Dirichlet boundary conditions
-u = zeros (ndof, 1);
+u = zeros (space.ndof, 1);
 [u_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj (space, msh, h, boundaries, drchlt_sides);
 u(drchlt_dofs) = u_drchlt;
 
-int_dofs = setdiff (1:ndof, drchlt_dofs);
+int_dofs = setdiff (1:space.ndof, drchlt_dofs);
 rhs(int_dofs) = rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt;
 
 % Solve the linear system

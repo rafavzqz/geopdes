@@ -1,13 +1,12 @@
 % MP_SP_TO_VTK: Export multipatch results to VTK format for plotting.
 %
-%  mp_sp_to_vtk (u, space, geometry, gnum, npts, filename, fieldnames, [option], [lambda_lame, mu_lame])
+%  mp_sp_to_vtk (u, space, geometry, npts, filename, fieldnames, [option], [lambda_lame, mu_lame])
 %
 % INPUT:
 %     
 %     u:           vector of dof weights
 %     space:       object representing the space of discrete functions (see sp_bspline)
 %     geometry:    geometry structure (see geo_load)
-%     gnum:        array that relates the local numbering on each patch with the global one
 %     npts:        number of points along each parametric direction where to evaluate
 %     filename:    name of the output file. 
 %     fieldnames:  how to name the saved variables in the vtk file
@@ -37,7 +36,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function mp_sp_to_vtk (u, space, geometry, gnum, npts, filename, fieldname, varargin)
+function mp_sp_to_vtk (u, space, geometry, npts, filename, fieldname, varargin)
 
   str1 = cat (2,'<?xml version="1.0"?> \n', ...
 '<VTKFile type="Collection" version="0.1"> \n', ...

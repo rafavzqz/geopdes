@@ -1,13 +1,12 @@
 % MP_SP_DRCHLT_L2_PROJ: assign the degrees of freedom of Dirichlet boundaries through an L2 projection, in multipatch geometries.
 %
-%   [u, dofs] = mp_sp_drchlt_l2_proj (sp, msh, h, gnum, boundaries, refs)
+%   [u, dofs] = mp_sp_drchlt_l2_proj (sp, msh, h, boundaries, refs)
 %
 % INPUT:
 %
-%  sp:         object representing the space of trial functions (see sp_bspline)
-%  msh:        object containing the domain partition and the quadrature rule (see msh_cartesian)
+%  sp:         object representing the multipatch space of trial functions (see sp_multipatch)
+%  msh:        object containing the domain partition and the quadrature rule (see msh_multipatch)
 %  h:          function handle to compute the Dirichlet condition
-%  gnum:       global numbering of the degrees of freedom (see mp_interface)
 %  boundaries: array of structures containing the information for the boundaries (see mp_geo_load)
 %  refs:       boundary references on which a Dirichlet condition is imposed
 %
@@ -16,8 +15,7 @@
 %  u:    assigned value to the degrees of freedom
 %  dofs: global numbering of the corresponding basis functions
 %
-% Copyright (C) 2010 Carlo de Falco, Rafael Vazquez
-% Copyright (C) 2011, 2015 Rafael Vazquez
+% Copyright (C) 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -32,7 +30,12 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [u, dofs] = mp_sp_drchlt_l2_proj (space, msh, h, boundaries, refs)
+function [u, dofs] = mp_sp_drchlt_l2_proj (space, msh, h, boundaries, refs, dummy)
+
+  if (nargin == 6)
+    error (['The function MP_SP_DRCHLT_L2_PROJ has changed in version 3, to work with multipatch classes. ' ...
+        'The old version can be called with MP_SP_DRCHLT_L2_PROJ_OLD'])
+  end
 
   M = spalloc (space.boundary.ndof, space.boundary.ndof, 3*space.boundary.ndof);
   rhs = zeros (space.boundary.ndof, 1);
