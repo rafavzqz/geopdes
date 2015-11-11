@@ -36,7 +36,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function mp_sp_to_vtk (u, space, geometry, npts, filename, fieldname, varargin)
+function sp_to_vtk (u, space, geometry, npts, filename, fieldname, varargin)
 
   str1 = cat (2,'<?xml version="1.0"?> \n', ...
 '<VTKFile type="Collection" version="0.1"> \n', ...
