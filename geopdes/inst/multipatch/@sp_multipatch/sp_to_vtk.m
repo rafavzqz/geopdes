@@ -1,6 +1,6 @@
-% MP_SP_TO_VTK: Export multipatch results to VTK format for plotting.
+% SP_TO_VTK: Export multipatch results to VTK format for plotting.
 %
-%  mp_sp_to_vtk (u, space, geometry, npts, filename, fieldnames, [option], [lambda_lame, mu_lame])
+%  sp_to_vtk (u, space, geometry, npts, filename, fieldnames, [option], [lambda_lame, mu_lame])
 %
 % INPUT:
 %     
