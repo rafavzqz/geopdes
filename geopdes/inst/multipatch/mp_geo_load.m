@@ -57,7 +57,7 @@
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
 
-function [geometry, boundaries, interfaces, subdomains] = mp_geo_load (in)
+function [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = mp_geo_load (in)
   
   if (ischar (in))
     if (strcmpi (in(end-3:end), '.mat'))
@@ -163,6 +163,16 @@ function [geometry, boundaries, interfaces, subdomains] = mp_geo_load (in)
         geometry(iptc).boundary(ibnd).map_der2 = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 2, rdim);
       end
     end
+    
+    if (~isempty (boundaries))
+      patch_numbers = vertcat (boundaries.patches);
+      side_numbers  = vertcat (boundaries.faces);
+      for iptc = 1:numel(patch_numbers)
+        bnd_nurbs(iptc) = geometry(patch_numbers(iptc)).boundary(side_numbers(iptc)).nurbs;
+      end
+      boundary_interfaces = nrbmultipatch (bnd_nurbs);
+    end
+    
   else
     error('Multiple patches are only implemented for NURBS geometries')
   end

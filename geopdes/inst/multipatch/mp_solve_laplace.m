@@ -69,7 +69,7 @@ for iopt  = 1:numel (data_names)
 end
 
 % Construct geometry structure, and information for interfaces and boundaries
-[geometry, boundaries, interfaces] = mp_geo_load (geo_name);
+[geometry, boundaries, interfaces, ~, boundary_interfaces] = mp_geo_load (geo_name);
 npatch = numel (geometry);
 
 msh = cell (1, npatch); 
@@ -92,16 +92,27 @@ end
 msh_ptc = msh;
 
 msh = msh_multipatch (msh, boundaries);
-space = sp_multipatch (sp, msh, interfaces);
+space = sp_multipatch (sp, msh, interfaces, boundary_interfaces);
 
 % Compute and assemble the matrices 
-rhs = zeros (space.ndof, 1);
-
 stiff_mat = op_gradu_gradv_mp (space, space, msh, c_diff);
 rhs = op_f_v_mp (space, msh, f);
 
 [gnum, ndof] = mp_interface (interfaces, sp);
 
+rhs = zeros (ndof, 1);
+rhs2 = zeros (ndof, 1);
+
+tic
+NNN = cumsum ([0, boundaries.nsides]);
+for iref = nmnn_sides
+  iref_patch_list = NNN(iref)+1:NNN(iref+1);
+  gref = @(varargin) g(varargin{:},iref);
+  rhs_nmnn = op_f_v_mp (space.boundary, msh.boundary, gref, iref_patch_list);
+  rhs2(space.boundary.dofs) = rhs2(space.boundary.dofs) + rhs_nmnn;
+end
+   toc
+   tic
 for iref = nmnn_sides
   for bnd_side = 1:boundaries(iref).nsides
     iptc = boundaries(iref).patches(bnd_side);
@@ -113,6 +124,7 @@ for iref = nmnn_sides
     rhs(global_dofs) = rhs(global_dofs) + rhs_nmnn;
   end
 end
+toc
 
 % Apply Dirichlet boundary conditions
 u = zeros (ndof, 1);

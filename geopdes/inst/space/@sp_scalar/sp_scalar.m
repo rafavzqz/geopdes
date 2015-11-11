@@ -131,6 +131,7 @@ function sp = sp_scalar (knots, degree, weights, msh, transform)
         ind_univ{ind2} = ones (1, bnd_ndof);
       end
       sp.boundary(iside).dofs = sub2ind (sp.ndof_dir, ind_univ{:});
+      sp.boundary(iside).ndof = numel (sp.boundary(iside).dofs);
 
       if (sp.ndof_dir(ind2) > 1)
         if (rem (iside, 2) == 0)

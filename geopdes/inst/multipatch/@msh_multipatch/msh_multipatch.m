@@ -1,13 +1,13 @@
 % MSH_MULTIPATCH: constructor of the msh class for multipatch grids.
 %
-%     msh = msh_multipatch (meshes, geometry);
-%     msh = msh_multipatch (meshes, boundaries, interfaces);
+%     msh = msh_multipatch (meshes);
+%     msh = msh_multipatch (meshes, boundaries);
 %
 % INPUTS:
 %     
 %     meshes:     cell-array of Cartesian meshes (see msh_cartesian)
-%     interfaces: structure with the information of the interfaces between patches (see mp_geo_load)
-%     boundaries:
+%     boundaries: array of structures with the patch and side number for
+%                   the domain boundaries (see mp_geo_load)
 %   
 % OUTPUT:
 %
@@ -22,7 +22,7 @@
 %     nqn           (scalar)                  number of quadrature nodes per element
 %     nqn_dir       (1 x ndim vector)         number of quadrature nodes per element in each parametric direction
 %     msh_patch     (1 x npatch)
-%     boundary      () it contains an (ndim-1)-dimensional 'msh_cartesian' object for each side of the boundary (only when boundary is set to true)
+%     boundary      (1 x 1)                   it contains an (ndim-1)-dimensional 'msh_multipatch' object for the whole boundary
 %
 %     METHOD NAME
 %     msh_evaluate_element_list: compute the parameterization (and its derivatives) at
@@ -59,13 +59,9 @@ function msh = msh_multipatch (meshes, boundaries)
   msh.side_numbers  = [];
   
   if (nargin == 2 && ~isempty (meshes{1}.boundary))
-    nsides = 0;
-    for iref = 1:numel (boundaries)
-      patch_numbers(nsides+(1:boundaries(iref).nsides)) = boundaries(iref).patches;
-      side_numbers(nsides+(1:boundaries(iref).nsides)) = boundaries(iref).faces;
-      nsides = nsides + boundaries(iref).nsides;
-    end
-    for ind = 1:nsides
+    patch_numbers = vertcat (boundaries.patches);
+    side_numbers  = vertcat (boundaries.faces);
+    for ind = 1:numel(patch_numbers)
       msh_bnd{ind} = meshes{patch_numbers(ind)}.boundary(side_numbers(ind));
     end
     msh.boundary = msh_multipatch (msh_bnd);

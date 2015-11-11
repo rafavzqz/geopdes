@@ -53,7 +53,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp = sp_multipatch (spaces, msh, interfaces)
+function sp = sp_multipatch (spaces, msh, interfaces, boundary_interfaces)
 
   sp_class = class (spaces{1});
   if (~all (cellfun (@(x) isa (x, sp_class), spaces)))
@@ -108,9 +108,31 @@ function sp = sp_multipatch (spaces, msh, interfaces)
   else
     error ('sp_multipatch: Unknown space class')
   end
+
+  if (nargin == 4 && ~isempty (msh.boundary))
+    sp_bnd = cell (msh.boundary.npatch, 1);
+    for iptc = 1:msh.boundary.npatch
+      patch_number = msh.boundary.patch_numbers(iptc);
+      side_number  = msh.boundary.side_numbers(iptc);
+      sp_bnd{iptc} = spaces{patch_number}.boundary(side_number);
+    end
+    sp.boundary = sp_multipatch (sp_bnd, msh.boundary, boundary_interfaces);
+    
+    dofs = zeros (sp.boundary.ndof, 1);
+    for iptc = 1:msh.boundary.npatch
+      patch_number = msh.boundary.patch_numbers(iptc);
+      side_number  = msh.boundary.side_numbers(iptc);
+      dofs(sp.boundary.gnum{iptc}) = sp.gnum{patch_number}(sp.sp_patch{patch_number}.boundary(side_number).dofs);
+    end
+    sp.boundary.dofs = dofs;
+    
+  else
+    sp.boundary = [];
+  end
   
+  sp.dofs = [];
   
-  sp.constructor = @(MSH) sp_multipatch ({spaces.constructor(MSH)}, interfaces);
+  sp.constructor = @(MSH) sp_multipatch ({spaces.constructor(MSH)}, MSH, interfaces);
   
   sp = class (sp, 'sp_multipatch');
   
