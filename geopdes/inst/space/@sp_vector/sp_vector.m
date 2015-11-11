@@ -38,6 +38,7 @@
 %         sp_h1_error: compute the error in H1 norm
 %         sp_l2_error: compute the error in L2 norm
 %         sp_eval:     evaluate the computed solution in a Cartesian grid of points
+%         sp_to_vtk:   export the computed solution to a vtk file, using a Cartesian grid of points
 %
 %       Methods for basic connectivity operations
 %         sp_get_basis_functions: compute the functions that do not vanish in a given list of elements
