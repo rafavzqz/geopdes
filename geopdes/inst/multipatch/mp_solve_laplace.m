@@ -100,35 +100,17 @@ rhs = op_f_v_mp (space, msh, f);
 
 [gnum, ndof] = mp_interface (interfaces, sp);
 
-rhs = zeros (ndof, 1);
-rhs2 = zeros (ndof, 1);
-
-tic
-NNN = cumsum ([0, boundaries.nsides]);
+Nbnd = cumsum ([0, boundaries.nsides]);
 for iref = nmnn_sides
-  iref_patch_list = NNN(iref)+1:NNN(iref+1);
+  iref_patch_list = Nbnd(iref)+1:Nbnd(iref+1);
   gref = @(varargin) g(varargin{:},iref);
   rhs_nmnn = op_f_v_mp (space.boundary, msh.boundary, gref, iref_patch_list);
-  rhs2(space.boundary.dofs) = rhs2(space.boundary.dofs) + rhs_nmnn;
+  rhs(space.boundary.dofs) = rhs(space.boundary.dofs) + rhs_nmnn;
 end
-   toc
-   tic
-for iref = nmnn_sides
-  for bnd_side = 1:boundaries(iref).nsides
-    iptc = boundaries(iref).patches(bnd_side);
-    iside = boundaries(iref).faces(bnd_side);
-% Restrict the function handle to the specified side, in any dimension, gside = @(x,y) g(x,y,iside)
-    gref = @(varargin) g(varargin{:},iref);
-    global_dofs = gnum{iptc}(sp{iptc}.boundary(iside).dofs);
-    rhs_nmnn = op_f_v_tp (sp{iptc}.boundary(iside), msh_ptc{iptc}.boundary(iside), gref);
-    rhs(global_dofs) = rhs(global_dofs) + rhs_nmnn;
-  end
-end
-toc
 
 % Apply Dirichlet boundary conditions
 u = zeros (ndof, 1);
-[u_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj (sp, msh_ptc, h, gnum, boundaries, drchlt_sides);
+[u_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj (space, msh, h, boundaries, drchlt_sides);
 u(drchlt_dofs) = u_drchlt;
 
 int_dofs = setdiff (1:ndof, drchlt_dofs);

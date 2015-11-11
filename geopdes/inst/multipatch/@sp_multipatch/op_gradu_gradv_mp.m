@@ -1,11 +1,15 @@
-function A = op_gradu_gradv_mp (spu, spv, msh, coeff)
+function A = op_gradu_gradv_mp (spu, spv, msh, coeff, patch_list)
+
+  if (nargin < 5)
+    patch_list = 1:msh.npatch;
+  end
 
   if ((spu.npatch ~= spv.npatch) || (spu.npatch ~= msh.npatch))
     error ('op_gradu_gradv_mp: the number of patches does not coincide')
   end
   
   ncounter = 0;
-  for iptc = 1:msh.npatch
+  for iptc = patch_list
     [rs, cs, vs] = op_gradu_gradv_tp (spu.sp_patch{iptc}, spv.sp_patch{iptc}, msh.msh_patch{iptc}, coeff);
     rows(ncounter+(1:numel (rs))) = spv.gnum{iptc}(rs);
     cols(ncounter+(1:numel (rs))) = spu.gnum{iptc}(cs);

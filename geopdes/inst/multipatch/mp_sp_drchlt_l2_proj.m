@@ -32,33 +32,25 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [u, dofs] = mp_sp_drchlt_l2_proj (sp, msh, h, gnum, boundaries, refs)
+function [u, dofs] = mp_sp_drchlt_l2_proj (space, msh, h, boundaries, refs)
 
-  dofs = [];
-  ndof = max ([gnum{:}]);
-  M    = spalloc (ndof, ndof, ndof);
-  rhs  = spalloc (ndof, 1, ndof);
-
+  M = spalloc (space.boundary.ndof, space.boundary.ndof, 3*space.boundary.ndof);
+  rhs = zeros (space.boundary.ndof, 1);
+  Nbnd = cumsum ([0, boundaries.nsides]);
+  bnd_dofs = [];
   for iref = refs
-    for bnd_side = 1:boundaries(iref).nsides
-      iptc = boundaries(iref).patches(bnd_side);
-      iside = boundaries(iref).faces(bnd_side);
+    iref_patch_list = Nbnd(iref)+1:Nbnd(iref+1);
+    href = @(varargin) h(varargin{:}, iref);
+    f_one = @(varargin) ones (size(varargin{1}));
+    
+    M = M + op_u_v_mp (space.boundary, space.boundary, msh.boundary, f_one, iref_patch_list);
+    rhs = rhs + op_f_v_mp (space.boundary, msh.boundary, href, iref_patch_list);
 
-      global_dofs = gnum{iptc}(sp{iptc}.boundary(iside).dofs);
-      dofs = union (dofs, global_dofs);
-% Restrict the function handle to the specified side, in any dimension, hside = @(x,y) h(x,y,iside)
-      href = @(varargin) h(varargin{:},iref);
-      f_one = @(varargin) ones (size(varargin{1}));
-
-      M_side = op_u_v_tp (sp{iptc}.boundary(iside), sp{iptc}.boundary(iside), msh{iptc}.boundary(iside), f_one);
-      M(global_dofs, global_dofs) = M(global_dofs, global_dofs) + M_side;
-
-      rhs_side = op_f_v_tp (sp{iptc}.boundary(iside), msh{iptc}.boundary(iside), href);
-      rhs(global_dofs) = rhs(global_dofs) + rhs_side;
-    end
+    boundary_gnum = space.boundary.gnum;
+    bnd_dofs = union (bnd_dofs, [boundary_gnum{iref_patch_list}]);
   end
-
-  dofs = unique (dofs);
-  u = M(dofs, dofs) \ full (rhs(dofs));
+  
+  u = M(bnd_dofs,bnd_dofs) \ rhs(bnd_dofs);
+  dofs = space.boundary.dofs(bnd_dofs);
 
 end
