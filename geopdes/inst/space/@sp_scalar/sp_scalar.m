@@ -152,6 +152,8 @@ function sp = sp_scalar (knots, degree, weights, msh, transform)
       sp.boundary(1).adjacent_dofs = 2;
       sp.boundary(2).adjacent_dofs = sp.ndof - 1;
     end
+    sp.boundary(1).ndof = 1;
+    sp.boundary(2).ndof = 1;
     
   else
     sp.boundary = [];

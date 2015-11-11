@@ -41,7 +41,7 @@ output_file = 'Lshaped_mp_BSP_Deg3_Reg2_Sub9';
 
 vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20)};
 fprintf ('The result is saved in the file %s.pvd \n \n', output_file);
-sp_to_vtk (u, space, geometry, gnum, vtk_pts, output_file, 'u')
+sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 
 % COMPARISON WITH THE EXACT SOLUTION
 [error_h1, error_l2] = sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex)
