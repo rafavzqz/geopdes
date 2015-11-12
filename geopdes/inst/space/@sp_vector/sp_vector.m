@@ -134,7 +134,6 @@ function sp = sp_vector (scalar_spaces, msh, transform)
         new_dofs = sp.cumsum_ndof(ind(icomp)) + scalar_bnd{ind(icomp)}.dofs;
         dofs = union (dofs, new_dofs);
         comp_dofs{icomp} = new_dofs;
-        ndof_dir(icomp,:) = sp.ndof_dir(ind(icomp), ind);
       end
       
       sp.boundary(iside).dofs = dofs(:)';
@@ -143,7 +142,12 @@ function sp = sp_vector (scalar_spaces, msh, transform)
       end
       if (isempty (msh.boundary))
         sp.boundary(iside).ndof = numel (sp.boundary(iside).dofs);
-        sp.boundary(iside).ndof_dir = ndof_dir;
+        if (strcmpi (transform, 'curl-preserving')) % Needed for the interfaces on the boundary
+          for icomp = 1:numel(ind)
+            ndof_dir(icomp,:) = sp.ndof_dir(ind(icomp), ind);
+          end
+          sp.boundary(iside).ndof_dir = ndof_dir;
+        end
       end
     end
     
