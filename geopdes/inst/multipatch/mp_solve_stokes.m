@@ -8,7 +8,7 @@
 %
 % USAGE:
 %
-%  [geometry, msh, space_v, vel, gnum, space_p, press, gnump] = ...
+%  [geometry, msh, space_v, vel, space_p, press] = ...
 %                        mp_solve_stokes (problem_data, method_data)
 %
 % INPUT:
@@ -34,14 +34,11 @@
 % OUTPUT:
 %
 %  geometry: array of geometry structures (see geo_load)
-%  msh:      cell array of mesh objects (see msh_cartesian)
-%  space_v:  cell array of space objects for the velocity (see sp_vector or sp_vector_div_transform)
+%  msh:      multipatch mesh, consisting of several Cartesian meshes (see msh_multipatch)
+%  space_v:  multipatch space, formed by several tensor product spaces plus the connectivity (see sp_multipatch)
 %  vel:      the computed degrees of freedom for the velocity
-%  gnum:     global numbering of the local degrees of freedom on each patch
-%  space_p:  cell array of space objects for the pressure (see sp_bspline)
+%  space_p:  multipatch space for the pressure (see sp_multipatch)
 %  press:    the computed degrees of freedom for the pressure
-%  gnump:    global numbering of the local degrees of freedom on each patch
-%             for the pressure
 %
 %  See also EX_STOKES_DRIVEN_CAVITY_3D_MP for an example
 %
@@ -122,7 +119,7 @@ nintdofs = numel (int_dofs);
 
 % Solve the linear system
 mat = [A(int_dofs, int_dofs), -B(:,int_dofs).', sparse(nintdofs, 1);
-       -B(:,int_dofs), sparse(ndofp, ndofp), E';
+       -B(:,int_dofs), sparse(space_p.ndof, space_p.ndof), E';
        sparse(1, nintdofs), E, 0];
 rhs = [F(int_dofs)-A(int_dofs, drchlt_dofs)*vel(drchlt_dofs); 
        B(:, drchlt_dofs)*vel(drchlt_dofs); 
