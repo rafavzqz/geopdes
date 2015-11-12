@@ -54,13 +54,15 @@ for iref = 1:numel(interfaces)
   side(1) = interfaces(iref).side1;
   side(2) = interfaces(iref).side2;
 
-  [msh_side(1), msh_side_int] = msh_eval_boundary_side (msh{patch(1)}, side(1));
-  [msh_side(2), msh_side_int(2)] = msh_eval_boundary_side (msh{patch(2)}, side(2));
+  msh_side(1) = msh_eval_boundary_side (msh{patch(1)}, side(1));
+  msh_side(2) = msh_eval_boundary_side (msh{patch(2)}, side(2));
+  msh_side_int    = msh_boundary_side_from_interior (msh{patch(1)}, side(1));
+  msh_side_int(2) = msh_boundary_side_from_interior (msh{patch(2)}, side(2));
 
   sp_aux = space{patch(1)}.constructor (msh_side_int(1));
-  sp_bnd(1) = struct (sp_precompute (sp_aux, msh_side_int(1)));
+  sp_bnd(1) = struct (sp_precompute (sp_aux, msh_side_int(1), 'value', true, 'gradient', true));
   sp_aux = space{patch(2)}.constructor (msh_side_int(2));
-  sp_bnd(2) = struct (sp_precompute (sp_aux, msh_side_int(2)));
+  sp_bnd(2) = struct (sp_precompute (sp_aux, msh_side_int(2), 'value', true, 'gradient', true));
   
   [sp_bnd(2), msh_side(2)] = reorder_elements_and_quad_points (sp_bnd(2), msh_side(2), interfaces(iref), ndim);
   
@@ -134,7 +136,7 @@ function [sp_bnd, msh_side] = reorder_elements_and_quad_points (sp_bnd, msh_side
   sp_bnd.nsh                      = sp_bnd.nsh(elem);
   sp_bnd.connectivity             = sp_bnd.connectivity(:,elem);
   sp_bnd.shape_functions          = sp_bnd.shape_functions(:,qpoints,:,elem);
-  sp_bnd.shape_function_divs      = sp_bnd.shape_function_divs(qpoints,:,elem);
+%   sp_bnd.shape_function_divs      = sp_bnd.shape_function_divs(qpoints,:,elem);
   sp_bnd.shape_function_gradients = sp_bnd.shape_function_gradients(:,:,qpoints,:,elem);
 
 end

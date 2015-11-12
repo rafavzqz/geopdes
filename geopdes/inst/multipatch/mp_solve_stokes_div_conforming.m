@@ -80,7 +80,7 @@ if (strcmpi ('element_name', 'TH') || strcmpi ('element_name', 'SG'))
 end
 
 % Construct geometry structure, and information for interfaces and boundaries
-[geometry, boundaries, interfaces] = mp_geo_load (geo_name);
+[geometry, boundaries, interfaces, ~, boundary_interfaces] = mp_geo_load (geo_name);
 npatch = numel (geometry);
 
 for iptc = 1:npatch
@@ -96,6 +96,12 @@ for iptc = 1:npatch
                geometry(iptc).nurbs.knots, nsub, degree, regularity, msh{iptc});
 end
 
+msh_ptc = msh;
+
+msh = msh_multipatch (msh, boundaries);
+space_v = sp_multipatch (spv, msh, interfaces, boundary_interfaces);
+space_p = sp_multipatch (spp, msh, interfaces, boundary_interfaces);
+
 % Create a correspondence between patches on the interfaces
 [gnum,  ndof, dofs_ornt]  = mp_interface_hdiv (interfaces, spv, msh);
 ndofp = 0;
@@ -105,49 +111,22 @@ for iptc = 1:npatch
 end
 
 % Compute and assemble the matrices
-ncounterA = 0; ncounterM = 0; ncounterB = 0;
-E = zeros (1, ndofp); F = zeros (ndof, 1);
-
-if (msh{1}.rdim == 2)
+if (msh.rdim == 2)
   fun_one = @(x, y) ones (size(x));
-elseif (msh{1}.rdim == 3)
+elseif (msh.rdim == 3)
   fun_one = @(x, y, z) ones (size(x));
 end
 
-for iptc = 1:npatch
-  [rs, cs, vs] = op_gradu_gradv_tp (spv{iptc}, spv{iptc}, msh{iptc}, viscosity); 
-  rows_A(ncounterA+(1:numel (rs))) = gnum{iptc}(rs);
-  cols_A(ncounterA+(1:numel (rs))) = gnum{iptc}(cs);
-  vs = dofs_ornt{iptc}(rs)' .* vs .* dofs_ornt{iptc}(cs)';
-  vals_A(ncounterA+(1:numel (rs))) = vs;
-  ncounterA = ncounterA + numel (rs);
-
-  [rs, cs, vs] = op_div_v_q_tp (spv{iptc}, spp{iptc}, msh{iptc}); 
-  rows_B(ncounterB+(1:numel (rs))) = gnump{iptc}(rs);
-  cols_B(ncounterB+(1:numel (rs))) = gnum{iptc}(cs);
-  vs = vs .* dofs_ornt{iptc}(cs)';
-  vals_B(ncounterB+(1:numel (rs))) = vs;
-  ncounterB = ncounterB + numel (rs);
-
-  E_loc = op_f_v_tp (spp{iptc}, msh{iptc}, fun_one).';
-  E(gnump{iptc}) = E(gnump{iptc}) + E_loc;
-
-  F_loc = op_f_v_tp (spv{iptc}, msh{iptc}, f);
-  F_loc = F_loc .* dofs_ornt{iptc}';
-  F(gnum{iptc}) = F(gnum{iptc}) + F_loc;
-end
-
-clear rs cs vs
-A = sparse (rows_A, cols_A, vals_A, ndof, ndof);
-clear rows_A cols_A vals_A
-B = sparse (rows_B, cols_B, vals_B, ndofp, ndof);
-clear rows_B cols_B vals_B
+A = op_gradu_gradv_mp (space_v, space_v, msh, viscosity);
+B = op_div_v_q_mp (space_v, space_p, msh);
+E = (op_f_v_mp (space_p, msh, fun_one)).';
+F = op_f_v_mp (space_v, msh, f);
 
 vel   = zeros (ndof, 1);
 press = zeros (ndofp, 1);
 
 % Apply DG techniques on the interfaces
-A = A + mp_dg_penalty (spv, msh, gnum, dofs_ornt, interfaces, viscosity, Cpen);
+A = A + mp_dg_penalty (spv, msh_ptc, gnum, dofs_ornt, interfaces, viscosity, Cpen);
 
 % Apply Dirichlet boundary conditions
 [N_mat, N_rhs] = mp_sp_weak_drchlt_bc (spv, msh, gnum, dofs_ornt, ...

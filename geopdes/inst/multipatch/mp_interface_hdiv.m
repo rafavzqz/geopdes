@@ -30,7 +30,7 @@
 
 function [glob_num, glob_ndof, dofs_ornt] = mp_interface_hdiv (interfaces, sp, msh)
 
-  ndim = msh{1}.ndim;
+  ndim = msh.ndim;
 
   if (~isempty (interfaces))
     glob_num   = cell (numel (sp), 1);
@@ -48,19 +48,18 @@ function [glob_num, glob_ndof, dofs_ornt] = mp_interface_hdiv (interfaces, sp, m
       iside2 = interfaces(intrfc).side2;
       ind1 = ceil(iside1/2); %[1 1 2 2 3 3];
       ind2 = ceil(iside2/2); %[1 1 2 2 3 3];
-      ttform{iptc1, intrfc} = sp{iptc1}.boundary(iside1).comp_dofs{ind1};
+      ttform{iptc1, intrfc} = sp{iptc1}.boundary(iside1).dofs;
 
-      
       if (ndim == 2)
         if (interfaces(intrfc).ornt == 1)
-          ttform{iptc2, intrfc} = sp{iptc2}.boundary(iside2).comp_dofs{ind2};
+          ttform{iptc2, intrfc} = sp{iptc2}.boundary(iside2).dofs;
         else
-          ttform{iptc2, intrfc} = fliplr (sp{iptc2}.boundary(iside2).comp_dofs{ind2});
+          ttform{iptc2, intrfc} = fliplr (sp{iptc2}.boundary(iside2).dofs);
         end
       elseif (ndim == 3)
-        nghbr_dofs = reshape (sp{iptc2}.boundary(iside2).comp_dofs{ind2}, ...
-                      sp{iptc2}.boundary(iside2).ndof_dir(ind2,:));
-        ttform{iptc2, intrfc} = sp{iptc2}.boundary(iside2).comp_dofs{ind2};
+        nghbr_dofs = reshape (sp{iptc2}.boundary(iside2).dofs, ...
+                      sp{iptc2}.boundary(iside2).ndof_dir);
+        ttform{iptc2, intrfc} = sp{iptc2}.boundary(iside2).dofs;
         if (interfaces(intrfc).flag == -1)
           nghbr_dofs = nghbr_dofs';
         end
@@ -93,10 +92,10 @@ function [glob_num, glob_ndof, dofs_ornt] = mp_interface_hdiv (interfaces, sp, m
       dofs_ornt{iptc}(ttform{iptc, intrfc}) = 1;
 
 % Compute the Jacobian for both patches (overkilling)
-      msh_col1 = msh_evaluate_col (msh{iptc}, 1);
-      msh_col2 = msh_evaluate_col (msh{iptc2}, 1);
-      jac1_sign = sign (geopdes_det__ (msh_col1.geo_map_jac(:,:,1,1)));
-      jac2_sign = sign (geopdes_det__ (msh_col2.geo_map_jac(:,:,1,1)));
+      msh_el1 = msh_evaluate_element_list (msh.msh_patch{iptc}, 1);
+      msh_el2 = msh_evaluate_element_list (msh.msh_patch{iptc2}, 2);
+      jac1_sign = sign (geopdes_det__ (msh_el1.geo_map_jac(:,:,1,1)));
+      jac2_sign = sign (geopdes_det__ (msh_el2.geo_map_jac(:,:,1,1)));
 
       if (mod(iside1,2) == mod(iside2,2))
         ornt = -(jac1_sign * jac2_sign);

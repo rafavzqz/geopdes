@@ -90,7 +90,7 @@ function sp = sp_multipatch (spaces, msh, interfaces, boundary_interfaces)
       sp.ndof = sum (sp.ndof_per_patch);
       Nf = cumsum ([0 sp.ndof_per_patch]);
       for iptc = 1:sp.npatch
-        sp.gnum = Nf(iptc)+1:Nf(iptc+1);
+        sp.gnum{iptc} = Nf(iptc)+1:Nf(iptc+1);
       end
     else
       error ('sp_multipatch: Unknown transformation')
@@ -104,13 +104,13 @@ function sp = sp_multipatch (spaces, msh, interfaces, boundary_interfaces)
     elseif (strcmpi (sp.transform, 'curl-preserving'))
       [sp.gnum, sp.ndof, sp.dofs_ornt] = mp_interface_hcurl (interfaces, spaces);
     elseif (strcmpi (sp.transform, 'div-preserving'))
-      [sp.gnum, sp.ndof, sp.dofs_ornt] = mp_interface_hdiv (interfaces, spaces);
+      [sp.gnum, sp.ndof, sp.dofs_ornt] = mp_interface_hdiv (interfaces, spaces, msh);
     end
   else
     error ('sp_multipatch: Unknown space class')
   end
 
-  if (nargin == 4 && ~isempty (msh.boundary))
+  if (nargin == 4 && ~isempty (msh.boundary) && ~isempty (spaces{1}.boundary))
     sp_bnd = cell (msh.boundary.npatch, 1);
     for iptc = 1:msh.boundary.npatch
       patch_number = msh.boundary.patch_numbers(iptc);
