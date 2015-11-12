@@ -84,8 +84,7 @@ npatch = numel (geometry);
 
 for iptc = 1:npatch
 % Construct msh structure using the finest mesh
-  msh_breaks = msh_set_breaks (element_name, ...
-                                       geometry(iptc).nurbs.knots, nsub);
+  msh_breaks = msh_set_breaks (element_name, geometry(iptc).nurbs.knots, nsub);
   rule      = msh_gauss_nodes (nquad);
   [qn, qw]  = msh_set_quad_nodes (msh_breaks, rule);
   msh{iptc} = msh_cartesian (msh_breaks, qn, qw, geometry(iptc));
@@ -95,15 +94,9 @@ for iptc = 1:npatch
                geometry(iptc).nurbs.knots, nsub, degree, regularity, msh{iptc});
 end
 
-msh_ptc = msh;
-
 msh = msh_multipatch (msh, boundaries);
 space_v = sp_multipatch (spv, msh, interfaces, boundary_interfaces);
 space_p = sp_multipatch (spp, msh, interfaces, boundary_interfaces);
-
-% Create a correspondence between patches on the interfaces
-[gnum,  ndof]  = mp_interface_vector (interfaces, spv);
-[gnump, ndofp] = mp_interface (interfaces, spp);
 
 % Compute and assemble the matrices
 if (msh.rdim == 2)
