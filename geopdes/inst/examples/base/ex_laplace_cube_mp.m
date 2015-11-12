@@ -66,18 +66,15 @@ sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 %! method_data.regularity = [1 1 1];  % Regularity of the splines
 %! method_data.nsub       = [3 3 3];  % Number of subdivisions
 %! method_data.nquad      = [3 3 3];  % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, u, gnum] = mp_solve_laplace (problem_data, method_data);
-%! for iptc = 1:numel(geometry)
-%!   [error_h1(iptc), error_l2(iptc)] = sp_h1_error (space{iptc}, msh{iptc}, ...
-%!      u(gnum{iptc}), problem_data.uex, problem_data.graduex);
+%! [geometry, msh, space, u] = mp_solve_laplace (problem_data, method_data);
+%! [error_h1, error_l2] = sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex);
+%! assert (space.ndof, 360)
+%! assert (space.gnum{1}(space.sp_patch{1}.boundary(2).dofs), space.gnum{2}(space.sp_patch{2}.boundary(1).dofs))
+%! for iptc = 1:space.boundary.npatch
+%!   patch = msh.boundary.patch_numbers(iptc);
+%!   side = msh.boundary.side_numbers(iptc);
+%!   assert (space.gnum{patch}(space.sp_patch{patch}.boundary(side).dofs)(:), space.boundary.dofs(space.boundary.gnum{iptc})(:))
 %! end
-%! error_l2 = sqrt (sum (error_l2 .* error_l2));
-%! error_h1 = sqrt (sum (error_h1 .* error_h1));
-%! assert (error_l2, 3.74776528960627e-04, 1e-16)
-%! assert (error_h1, 0.0112329701133678, 1e-15)
-%! assert (max ([gnum{:}]), numel (u))
-%! assert (max ([gnum{:}]), 360)
-%! assert (gnum{1}(space{1}.boundary(2).dofs), gnum{2}(space{2}.boundary(1).dofs))
 
 %!test
 %! problem_data.geo_name = 'geo_2cubesb.txt';
@@ -95,18 +92,15 @@ sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 %! method_data.regularity = [1 1 1];  % Regularity of the splines
 %! method_data.nsub       = [3 3 3];  % Number of subdivisions
 %! method_data.nquad      = [3 3 3];  % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, u, gnum] = mp_solve_laplace (problem_data, method_data);
-%! for iptc = 1:numel(geometry)
-%!   [error_h1(iptc), error_l2(iptc)] = sp_h1_error (space{iptc}, msh{iptc}, ...
-%!      u(gnum{iptc}), problem_data.uex, problem_data.graduex);
+%! [geometry, msh, space, u] = mp_solve_laplace (problem_data, method_data);
+%! [error_h1, error_l2] = sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex);
+%! assert (space.ndof, 360)
+%! assert (space.gnum{1}(space.sp_patch{1}.boundary(2).dofs), space.gnum{2}(reshape (space.sp_patch{2}.boundary(1).dofs, space.sp_patch{2}.boundary(1).ndof_dir)'(:)))
+%! for iptc = 1:space.boundary.npatch
+%!   patch = msh.boundary.patch_numbers(iptc);
+%!   side = msh.boundary.side_numbers(iptc);
+%!   assert (space.gnum{patch}(space.sp_patch{patch}.boundary(side).dofs)(:), space.boundary.dofs(space.boundary.gnum{iptc})(:))
 %! end
-%! error_l2 = sqrt (sum (error_l2 .* error_l2));
-%! error_h1 = sqrt (sum (error_h1 .* error_h1));
-%! assert (error_l2, 3.74776528960627e-04, 1e-16)
-%! assert (error_h1, 0.0112329701133678, 1e-15)
-%! assert (max ([gnum{:}]), numel (u))
-%! assert (max ([gnum{:}]), 360)
-%! assert (gnum{1}(space{1}.boundary(2).dofs), gnum{2}(reshape (space{2}.boundary(1).dofs, space{2}.boundary(1).ndof_dir)'(:)))
 
 %!test
 %! problem_data.geo_name = 'geo_2cubesc.txt';
@@ -124,18 +118,15 @@ sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 %! method_data.regularity = [1 1 1];  % Regularity of the splines
 %! method_data.nsub       = [3 3 3];  % Number of subdivisions
 %! method_data.nquad      = [3 3 3];  % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, u, gnum] = mp_solve_laplace (problem_data, method_data);
-%! for iptc = 1:numel(geometry)
-%!   [error_h1(iptc), error_l2(iptc)] = sp_h1_error (space{iptc}, msh{iptc}, ...
-%!      u(gnum{iptc}), problem_data.uex, problem_data.graduex);
+%! [geometry, msh, space, u] = mp_solve_laplace (problem_data, method_data);
+%! [error_h1, error_l2] = sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex);
+%! assert (space.ndof, 360)
+%! assert (space.gnum{1}(space.sp_patch{1}.boundary(2).dofs), space.gnum{2}(fliplr(reshape(space.sp_patch{2}.boundary(1).dofs, space.sp_patch{2}.boundary(1).ndof_dir))'(:)))
+%! for iptc = 1:space.boundary.npatch
+%!   patch = msh.boundary.patch_numbers(iptc);
+%!   side = msh.boundary.side_numbers(iptc);
+%!   assert (space.gnum{patch}(space.sp_patch{patch}.boundary(side).dofs)(:), space.boundary.dofs(space.boundary.gnum{iptc})(:))
 %! end
-%! error_l2 = sqrt (sum (error_l2 .* error_l2));
-%! error_h1 = sqrt (sum (error_h1 .* error_h1));
-%! assert (error_l2, 3.74776528960627e-04, 1e-16)
-%! assert (error_h1, 0.0112329701133678, 1e-15)
-%! assert (max ([gnum{:}]), numel (u))
-%! assert (max ([gnum{:}]), 360)
-%! assert (gnum{1}(space{1}.boundary(2).dofs), gnum{2}(fliplr(reshape (space{2}.boundary(1).dofs, space{2}.boundary(1).ndof_dir))'(:)))
 
 %!test
 %! problem_data.geo_name = 'geo_2cubesd.txt';
@@ -153,18 +144,15 @@ sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 %! method_data.regularity = [1 1 1];  % Regularity of the splines
 %! method_data.nsub       = [3 3 3];  % Number of subdivisions
 %! method_data.nquad      = [3 3 3];  % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, u, gnum] = mp_solve_laplace (problem_data, method_data);
-%! for iptc = 1:numel(geometry)
-%!   [error_h1(iptc), error_l2(iptc)] = sp_h1_error (space{iptc}, msh{iptc}, ...
-%!      u(gnum{iptc}), problem_data.uex, problem_data.graduex);
+%! [geometry, msh, space, u] = mp_solve_laplace (problem_data, method_data);
+%! [error_h1, error_l2] = sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex);
+%! assert (space.ndof, 360)
+%! assert (space.gnum{1}(space.sp_patch{1}.boundary(2).dofs), space.gnum{2}(flipud(reshape(space.sp_patch{2}.boundary(1).dofs, space.sp_patch{2}.boundary(1).ndof_dir))(:)))
+%! for iptc = 1:space.boundary.npatch
+%!   patch = msh.boundary.patch_numbers(iptc);
+%!   side = msh.boundary.side_numbers(iptc);
+%!   assert (space.gnum{patch}(space.sp_patch{patch}.boundary(side).dofs)(:), space.boundary.dofs(space.boundary.gnum{iptc})(:))
 %! end
-%! error_l2 = sqrt (sum (error_l2 .* error_l2));
-%! error_h1 = sqrt (sum (error_h1 .* error_h1));
-%! assert (error_l2, 3.74776528960627e-04, 1e-16)
-%! assert (error_h1, 0.0112329701133678, 1e-15)
-%! assert (max ([gnum{:}]), numel (u))
-%! assert (max ([gnum{:}]), 360)
-%! assert (gnum{1}(space{1}.boundary(2).dofs), gnum{2}(flipud(reshape (space{2}.boundary(1).dofs, space{2}.boundary(1).ndof_dir))(:)))
 
 %!test
 %! problem_data.geo_name = 'geo_2cubese.txt';
@@ -182,18 +170,15 @@ sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 %! method_data.regularity = [1 1 1];  % Regularity of the splines
 %! method_data.nsub       = [3 3 3];  % Number of subdivisions
 %! method_data.nquad      = [3 3 3];  % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, u, gnum] = mp_solve_laplace (problem_data, method_data);
-%! for iptc = 1:numel(geometry)
-%!   [error_h1(iptc), error_l2(iptc)] = sp_h1_error (space{iptc}, msh{iptc}, ...
-%!      u(gnum{iptc}), problem_data.uex, problem_data.graduex);
+%! [geometry, msh, space, u] = mp_solve_laplace (problem_data, method_data);
+%! [error_h1, error_l2] = sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex);
+%! assert (space.ndof, 360)
+%! assert (space.gnum{1}(space.sp_patch{1}.boundary(2).dofs), space.gnum{2}(fliplr(flipud(reshape(space.sp_patch{2}.boundary(1).dofs, space.sp_patch{2}.boundary(1).ndof_dir)))(:)))
+%! for iptc = 1:space.boundary.npatch
+%!   patch = msh.boundary.patch_numbers(iptc);
+%!   side = msh.boundary.side_numbers(iptc);
+%!   assert (space.gnum{patch}(space.sp_patch{patch}.boundary(side).dofs)(:), space.boundary.dofs(space.boundary.gnum{iptc})(:))
 %! end
-%! error_l2 = sqrt (sum (error_l2 .* error_l2));
-%! error_h1 = sqrt (sum (error_h1 .* error_h1));
-%! assert (error_l2, 3.74776528960627e-04, 1e-16)
-%! assert (error_h1, 0.0112329701133678, 1e-15)
-%! assert (max ([gnum{:}]), numel (u))
-%! assert (max ([gnum{:}]), 360)
-%! assert (gnum{1}(space{1}.boundary(2).dofs), gnum{2}(fliplr(flipud(reshape (space{2}.boundary(1).dofs, space{2}.boundary(1).ndof_dir)))(:)))
 
 %!test
 %! problem_data.geo_name = 'geo_2cubesf.txt';
@@ -211,18 +196,15 @@ sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 %! method_data.regularity = [1 1 1];  % Regularity of the splines
 %! method_data.nsub       = [3 3 3];  % Number of subdivisions
 %! method_data.nquad      = [3 3 3];  % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, u, gnum] = mp_solve_laplace (problem_data, method_data);
-%! for iptc = 1:numel(geometry)
-%!   [error_h1(iptc), error_l2(iptc)] = sp_h1_error (space{iptc}, msh{iptc}, ...
-%!      u(gnum{iptc}), problem_data.uex, problem_data.graduex);
+%! [geometry, msh, space, u] = mp_solve_laplace (problem_data, method_data);
+%! [error_h1, error_l2] = sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex);
+%! assert (space.ndof, 360)
+%! assert (space.gnum{1}(space.sp_patch{1}.boundary(2).dofs), space.gnum{2}(fliplr(flipud(reshape(space.sp_patch{2}.boundary(1).dofs, space.sp_patch{2}.boundary(1).ndof_dir)))'(:)))
+%! for iptc = 1:space.boundary.npatch
+%!   patch = msh.boundary.patch_numbers(iptc);
+%!   side = msh.boundary.side_numbers(iptc);
+%!   assert (space.gnum{patch}(space.sp_patch{patch}.boundary(side).dofs)(:), space.boundary.dofs(space.boundary.gnum{iptc})(:))
 %! end
-%! error_l2 = sqrt (sum (error_l2 .* error_l2));
-%! error_h1 = sqrt (sum (error_h1 .* error_h1));
-%! assert (error_l2, 3.74776528960627e-04, 1e-16)
-%! assert (error_h1, 0.0112329701133678, 1e-15)
-%! assert (max ([gnum{:}]), numel (u))
-%! assert (max ([gnum{:}]), 360)
-%! assert (gnum{1}(space{1}.boundary(2).dofs), gnum{2}(fliplr(flipud(reshape (space{2}.boundary(1).dofs, space{2}.boundary(1).ndof_dir)))'(:)))
 
 %!test
 %! problem_data.geo_name = 'geo_2cubesg.txt';
@@ -240,18 +222,15 @@ sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 %! method_data.regularity = [1 1 1];  % Regularity of the splines
 %! method_data.nsub       = [3 3 3];  % Number of subdivisions
 %! method_data.nquad      = [3 3 3];  % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, u, gnum] = mp_solve_laplace (problem_data, method_data);
-%! for iptc = 1:numel(geometry)
-%!   [error_h1(iptc), error_l2(iptc)] = sp_h1_error (space{iptc}, msh{iptc}, ...
-%!      u(gnum{iptc}), problem_data.uex, problem_data.graduex);
+%! [geometry, msh, space, u] = mp_solve_laplace (problem_data, method_data);
+%! [error_h1, error_l2] = sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex);
+%! assert (space.ndof, 360)
+%! assert (space.gnum{1}(space.sp_patch{1}.boundary(2).dofs), space.gnum{2}(flipud(reshape(space.sp_patch{2}.boundary(1).dofs, space.sp_patch{2}.boundary(1).ndof_dir))'(:)))
+%! for iptc = 1:space.boundary.npatch
+%!   patch = msh.boundary.patch_numbers(iptc);
+%!   side = msh.boundary.side_numbers(iptc);
+%!   assert (space.gnum{patch}(space.sp_patch{patch}.boundary(side).dofs)(:), space.boundary.dofs(space.boundary.gnum{iptc})(:))
 %! end
-%! error_l2 = sqrt (sum (error_l2 .* error_l2));
-%! error_h1 = sqrt (sum (error_h1 .* error_h1));
-%! assert (error_l2, 3.74776528960627e-04, 1e-16)
-%! assert (error_h1, 0.0112329701133678, 1e-15)
-%! assert (max ([gnum{:}]), numel (u))
-%! assert (max ([gnum{:}]), 360)
-%! assert (gnum{1}(space{1}.boundary(2).dofs), gnum{2}(flipud(reshape (space{2}.boundary(1).dofs, space{2}.boundary(1).ndof_dir))'(:)))
 
 %!test
 %! problem_data.geo_name = 'geo_2cubesh.txt';
@@ -269,15 +248,12 @@ sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 %! method_data.regularity = [1 1 1];  % Regularity of the splines
 %! method_data.nsub       = [3 3 3];  % Number of subdivisions
 %! method_data.nquad      = [3 3 3];  % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, u, gnum] = mp_solve_laplace (problem_data, method_data);
-%! for iptc = 1:numel(geometry)
-%!   [error_h1(iptc), error_l2(iptc)] = sp_h1_error (space{iptc}, msh{iptc}, ...
-%!      u(gnum{iptc}), problem_data.uex, problem_data.graduex);
+%! [geometry, msh, space, u] = mp_solve_laplace (problem_data, method_data);
+%! [error_h1, error_l2] = sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex);
+%! assert (space.ndof, 360)
+%! assert (space.gnum{1}(space.sp_patch{1}.boundary(2).dofs), space.gnum{2}(fliplr(reshape(space.sp_patch{2}.boundary(1).dofs, space.sp_patch{2}.boundary(1).ndof_dir))(:)))
+%! for iptc = 1:space.boundary.npatch
+%!   patch = msh.boundary.patch_numbers(iptc);
+%!   side = msh.boundary.side_numbers(iptc);
+%!   assert (space.gnum{patch}(space.sp_patch{patch}.boundary(side).dofs)(:), space.boundary.dofs(space.boundary.gnum{iptc})(:))
 %! end
-%! error_l2 = sqrt (sum (error_l2 .* error_l2));
-%! error_h1 = sqrt (sum (error_h1 .* error_h1));
-%! assert (error_l2, 3.74776528960627e-04, 1e-16)
-%! assert (error_h1, 0.0112329701133678, 1e-15)
-%! assert (max ([gnum{:}]), numel (u))
-%! assert (max ([gnum{:}]), 360)
-%! assert (gnum{1}(space{1}.boundary(2).dofs), gnum{2}(fliplr(reshape (space{2}.boundary(1).dofs, space{2}.boundary(1).ndof_dir))(:)))
