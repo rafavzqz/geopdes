@@ -61,7 +61,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [geometry, msh, spv, vel, gnum, spp, press, gnump] = ...
+function [geometry, msh, space_v, vel, space_p, press] = ...
               mp_solve_stokes (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
@@ -79,7 +79,7 @@ if (strcmpi ('element_name', 'RT') || strcmpi ('element_name', 'NDL'))
 end
 
 % Construct geometry structure, and information for interfaces and boundaries
-[geometry, boundaries, interfaces] = mp_geo_load (geo_name);
+[geometry, boundaries, interfaces, ~, boundary_interfaces] = mp_geo_load (geo_name);
 npatch = numel (geometry);
 
 for iptc = 1:npatch
@@ -95,54 +95,36 @@ for iptc = 1:npatch
                geometry(iptc).nurbs.knots, nsub, degree, regularity, msh{iptc});
 end
 
+msh_ptc = msh;
+
+msh = msh_multipatch (msh, boundaries);
+space_v = sp_multipatch (spv, msh, interfaces, boundary_interfaces);
+space_p = sp_multipatch (spp, msh, interfaces, boundary_interfaces);
+
 % Create a correspondence between patches on the interfaces
 [gnum,  ndof]  = mp_interface_vector (interfaces, spv);
 [gnump, ndofp] = mp_interface (interfaces, spp);
 
 % Compute and assemble the matrices
-ncounterA = 0; ncounterM = 0; ncounterB = 0;
-E = zeros (1, ndofp); F = zeros (ndof, 1);
-
-if (msh{1}.rdim == 2)
+if (msh.rdim == 2)
   fun_one = @(x, y) ones (size(x));
-elseif (msh{1}.rdim == 3)
+elseif (msh.rdim == 3)
   fun_one = @(x, y, z) ones (size(x));
 end
 
-for iptc = 1:npatch
-  [rs, cs, vs] = op_gradu_gradv_tp (spv{iptc}, spv{iptc}, msh{iptc}, viscosity); 
-  rows_A(ncounterA+(1:numel (rs))) = gnum{iptc}(rs);
-  cols_A(ncounterA+(1:numel (rs))) = gnum{iptc}(cs);
-  vals_A(ncounterA+(1:numel (rs))) = vs;
-  ncounterA = ncounterA + numel (rs);
+A = op_gradu_gradv_mp (space_v, space_v, msh, viscosity);
+B = op_div_v_q_mp (space_v, space_p, msh);
+E = (op_f_v_mp (space_p, msh, fun_one)).';
+F = op_f_v_mp (space_v, msh, f);
 
-  [rs, cs, vs] = op_div_v_q_tp (spv{iptc}, spp{iptc}, msh{iptc}); 
-  rows_B(ncounterB+(1:numel (rs))) = gnump{iptc}(rs);
-  cols_B(ncounterB+(1:numel (rs))) = gnum{iptc}(cs);
-  vals_B(ncounterB+(1:numel (rs))) = vs;
-  ncounterB = ncounterB + numel (rs);
-
-  E_loc = op_f_v_tp (spp{iptc}, msh{iptc}, fun_one).';
-  E(gnump{iptc}) = E(gnump{iptc}) + E_loc;
-
-  F_loc = op_f_v_tp (spv{iptc}, msh{iptc}, f);
-  F(gnum{iptc}) = F(gnum{iptc}) + F_loc;
-end
-
-clear rs cs vs
-A = sparse (rows_A, cols_A, vals_A, ndof, ndof);
-clear rows_A cols_A vals_A
-B = sparse (rows_B, cols_B, vals_B, ndofp, ndof);
-clear rows_B cols_B vals_B
-
-vel   = zeros (ndof, 1);
-press = zeros (ndofp, 1);
+vel   = zeros (space_v.ndof, 1);
+press = zeros (space_p.ndof, 1);
 
 % Apply Dirichlet boundary conditions
-[vel_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj_old (spv, msh, h, gnum, boundaries, drchlt_sides);
+[vel_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj (space_v, msh, h, boundaries, drchlt_sides);
 vel(drchlt_dofs) = vel_drchlt;
 
-int_dofs = setdiff (1:ndof, drchlt_dofs);
+int_dofs = setdiff (1:space_v.ndof, drchlt_dofs);
 nintdofs = numel (int_dofs);
 
 % Solve the linear system

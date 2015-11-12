@@ -27,7 +27,7 @@ while (iopt > 0)
             '\n', ...
             '   (1) Stokes flow: 2D examples. \n \n', ...
             '   (2) Stokes flow: 3D examples. \n \n', ...
-            '   (3) Stokes flow in multipatch geometries (require geopdes_multipatch). \n \n']);
+            '   (3) Stokes flow in multipatch geometries. \n \n']);
 %            '3D Stokes flow examples. \n \n', ...
 %            '   (9) 3D driven cavity discretized with generalized Taylor-Hood elements. \n',...
 %            '   (10) 3D driven cavity discretized with the subgrid method. \n',...
@@ -140,11 +140,6 @@ while (iopt > 0)
 
   elseif (iopt == 3)
     clc;
-    if (~exist('mp_interface_vector_2d'))
-      fprintf(1, 'Unable to find the file ''mp_interface_vector_2d''.\n');
-      fprintf(1, 'Be sure to install the latest version of geopdes_multipatch to run these examples\n\n');
-      input ('Press <Enter> to continue: ');
-    else
       iopt2 = 1; 
       while (iopt2 > 0)
         clc;
@@ -154,8 +149,7 @@ while (iopt > 0)
                 '\n', ...
                 '   (1) 2D bifurcation problem. Generalized Taylor-Hood elements.\n \n',...
                 '   (2) 2D bifurcation problem. Generalized Raviart-Thomas elements.\n \n',...
-                '   (3) 3D multipatch driven cavity. Generalized Taylor-Hood elements.\n \n',...
-                '   (4) 3D multipatch driven cavity. Generalized Raviart-Thomas elements. \n \n']);
+                '   (3) 3D multipatch driven cavity. Generalized Taylor-Hood elements.\n \n']);
       
       iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
       
@@ -176,15 +170,14 @@ while (iopt > 0)
             fprintf (1, 'You can have a look at the source file: ex_stokes_driven_cavity_3d_mp.m \n \n');
             ex_stokes_driven_cavity_3d_mp;
             input ('Press <Enter> to continue: ');
-           case 4
-            clc;
-            fprintf (1, 'You can have a look at the source file: ex_stokes_driven_cavity_3d_rt_mp.m \n \n');
-            ex_stokes_driven_cavity_3d_rt_mp;
-            input ('Press <Enter> to continue: ');
+%            case 4
+%             clc;
+%             fprintf (1, 'You can have a look at the source file: ex_stokes_driven_cavity_3d_rt_mp.m \n \n');
+%             ex_stokes_driven_cavity_3d_rt_mp;
+%             input ('Press <Enter> to continue: ');
           end %# switch (iopt2)
         end %# if (~isempty)
       end %# while (iopt2 > 0)
-    end %# if (~exist())
   end
   
 end %# while (iopt > 0)

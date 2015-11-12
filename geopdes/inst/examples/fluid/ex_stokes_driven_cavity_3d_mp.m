@@ -30,22 +30,17 @@ method_data.nsub         = [2 2 2];  % Number of subdivisions
 method_data.nquad        = [4 4 4];  % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
-[geometry, msh, space_v, vel, gnum, space_p, press, gnump] = ...
+[geometry, msh, space_v, vel, space_p, press] = ...
                        mp_solve_stokes (problem_data, method_data);
 
-%  error_l2_p = sp_l2_error (space_p, msh, press, problem_data.pressex)
-%  [error_h1, error_l2] = sp_h1_error (space_v, msh, ...
-%     vel, problem_data.velex, problem_data.gradvelex)
-%keyboard
-
 % 4) POST-PROCESSING
-% 4.1) EXPORT TO PARAVIEW
+% EXPORT TO PARAVIEW
 output_file  = 'DrivenCavity_3D_MP_Deg2_Reg1_Sub2';
 vtk_pts = {linspace(0, 1, 10), linspace(0, 1, 10), linspace(0, 1, 10)};
 
 fprintf ('results being saved in: %s_vel.pvd and %s_press.pvd\n', output_file, output_file)
-mp_sp_to_vtk (vel, space_v, geometry, gnum, vtk_pts, sprintf ('%s_vel', output_file), {'velocity', 'divergence'}, {'value', 'divergence'})
-mp_sp_to_vtk (press, space_p, geometry, gnump, vtk_pts, sprintf ('%s_press', output_file), 'pressure')
+sp_to_vtk (vel, space_v, geometry, vtk_pts, sprintf ('%s_vel', output_file), {'velocity', 'divergence'}, {'value', 'divergence'})
+sp_to_vtk (press, space_p, geometry, vtk_pts, sprintf ('%s_press', output_file), 'pressure')
 
 %!test
 %! problem_data.geo_name = 'geo_2cubesa.txt';
@@ -59,8 +54,8 @@ mp_sp_to_vtk (press, space_p, geometry, gnump, vtk_pts, sprintf ('%s_press', out
 %! method_data.regularity   = [1 1 1];  % Regularity of the splines
 %! method_data.nsub         = [2 2 2];  % Number of subdivisions
 %! method_data.nquad        = [4 4 4];  % Points for the Gaussian quadrature rule
-%! [geometry, msh, space_v, vel, gnum, space_p, press, gnump] = ...
+%! [geometry, msh, space_v, vel, space_p, press] = ...
 %!                        mp_solve_stokes (problem_data, method_data);
-%! assert (sum (cellfun (@(x) x.nel, msh)), 32)
-%! assert (max ([gnum{:}]), 1980)
-%! assert (max ([gnump{:}]), 168)
+%! assert (msh.nel, 32)
+%! assert (space_v.ndof, 1980)
+%! assert (space_p.ndof, 168)

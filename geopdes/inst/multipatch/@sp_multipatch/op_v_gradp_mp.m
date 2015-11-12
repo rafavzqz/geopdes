@@ -5,7 +5,7 @@ function A = op_v_gradp_mp (spv, spp, msh, coeff, patch_list)
   end
 
   if ((spv.npatch ~= spp.npatch) || (spv.npatch ~= msh.npatch))
-    error ('op_u_v_mp: the number of patches does not coincide')
+    error ('op_v_grad_mp: the number of patches does not coincide')
   end
   
   ncounter = 0;
