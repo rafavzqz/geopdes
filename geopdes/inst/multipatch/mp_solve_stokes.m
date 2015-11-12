@@ -119,7 +119,7 @@ nintdofs = numel (int_dofs);
 
 % Solve the linear system
 mat = [A(int_dofs, int_dofs), -B(:,int_dofs).', sparse(nintdofs, 1);
-       -B(:,int_dofs), sparse(space_p.ndof, space_p.ndof), E';
+       -B(:,int_dofs), sparse(space_p.ndof, space_p.ndof), E.';
        sparse(1, nintdofs), E, 0];
 rhs = [F(int_dofs)-A(int_dofs, drchlt_dofs)*vel(drchlt_dofs); 
        B(:, drchlt_dofs)*vel(drchlt_dofs); 

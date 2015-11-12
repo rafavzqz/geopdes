@@ -162,7 +162,7 @@ rhs_dir  = -A(int_dofs, drchlt_dofs)*vel(drchlt_dofs) + N_mat(int_dofs,drchlt_do
 
 % Solve the linear system
 mat = [A(int_dofs, int_dofs) - N_mat(int_dofs, int_dofs), -B(:,int_dofs).', sparse(nintdofs, 1);
-       -B(:,int_dofs), sparse(ndofp, ndofp), E';
+       -B(:,int_dofs), sparse(ndofp, ndofp), E.';
        sparse(1, nintdofs), E, 0];
 rhs = [F(int_dofs) + N_rhs(int_dofs) + rhs_dir; 
        B(:, drchlt_dofs)*vel(drchlt_dofs); 
