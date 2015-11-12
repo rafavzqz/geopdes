@@ -62,10 +62,11 @@ function [A, rhs] = mp_sp_weak_drchlt_bc (space, msh, gnum, ornt, boundaries, re
       iptc = boundaries(iref).patches(bnd_side);
       iside = boundaries(iref).faces(bnd_side);
 
-      [msh_side, msh_side_from_interior] = msh_eval_boundary_side (msh{iptc}, iside);
+      msh_side = msh_eval_boundary_side (msh{iptc}, iside);
+      msh_side_from_interior = msh_boundary_side_from_interior (msh{iptc}, iside);
 
       sp_bnd = space{iptc}.constructor (msh_side_from_interior);
-      sp_bnd = struct (sp_precompute (sp_bnd, msh_side_from_interior));
+      sp_bnd = struct (sp_precompute (sp_bnd, msh_side_from_interior, 'value', true, 'gradient', true));
 
       for idim = 1:msh{iptc}.rdim
         x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);

@@ -126,12 +126,12 @@ vel   = zeros (ndof, 1);
 press = zeros (ndofp, 1);
 
 % Apply DG techniques on the interfaces
-A = A + mp_dg_penalty (spv, msh_ptc, gnum, dofs_ornt, interfaces, viscosity, Cpen);
+A = A + mp_dg_penalty (space_v, msh, interfaces, viscosity, Cpen);
 
 % Apply Dirichlet boundary conditions
-[N_mat, N_rhs] = mp_sp_weak_drchlt_bc (spv, msh, gnum, dofs_ornt, ...
+[N_mat, N_rhs] = mp_sp_weak_drchlt_bc (spv, msh_ptc, gnum, dofs_ornt, ...
                     boundaries, drchlt_sides, h, viscosity, Cpen);
-[vel_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj_udotn (spv, msh, gnum, ...
+[vel_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj_udotn (spv, msh_ptc, gnum, ...
                     dofs_ornt, boundaries, drchlt_sides, h);
 vel(drchlt_dofs) = vel_drchlt;
 

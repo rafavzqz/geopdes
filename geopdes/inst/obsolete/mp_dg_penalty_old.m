@@ -40,12 +40,13 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function A = mp_dg_penalty (space, msh, interfaces, visc, Cpen)
+function A = mp_dg_penalty_old (space, msh, gnum, ornt, interfaces, visc, Cpen)
 
+ndof = max([gnum{:}]);
 rA = []; cA = []; vA = [];
 
-ndim = msh.ndim;
-rdim = msh.rdim;
+ndim = msh{1}.ndim;
+rdim = msh{1}.rdim;
 
 for iref = 1:numel(interfaces)
   patch(1) = interfaces(iref).patch1;
@@ -53,14 +54,14 @@ for iref = 1:numel(interfaces)
   side(1) = interfaces(iref).side1;
   side(2) = interfaces(iref).side2;
 
-  msh_side(1) = msh_eval_boundary_side (msh.msh_patch{patch(1)}, side(1));
-  msh_side(2) = msh_eval_boundary_side (msh.msh_patch{patch(2)}, side(2));
-  msh_side_int    = msh_boundary_side_from_interior (msh.msh_patch{patch(1)}, side(1));
-  msh_side_int(2) = msh_boundary_side_from_interior (msh.msh_patch{patch(2)}, side(2));
+  msh_side(1) = msh_eval_boundary_side (msh{patch(1)}, side(1));
+  msh_side(2) = msh_eval_boundary_side (msh{patch(2)}, side(2));
+  msh_side_int    = msh_boundary_side_from_interior (msh{patch(1)}, side(1));
+  msh_side_int(2) = msh_boundary_side_from_interior (msh{patch(2)}, side(2));
 
-  sp_aux = space.sp_patch{patch(1)}.constructor (msh_side_int(1));
+  sp_aux = space{patch(1)}.constructor (msh_side_int(1));
   sp_bnd(1) = struct (sp_precompute (sp_aux, msh_side_int(1), 'value', true, 'gradient', true));
-  sp_aux = space.sp_patch{patch(2)}.constructor (msh_side_int(2));
+  sp_aux = space{patch(2)}.constructor (msh_side_int(2));
   sp_bnd(2) = struct (sp_precompute (sp_aux, msh_side_int(2), 'value', true, 'gradient', true));
   
   [sp_bnd(2), msh_side(2)] = reorder_elements_and_quad_points (sp_bnd(2), msh_side(2), interfaces(iref), ndim);
@@ -79,10 +80,10 @@ for iref = 1:numel(interfaces)
       [rB, cB, vB] = op_gradu_v_otimes_n (sp_bnd(jj), sp_bnd(ii), msh_side(ii), coeff_at_qnodes/2);
       [rC, cC, vC] = op_u_otimes_n_v_otimes_n (sp_bnd(jj), sp_bnd(ii), msh_side(jj), msh_side(ii), ...
           coeff_at_qnodes ./ charlen);
-      vB = space.dofs_ornt{patch(ii)}(rB)' .* vB .* space.dofs_ornt{patch(jj)}(cB)';
-      vC = space.dofs_ornt{patch(ii)}(rC)' .* vC .* space.dofs_ornt{patch(jj)}(cC)' * Cpen;
-      rB = space.gnum{patch(ii)}(rB); cB = space.gnum{patch(jj)}(cB);
-      rC = space.gnum{patch(ii)}(rC); cC = space.gnum{patch(jj)}(cC);
+      vB = ornt{patch(ii)}(rB)' .* vB .* ornt{patch(jj)}(cB)';
+      vC = ornt{patch(ii)}(rC)' .* vC .* ornt{patch(jj)}(cC)' * Cpen;
+      rB = gnum{patch(ii)}(rB); cB = gnum{patch(jj)}(cB);
+      rC = gnum{patch(ii)}(rC); cC = gnum{patch(jj)}(cC);
 
       rA = [rA rB cB rC];
       cA = [cA cB rB cC];
@@ -91,7 +92,7 @@ for iref = 1:numel(interfaces)
   end
 end
 
-A = sparse (rA, cA, vA, space.ndof, space.ndof);
+A = sparse (rA, cA, vA, ndof, ndof);
 end
 
 
