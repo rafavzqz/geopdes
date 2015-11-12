@@ -18,7 +18,7 @@
 %
 % USAGE:
 %
-%  [geometry, msh, space, sp_mul, eigv, eigf, gnum, dofs_ornt, gnum_mul] = 
+%  [geometry, msh, space, sp_mul, eigv, eigf] = 
 %                  mp_solve_maxwell_eig_mixed1 (problem_data, method_data)
 %
 % INPUT:
@@ -39,15 +39,12 @@
 %
 % OUTPUT:
 %
-%  geometry:  array of geometry structures (see mp_geo_load)
-%  msh:       cell array of mesh objects (see msh_cartesian)
-%  space:     cell array of space structures (see sp_vector_curl_transform)
-%  sp_mul:    cell array of space structures for the multiplier (see sp_bspline)
-%  eigv:      the computed eigenvalues
-%  eigf:      degrees of freedom of the associated eigenfunctions
-%  gnum:      global numbering of the degrees of freedom, for postprocessing
-%  dofs_ornt: orientation of the degrees of freedom (same as the sign of gnum)
-%  gnum_mul:  global numbering of the degrees of freedom of the multiplier
+%  geometry: array of geometry structures (see mp_geo_load)
+%  msh:      multipatch mesh, consisting of several Cartesian meshes (see msh_multipatch)
+%  space:    multipatch space, formed by several tensor product spaces plus the connectivity and orientation (see sp_multipatch)
+%  sp_mul:   multipatch space for the multiplier (see sp_multipatch)
+%  eigv:     the computed eigenvalues
+%  eigf:     degrees of freedom of the associated eigenfunctions
 %
 % See also EX_MAXWELL_EIG_MIXED1_LSHAPED_MP for an example
 %
@@ -66,7 +63,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [geometry, msh, sp, sp_mul, eigv, eigf, gnum, dofs_ornt, gnum_mul] = ...
+function [geometry, msh, space, space_mul, eigv, eigf] = ...
               mp_solve_maxwell_eig_mixed1 (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
@@ -80,7 +77,7 @@ for iopt  = 1:numel (data_names)
 end
 
 % Construct geometry structure
-[geometry, boundaries, interfaces] = mp_geo_load (geo_name);
+[geometry, boundaries, interfaces, ~, boundary_interfaces] = mp_geo_load (geo_name);
 npatch = numel (geometry);
 
 msh = cell (1, npatch);
@@ -101,74 +98,49 @@ for iptc = 1:npatch
   for idim = 1:msh{iptc}.ndim
     scalar_spaces{idim} = sp_bspline (knots_hcurl{idim}, degree_hcurl{idim}, msh{iptc});
   end
-  sp{iptc} = sp_vector_curl_transform (scalar_spaces, msh{iptc});
+  sp{iptc} = sp_vector (scalar_spaces, msh{iptc}, 'curl-preserving');
   clear scalar_spaces
   sp_mul{iptc} = sp_bspline (knots, degree, msh{iptc});
 end
 
+msh_ptc = msh;
+
+msh = msh_multipatch (msh, boundaries);
+space = sp_multipatch (sp, msh, interfaces, boundary_interfaces);
+space_mul = sp_multipatch (sp_mul, msh, interfaces, boundary_interfaces);
+
+% Assemble the matrices setting the orientation
+if (msh.rdim == 2)
+  invmu = @(x,y) 1./c_magn_perm (x,y);
+elseif (msh.rdim == 3)
+  invmu = @(x,y,z) 1./c_magn_perm (x,y,z);
+end
+stiff_mat = op_curlu_curlv_mp (space, space, msh, invmu);
+mass_mat = op_u_v_mp (space, space, msh, c_elec_perm);
+saddle_mat = op_v_gradp_mp (space, space_mul, msh, c_elec_perm);
+
 [gnum, ndof, dofs_ornt] = mp_interface_hcurl (interfaces, sp);
 [gnum_mul, ndof_mul] = mp_interface (interfaces, sp_mul);
 
-nc_stiff = 0; nc_mass = 0; nc_saddle = 0;
-
-for iptc = 1:npatch
-% Assemble the matrices setting the orientation
-  if (msh{iptc}.rdim == 2)
-    invmu = @(x,y) 1./c_magn_perm (x,y);
-  elseif (msh{iptc}.rdim == 3)
-    invmu = @(x,y,z) 1./c_magn_perm (x,y,z);
-  end
-  [rs, cs, vs] = op_curlu_curlv_tp (sp{iptc}, sp{iptc}, msh{iptc}, invmu);
-  rows_stiff(nc_stiff+(1:numel (rs))) = gnum{iptc}(rs);
-  cols_stiff(nc_stiff+(1:numel (rs))) = gnum{iptc}(cs);
-  vs = dofs_ornt{iptc}(rs)' .* vs .* dofs_ornt{iptc}(cs)';
-  vals_stiff(nc_stiff+(1:numel (rs))) = vs;
-  nc_stiff = nc_stiff + numel (rs);
-
-  [rs, cs, vs] = op_u_v_tp (sp{iptc}, sp{iptc}, msh{iptc}, c_elec_perm);
-  rows_mass(nc_mass+(1:numel (rs))) = gnum{iptc}(rs);
-  cols_mass(nc_mass+(1:numel (rs))) = gnum{iptc}(cs);
-  vs = dofs_ornt{iptc}(rs)' .* vs .* dofs_ornt{iptc}(cs)';
-  vals_mass(nc_mass+(1:numel (rs))) = vs;
-  nc_mass = nc_mass + numel (rs);
-
-  [rs, cs, vs] = op_v_gradp_tp (sp{iptc}, sp_mul{iptc}, msh{iptc}, c_elec_perm);
-  rows_saddle(nc_saddle+(1:numel (rs))) = gnum_mul{iptc}(rs);
-  cols_saddle(nc_saddle+(1:numel (rs))) = gnum{iptc}(cs);
-  vs = vs .* dofs_ornt{iptc}(cs)';
-  vals_saddle(nc_saddle+(1:numel (rs))) = vs;
-  nc_saddle = nc_saddle + numel (rs);
-end
-
-clear rs cs vs
-stiff_mat  = sparse (rows_stiff, cols_stiff, vals_stiff, ndof, ndof);
-clear rows_stiff cols_stiff vals_stiff
-mass_mat   = sparse (rows_mass, cols_mass, vals_mass, ndof, ndof);
-clear rows_mass cols_mass vals_mass
-saddle_mat = sparse (rows_saddle, cols_saddle, vals_saddle, ndof_mul, ndof);
-clear rows_saddle cols_saddle vals_saddle
-
 % Apply homogeneous Dirichlet boundary conditions
-drchlt_dofs = [];
-drchlt_dofs_mul = [];
+Nbnd = cumsum ([0, boundaries.nsides]);
+boundary_gnum = space.boundary.gnum;
+bnd_dofs = [];
+boundary_gnum_mul = space_mul.boundary.gnum;
+bnd_dofs_mul = [];
 for iref = drchlt_sides
-  for bnd_side = 1:boundaries(iref).nsides
-    iptc = boundaries(iref).patches(bnd_side);
-    iside = boundaries(iref).faces(bnd_side);
-    global_dofs = gnum{iptc}(sp{iptc}.boundary(iside).dofs);
-    drchlt_dofs = [drchlt_dofs global_dofs];
-    global_dofs = gnum_mul{iptc}(sp_mul{iptc}.boundary(iside).dofs);
-    drchlt_dofs_mul = [drchlt_dofs_mul global_dofs];
-  end
+  iref_patch_list = Nbnd(iref)+1:Nbnd(iref+1);
+  bnd_dofs = union (bnd_dofs, [boundary_gnum{iref_patch_list}]);
+  bnd_dofs_mul = union (bnd_dofs_mul, [boundary_gnum_mul{iref_patch_list}]);
 end
-drchlt_dofs = unique (drchlt_dofs);
-drchlt_dofs_mul = unique (drchlt_dofs_mul);
+drchlt_dofs = space.boundary.dofs (bnd_dofs);
+drchlt_dofs_mul = space_mul.boundary.dofs (bnd_dofs_mul);
 if (isempty(drchlt_dofs_mul))
   drchlt_dofs_mul = ndof_mul;
 end
 
-int_dofs = setdiff (1:ndof, drchlt_dofs);
-int_dofs_mul = setdiff (1:ndof_mul, drchlt_dofs_mul);
+int_dofs = setdiff (1:space.ndof, drchlt_dofs);
+int_dofs_mul = setdiff (1:space_mul.ndof, drchlt_dofs_mul);
 
 % Solve the eigenvalue problem
 stiff_mat  = stiff_mat (int_dofs, int_dofs);
@@ -182,10 +154,6 @@ M = [mass_mat, sparse(numel(int_dofs), numel(int_dofs_mul)); ...
 
 [eigf, eigv] = eig (full(A), full(M));
 eigv = diag (eigv);
-
-for iptc = 1:npatch
-  gnum{iptc} = gnum{iptc} .*dofs_ornt{iptc};
-end
 
 end
 

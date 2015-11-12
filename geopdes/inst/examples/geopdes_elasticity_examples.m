@@ -33,7 +33,7 @@ while (iopt > 0)
             '\n', ...
             ' 3D Linear elasticity examples. \n \n', ...
             '   (5) Horseshoe (thanks to T.J.R. Hughes and his group for the geometry). \n \n', ...
-            ' Multipatch examples (they require geopdes_multipatch). \n \n', ...
+            ' Multipatch examples. \n \n', ...
             '   (6) 2D Plane strain: L-shaped domain, defined with 3 patches. \n', ...
             '   (7) 3D Linear elasticity: unit cube, defined with 2 patches. \n', ...
             '\n', ...
@@ -73,28 +73,16 @@ while (iopt > 0)
     input ('Press <Enter> to continue: ');
   elseif (iopt == 6)
     clc;
-    if (~exist('mp_interface_vector'))
-      fprintf(1, 'Unable to find the file ''mp_interface_vector''.\n');
-      fprintf(1, 'Be sure to install the latest version of geopdes_multipatch to run this example\n\n');
-      input ('Press <Enter> to continue: ');
-    else
-      fprintf (1, 'You can have a look at the source file: ex_plane_strain_lshaped_mp.m \n \n');
-      fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
-      ex_plane_strain_Lshaped_mp;
-      input ('Press <Enter> to continue: ');
-    end
+    fprintf (1, 'You can have a look at the source file: ex_plane_strain_lshaped_mp.m \n \n');
+    fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
+    ex_plane_strain_Lshaped_mp;
+    input ('Press <Enter> to continue: ');
   elseif (iopt == 7)
     clc;
-    if (~exist('mp_interface_vector'))
-      fprintf(1, 'Unable to find the file ''mp_interface_vector''.\n');
-      fprintf(1, 'Be sure to install the latest version of geopdes_multipatch to run this example\n\n');
-      input ('Press <Enter> to continue: ');
-    else
-      fprintf (1, 'You can have a look at the source file: ex_lin_elast_cube_mp.m \n \n');
-      fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
-      ex_lin_elast_cube_mp;
-      input ('Press <Enter> to continue: ');
-    end
+    fprintf (1, 'You can have a look at the source file: ex_lin_elast_cube_mp.m \n \n');
+    fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
+    ex_lin_elast_cube_mp;
+    input ('Press <Enter> to continue: ');
   elseif (iopt == 8)
     clc;
     fprintf (1, 'You can have a look at the source file: ex_kirchhoff_rectangular_plate.m \n \n');

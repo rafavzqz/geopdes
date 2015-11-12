@@ -17,7 +17,7 @@
 %
 % USAGE:
 %
-%  [geometry, msh, space, u, gnum] = 
+%  [geometry, msh, space, u] = 
 %             mp_solve_linear_elasticity (problem_data, method_data)
 %
 % INPUT:
@@ -42,10 +42,9 @@
 % OUTPUT:
 %
 %  geometry: array of geometry structures (see geo_load)
-%  msh:      cell array of mesh objects (see msh_cartesian)
-%  space:    cell array of space object (see sp_vector)
+%  msh:      multipatch mesh, consisting of several Cartesian meshes (see msh_multipatch)
+%  space:    multipatch space, formed by several tensor product spaces plus the connectivity (see sp_multipatch)
 %  u:        the computed degrees of freedom
-%  gnum:     global numbering of the degrees of freedom
 %
 % Copyright (C) 2010, 2011 Carlo de Falco
 % Copyright (C) 2010, 2011, 2015 Rafael Vazquez

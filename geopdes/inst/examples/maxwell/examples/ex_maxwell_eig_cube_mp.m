@@ -24,8 +24,7 @@ method_data.nsub       = [3 3 3]; % Number of subdivisions
 method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
-[geometry, msh, space, eigv, eigf, gnum] = ...
-                         mp_solve_maxwell_eig (problem_data, method_data);
+[geometry, msh, space, eigv, eigf] = mp_solve_maxwell_eig (problem_data, method_data);
 
 % 4) POSTPROCESSING
 [eigv, perm] = sort (eigv);
@@ -48,11 +47,11 @@ disp (eigv(nzeros+1:nzeros+5))
 %! method_data.regularity = [1 1 1]; % Regularity of the splines
 %! method_data.nsub       = [3 3 3]; % Number of subdivisions
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, eigv, eigf, gnum] = mp_solve_maxwell_eig (problem_data, method_data);
+%! [geometry, msh, space, eigv, eigf] = mp_solve_maxwell_eig (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
 %! nzeros = numel (find (eigv < 1e-10));
-%! assert (sum (cellfun (@(x) x.nel, msh)), 108)
-%! assert (max([gnum{:}]), 923)
+%! assert (msh.nel, 108)
+%! assert (space.ndof, 923)
 %! assert (nzeros, 126)
 %! assert (eigv(nzeros+(1:5)), [19.7435520600124; 19.7607903571162; 19.7629814831161; 29.6336619501220; 29.6336619501221], 5e-12)
 
@@ -66,11 +65,11 @@ disp (eigv(nzeros+1:nzeros+5))
 %! method_data.regularity = [1 1 1]; % Regularity of the splines
 %! method_data.nsub       = [3 3 3]; % Number of subdivisions
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, eigv, eigf, gnum] = mp_solve_maxwell_eig (problem_data, method_data);
+%! [geometry, msh, space, eigv, eigf] = mp_solve_maxwell_eig (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
 %! nzeros = numel (find (eigv < 1e-10));
-%! assert (sum (cellfun (@(x) x.nel, msh)), 108)
-%! assert (max([gnum{:}]), 923)
+%! assert (msh.nel, 108)
+%! assert (space.ndof, 923)
 %! assert (nzeros, 126)
 %! assert (eigv(nzeros+(1:5)), [19.7435520600124; 19.7607903571162; 19.7629814831161; 29.6336619501220; 29.6336619501221], 5e-12)
 
@@ -84,11 +83,11 @@ disp (eigv(nzeros+1:nzeros+5))
 %! method_data.regularity = [1 1 1]; % Regularity of the splines
 %! method_data.nsub       = [3 3 3]; % Number of subdivisions
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, eigv, eigf, gnum] = mp_solve_maxwell_eig (problem_data, method_data);
+%! [geometry, msh, space, eigv, eigf] = mp_solve_maxwell_eig (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
 %! nzeros = numel (find (eigv < 1e-10));
-%! assert (sum (cellfun (@(x) x.nel, msh)), 108)
-%! assert (max([gnum{:}]), 923)
+%! assert (msh.nel, 108)
+%! assert (space.ndof, 923)
 %! assert (nzeros, 126)
 %! assert (eigv(nzeros+(1:5)), [19.7435520600124; 19.7607903571162; 19.7629814831161; 29.6336619501220; 29.6336619501221], 5e-12)
 
@@ -102,11 +101,11 @@ disp (eigv(nzeros+1:nzeros+5))
 %! method_data.regularity = [1 1 1]; % Regularity of the splines
 %! method_data.nsub       = [3 3 3]; % Number of subdivisions
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, eigv, eigf, gnum] = mp_solve_maxwell_eig (problem_data, method_data);
+%! [geometry, msh, space, eigv, eigf] = mp_solve_maxwell_eig (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
 %! nzeros = numel (find (eigv < 1e-10));
-%! assert (sum (cellfun (@(x) x.nel, msh)), 108)
-%! assert (max([gnum{:}]), 923)
+%! assert (msh.nel, 108)
+%! assert (space.ndof, 923)
 %! assert (nzeros, 126)
 %! assert (eigv(nzeros+(1:5)), [19.7435520600124; 19.7607903571162; 19.7629814831161; 29.6336619501220; 29.6336619501221], 5e-12)
 
@@ -120,11 +119,11 @@ disp (eigv(nzeros+1:nzeros+5))
 %! method_data.regularity = [1 1 1]; % Regularity of the splines
 %! method_data.nsub       = [3 3 3]; % Number of subdivisions
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, eigv, eigf, gnum] = mp_solve_maxwell_eig (problem_data, method_data);
+%! [geometry, msh, space, eigv, eigf] = mp_solve_maxwell_eig (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
 %! nzeros = numel (find (eigv < 1e-10));
-%! assert (sum (cellfun (@(x) x.nel, msh)), 108)
-%! assert (max([gnum{:}]), 923)
+%! assert (msh.nel, 108)
+%! assert (space.ndof, 923)
 %! assert (nzeros, 126)
 %! assert (eigv(nzeros+(1:5)), [19.7435520600124; 19.7607903571162; 19.7629814831161; 29.6336619501220; 29.6336619501221], 5e-12)
 
@@ -138,11 +137,11 @@ disp (eigv(nzeros+1:nzeros+5))
 %! method_data.regularity = [1 1 1]; % Regularity of the splines
 %! method_data.nsub       = [3 3 3]; % Number of subdivisions
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, eigv, eigf, gnum] = mp_solve_maxwell_eig (problem_data, method_data);
+%! [geometry, msh, space, eigv, eigf] = mp_solve_maxwell_eig (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
 %! nzeros = numel (find (eigv < 1e-10));
-%! assert (sum (cellfun (@(x) x.nel, msh)), 108)
-%! assert (max([gnum{:}]), 923)
+%! assert (msh.nel, 108)
+%! assert (space.ndof, 923)
 %! assert (nzeros, 126)
 %! assert (eigv(nzeros+(1:5)), [19.7435520600124; 19.7607903571162; 19.7629814831161; 29.6336619501220; 29.6336619501221], 5e-12)
 
@@ -156,11 +155,11 @@ disp (eigv(nzeros+1:nzeros+5))
 %! method_data.regularity = [1 1 1]; % Regularity of the splines
 %! method_data.nsub       = [3 3 3]; % Number of subdivisions
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, eigv, eigf, gnum] = mp_solve_maxwell_eig (problem_data, method_data);
+%! [geometry, msh, space, eigv, eigf] = mp_solve_maxwell_eig (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
 %! nzeros = numel (find (eigv < 1e-10));
-%! assert (sum (cellfun (@(x) x.nel, msh)), 108)
-%! assert (max([gnum{:}]), 923)
+%! assert (msh.nel, 108)
+%! assert (space.ndof, 923)
 %! assert (nzeros, 126)
 %! assert (eigv(nzeros+(1:5)), [19.7435520600124; 19.7607903571162; 19.7629814831161; 29.6336619501220; 29.6336619501221], 5e-12)
 
@@ -174,10 +173,10 @@ disp (eigv(nzeros+1:nzeros+5))
 %! method_data.regularity = [1 1 1]; % Regularity of the splines
 %! method_data.nsub       = [3 3 3]; % Number of subdivisions
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, eigv, eigf, gnum] = mp_solve_maxwell_eig (problem_data, method_data);
+%! [geometry, msh, space, eigv, eigf] = mp_solve_maxwell_eig (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
 %! nzeros = numel (find (eigv < 1e-10));
-%! assert (sum (cellfun (@(x) x.nel, msh)), 108)
-%! assert (max([gnum{:}]), 923)
+%! assert (msh.nel, 108)
+%! assert (space.ndof, 923)
 %! assert (nzeros, 126)
 %! assert (eigv(nzeros+(1:5)), [19.7435520600124; 19.7607903571162; 19.7629814831161; 29.6336619501220; 29.6336619501221], 5e-12)

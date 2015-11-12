@@ -11,6 +11,10 @@ function rhs = op_f_v_mp (space, msh, coeff, patch_list)
   rhs = zeros (space.ndof, 1);
   for iptc = patch_list
     rhs_loc = op_f_v_tp (space.sp_patch{iptc}, msh.msh_patch{iptc}, coeff);
+    
+    if (~isempty (space.dofs_ornt))
+      rhs_loc = space.dofs_ornt{iptc}(:) .* rhs_loc(:);
+    end
     rhs(space.gnum{iptc}) = rhs(space.gnum{iptc}) + rhs_loc;
   end
 

@@ -22,7 +22,7 @@ method_data.nsub       = [3 3 3]; % Number of subdivisions
 method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
-[geometry, msh, space, sp_mul, eigv, eigf, gnum, dofs_ornt, gnum_mul] = ...
+[geometry, msh, space, sp_mul, eigv, eigf] = ...
                   mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
 
 % 4) POSTPROCESSING
@@ -44,12 +44,12 @@ disp (eigv(1:5))
 %! method_data.regularity = [1 1 1]; % Regularity of the splines
 %! method_data.nsub       = [3 3 3]; % Number of subdivisions
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, sp_mul, eigv, eigf, gnum, dofs_ornt, gnum_mul] = ...
+%! [geometry, msh, space, sp_mul, eigv, eigf] = ...
 %!                   mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
-%! assert (sum (cellfun (@(x) x.nel, msh)), 81)
-%! assert (max([gnum{:}]), 820)
-%! assert (max([gnum_mul{:}]), 325)
+%! assert (msh.nel, 81)
+%! assert (space.ndof, 820)
+%! assert (sp_mul.ndof, 325)
 %! assert (eigv(1:5), [9.70264116281338; 11.35699119986159; 13.42422084425671; 15.24006039881071; 19.59275105292330], 1e-12)
 
 %!test
@@ -62,10 +62,10 @@ disp (eigv(1:5))
 %! method_data.regularity = [1 1 1]; % Regularity of the splines
 %! method_data.nsub       = [3 3 3]; % Number of subdivisions
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, sp_mul, eigv, eigf, gnum, dofs_ornt, gnum_mul] = ...
+%! [geometry, msh, space, sp_mul, eigv, eigf] = ...
 %!                   mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
-%! assert (sum (cellfun (@(x) x.nel, msh)), 81)
-%! assert (max([gnum{:}]), 820)
-%! assert (max([gnum_mul{:}]), 325)
+%! assert (msh.nel, 81)
+%! assert (space.ndof, 820)
+%! assert (sp_mul.ndof, 325)
 %! assert (eigv(1:5), [9.70264116281338; 11.35699119986159; 13.42422084425671; 15.24006039881071; 19.59275105292330], 1e-12)

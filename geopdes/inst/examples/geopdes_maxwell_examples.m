@@ -29,7 +29,7 @@ while (iopt > 0)
             '   (2) Examples in 2D: eigenvalue problem. \n \n',...
             '   (3) Examples in 3D: source problem. \n \n',...
             '   (4) Examples in 3D: eigenvalue problem. \n \n', ...
-            '   (5) Multipatch geometries: eigenvalue problem (geopdes_multipatch required). \n \n']);
+            '   (5) Multipatch geometries: eigenvalue problem. \n \n']);
 
   iopt = input ('Please choose a number from above or press <Enter> to return: ');
   clc;
@@ -224,14 +224,7 @@ while (iopt > 0)
     end %# while (iopt2 > 0)
 
   elseif (iopt == 5)
-    if (~exist('mp_geo_load'))
-      fprintf(1, 'Unable to find the file ''mp_geo_load''.\n');
-      fprintf(1, 'Be sure to install the latest version of geopdes_multipatch to run these examples\n\n');
-      iopt2 = -1;
-      input ('Press <Enter> to continue: ');
-    else
-      iopt2 = 1;
-    end
+    iopt2 = 1;
     while (iopt2 > 0)
       clc;
       fprintf (1, ...

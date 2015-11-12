@@ -121,7 +121,7 @@ function sp = sp_vector (scalar_spaces, msh, transform)
         ind = ceil (iside/2); % ind =[1, 1, 2, 2, 3, 3] in 3D, %ind = [1, 1, 2, 2] in 2D;
         if (~isempty (msh.boundary))
           sp_bnd = scalar_bnd{ind};
-          if (iside == 1)
+          if (iside == 1) % This fixes a bug with the use of subsasgn/subsref
             sp.boundary = sp_scalar (sp_bnd.knots, sp_bnd.degree, sp_bnd.weights, msh.boundary(iside), 'integral-preserving');
           else
             sp.boundary(iside) = sp_scalar (sp_bnd.knots, sp_bnd.degree, sp_bnd.weights, msh.boundary(iside), 'integral-preserving');
@@ -134,14 +134,19 @@ function sp = sp_vector (scalar_spaces, msh, transform)
         new_dofs = sp.cumsum_ndof(ind(icomp)) + scalar_bnd{ind(icomp)}.dofs;
         dofs = union (dofs, new_dofs);
         comp_dofs{icomp} = new_dofs;
+        ndof_dir(icomp,:) = sp.ndof_dir(ind(icomp), ind);
       end
       
       sp.boundary(iside).dofs = dofs(:)';
       if (~strcmpi (transform, 'div-preserving'))
         sp.boundary(iside).comp_dofs = comp_dofs;
       end
-      sp.boundary(iside).ndof = numel (sp.boundary(iside).dofs);
+      if (isempty (msh.boundary))
+        sp.boundary(iside).ndof = numel (sp.boundary(iside).dofs);
+        sp.boundary(iside).ndof_dir = ndof_dir;
+      end
     end
+    
   elseif (msh.ndim == 1)
     if (strcmpi (transform, 'grad-preserving'))
       sp.boundary(1).dofs = sp.cumsum_ndof(1:end-1)+1;

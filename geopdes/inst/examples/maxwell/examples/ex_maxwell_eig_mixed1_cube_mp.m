@@ -24,7 +24,7 @@ method_data.nsub       = [3 3 3]; % Number of subdivisions
 method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
-[geometry, msh, space, sp_mul, eigv, eigf, gnum, dofs_ornt, gnum_mul] = ...
+[geometry, msh, space, sp_mul, eigv, eigf] = ...
                      mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
 
 % 4) POSTPROCESSING
@@ -46,11 +46,11 @@ disp (eigv(1:5))
 %! method_data.regularity = [1 1 1]; % Regularity of the splines
 %! method_data.nsub       = [3 3 3]; % Number of subdivisions
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, sp_mul, eigv, eigf, gnum, dofs_ornt, gnum_mul] = mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
+%! [geometry, msh, space, sp_mul, eigv, eigf] = mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
-%! assert (sum (cellfun (@(x) x.nel, msh)), 108)
-%! assert (max([gnum{:}]), 923)
-%! assert (max([gnum_mul{:}]), 360)
+%! assert (msh.nel, 108)
+%! assert (space.ndof, 923)
+%! assert (sp_mul.ndof, 360)
 %! assert (eigv(1:5), [19.7435520600124; 19.7607903571162; 19.7629814831161; 29.6336619501220; 29.6336619501221], 5e-12)
 
 %!test
@@ -63,11 +63,11 @@ disp (eigv(1:5))
 %! method_data.regularity = [1 1 1]; % Regularity of the splines
 %! method_data.nsub       = [3 3 3]; % Number of subdivisions
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, sp_mul, eigv, eigf, gnum, dofs_ornt, gnum_mul] = mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
+%! [geometry, msh, space, sp_mul, eigv, eigf] = mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
-%! assert (sum (cellfun (@(x) x.nel, msh)), 108)
-%! assert (max([gnum{:}]), 923)
-%! assert (max([gnum_mul{:}]), 360)
+%! assert (msh.nel, 108)
+%! assert (space.ndof, 923)
+%! assert (sp_mul.ndof, 360)
 %! assert (eigv(1:5), [19.7435520600124; 19.7607903571162; 19.7629814831161; 29.6336619501220; 29.6336619501221], 5e-12)
 
 %!test
@@ -80,11 +80,11 @@ disp (eigv(1:5))
 %! method_data.regularity = [1 1 1]; % Regularity of the splines
 %! method_data.nsub       = [3 3 3]; % Number of subdivisions
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, sp_mul, eigv, eigf, gnum, dofs_ornt, gnum_mul] = mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
+%! [geometry, msh, space, sp_mul, eigv, eigf] = mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
-%! assert (sum (cellfun (@(x) x.nel, msh)), 108)
-%! assert (max([gnum{:}]), 923)
-%! assert (max([gnum_mul{:}]), 360)
+%! assert (msh.nel, 108)
+%! assert (space.ndof, 923)
+%! assert (sp_mul.ndof, 360)
 %! assert (eigv(1:5), [19.7435520600124; 19.7607903571162; 19.7629814831161; 29.6336619501220; 29.6336619501221], 5e-12)
 
 %!test
@@ -97,11 +97,11 @@ disp (eigv(1:5))
 %! method_data.regularity = [1 1 1]; % Regularity of the splines
 %! method_data.nsub       = [3 3 3]; % Number of subdivisions
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, sp_mul, eigv, eigf, gnum, dofs_ornt, gnum_mul] = mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
+%! [geometry, msh, space, sp_mul, eigv, eigf] = mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
-%! assert (sum (cellfun (@(x) x.nel, msh)), 108)
-%! assert (max([gnum{:}]), 923)
-%! assert (max([gnum_mul{:}]), 360)
+%! assert (msh.nel, 108)
+%! assert (space.ndof, 923)
+%! assert (sp_mul.ndof, 360)
 %! assert (eigv(1:5), [19.7435520600124; 19.7607903571162; 19.7629814831161; 29.6336619501220; 29.6336619501221], 5e-12)
 
 %!test
@@ -114,11 +114,11 @@ disp (eigv(1:5))
 %! method_data.regularity = [1 1 1]; % Regularity of the splines
 %! method_data.nsub       = [3 3 3]; % Number of subdivisions
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, sp_mul, eigv, eigf, gnum, dofs_ornt, gnum_mul] = mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
+%! [geometry, msh, space, sp_mul, eigv, eigf] = mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
-%! assert (sum (cellfun (@(x) x.nel, msh)), 108)
-%! assert (max([gnum{:}]), 923)
-%! assert (max([gnum_mul{:}]), 360)
+%! assert (msh.nel, 108)
+%! assert (space.ndof, 923)
+%! assert (sp_mul.ndof, 360)
 %! assert (eigv(1:5), [19.7435520600124; 19.7607903571162; 19.7629814831161; 29.6336619501220; 29.6336619501221], 5e-12)
 
 %!test
@@ -131,11 +131,11 @@ disp (eigv(1:5))
 %! method_data.regularity = [1 1 1]; % Regularity of the splines
 %! method_data.nsub       = [3 3 3]; % Number of subdivisions
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, sp_mul, eigv, eigf, gnum, dofs_ornt, gnum_mul] = mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
+%! [geometry, msh, space, sp_mul, eigv, eigf] = mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
-%! assert (sum (cellfun (@(x) x.nel, msh)), 108)
-%! assert (max([gnum{:}]), 923)
-%! assert (max([gnum_mul{:}]), 360)
+%! assert (msh.nel, 108)
+%! assert (space.ndof, 923)
+%! assert (sp_mul.ndof, 360)
 %! assert (eigv(1:5), [19.7435520600124; 19.7607903571162; 19.7629814831161; 29.6336619501220; 29.6336619501221], 5e-12)
 
 %!test
@@ -148,11 +148,11 @@ disp (eigv(1:5))
 %! method_data.regularity = [1 1 1]; % Regularity of the splines
 %! method_data.nsub       = [3 3 3]; % Number of subdivisions
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, sp_mul, eigv, eigf, gnum, dofs_ornt, gnum_mul] = mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
+%! [geometry, msh, space, sp_mul, eigv, eigf] = mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
-%! assert (sum (cellfun (@(x) x.nel, msh)), 108)
-%! assert (max([gnum{:}]), 923)
-%! assert (max([gnum_mul{:}]), 360)
+%! assert (msh.nel, 108)
+%! assert (space.ndof, 923)
+%! assert (sp_mul.ndof, 360)
 %! assert (eigv(1:5), [19.7435520600124; 19.7607903571162; 19.7629814831161; 29.6336619501220; 29.6336619501221], 5e-12)
 
 %!test
@@ -165,9 +165,9 @@ disp (eigv(1:5))
 %! method_data.regularity = [1 1 1]; % Regularity of the splines
 %! method_data.nsub       = [3 3 3]; % Number of subdivisions
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, sp_mul, eigv, eigf, gnum, dofs_ornt, gnum_mul] = mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
+%! [geometry, msh, space, sp_mul, eigv, eigf] = mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
-%! assert (sum (cellfun (@(x) x.nel, msh)), 108)
-%! assert (max([gnum{:}]), 923)
-%! assert (max([gnum_mul{:}]), 360)
+%! assert (msh.nel, 108)
+%! assert (space.ndof, 923)
+%! assert (sp_mul.ndof, 360)
 %! assert (eigv(1:5), [19.7435520600124; 19.7607903571162; 19.7629814831161; 29.6336619501220; 29.6336619501221], 5e-12)

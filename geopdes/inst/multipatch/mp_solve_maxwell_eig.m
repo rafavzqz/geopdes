@@ -10,7 +10,7 @@
 %
 % USAGE:
 %
-%  [geometry, msh, space, eigv, eigf, gnum, dofs_ornt] = 
+%  [geometry, msh, space, eigv, eigf] = 
 %                  mp_solve_maxwell_eig (problem_data, method_data)
 %
 % INPUT:
@@ -31,14 +31,11 @@
 %
 % OUTPUT:
 %
-%  geometry:  array of geometry structures (see mp_geo_load)
-%  msh:       cell array of mesh objects (see msh_cartesian)
-%  space:     cell array of space objects (see sp_vector_curl_transform)
-%  eigv:      the computed eigenvalues
-%  eigf:      degrees of freedom of the associated eigenfunctions
-%  gnum:      global numbering of the degrees of freedom, for postprocessing
-%               The sign indicates the global orientation of the vector.
-%  dofs_ornt: orientation of the degrees of freedom (same as the sign of gnum)
+%  geometry: array of geometry structures (see mp_geo_load)
+%  msh:      multipatch mesh, consisting of several Cartesian meshes (see msh_multipatch)
+%  space:    multipatch space, formed by several tensor product spaces plus the connectivity and orientation (see sp_multipatch)
+%  eigv:     the computed eigenvalues
+%  eigf:     degrees of freedom of the associated eigenfunctions
 %
 % See also EX_MAXWELL_EIG_LSHAPED_MP for an example
 %
@@ -57,7 +54,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [geometry, msh, sp, eigv, eigf, gnum, dofs_ornt] = ...
+function [geometry, msh, space, eigv, eigf] = ...
               mp_solve_maxwell_eig (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
@@ -71,7 +68,7 @@ for iopt  = 1:numel (data_names)
 end
 
 % Construct geometry structure
-[geometry, boundaries, interfaces] = mp_geo_load (geo_name);
+[geometry, boundaries, interfaces, ~, boundary_interfaces] = mp_geo_load (geo_name);
 npatch = numel (geometry);
 
 msh = cell (1, npatch); 
@@ -91,63 +88,38 @@ for iptc = 1:npatch
   for idim = 1:msh{iptc}.ndim
     scalar_spaces{idim} = sp_bspline (knots_hcurl{idim}, degree_hcurl{idim}, msh{iptc});
   end
-  sp{iptc} = sp_vector_curl_transform (scalar_spaces, msh{iptc});
+  sp{iptc} = sp_vector (scalar_spaces, msh{iptc}, 'curl-preserving');
   clear scalar_spaces
 end
 
-[gnum, ndof, dofs_ornt] = mp_interface_hcurl (interfaces, sp);
-
-nc_stiff = 0; nc_mass = 0;
-for iptc = 1:npatch
+msh = msh_multipatch (msh, boundaries);
+space = sp_multipatch (sp, msh, interfaces, boundary_interfaces);
 
 % Assemble the matrices setting the orientation
-  if (msh{iptc}.rdim == 2)
-    invmu = @(x,y) 1./c_magn_perm (x,y);
-  elseif (msh{iptc}.rdim == 3)
-    invmu = @(x,y,z) 1./c_magn_perm (x,y,z);
-  end
-  [rs, cs, vs] = op_curlu_curlv_tp (sp{iptc}, sp{iptc}, msh{iptc}, invmu);
-  rows_stiff(nc_stiff+(1:numel (rs))) = gnum{iptc}(rs);
-  cols_stiff(nc_stiff+(1:numel (rs))) = gnum{iptc}(cs);
-  vs = dofs_ornt{iptc}(rs)' .* vs .* dofs_ornt{iptc}(cs)';
-  vals_stiff(nc_stiff+(1:numel (rs))) = vs;
-  nc_stiff = nc_stiff + numel (rs);
-
-  [rs, cs, vs] = op_u_v_tp (sp{iptc}, sp{iptc}, msh{iptc}, c_elec_perm);
-  rows_mass(nc_mass+(1:numel (rs))) = gnum{iptc}(rs);
-  cols_mass(nc_mass+(1:numel (rs))) = gnum{iptc}(cs);
-  vs = dofs_ornt{iptc}(rs)' .* vs .* dofs_ornt{iptc}(cs)';
-  vals_mass(nc_mass+(1:numel (rs))) = vs;
-  nc_mass = nc_mass + numel (rs);
+if (msh.rdim == 2)
+  invmu = @(x,y) 1./c_magn_perm (x,y);
+elseif (msh.rdim == 3)
+  invmu = @(x,y,z) 1./c_magn_perm (x,y,z);
 end
-
-clear rs cs vs
-stiff_mat = sparse (rows_stiff, cols_stiff, vals_stiff, ndof, ndof);
-clear rows_stiff cols_stiff vals_stiff
-mass_mat  = sparse (rows_mass, cols_mass, vals_mass, ndof, ndof);
-clear rows_mass cols_mass vals_mass
+stiff_mat = op_curlu_curlv_mp (space, space, msh, invmu);
+mass_mat = op_u_v_mp (space, space, msh, c_elec_perm);
 
 % Apply homogeneous Dirichlet boundary conditions
-drchlt_dofs = [];
+Nbnd = cumsum ([0, boundaries.nsides]);
+boundary_gnum = space.boundary.gnum;
+bnd_dofs = [];
 for iref = drchlt_sides
-  for bnd_side = 1:boundaries(iref).nsides
-    iptc = boundaries(iref).patches(bnd_side);
-    iside = boundaries(iref).faces(bnd_side);
-    global_dofs = gnum{iptc}(sp{iptc}.boundary(iside).dofs);
-    drchlt_dofs = union (drchlt_dofs, global_dofs);
-  end
+  iref_patch_list = Nbnd(iref)+1:Nbnd(iref+1);
+  bnd_dofs = union (bnd_dofs, [boundary_gnum{iref_patch_list}]);
 end
-int_dofs = setdiff (1:ndof, drchlt_dofs);
+drchlt_dofs = space.boundary.dofs (bnd_dofs);
+int_dofs = setdiff (1:space.ndof, drchlt_dofs);
 
 % Solve the eigenvalue problem
-eigf = zeros (ndof, numel(int_dofs));
+eigf = zeros (space.ndof, numel(int_dofs));
 [eigf(int_dofs, :), eigv] = ...
     eig (full (stiff_mat(int_dofs, int_dofs)), full (mass_mat(int_dofs, int_dofs)));
 eigv = sort (diag (eigv));
-
-for iptc = 1:npatch
-  gnum{iptc} = gnum{iptc} .*dofs_ornt{iptc};
-end
 
 end
 

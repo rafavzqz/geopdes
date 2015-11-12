@@ -22,8 +22,7 @@ method_data.nsub       = [3 3 3]; % Number of subdivisions
 method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
-[geometry, msh, space, eigv, eigf, gnum] = ...
-                         mp_solve_maxwell_eig (problem_data, method_data);
+[geometry, msh, space, eigv, eigf] = mp_solve_maxwell_eig (problem_data, method_data);
 
 % 4) POSTPROCESSING
 [eigv, perm] = sort (eigv);
@@ -46,11 +45,11 @@ disp (eigv(nzeros+1:nzeros+5))
 %! method_data.regularity = [1 1 1]; % Regularity of the splines
 %! method_data.nsub       = [3 3 3]; % Number of subdivisions
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, eigv, eigf, gnum] = mp_solve_maxwell_eig (problem_data, method_data);
+%! [geometry, msh, space, eigv, eigf] = mp_solve_maxwell_eig (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
 %! nzeros = numel (find (eigv < 1e-10));
-%! assert (sum (cellfun (@(x) x.nel, msh)), 81)
-%! assert (max([gnum{:}]), 820)
+%! assert (msh.nel, 81)
+%! assert (space.ndof, 820)
 %! assert (nzeros, 99)
 %! assert (eigv(nzeros+(1:5)), [9.70264116281338; 11.35699119986159; 13.42422084425671; 15.24006039881071; 19.59275105292330], 1e-12)
 
@@ -64,10 +63,10 @@ disp (eigv(nzeros+1:nzeros+5))
 %! method_data.regularity = [1 1 1]; % Regularity of the splines
 %! method_data.nsub       = [3 3 3]; % Number of subdivisions
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, eigv, eigf, gnum] = mp_solve_maxwell_eig (problem_data, method_data);
+%! [geometry, msh, space, eigv, eigf] = mp_solve_maxwell_eig (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
 %! nzeros = numel (find (eigv < 1e-10));
-%! assert (sum (cellfun (@(x) x.nel, msh)), 81)
-%! assert (max([gnum{:}]), 820)
+%! assert (msh.nel, 81)
+%! assert (space.ndof, 820)
 %! assert (nzeros, 99)
 %! assert (eigv(nzeros+(1:5)), [9.70264116281338; 11.35699119986159; 13.42422084425671; 15.24006039881071; 19.59275105292330], 1e-12)

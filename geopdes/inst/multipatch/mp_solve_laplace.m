@@ -34,8 +34,8 @@
 % OUTPUT:
 %
 %  geometry: array of geometry structures (see geo_load)
-%  msh:      cell array of mesh objects (see msh_cartesian)
-%  space:    cell array of space objects (see sp_bspline)
+%  msh:      multipatch mesh, consisting of several Cartesian meshes (see msh_multipatch)
+%  space:    multipatch space, formed by several tensor product spaces plus the connectivity (see sp_multipatch)
 %  u:        the computed degrees of freedom
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
