@@ -100,6 +100,7 @@ function sp = sp_multipatch (spaces, msh, interfaces, boundary_interfaces)
   elseif (strcmpi (sp_class, 'sp_vector'))
     if (strcmpi (sp.transform, 'grad-preserving'))
       [sp.gnum, sp.ndof] = mp_interface_vector (interfaces, spaces);
+      sp.dofs_ornt = [];
     elseif (strcmpi (sp.transform, 'curl-preserving'))
       [sp.gnum, sp.ndof, sp.dofs_ornt] = mp_interface_hcurl (interfaces, spaces);
     elseif (strcmpi (sp.transform, 'div-preserving'))

@@ -140,6 +140,17 @@ function sp = sp_vector (scalar_spaces, msh, transform)
       if (~strcmpi (transform, 'div-preserving'))
         sp.boundary(iside).comp_dofs = comp_dofs;
       end
+      sp.boundary(iside).ndof = numel (sp.boundary(iside).dofs);
+    end
+  elseif (msh.ndim == 1)
+    if (strcmpi (transform, 'grad-preserving'))
+      sp.boundary(1).dofs = sp.cumsum_ndof(1:end-1)+1;
+      sp.boundary(2).dofs = sp.cumsum_ndof(2:end);
+
+      sp.boundary(1).ndof = sp.ncomp_param;
+      sp.boundary(2).ndof = sp.ncomp_param;
+    else
+      sp.boundary = [];
     end
   else
     sp.boundary = [];

@@ -90,11 +90,13 @@ end
 
 msh = msh_multipatch (msh, boundaries);
 space = sp_multipatch (sp, msh, interfaces, boundary_interfaces);
+clear sp
 
 % Compute and assemble the matrices 
 stiff_mat = op_gradu_gradv_mp (space, space, msh, c_diff);
 rhs = op_f_v_mp (space, msh, f);
 
+% Apply Neumann boundary conditions
 Nbnd = cumsum ([0, boundaries.nsides]);
 for iref = nmnn_sides
   iref_patch_list = Nbnd(iref)+1:Nbnd(iref+1);

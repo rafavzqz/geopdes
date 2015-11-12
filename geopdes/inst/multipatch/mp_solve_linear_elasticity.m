@@ -63,7 +63,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [geometry, msh, sp, u, gnum] = ...
+function [geometry, msh, space, u] = ...
               mp_solve_linear_elasticity (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
@@ -77,7 +77,7 @@ for iopt  = 1:numel (data_names)
 end
 
 % Construct geometry structure, and information for interfaces and boundaries
-[geometry, boundaries, interfaces] = mp_geo_load (geo_name);
+[geometry, boundaries, interfaces, ~, boundary_interfaces] = mp_geo_load (geo_name);
 npatch = numel (geometry);
 
 for iptc = 1:npatch
@@ -105,48 +105,29 @@ for iptc = 1:npatch
   sp{iptc} = sp_vector (scalar_spaces, msh{iptc});
 end
 
-% Create a correspondence between patches on the interfaces
-[gnum, ndof] = mp_interface_vector (interfaces, sp);
+msh = msh_multipatch (msh, boundaries);
+space = sp_multipatch (sp, msh, interfaces, boundary_interfaces);
+clear sp scalar_spaces
 
 % Compute and assemble the matrices
-rhs = zeros (ndof, 1);
-
-ncounter = 0;
-for iptc = 1:npatch
-  [rs, cs, vs] = op_su_ev_tp (sp{iptc}, sp{iptc}, msh{iptc}, lambda_lame, mu_lame);
-
-  rows(ncounter+(1:numel (rs))) = gnum{iptc}(rs);
-  cols(ncounter+(1:numel (rs))) = gnum{iptc}(cs);
-  vals(ncounter+(1:numel (rs))) = vs;
-  ncounter = ncounter + numel (rs);
-
-  rhs_loc = op_f_v_tp (sp{iptc}, msh{iptc}, f);
-  rhs(gnum{iptc}) = rhs(gnum{iptc}) + rhs_loc;
-end
-
-clear rs cs vs
-mat = sparse (rows, cols, vals, ndof, ndof);
-clear rows cols vals
+mat = op_su_ev_mp (space, space, msh, lambda_lame, mu_lame);
+rhs = op_f_v_mp (space, msh, f);
 
 % Apply Neumann boundary conditions
+Nbnd = cumsum ([0, boundaries.nsides]);
 for iref = nmnn_sides
-  for bnd_side = 1:boundaries(iref).nsides
-    iptc = boundaries(iref).patches(bnd_side);
-    iside = boundaries(iref).faces(bnd_side);
-% Restrict the function handle to the specified side, in any dimension, gside = @(x,y) g(x,y,iside)
-    gref = @(varargin) g(varargin{:},iref);
-    global_dofs = gnum{iptc}(sp{iptc}.boundary(iside).dofs);
-    rhs_nmnn = op_f_v_tp (sp{iptc}.boundary(iside), msh{iptc}.boundary(iside), gref);
-    rhs(global_dofs) = rhs(global_dofs) + rhs_nmnn;
-  end
+  iref_patch_list = Nbnd(iref)+1:Nbnd(iref+1);
+  gref = @(varargin) g(varargin{:},iref);
+  rhs_nmnn = op_f_v_mp (space.boundary, msh.boundary, gref, iref_patch_list);
+  rhs(space.boundary.dofs) = rhs(space.boundary.dofs) + rhs_nmnn;
 end
 
 % Apply Dirichlet boundary conditions
-u = zeros (ndof, 1);
-[u_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj (sp, msh, h, gnum, boundaries, drchlt_sides);
+u = zeros (space.ndof, 1);
+[u_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj (space, msh, h, boundaries, drchlt_sides);
 u(drchlt_dofs) = u_drchlt;
 
-int_dofs = setdiff (1:ndof, drchlt_dofs);
+int_dofs = setdiff (1:space.ndof, drchlt_dofs);
 rhs(int_dofs) = rhs(int_dofs) - mat(int_dofs, drchlt_dofs) * u_drchlt;
 
 % Solve the linear system

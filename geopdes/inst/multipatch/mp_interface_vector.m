@@ -49,13 +49,18 @@ function [glob_num, glob_ndof] = mp_interface_vector (interfaces, sp)
       iside2 = interfaces(intrfc).side2;
       ttform{iptc1, intrfc} = sp{iptc1}.boundary(iside1).dofs;
       
-      if (ndim == 2)
+      if (ndim == 1)
+        ttform{iptc2, intrfc} = sp{iptc2}.boundary(iside2).dofs;
+      elseif (ndim == 2)
         if (interfaces(intrfc).ornt == 1)
           ttform{iptc2, intrfc} = sp{iptc2}.boundary(iside2).dofs;
         else
-          nghbr_dofs_comp1 = fliplr (sp{iptc2}.boundary(iside2).comp_dofs{1});
-          nghbr_dofs_comp2 = fliplr (sp{iptc2}.boundary(iside2).comp_dofs{2});
-          ttform{iptc2, intrfc} = [nghbr_dofs_comp1 nghbr_dofs_comp2];
+          for icomp = 1:sp{iptc2}.ncomp_param
+            nghbr_dofs_comp = fliplr (sp{iptc2}.boundary(iside2).comp_dofs{icomp});
+            ttform{iptc2, intrfc} = [ttform{iptc2,intrfc}, nghbr_dofs_comp];
+%             nghbr_dofs_comp1 = fliplr (sp{iptc2}.boundary(iside2).comp_dofs{1});
+%             nghbr_dofs_comp2 = fliplr (sp{iptc2}.boundary(iside2).comp_dofs{2});
+          end
         end
       elseif (ndim == 3)
         nghbr_dofs_comp1 = reshape (sp{iptc2}.boundary(iside2).comp_dofs{1}, ...

@@ -50,25 +50,19 @@ method_data.nsub       = [2 2 2];     % Number of subdivisions
 method_data.nquad      = [3 3 3];     % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
-[geometry, msh, space, u, gnum] = ...
-              mp_solve_linear_elasticity (problem_data, method_data);
+[geometry, msh, space, u] = mp_solve_linear_elasticity (problem_data, method_data);
 
 % 4) POST-PROCESSING. 
-% 4.1) EXPORT TO PARAVIEW
+% EXPORT TO PARAVIEW
 output_file = 'lin_elast_cube_mp_Deg2_Reg1_Sub2';
 
 vtk_pts = {linspace(0, 1, 10), linspace(0, 1, 10), linspace(0, 1, 10)};
 fprintf ('results being saved in: %s.pvd\n \n', output_file)
-mp_sp_to_vtk (u, space, geometry, gnum, vtk_pts, output_file, {'displacement', 'stress'}, {'value', 'stress'}, ...
+sp_to_vtk (u, space, geometry, vtk_pts, output_file, {'displacement', 'stress'}, {'value', 'stress'}, ...
     problem_data.lambda_lame, problem_data.mu_lame)
 
-% 4.2) COMPARISON WITH THE EXACT SOLUTION
-npatch = numel (geometry);
-for iptc = 1:npatch
-  error_l2(iptc) = ...
-        sp_l2_error (space{iptc}, msh{iptc}, u(gnum{iptc}), problem_data.uex);
-end
-error_l2 = sqrt (sum (error_l2 .* error_l2))
+% COMPARISON WITH THE EXACT SOLUTION
+error_l2 = sp_l2_error (space, msh, u, problem_data.uex)
 
 %!demo
 %! ex_lin_elast_cube_mp
@@ -105,89 +99,49 @@ error_l2 = sqrt (sum (error_l2 .* error_l2))
 %! method_data.regularity = [1 1 1];     % Regularity of the splines
 %! method_data.nsub       = [2 2 2];     % Number of subdivisions
 %! method_data.nquad      = [3 3 3];     % Points for the Gaussian quadrature rule
-%! [geometry, msh, space, u, gnum] = mp_solve_linear_elasticity (problem_data, method_data);
-%! for iptc = 1:numel(geometry)
-%!   error_l2(iptc) = ...
-%!         sp_l2_error (space{iptc}, msh{iptc}, u(gnum{iptc}), problem_data.uex);
-%! end
-%! error_l2 = sqrt (sum (error_l2 .* error_l2));
-%! assert (max([gnum{:}]), numel(u))
-%! assert (max([gnum{:}]), 504)
+%! [geometry, msh, space, u] = mp_solve_linear_elasticity (problem_data, method_data);
+%! error_l2 = sp_l2_error (space, msh, u, problem_data.uex);
+%! assert (space.ndof, 504)
 %! assert (error_l2, 2.42330537409875e-04, 1e-16)
 %!
 %! problem_data.geo_name = 'geo_2cubesb.txt';
-%! [geometry, msh, space, u, gnum] = mp_solve_linear_elasticity (problem_data, method_data);
-%! for iptc = 1:numel(geometry)
-%!   error_l2(iptc) = ...
-%!         sp_l2_error (space{iptc}, msh{iptc}, u(gnum{iptc}), problem_data.uex);
-%! end
-%! error_l2 = sqrt (sum (error_l2 .* error_l2));
-%! assert (max([gnum{:}]), numel(u))
-%! assert (max([gnum{:}]), 504)
+%! [geometry, msh, space, u] = mp_solve_linear_elasticity (problem_data, method_data);
+%! error_l2 = sp_l2_error (space, msh, u, problem_data.uex);
+%! assert (space.ndof, 504)
 %! assert (error_l2, 2.42330537409875e-04, 1e-16)
 %!
 %! problem_data.geo_name = 'geo_2cubesc.txt';
-%! [geometry, msh, space, u, gnum] = mp_solve_linear_elasticity (problem_data, method_data);
-%! for iptc = 1:numel(geometry)
-%!   error_l2(iptc) = ...
-%!         sp_l2_error (space{iptc}, msh{iptc}, u(gnum{iptc}), problem_data.uex);
-%! end
-%! error_l2 = sqrt (sum (error_l2 .* error_l2));
-%! assert (max([gnum{:}]), numel(u))
-%! assert (max([gnum{:}]), 504)
+%! [geometry, msh, space, u] = mp_solve_linear_elasticity (problem_data, method_data);
+%! error_l2 = sp_l2_error (space, msh, u, problem_data.uex);
+%! assert (space.ndof, 504)
 %! assert (error_l2, 2.42330537409875e-04, 1e-16)
 %!
 %! problem_data.geo_name = 'geo_2cubesd.txt';
-%! [geometry, msh, space, u, gnum] = mp_solve_linear_elasticity (problem_data, method_data);
-%! for iptc = 1:numel(geometry)
-%!   error_l2(iptc) = ...
-%!         sp_l2_error (space{iptc}, msh{iptc}, u(gnum{iptc}), problem_data.uex);
-%! end
-%! error_l2 = sqrt (sum (error_l2 .* error_l2));
-%! assert (max([gnum{:}]), numel(u))
-%! assert (max([gnum{:}]), 504)
+%! [geometry, msh, space, u] = mp_solve_linear_elasticity (problem_data, method_data);
+%! error_l2 = sp_l2_error (space, msh, u, problem_data.uex);
+%! assert (space.ndof, 504)
 %! assert (error_l2, 2.42330537409875e-04, 1e-16)
 %!
 %! problem_data.geo_name = 'geo_2cubese.txt';
-%! [geometry, msh, space, u, gnum] = mp_solve_linear_elasticity (problem_data, method_data);
-%! for iptc = 1:numel(geometry)
-%!   error_l2(iptc) = ...
-%!         sp_l2_error (space{iptc}, msh{iptc}, u(gnum{iptc}), problem_data.uex);
-%! end
-%! error_l2 = sqrt (sum (error_l2 .* error_l2));
-%! assert (max([gnum{:}]), numel(u))
-%! assert (max([gnum{:}]), 504)
+%! [geometry, msh, space, u] = mp_solve_linear_elasticity (problem_data, method_data);
+%! error_l2 = sp_l2_error (space, msh, u, problem_data.uex);
+%! assert (space.ndof, 504)
 %! assert (error_l2, 2.42330537409875e-04, 1e-16)
 %!
 %! problem_data.geo_name = 'geo_2cubesf.txt';
-%! [geometry, msh, space, u, gnum] = mp_solve_linear_elasticity (problem_data, method_data);
-%! for iptc = 1:numel(geometry)
-%!   error_l2(iptc) = ...
-%!         sp_l2_error (space{iptc}, msh{iptc}, u(gnum{iptc}), problem_data.uex);
-%! end
-%! error_l2 = sqrt (sum (error_l2 .* error_l2));
-%! assert (max([gnum{:}]), numel(u))
-%! assert (max([gnum{:}]), 504)
+%! [geometry, msh, space, u] = mp_solve_linear_elasticity (problem_data, method_data);
+%! error_l2 = sp_l2_error (space, msh, u, problem_data.uex);
+%! assert (space.ndof, 504)
 %! assert (error_l2, 2.42330537409875e-04, 1e-16)
 %!
 %! problem_data.geo_name = 'geo_2cubesg.txt';
-%! [geometry, msh, space, u, gnum] = mp_solve_linear_elasticity (problem_data, method_data);
-%! for iptc = 1:numel(geometry)
-%!   error_l2(iptc) = ...
-%!         sp_l2_error (space{iptc}, msh{iptc}, u(gnum{iptc}), problem_data.uex);
-%! end
-%! error_l2 = sqrt (sum (error_l2 .* error_l2));
-%! assert (max([gnum{:}]), numel(u))
-%! assert (max([gnum{:}]), 504)
+%! [geometry, msh, space, u] = mp_solve_linear_elasticity (problem_data, method_data);
+%! error_l2 = sp_l2_error (space, msh, u, problem_data.uex);
+%! assert (space.ndof, 504)
 %! assert (error_l2, 2.42330537409875e-04, 1e-16)
 %!
 %! problem_data.geo_name = 'geo_2cubesh.txt';
-%! [geometry, msh, space, u, gnum] = mp_solve_linear_elasticity (problem_data, method_data);
-%! for iptc = 1:numel(geometry)
-%!   error_l2(iptc) = ...
-%!         sp_l2_error (space{iptc}, msh{iptc}, u(gnum{iptc}), problem_data.uex);
-%! end
-%! error_l2 = sqrt (sum (error_l2 .* error_l2));
-%! assert (max([gnum{:}]), numel(u))
-%! assert (max([gnum{:}]), 504)
+%! [geometry, msh, space, u] = mp_solve_linear_elasticity (problem_data, method_data);
+%! error_l2 = sp_l2_error (space, msh, u, problem_data.uex);
+%! assert (space.ndof, 504)
 %! assert (error_l2, 2.42330537409875e-04, 1e-16)
