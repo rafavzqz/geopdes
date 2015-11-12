@@ -139,7 +139,7 @@ vel   = zeros (ndof, 1);
 press = zeros (ndofp, 1);
 
 % Apply Dirichlet boundary conditions
-[vel_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj (spv, msh, h, gnum, boundaries, drchlt_sides);
+[vel_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj_old (spv, msh, h, gnum, boundaries, drchlt_sides);
 vel(drchlt_dofs) = vel_drchlt;
 
 int_dofs = setdiff (1:ndof, drchlt_dofs);
