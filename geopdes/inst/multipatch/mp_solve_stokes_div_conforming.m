@@ -129,7 +129,8 @@ press = zeros (ndofp, 1);
 A = A + mp_dg_penalty (space_v, msh, interfaces, viscosity, Cpen);
 
 % Apply Dirichlet boundary conditions
-[N_mat, N_rhs] = mp_sp_weak_drchlt_bc (spv, msh_ptc, gnum, dofs_ornt, ...
+[N_mat, N_rhs] = mp_sp_weak_drchlt_bc (space_v, msh, boundaries, drchlt_sides, h, viscosity, Cpen);
+[N_mat2, N_rhs2] = mp_sp_weak_drchlt_bc_old (spv, msh_ptc, gnum, dofs_ornt, ...
                     boundaries, drchlt_sides, h, viscosity, Cpen);
 [vel_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj_udotn (spv, msh_ptc, gnum, ...
                     dofs_ornt, boundaries, drchlt_sides, h);
