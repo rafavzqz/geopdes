@@ -4,8 +4,10 @@
 %
 % INPUTS:
 %
-%    spaces: cell-array of space objects, one for each patch (see sp_scalar, sp_vector)
-%    msh:    mesh object that defines the multipatch mesh (see msh_multipatch)
+%    spaces:     cell-array of space objects, one for each patch (see sp_scalar, sp_vector)
+%    msh:        mesh object that defines the multipatch mesh (see msh_multipatch)
+%    interfaces: information of connectivity between patches (see mp_geo_load)
+%    boundary_interfaces: information of connectivity between boundary patches (see mp_geo_load)
 %
 % OUTPUT:
 %
@@ -14,13 +16,13 @@
 %        FIELD_NAME      (SIZE)                       DESCRIPTION
 %        npatch          (scalar)                      number of patches
 %        ncomp           (scalar)                      number of components of the functions of the space (equal to msh.rdim)
-%        ncomp_param     (scalar)                      number of components of the functions of the space in the parametric domain (usually equal to msh.ndim)
-%        ndof            (scalar)                      total number of degrees of freedom
+%        ndof            (scalar)                      total number of degrees of freedom after gluing patches together
 %        ndof_per_patch  (1 x npatch array)            number of degrees of freedom per patch
-%        nsh_max         (scalar)                      maximum number of non-vanishing shape functions per element
-%        sp_patch        (1 x ncomp_param array)       array of space objects, one for each patch
-%        boundary        ()                            array representing the space of traces of basis functions on each boundary side
+%        sp_patch        (1 x npatch cell-array)       the input spaces, one space object for each patch (see sp_scalar and sp_vector)
 %        transform       (string)                      one of 'grad-preserving', 'curl-preserving' and 'div-preserving'
+%        gnum            (1 x npatch cell-array)       global numbering of the degress of freedom (see mp_interface)
+%        dofs_ornt       (1 x npatch cell-array)       global orientation of the degrees for freedom, for curl-conforming and div-conforming spaces
+%        boundary        (1 x 1 object)                a (ndim-1) dimensional "sp_multipatch" object for the whole boundary 
 %        dofs            (1 x ndof vector)             only for boundary spaces, degrees of freedom that do not vanish on the boundary
 %        constructor     function handle               function handle to construct the same discrete space in a different msh
 %
@@ -28,10 +30,11 @@
 %       Methods that give a structure with all the functions computed in a certain subset of the mesh
 %         sp_evaluate_element_list: compute basis functions (and derivatives) in a given list of elements
 %
-%       Methods for post-processing, and require a computed vector of degrees of freedom
-%         sp_h1_error:              compute the error in H1 norm
-%         sp_l2_error:              compute the error in L2 norm
-%         sp_eval:                  evaluate the computed solution in a Cartesian grid of points
+%       Methods for post-processing, that require a computed vector of degrees of freedom
+%         sp_h1_error:    compute the error in H1 norm
+%         sp_l2_error:    compute the error in L2 norm
+%         sp_hcurl_error: compute the error in H(curl) norm
+%         sp_to_vtk:      export the computed solution to a pvd file, using a Cartesian grid of points on each patch
 %
 %       Methods for basic connectivity operations
 %         sp_get_basis_functions: compute the functions that do not vanish in a given list of elements
@@ -105,11 +108,14 @@ function sp = sp_multipatch (spaces, msh, interfaces, boundary_interfaces)
       [sp.gnum, sp.ndof, sp.dofs_ornt] = mp_interface_hcurl (interfaces, spaces);
     elseif (strcmpi (sp.transform, 'div-preserving'))
       [sp.gnum, sp.ndof, sp.dofs_ornt] = mp_interface_hdiv (interfaces, spaces, msh);
+    else
+      error ('sp_multipatch: Unknown transformation')
     end
   else
     error ('sp_multipatch: Unknown space class')
   end
 
+% Boundary construction
   if (nargin == 4 && ~isempty (msh.boundary) && ~isempty (spaces{1}.boundary))
     sp_bnd = cell (msh.boundary.npatch, 1);
     for iptc = 1:msh.boundary.npatch
@@ -133,8 +139,13 @@ function sp = sp_multipatch (spaces, msh, interfaces, boundary_interfaces)
   
   sp.dofs = [];
   
-  sp.constructor = @(MSH) sp_multipatch ({spaces.constructor(MSH)}, MSH, interfaces);
-  
+  sp.constructor = @(MSH) sp_multipatch (patches_constructor(spaces, MSH), MSH, interfaces);
+    function spaux = patches_constructor (spaces, MSH)
+      for ipatch = 1:MSH.npatch
+        spaux{ipatch} = spaces{ipatch}.constructor(MSH.msh_patch{ipatch});
+      end
+    end
+
   sp = class (sp, 'sp_multipatch');
   
 end

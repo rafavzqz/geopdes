@@ -100,8 +100,8 @@ function sp = sp_scalar (knots, degree, weights, msh, transform)
   sp.ndof     = prod (sp.ndof_dir);
   sp.ncomp    = 1;
 
+% Boundary construction  
   if (msh.ndim > 1 && strcmpi (transform, 'grad-preserving'))
-
     for iside = 1:2*msh.ndim
 %%    ind  = [2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind  = [2 2 1 1] in 2D;
 %%    ind2 = [1 1 2 2 3 3] in 3D,                  %ind2 = [1 1 2 2] in 2D

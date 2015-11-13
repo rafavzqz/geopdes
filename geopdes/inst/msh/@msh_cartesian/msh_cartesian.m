@@ -25,7 +25,6 @@
 %     rdim          (scalar)                  dimension of the physical space
 %     nel           (scalar)                  number of elements of the partition
 %     nel_dir       (1 x ndim vector)         number of elements in each parametric direction
-%     nelcol        (scalar)                  number of elements in one "column" of the mesh
 %     nqn           (scalar)                  number of quadrature nodes per element
 %     nqn_dir       (1 x ndim vector)         number of quadrature nodes per element in each parametric direction
 %     breaks        (1 x ndim cell-array)     unique(breaks)

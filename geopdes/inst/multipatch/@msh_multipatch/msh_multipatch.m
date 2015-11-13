@@ -14,15 +14,17 @@
 %     msh: object containing the following fields and methods
 %
 %     FIELD_NAME    (SIZE)                    DESCRIPTION
-%     npatch        (scalar)                  the number of patches in the domain
-%     ndim          (scalar)                  dimension of the parametric space
-%     rdim          (scalar)                  dimension of the physical space
-%     nel           (scalar)                  total number of elements of the partition
-%     nel_per_patch (1 x npatch array)        number of elements on each patch
-%     nqn           (scalar)                  number of quadrature nodes per element
-%     nqn_dir       (1 x ndim vector)         number of quadrature nodes per element in each parametric direction
-%     msh_patch     (1 x npatch)
-%     boundary      (1 x 1)                   it contains an (ndim-1)-dimensional 'msh_multipatch' object for the whole boundary
+%     npatch        (scalar)                   the number of patches in the domain
+%     ndim          (scalar)                   dimension of the parametric space
+%     rdim          (scalar)                   dimension of the physical space
+%     nel           (scalar)                   total number of elements of the partition
+%     nel_per_patch (1 x npatch array)         number of elements on each patch
+%     nqn           (scalar)                   number of quadrature nodes per element
+%     nqn_dir       (1 x ndim vector)          number of quadrature nodes per element in each parametric direction
+%     msh_patch     (1 x npatch cell-array)    the input meshes, a mesh object for each patch (see msh_cartesian)
+%     boundary      (1 x 1 object)             it contains an (ndim-1)-dimensional 'msh_multipatch' object for the whole boundary
+%     patch_numbers (1 x npatch array)         only for boundary objects, the volumetric patch to which the boundary patch belongs
+%     side_numbers  (1 x npatch array)         only for boundary objects, the side number that the patch occupies in the volumetric patch
 %
 %     METHOD NAME
 %     msh_evaluate_element_list: compute the parameterization (and its derivatives) at
@@ -59,8 +61,8 @@ function msh = msh_multipatch (meshes, boundaries)
   msh.side_numbers  = [];
   
   if (nargin == 2 && ~isempty (meshes{1}.boundary))
-    patch_numbers = vertcat (boundaries.patches);
-    side_numbers  = vertcat (boundaries.faces);
+    patch_numbers = (vertcat (boundaries.patches)).';
+    side_numbers  = (vertcat (boundaries.faces)).';
     for ind = 1:numel(patch_numbers)
       msh_bnd{ind} = meshes{patch_numbers(ind)}.boundary(side_numbers(ind));
     end

@@ -25,6 +25,8 @@
 %        transform       (string)                      one of 'grad-preserving', 'curl-preserving' and 'div-preserving'
 %        dofs            (1 x ndof vector)             only for boundary spaces, degrees of freedom that do not vanish on the boundary
 %        constructor     function handle               function handle to construct the same discrete space in a different msh
+%        cumsum_ndof     (1 x ncomp+1 array)           auxiliary array, helpful for indexing
+%        cumsum_nsh      (1 x ncomp+1 array)           auxiliary array, helpful for indexing
 %
 %       METHODS
 %       Methods that give a structure with all the functions computed in a certain subset of the mesh
@@ -85,6 +87,7 @@ function sp = sp_vector (scalar_spaces, msh, transform)
 
   sp.nsh_max = sum (cellfun (@(x) x.nsh_max, scalar_spaces));
   sp.ndof    = sum (cellfun (@(x) x.ndof, scalar_spaces));
+  sp.ndof_dir = [];
   
   sp.cumsum_ndof(1) = 0;
   sp.cumsum_ndof(2:sp.ncomp_param+1) = cumsum (cellfun (@(x) x.ndof, scalar_spaces));
@@ -98,9 +101,9 @@ function sp = sp_vector (scalar_spaces, msh, transform)
     sp.ndof_dir(icomp,:) = scalar_spaces{icomp}.ndof_dir;
   end
 
+% Boundary construction
   if (msh.ndim > 1)
     for iside = 1:2*msh.ndim
-
       for icomp = 1:sp.ncomp_param
         scalar_bnd{icomp} = scalar_spaces{icomp}.boundary(iside);
       end
@@ -111,13 +114,13 @@ function sp = sp_vector (scalar_spaces, msh, transform)
           sp.boundary(iside) = sp_vector (scalar_bnd(ind), msh.boundary(iside), transform);
         end
 
-      elseif (strcmpi (transform, 'curl-preserving'))
+      elseif (strcmpi (transform, 'curl-preserving')) % Only tangential components are computed
         ind = setdiff (1:msh.ndim, ceil(iside/2)); % ind =[2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind = [2 2 1 1] in 2D;
         if (~isempty (msh.boundary))
           sp.boundary(iside) = sp_vector (scalar_bnd(ind), msh.boundary(iside), transform);
         end
 
-      elseif (strcmpi (transform, 'div-preserving'))
+      elseif (strcmpi (transform, 'div-preserving')) % Only normal components are computed, and treated as a scalar
         ind = ceil (iside/2); % ind =[1, 1, 2, 2, 3, 3] in 3D, %ind = [1, 1, 2, 2] in 2D;
         if (~isempty (msh.boundary))
           sp_bnd = scalar_bnd{ind};
@@ -140,9 +143,10 @@ function sp = sp_vector (scalar_spaces, msh, transform)
       if (~strcmpi (transform, 'div-preserving'))
         sp.boundary(iside).comp_dofs = comp_dofs;
       end
+      
       if (isempty (msh.boundary))
         sp.boundary(iside).ndof = numel (sp.boundary(iside).dofs);
-        if (strcmpi (transform, 'curl-preserving')) % Needed for the interfaces on the boundary
+        if (strcmpi (transform, 'curl-preserving')) % Needed for the interfaces on the boundary, in sp_multipatch
           for icomp = 1:numel(ind)
             ndof_dir(icomp,:) = sp.ndof_dir(ind(icomp), ind);
           end
