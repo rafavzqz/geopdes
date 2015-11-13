@@ -1,9 +1,9 @@
 Name: geopdes
 Version: 3.0.0
-Date: 2015-10-13
+Date: 2015-11-13
 Author: Rafael Vazquez, Carlo de Falco
 Maintainer: Rafael Vazquez
 Title: Iso-Geometric Analysis
 Description: A research tool for Iso-Geometric Analysis of PDEs
-Depends: octave (>= 4.0), nurbs (>= 1.3.10)
+Depends: octave (>= 4.0), nurbs (>= 1.3.11)
 License: GPLv3

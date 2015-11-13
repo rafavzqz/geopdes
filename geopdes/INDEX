@@ -8,6 +8,7 @@ Geometry
 Mesh
  msh_gauss_nodes
  msh_set_quad_nodes
+ msh_set_breaks
  msh_cartesian
  @msh_cartesian/msh_eval_boundary_side
  @msh_cartesian/msh_evaluate_col
@@ -15,13 +16,13 @@ Mesh
  @msh_cartesian/msh_precompute
  @msh_cartesian/msh_boundary_side_from_interior
 Space
- sp_eval_msh
  sp_h1_error
  sp_l2_error
  sp_hcurl_error
+ sp_eval_msh
  sp_to_vtk
  sp_to_vtk_b64
- sp_to_vtk_raw.m
+ sp_to_vtk_raw
  sp_weak_drchlt_bc
  sp_drchlt_l2_proj
  sp_bspline
@@ -35,7 +36,6 @@ Space
  sp_vector_div_preserving_transform 
  sp_scalar
  @sp_scalar/sp_eval_boundary_side
- @sp_scalar/sp_eval
  @sp_scalar/sp_evaluate_col
  @sp_scalar/sp_evaluate_col_param
  @sp_scalar/sp_evaluate_element_list
@@ -44,20 +44,31 @@ Space
  @sp_scalar/sp_l2_error
  @sp_scalar/sp_precompute
  @sp_scalar/sp_precompute_param
+ @sp_scalar/sp_eval
+ @sp_scalar/sp_to_vtk
+ @sp_scalar/sp_get_basis_functions
+ @sp_scalar/sp_get_cells
+ @sp_scalar/sp_get_neighbors
  sp_vector
  @sp_vector/sp_eval_boundary_side
  @sp_vector/sp_eval
  @sp_vector/sp_evaluate_col
  @sp_vector/sp_evaluate_col_param
+ @sp_vector/sp_evaluate_element_list
+ @sp_vector/sp_evaluate_element_list_param
  @sp_vector/sp_h1_error
  @sp_vector/sp_l2_error
  @sp_vector/sp_hcurl_error
  @sp_vector/sp_precompute
  @sp_vector/sp_precompute_param
+ @sp_vector/sp_to_vtk
+ @sp_vector/sp_get_basis_functions
+ @sp_vector/sp_get_cells
+ @sp_vector/sp_get_neighbors
 Operators
  op_f_v
- op_gradu_gradv
  op_u_v
+ op_gradu_gradv
  op_laplaceu_laplacev
  op_vel_dot_gradu_v
  op_mat_stab_SUPG
@@ -67,6 +78,7 @@ Operators
  op_curlv_p
  op_div_v_q
  op_fdotn_vdotn
+ op_fdotn_v
  op_f_vxn_2d
  op_f_vxn_3d
  op_uxn_vxn_2d
@@ -93,6 +105,29 @@ Solve
  solve_maxwell_eig_mixed2_2d
  solve_maxwell_src
  solve_stokes
+Multipatch
+ mp_geo_load
+ mp_geo_read_nurbs
+ mp_interface
+ mp_interface_vector
+ mp_interface_hcurl
+ mp_interface_hdiv
+ mp_solve_laplace
+ mp_solve_linear_elasticity
+ mp_solve_maxwell_eig
+ mp_solve_maxwell_eig_mixed1
+ mp_solve_stokes
+ mp_solve_stokes_div_conforming
+ mp_sp_drchlt_l2_proj
+ mp_sp_drchlt_l2_proj_udotn
+ mp_sp_weak_drchlt_bc
+ msh_multipatch
+ @msh_multipatch/msh_evaluate_element_list
+ sp_multipatch
+ @sp_multipatch/sp_evaluate_element_list
+ @sp_multipatch/sp_get_cells
+ @sp_multipatch/sp_get_basis_functions
+ @sp_multipatch/sp_get_neighbors
 Examples
  geopdes_base_examples
  geopdes_elasticity_examples
