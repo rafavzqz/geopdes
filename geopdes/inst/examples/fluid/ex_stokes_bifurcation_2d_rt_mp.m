@@ -31,7 +31,7 @@ method_data.nquad        = [5 5];  % Points for the Gaussian quadrature rule
 method_data.Cpen = 10 * (method_data.degree(1)+1);
 
 % 3) CALL TO THE SOLVER
-[geometry, msh, space_v, vel, gnum, space_p, press, gnump] = mp_solve_stokes_div_conforming (problem_data, method_data);
+[geometry, msh, space_v, vel, space_p, press] = mp_solve_stokes_div_conforming (problem_data, method_data);
 
 
 % 4) POST-PROCESSING
