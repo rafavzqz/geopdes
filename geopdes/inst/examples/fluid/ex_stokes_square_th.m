@@ -62,7 +62,7 @@ fprintf ('The result is saved in the files %s \n and %s \n \n', ...
            [output_file '_vel'], [output_file '_press']);
 vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20)};
 sp_to_vtk (press, space_p, geometry, vtk_pts, [output_file '_press'], 'press')
-sp_to_vtk (vel,   space_v, geometry, vtk_pts, [output_file '_vel'  ], 'vel')
+sp_to_vtk (vel,   space_v, geometry, vtk_pts, [output_file '_vel'  ], {'velocity', 'divergence'}, {'value', 'divergence'})
 
 % 4.3) PLOT IN MATLAB
 [eu, F] = sp_eval (vel, space_v, geometry, vtk_pts);
