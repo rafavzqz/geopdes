@@ -45,9 +45,11 @@ function [u, dofs] = mp_sp_drchlt_l2_proj_udotn (space, msh, gnum, ornt, boundar
       iptc = boundaries(iref).patches(bnd_side);
       iside = boundaries(iref).faces(bnd_side);
 
-      if (isa (space{iptc}, 'sp_vector_div_transform'))
-        [msh_side, msh_side_from_interior] = msh_eval_boundary_side (msh{iptc}, iside);
-        sp_side = sp_eval_boundary_side (space{iptc}, msh_side, msh_side_from_interior);
+      if (strcmpi (space{iptc}.transform, 'div-preserving'))
+        msh_side = msh_eval_boundary_side (msh{iptc}, iside);
+        msh_side_from_interior = msh_boundary_side_from_interior (msh{iptc}, iside);
+        sp_side = sp_eval_boundary_side (space{iptc}, msh_side);
+%         sp_side = sp_eval_boundary_side (space{iptc}, msh_side, msh_side_from_interior);
       else
         error ('The function only works with div-conforming spaces')
       end
