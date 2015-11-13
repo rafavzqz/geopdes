@@ -58,11 +58,11 @@ sp_to_vtk (press, space_p, geometry, vtk_pts, sprintf ('%s_press', output_file),
 %! method_data.nsub         = [5 5];  % Number of subdivisions
 %! method_data.nquad        = [5 5];  % Points for the Gaussian quadrature rule
 %! method_data.Cpen = 10 * (method_data.degree(1)+1);
-%! [geometry, msh, space_v, vel, gnum, space_p, press, gnump] = mp_solve_stokes_div_conforming (problem_data, method_data);
-%! assert (sum (cellfun (@(x) x.nel, msh)), 100)
-%! assert (max([gnum{:}]), 552)
-%! assert (max([gnump{:}]), 256)
+%! [geometry, msh, space_v, vel, space_p, press] = mp_solve_stokes_div_conforming (problem_data, method_data);
+%! assert (msh.nel, 100)
+%! assert (space_v.ndof, 552)
+%! assert (space_p.ndof, 256)
 %! for iptc = 1:4
-%!   div = sp_eval (vel(abs(gnum{iptc})) .* sign(gnum{iptc})', space_v{iptc}, geometry(iptc), [20 20], 'divergence');
+%!   div = sp_eval (vel(space_v.gnum{iptc}) .* space_v.dofs_ornt{iptc}', space_v.sp_patch{iptc}, geometry(iptc), [20 20], 'divergence');
 %!   assert (max (abs (div(:))) < 1e-12)
 %! end

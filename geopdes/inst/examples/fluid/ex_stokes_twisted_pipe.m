@@ -42,7 +42,7 @@ fprintf ('The result is saved in the files %s \n and %s \n \n', ...
            [output_file '_vel'], [output_file '_press']);
 vtk_pts = {linspace(0, 1, 10), linspace(0, 1, 10), linspace(0, 1, 10)};
 sp_to_vtk (press, space_p, geometry, vtk_pts, [output_file '_press'], 'press')
-sp_to_vtk (vel,   space_v, geometry, vtk_pts, [output_file '_vel'  ], 'vel')
+sp_to_vtk (vel,   space_v, geometry, vtk_pts, [output_file '_vel'  ], {'velocity', 'divergence'}, {'value', 'divergence'})
 
 %!test
 %! problem_data.geo_name = 'geo_twisted_pipe.mat';

@@ -149,7 +149,8 @@ while (iopt > 0)
                 '\n', ...
                 '   (1) 2D bifurcation problem. Generalized Taylor-Hood elements.\n \n',...
                 '   (2) 2D bifurcation problem. Generalized Raviart-Thomas elements.\n \n',...
-                '   (3) 3D multipatch driven cavity. Generalized Taylor-Hood elements.\n \n']);
+                '   (3) 3D multipatch driven cavity. Generalized Taylor-Hood elements.\n \n', ...
+                '   (4) 3D Twisted pipe. Generalized Raviart-Thomas elements. \n \n']);
       
       iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
       
@@ -170,11 +171,11 @@ while (iopt > 0)
             fprintf (1, 'You can have a look at the source file: ex_stokes_driven_cavity_3d_mp.m \n \n');
             ex_stokes_driven_cavity_3d_mp;
             input ('Press <Enter> to continue: ');
-%            case 4
-%             clc;
-%             fprintf (1, 'You can have a look at the source file: ex_stokes_driven_cavity_3d_rt_mp.m \n \n');
-%             ex_stokes_driven_cavity_3d_rt_mp;
-%             input ('Press <Enter> to continue: ');
+            case 4
+             clc;
+             fprintf (1, 'You can have a look at the source file: ex_stokes_twisted_pipe_rt_mp.m \n \n');
+             ex_stokes_twisted_pipe_rt_mp;
+             input ('Press <Enter> to continue: ');
           end %# switch (iopt2)
         end %# if (~isempty)
       end %# while (iopt2 > 0)
