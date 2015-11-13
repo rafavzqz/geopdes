@@ -39,6 +39,7 @@ function [u, dofs] = mp_sp_drchlt_l2_proj (space, msh, h, boundaries, refs, dumm
 
   M = spalloc (space.boundary.ndof, space.boundary.ndof, 3*space.boundary.ndof);
   rhs = zeros (space.boundary.ndof, 1);
+  
   Nbnd = cumsum ([0, boundaries.nsides]);
   bnd_dofs = [];
   for iref = refs

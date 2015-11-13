@@ -33,44 +33,40 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [u, normal_dofs] = mp_sp_drchlt_l2_proj_udotn (space, msh, boundaries, refs, bnd_func)
+function [u, normal_dofs] = mp_sp_drchlt_l2_proj_udotn_old (space, msh, gnum, ornt, boundaries, refs, bnd_func)
 
-  if (nargin ~= 5)
-    error ('The function MP_SP_DRCHLT_L2_PROJ_UDOTN has changed in version 3, to work with multipatch classes.')
-  end
-  
-  M = spalloc (space.boundary.ndof, space.boundary.ndof, 3*space.boundary.ndof);
-  rhs = zeros (space.boundary.ndof, 1);
-  
-  Nbnd = cumsum ([0, boundaries.nsides]);
-  bnd_dofs = [];
+  ndof = max ([gnum{:}]);
+  M = spalloc (ndof, ndof, 3*ndof);
+  rhs = zeros (ndof, 1);
+
+  normal_dofs = [];
   for iref = refs
-    iref_patch_list = Nbnd(iref)+1:Nbnd(iref+1);
-    href = @(varargin) bnd_func(varargin{:}, iref);
-    f_one = @(varargin) ones (size(varargin{1}));
-      
-    boundary_gnum = space.boundary.gnum;
-    
-    M = M + op_u_v_mp (space.boundary, space.boundary, msh.boundary, f_one, iref_patch_list);
-    
-% For this part we need the normal, which is computed with eval_boundary_side    
-    for iptc = iref_patch_list
-      patch_number = msh.boundary.patch_numbers(iptc);
-      side_number = msh.boundary.side_numbers(iptc);
-      msh_side = msh_eval_boundary_side (msh.msh_patch{patch_number}, side_number);
-      sp_side = sp_eval_boundary_side (space.sp_patch{patch_number}, msh_side);
-      
-      for idim = 1:msh.rdim
+    for bnd_side = 1:boundaries(iref).nsides
+      iptc = boundaries(iref).patches(bnd_side);
+      iside = boundaries(iref).faces(bnd_side);
+
+      if (strcmpi (space{iptc}.transform, 'div-preserving'))
+        msh_side = msh_eval_boundary_side (msh{iptc}, iside);
+        sp_side = sp_eval_boundary_side (space{iptc}, msh_side);
+      else
+        error ('The function only works with div-conforming spaces')
+      end
+
+      normal_dofs = union (normal_dofs, gnum{iptc}(sp_side.dofs));
+      for idim = 1:msh{iptc}.rdim
         x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
       end
-      rhs(boundary_gnum{iptc}) = rhs(boundary_gnum{iptc}) + op_fdotn_v (sp_side, msh_side, href(x{:}));
+      g = bnd_func (x{:}, iref);
+
+      M_loc = op_u_v (sp_side, sp_side, msh_side, ones(size(x{1})));
+      rhs_loc = op_fdotn_v (sp_side, msh_side, g);
+    
+      global_dofs = gnum{iptc}(sp_side.dofs);
+      M(global_dofs, global_dofs) = M(global_dofs, global_dofs) + M_loc;
+      rhs(global_dofs) = rhs(global_dofs) + rhs_loc;
     end
-    
-    boundary_gnum = space.boundary.gnum;
-    bnd_dofs = union (bnd_dofs, [boundary_gnum{iref_patch_list}]);
   end
-    
-  u = M(bnd_dofs,bnd_dofs) \ rhs(bnd_dofs);
-  normal_dofs = space.boundary.dofs(bnd_dofs);
+  
+  u = M(normal_dofs, normal_dofs) \ rhs(normal_dofs);
   
 end

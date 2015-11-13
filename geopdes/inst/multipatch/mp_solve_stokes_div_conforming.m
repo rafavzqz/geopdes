@@ -93,20 +93,10 @@ for iptc = 1:npatch
                geometry(iptc).nurbs.knots, nsub, degree, regularity, msh{iptc});
 end
 
-msh_ptc = msh;
-
 msh = msh_multipatch (msh, boundaries);
 space_v = sp_multipatch (spv, msh, interfaces, boundary_interfaces);
 space_p = sp_multipatch (spp, msh, interfaces, boundary_interfaces);
-% clear spv spp
-
-% Create a correspondence between patches on the interfaces
-[gnum,  ndof, dofs_ornt]  = mp_interface_hdiv (interfaces, spv, msh);
-ndofp = 0;
-for iptc = 1:npatch
-  gnump{iptc} = ndofp + (1:spp{iptc}.ndof);
-  ndofp = ndofp + spp{iptc}.ndof;
-end
+clear spv spp
 
 % Compute and assemble the matrices
 if (msh.rdim == 2)
@@ -120,25 +110,24 @@ B = op_div_v_q_mp (space_v, space_p, msh);
 E = (op_f_v_mp (space_p, msh, fun_one)).';
 F = op_f_v_mp (space_v, msh, f);
 
-vel   = zeros (ndof, 1);
-press = zeros (ndofp, 1);
+vel   = zeros (space_v.ndof, 1);
+press = zeros (space_p.ndof, 1);
 
 % Apply DG techniques on the interfaces
 A = A + mp_dg_penalty (space_v, msh, interfaces, viscosity, Cpen);
 
 % Apply Dirichlet boundary conditions
 [N_mat, N_rhs] = mp_sp_weak_drchlt_bc (space_v, msh, boundaries, drchlt_sides, h, viscosity, Cpen);
-[vel_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj_udotn (spv, msh_ptc, gnum, ...
-                    dofs_ornt, boundaries, drchlt_sides, h);
+[vel_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj_udotn (space_v, msh, boundaries, drchlt_sides, h);
 vel(drchlt_dofs) = vel_drchlt;
 
-int_dofs = setdiff (1:ndof, drchlt_dofs);
+int_dofs = setdiff (1:space_v.ndof, drchlt_dofs);
 nintdofs = numel (int_dofs);
 rhs_dir  = -A(int_dofs, drchlt_dofs)*vel(drchlt_dofs) + N_mat(int_dofs,drchlt_dofs)*vel(drchlt_dofs);
 
 % Solve the linear system
 mat = [A(int_dofs, int_dofs) - N_mat(int_dofs, int_dofs), -B(:,int_dofs).', sparse(nintdofs, 1);
-       -B(:,int_dofs), sparse(ndofp, ndofp), E.';
+       -B(:,int_dofs), sparse(space_p.ndof, space_p.ndof), E.';
        sparse(1, nintdofs), E, 0];
 rhs = [F(int_dofs) + N_rhs(int_dofs) + rhs_dir; 
        B(:, drchlt_dofs)*vel(drchlt_dofs); 
@@ -148,9 +137,5 @@ sol = mat \ rhs;
 
 vel(int_dofs) = sol(1:nintdofs);
 press = sol(1+nintdofs:end-1);
-
-for iptc = 1:npatch
-  gnum{iptc} = gnum{iptc} .*dofs_ornt{iptc};
-end
 
 end
