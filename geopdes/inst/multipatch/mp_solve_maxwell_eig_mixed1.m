@@ -103,11 +103,10 @@ for iptc = 1:npatch
   sp_mul{iptc} = sp_bspline (knots, degree, msh{iptc});
 end
 
-msh_ptc = msh;
-
 msh = msh_multipatch (msh, boundaries);
 space = sp_multipatch (sp, msh, interfaces, boundary_interfaces);
 space_mul = sp_multipatch (sp_mul, msh, interfaces, boundary_interfaces);
+clear sp sp_mul
 
 % Assemble the matrices setting the orientation
 if (msh.rdim == 2)
@@ -118,9 +117,6 @@ end
 stiff_mat = op_curlu_curlv_mp (space, space, msh, invmu);
 mass_mat = op_u_v_mp (space, space, msh, c_elec_perm);
 saddle_mat = op_v_gradp_mp (space, space_mul, msh, c_elec_perm);
-
-[gnum, ndof, dofs_ornt] = mp_interface_hcurl (interfaces, sp);
-[gnum_mul, ndof_mul] = mp_interface (interfaces, sp_mul);
 
 % Apply homogeneous Dirichlet boundary conditions
 Nbnd = cumsum ([0, boundaries.nsides]);

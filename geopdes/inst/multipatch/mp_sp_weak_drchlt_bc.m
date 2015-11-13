@@ -1,6 +1,6 @@
 % MP_SP_WEAK_DRCHLT_BC: compute the matrix and right hand-side to impose
 %  the Dirichlet boundary conditions in weak form for the tangential
-%  component. To be used with the 'RT' and 'NDL' spaces.
+%  component. To be used with the 'RT' and 'NDL' spaces (div-preserving).
 %
 % The code computes the following terms in the left hand-side
 % 
@@ -14,14 +14,12 @@
 %  and g the boundary condition to be imposed.
 %
 %
-%   [N_mat, N_rhs] = mp_sp_weak_drchlt_bc  (space, msh, gnum, ornt, boundaries, refs, bnd_func, coeff, Cpen)
+%   [N_mat, N_rhs] = mp_sp_weak_drchlt_bc  (space, msh, boundaries, refs, bnd_func, coeff, Cpen)
 %
 % INPUTS:
 %
-%  space:      space object (see sp_vector_div_transform)
-%  msh:        mesh object (see msh_cartesian)
-%  gnum:       global numbering of the degrees of freedom (see mp_interface_hdiv)
-%  ornt:       global orientation of the degrees of freedom (see mp_interface_hdiv)
+%  space_v:    multipatch space, formed by several tensor product spaces plus the connectivity (see sp_multipatch). 
+%  msh:        multipatch mesh, consisting of several Cartesian meshes (see msh_multipatch)
 %  boundaries: array of structures containing the information for the boundaries (see mp_geo_load)
 %  refs:       boundary sides on which the Dirichlet condition is imposed
 %  bnd_func:   the condition to be imposed (g in the equations)

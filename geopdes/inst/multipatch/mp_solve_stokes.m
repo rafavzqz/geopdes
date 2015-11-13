@@ -94,6 +94,7 @@ end
 msh = msh_multipatch (msh, boundaries);
 space_v = sp_multipatch (spv, msh, interfaces, boundary_interfaces);
 space_p = sp_multipatch (spp, msh, interfaces, boundary_interfaces);
+clear spv spp
 
 % Compute and assemble the matrices
 if (msh.rdim == 2)

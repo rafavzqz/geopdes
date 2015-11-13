@@ -1,20 +1,18 @@
 % MP_DG_PENALTY: apply the interior penalty method between patches. To be
-%  used in multipatch geometries with RT and NDL spaces.
+%  used in multipatch geometries with RT and NDL spaces (div-preserving).
 %
 % USAGE:
 %
-%  A = mp_dg_penalty (space_v, msh, gnum, ornt, interfaces, visc, Cpen)
+%  A = mp_dg_penalty (space_v, msh, interfaces, visc, Cpen)
 %
 % INPUT:
 %
-%    space_v:     cell-array with space objects for the velocity (see sp_vector_div_transform)
-%    msh:         cell-array with mesh object (see msh_cartesian)
-%    gnum:        numbering of the degrees of freedom for each patch (see mp_interface_hdiv)
-%    ornt:        orientation of the degrees of freedom (see mp_interface_hdiv)
-%    interfaces:  interface information (see mp_geo_load)
-%    visc:        function handle to compute the viscosity. For now it is
+%    space_v:    multipatch space, formed by several tensor product spaces plus the connectivity (see sp_multipatch). 
+%    msh:        multipatch mesh, consisting of several Cartesian meshes (see msh_multipatch)
+%    interfaces: interface information (see mp_geo_load)
+%    visc:       function handle to compute the viscosity. For now it is
 %                     assumed to be the same for all patches
-%    Cpen:        penalization constant
+%    Cpen:       penalization constant
 %
 % OUTPUT:
 %

@@ -94,6 +94,7 @@ end
 
 msh = msh_multipatch (msh, boundaries);
 space = sp_multipatch (sp, msh, interfaces, boundary_interfaces);
+clear sp
 
 % Assemble the matrices setting the orientation
 if (msh.rdim == 2)

@@ -1,17 +1,15 @@
-% MP_SP_DRCHLT_L2_PROJ_UDOTN: assign the normal degrees of freedom trough an L2 projection for a multipatch geometry. 
-%  To be used with the 'RT' and 'NDL' spaces. The imposed condition reads   u \cdot n = h \cdot n
+% MP_SP_DRCHLT_L2_PROJ_UDOTN: assign the normal degrees of freedom through an L2 projection for a multipatch geometry. 
+%  To be used with the 'RT' and 'NDL' spaces (div-preserving). The imposed condition reads   u \cdot n = h \cdot n
 %
-%   [vel, normal_dofs] = mp_sp_drchlt_l2_proj_udotn (space, msh, gnum, ornt, bnd_sides, bnd_func)
+%   [vel, normal_dofs] = mp_sp_drchlt_l2_proj_udotn (space, msh, bnd_sides, bnd_func)
 %
 % INPUTS:
 %     
-%    space:     space object (see sp_vector_div_transform)
-%    msh:       mesh object (see msh_cartesian)
-%    gnum:      global numbering of the degrees of freedom (see mp_interface_hdiv)
-%    ornt:      global orientation of the degrees of freedom (see mp_interface_hdiv)
-%  boundaries: array of structures containing the information for the boundaries (see mp_geo_load)
-%    bnd_sides: boundary sides on which the Dirichlet condition is imposed
-%    bnd_func:  the condition to be imposed (h in the equation)
+%    space_v:    multipatch space, formed by several tensor product spaces plus the connectivity (see sp_multipatch). 
+%    msh:        multipatch mesh, consisting of several Cartesian meshes (see msh_multipatch)
+%    boundaries: array of structures containing the information for the boundaries (see mp_geo_load)
+%    bnd_sides:  boundary sides on which the Dirichlet condition is imposed
+%    bnd_func:   the condition to be imposed (h in the equation)
 %   
 % OUTPUT:
 %
