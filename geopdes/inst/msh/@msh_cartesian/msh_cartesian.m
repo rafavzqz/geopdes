@@ -128,7 +128,6 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
 
   msh.nel_dir = cellfun (@numel, msh.breaks) - 1;
   msh.nel = prod (msh.nel_dir);
-  msh.nelcol = msh.nel / msh.nel_dir(1);
   
   msh.nqn_dir = cellfun (@(x) size(x,1), qn);
   msh.nqn  = prod (msh.nqn_dir);

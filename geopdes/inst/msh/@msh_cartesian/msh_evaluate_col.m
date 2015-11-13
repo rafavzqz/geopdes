@@ -71,7 +71,8 @@ function msh_col = msh_evaluate_col (msh, colnum, varargin)
 
   msh_col.nel_dir = msh.nel_dir;
   msh_col.nel_dir(1) = 1;
-  msh_col.nel  = msh.nelcol;
+  msh_col.nel = msh.nel / msh.nel_dir(1);
+%   msh_col.nel  = msh.nelcol;
 
   msh_col.nqn_dir = msh.nqn_dir;
   msh_col.nqn  = msh.nqn;
