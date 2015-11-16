@@ -6,7 +6,7 @@
 % INPUT:
 %     
 %     u:           vector of dof weights
-%     space:       object representing the space of discrete functions (see sp_bspline)
+%     space:       object representing the space of discrete functions (see sp_scalar)
 %     geometry:    geometry structure (see geo_load)
 %     npts:        number of points along each parametric direction where to evaluate
 %     pts:         cell array with the coordinates along each parametric direction of the points where to evaluate

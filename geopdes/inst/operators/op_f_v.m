@@ -4,7 +4,7 @@
 %
 % INPUT:
 %
-%   spv:   structure representing the function space (see sp_bspline/sp_evaluate_col)
+%   spv:   structure representing the function space (see sp_scalar/sp_evaluate_col)
 %   msh:   structure containing the domain partition and the quadrature rule (see msh_cartesian/msh_evaluate_col)
 %   coeff: source function evaluated at the quadrature points
 %

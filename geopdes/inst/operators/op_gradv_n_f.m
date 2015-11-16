@@ -4,7 +4,7 @@
 %
 % INPUT:
 %
-%   spv:   structure representing the space of test functions (see sp_bspline/sp_evaluate_col)
+%   spv:   structure representing the space of test functions (see sp_scalar/sp_evaluate_col)
 %   msh:   structure containing the domain partition and the quadrature rule for the boundary, 
 %           since it must contain the normal vector (see msh_cartesian/msh_eval_boundary_side)
 %   coeff: vector-valued function f, evaluated at the quadrature points

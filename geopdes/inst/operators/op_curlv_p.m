@@ -5,8 +5,8 @@
 %
 % INPUT:
 %   
-%  spv:   structure representing the space of vectorial trial functions (see sp_vector_curl_transform/sp_evaluate_col)
-%  spp:   structure representing the space of scalar test functions  (see sp_bspline_nforms/sp_evaluate_col)
+%  spv:   structure representing the space of vectorial trial functions (see sp_vector/sp_evaluate_col)
+%  spp:   structure representing the space of scalar test functions  (see sp_scalar/sp_evaluate_col)
 %  msh:   structure containing the domain partition and the quadrature rule (see msh_cartesian/msh_evaluate_col)
 %  coeff: physical parameter
 %

@@ -3,7 +3,7 @@
 % neighbors_indices = sp_get_neighbors (space, msh, indices)
 %
 % INPUT:
-%    space:   object defining the space of discrete functions (see sp_bspline)
+%    space:   object defining the space of discrete functions (see sp_scalar)
 %    msh:     object defining the domain partition and the quadrature rule (see msh_cartesian)
 %    indices: indices of the functions.
 %

@@ -24,9 +24,9 @@ DEFUN_DLD(op_div_v_q, args, nargout,"OP_DIV_V_Q: assemble the matrix B = [b(i,j)
  \n\
  INPUT:  \n\
  \n\
-   spv:     structure representing the space of trial functions for the velocity (see sp_bspline_2d_phys)  \n\
-   spq:     structure representing the space of test functions for the pressure (see sp_bspline_2d_phys)  \n\
-   msh:     structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)  \n\
+   spv:     structure representing the space of trial functions for the velocity (see sp_vector/sp_evaluate_col)  \n\
+   spq:     structure representing the space of test functions for the pressure (see sp_scalar/sp_evaluate_col)  \n\
+   msh:     structure containing the domain partition and the quadrature rule (see msh_cartesian/msh_evaluate_col)  \n\
   \n\
  OUTPUT:  \n\
  \n\

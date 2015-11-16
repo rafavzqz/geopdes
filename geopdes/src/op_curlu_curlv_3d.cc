@@ -25,9 +25,9 @@ OP_CURLU_CURLV_3D: assemble the matrix A = [a(i,j)], a(i,j) = (coeff curl u_j, c
 \n\
 INPUT: \n\
 \n\
-  spu:   structure representing the space of trial functions (see sp_bsp_hcurl_3d_phys) \n\
-  spv:   structure representing the space of test functions  (see sp_bsp_hcurl_3d_phys) \n\
-  msh:   structure containing the domain partition and the quadrature rule (see msh_push_forward_3d) \n\
+  spu:   structure representing the space of trial functions (see sp_vector/sp_evaluate_col) \n\
+  spv:   structure representing the space of test functions  (see sp_vector/sp_evaluate_col) \n\
+  msh:   structure containing the domain partition and the quadrature rule (see msh_cartesian/msh_evaluate_col) \n\
   coeff: physical parameter \n\
 \n\
 OUTPUT: \n\

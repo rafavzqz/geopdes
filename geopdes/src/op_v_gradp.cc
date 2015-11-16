@@ -25,9 +25,9 @@ OP_V_GRADP: assemble the matrix B = [b(i,j)], b(i,j) = (epsilon grad p_i, v_j). 
 \n\
  INPUT:\n\
 \n\
-   spv:     structure representing the space of vectorial trial functions  (see sp_bsp_hcurl_2d_phys). \n\
-   spp:     structure representing the space of scalar test functions (see sp_bspline_2d_phys). \n\
-   msh:     structure containing the domain partition and the quadrature rule (see msh_push_forward_2d). \n\
+   spv:     structure representing the space of vectorial trial functions  (see sp_vector/sp_evaluate_col). \n\
+   spp:     structure representing the space of scalar test functions (see sp_scalar/sp_evaluate_col). \n\
+   msh:     structure containing the domain partition and the quadrature rule (see msh_cartesian/msh_evaluate_col). \n\
    epsilon: physical parameter. \n\
 \n\
  OUTPUT: \n\

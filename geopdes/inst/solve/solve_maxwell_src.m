@@ -33,7 +33,7 @@
 %
 %  geometry: geometry structure (see geo_load)
 %  msh:      mesh object that defines the quadrature rule (see msh_cartesian)
-%  space:    space object that defines the discrete functions (see sp_vector_curl_transform)
+%  space:    space object that defines the discrete functions (see sp_vector)
 %  u:        the computed degrees of freedom
 %
 % See also EX_MAXWELL_SRC_LSHAPED for an example.

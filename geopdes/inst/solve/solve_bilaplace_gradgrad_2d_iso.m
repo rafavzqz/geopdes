@@ -36,7 +36,7 @@
 %
 %  geometry: geometry structure (see geo_load)
 %  msh:      mesh object that defines the quadrature rule (see msh_cartesian)
-%  space:    space object that defines the discrete space (see sp_nurbs)
+%  space:    space object that defines the discrete space (see sp_scalar)
 %  u:        the computed degrees of freedom
 %
 % See also EX_KIRCHHOFF_RECTANGULAR_PLATE, EX_KIRCHHOFF_RECTANGULAR_PLATE_CLAMPED 

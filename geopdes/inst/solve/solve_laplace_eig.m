@@ -30,7 +30,7 @@
 %
 %  geometry: geometry structure (see geo_load)
 %  msh:      mesh object that defines the quadrature rule (see msh_cartesian)
-%  space:    space object that defines the discrete space (see sp_bspline)
+%  space:    space object that defines the discrete space (see sp_scalar)
 %  lambda:   the computed eigenvalues
 %  u:        degrees of freedom of the computed eigenvectors
 %

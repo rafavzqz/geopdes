@@ -35,7 +35,7 @@
 %
 %  geometry: geometry structure (see geo_load)
 %  msh:      mesh object that defines the quadrature rule (see msh_cartesian)
-%  space:    space object that defines the discrete space (see sp_bspline)
+%  space:    space object that defines the discrete space (see sp_scalar)
 %  u:        the computed degrees of freedom
 %
 % See also EX_ADVECTION_DIFFUSION_SQUARE for an example.

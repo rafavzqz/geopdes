@@ -26,9 +26,9 @@ OP_U_V: assemble the mass matrix M = [m(i,j)], m(i,j) = (mu u_j, v_i).\n\
 \n\
 INPUT: \n\
 \n\
-  spu:   structure representing the space of trial functions (see sp_bspline_2d_phys) \n\
-  spv:   structure representing the space of test functions  (see sp_bspline_2d_phys) \n\
-  msh:   structure containing the domain partition and the quadrature rule (see msh_push_forward_2d) \n\
+  spu:   structure representing the space of trial functions (see sp_scalar/sp_evaluate_col) \n\
+  spv:   structure representing the space of test functions  (see sp_scalar/sp_evaluate_col) \n\
+  msh:   structure containing the domain partition and the quadrature rule (see msh_cartesian/msh_evaluate_col) \n\
   coeff: reaction coefficient \n\
 \n\
 OUTPUT: \n\

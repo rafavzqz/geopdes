@@ -19,8 +19,8 @@
 %
 % OUTPUT:
 %
-%   spv: object representing the discrete velocity function space (see sp_vector, sp_vector_piola_transform)
-%   spp: object representing the discrete pressure function space (see sp_bspline, sp_bspline_nforms)
+%   spv: object representing the discrete velocity function space (see sp_vector)
+%   spp: object representing the discrete pressure function space (see sp_scalar)
 %
 %   For more details, see:
 %      A. Buffa, C. de Falco, G. Sangalli, 

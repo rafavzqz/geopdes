@@ -5,9 +5,9 @@
 %
 % INPUT: 
 %
-%   spv:     structure representing the space of trial functions for the velocity (see sp_vector, sp_vector_div_transform)
-%   spq:     structure representing the space of test functions for the pressure (see sp_vector) 
-%   msh:     structure containing the domain partition and the quadrature rule (see msh_cartesian)
+%   spv:     structure representing the space of trial functions for the velocity (see sp_vector/sp_evaluate_col)
+%   spq:     structure representing the space of test functions for the pressure (see sp_scalar/sp_evaluate_col) 
+%   msh:     structure containing the domain partition and the quadrature rule (see msh_cartesian/msh_evaluate_col)
 %
 % OUTPUT: 
 %

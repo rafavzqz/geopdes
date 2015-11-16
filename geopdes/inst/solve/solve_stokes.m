@@ -40,9 +40,9 @@
 %
 %  geometry: geometry structure (see geo_load)
 %  msh:      mesh object that defines the quadrature rule (see msh_cartesian)
-%  space_v:  space object for the velocity (see sp_vector, sp_vector_piola_transform)
+%  space_v:  space object for the velocity (see sp_vector)
 %  vel:      the computed degrees of freedom for the velocity
-%  space_p:  space object for the pressure (see sp_bspline, sp_bspline_nforms)
+%  space_p:  space object for the pressure (see sp_scalar)
 %  press:    the computed degrees of freedom for the pressure
 %
 % See also EX_STOKES_SQUARE_* EX_STOKES_ANNULUS_* for some examples.

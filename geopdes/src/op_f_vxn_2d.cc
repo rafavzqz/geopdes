@@ -26,8 +26,8 @@ OP_F_VXN_2D: assemble the vector r = [r(i)], with  r(i) = (f, v_i x n), with n t
 \n\
 INPUT:\n\
 \n\
-  spv:   structure representing the function space (see sp_bsp_hcurl_2d_phys)\n\
-  msh:   structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)\n\
+  spv:   structure representing the function space (see sp_vector/sp_eval_boundary_side)\n\
+  msh:   structure containing the domain partition and the quadrature rule (see msh_cartesian/msh_eval_boundary_side)\n\
   coeff: source function evaluated at the quadrature points\n\
 \n\
 OUTPUT:\n\

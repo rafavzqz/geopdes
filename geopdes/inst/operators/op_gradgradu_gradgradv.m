@@ -5,8 +5,8 @@
 %
 % INPUT:
 %
-%   spu:   structure representing the space of trial functions (see sp_bspline/sp_evaluate_col)
-%   spv:   structure representing the space of test functions (see sp_bspline/sp_evaluate_col)
+%   spu:   structure representing the space of trial functions (see sp_scalar/sp_evaluate_col)
+%   spv:   structure representing the space of test functions (see sp_scalar/sp_evaluate_col)
 %   msh:   structure containing the domain partition and the quadrature rule (see msh_cartesian/msh_evaluate_col)
 %   epsilon: diffusion coefficient
 %

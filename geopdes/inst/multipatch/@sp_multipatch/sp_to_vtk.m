@@ -5,7 +5,7 @@
 % INPUT:
 %     
 %     u:           vector of dof weights
-%     space:       object representing the space of discrete functions (see sp_bspline)
+%     space:       object representing the space of discrete functions (see sp_multipatch)
 %     geometry:    geometry structure (see geo_load)
 %     npts:        number of points along each parametric direction where to evaluate
 %     filename:    name of the output file. 

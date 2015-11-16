@@ -4,7 +4,7 @@
 %
 % INPUTS:
 %     
-%    space:     object defining the space of discrete functions (see sp_scalar)
+%    space:     object defining the space of discrete functions (see sp_multipatch)
 %    msh_elems: structure containing the information of quadrature or
 %               visualization points, for a given list of elements and patches
 %               (see msh_multipatch/msh_evaluate_element_list)
@@ -28,6 +28,9 @@
 %    ncomp           (scalar)                  number of components of the functions of the space
 %    ndof            (scalar)                  total number of degrees of freedom
 %    sp_patch        (1 x npatch cell-array)   the computed space structures for each patch
+%
+% The information for each patch is stored in a cell-array, to allow
+%  different degrees (or quadrature rules) in each direction
 %
 % Copyright (C) 2015 Rafael Vazquez
 %

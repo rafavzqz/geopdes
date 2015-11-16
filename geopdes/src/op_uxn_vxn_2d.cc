@@ -25,9 +25,9 @@ OP_UXN_VXN_2D: assemble the matrix M = [m(i,j)], m(i,j) = (mu u_j x n, v_i x n),
 \n\
 INPUT:\n\
 \n\
- spu:   structure representing the space of trial functions (see sp_bsp_hcurl_2d_phys)\n\
- spv:   structure representing the space of test functions  (see sp_bsp_hcurl_2d_phys)\n\
- msh:   structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)\n\
+ spu:   structure representing the space of trial functions (see sp_vector/sp_eval_boundary_side)\n\
+ spv:   structure representing the space of test functions  (see sp_vector/sp_eval_boundary_side)\n\
+ msh:   structure containing the domain partition and the quadrature rule (see msh_cartesian/msh_eval_boundary_side)\n\
  coeff: physical parameter\n\
 \n\
 OUTPUT:\n\
