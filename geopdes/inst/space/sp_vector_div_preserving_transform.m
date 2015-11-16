@@ -1,12 +1,12 @@
 % SP_VECTOR_DIV_PRESERVING_TRANSFORM: apply the div-preserving transform to the functions in the parametric domain
 %
-%     sp = sp_vector_grad_preserving_transform (space, msh, value, gradient, curl, divergence)
+%     sp = sp_vector_div_preserving_transform (space, msh, value, gradient, curl, divergence)
 %
 % INPUTS:
 %     
-%    space:   structure with the information in the parametric domain
+%    space:   structure with the information in the parametric domain (see sp_vector/sp_evaluate_col_param)
 %    msh:     msh structure containing the information of the parametrization
-%              in the points where basis functions have to be computed
+%              in the points where basis functions have to be computed (see msh_cartesian/msh_evaluate_col)
 %    value, gradient, curl, divergence: additional optional parameters, either true or false
 %            
 %              Name     |   Default value |  Meaning

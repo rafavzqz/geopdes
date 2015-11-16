@@ -19,7 +19,7 @@
 %
 % OUTPUT:
 %
-%    sp: structure representing the function space, see the manual
+%    sp: structure representing the function space, see the technical report
 %        for a detailed description
 %
 % 

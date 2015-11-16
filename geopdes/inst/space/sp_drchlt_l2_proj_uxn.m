@@ -5,8 +5,8 @@
 %
 % INPUT:
 %
-%  sp:    class defining the space of discrete functions (see sp_vector_curl_transform)
-%  msh:   class defining the domain partition and the quadrature rule (see msh_cartesian)
+%  sp:    object defining the space of discrete functions (see sp_vector)
+%  msh:   object defining the domain partition and the quadrature rule (see msh_cartesian)
 %  h:     function handle to compute the Dirichlet condition
 %  sides: boundary sides on which a Dirichlet condition is imposed
 %

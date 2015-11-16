@@ -1,6 +1,6 @@
 % SP_WEAK_DRCHLT_BC: compute the matrix and right hand-side to impose
 % the Dirichlet boundary conditions in weak form for the tangential
-% component. To be used with the 'RT' spaces.
+% component. To be used with the 'RT' spaces (div-preserving).
 %
 % The code computes the following terms in the left hand-side
 % 
@@ -18,7 +18,7 @@
 %
 % INPUTS:
 %     
-%    space:     space object (see sp_vector_div_transform)
+%    space:     space object (see sp_vector)
 %    msh:       mesh object (see msh_cartesian)
 %    bnd_sides: boundary sides on which the Dirichlet condition is imposed
 %    bnd_func:  the condition to be imposed (g in the equations)

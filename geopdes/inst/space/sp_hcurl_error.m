@@ -4,8 +4,8 @@
 %
 % INPUT:
 %
-%    space:   object defining the space of discrete functions (see sp_vector_curl_transform)
-%    msh:     object defining the domain partition and the quadrature rule (see msh_cartesian)
+%    space:   struct defining the space of discrete functions (see sp_vector/sp_evaluate_col)
+%    msh:     struct defining the domain partition and the quadrature rule (see msh_cartesian/msh_evaluate_col)
 %    u:       vector of dof weights
 %    uex:     function handle to evaluate the exact solution
 %    curluex: function handle to evaluate the curl of the exact solution

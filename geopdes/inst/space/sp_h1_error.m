@@ -4,8 +4,8 @@
 %
 % INPUT:
 %
-%     space:    structure representing the space of discrete functions (see sp_bspline_3d_phys)
-%     msh:      structure containing the domain partition and the quadrature rule (see msh_push_forward_2d)
+%     space:    structure representing the space of discrete functions (see sp_scalar/sp_evaluate_col)
+%     msh:      structure containing the domain partition and the quadrature rule (see msh_cartesian/msh_evaluate_col)
 %     u:        vector of dof weights
 %     uex:      function handle to evaluate the exact solution
 %     graduex:  function handle to evaluate the gradient of the exact solution

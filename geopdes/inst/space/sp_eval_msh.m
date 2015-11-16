@@ -5,8 +5,8 @@
 % INPUT:
 %     
 %     u:           vector of dof weights
-%     space:       object defining the discrete space (see sp_bspline)
-%     msh:         object defining the points where to evaluate (see msh_cartesian)
+%     space:       struct defining the discrete space (see for instance sp_scalar/sp_evaluate_col)
+%     msh:         struct defining the points where to evaluate (see msh_cartesian/msh_evaluate_col)
 %     options:     cell array with the fields to plot
 %                   accepted options are 'value' (default), 'gradient',
 %                   and for vectors also 'curl', 'divergence', 'stress'

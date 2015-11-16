@@ -5,7 +5,7 @@
 %
 % INPUTS:
 %     
-%    space:     space object (see sp_vector_div_transform)
+%    space:     space object (see sp_vector)
 %    msh:       mesh object (see msh_cartesian)
 %    bnd_sides: boundary sides on which the Dirichlet condition is imposed
 %    bnd_func:  the condition to be imposed (g in the equations)
