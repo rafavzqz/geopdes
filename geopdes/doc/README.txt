@@ -114,8 +114,7 @@ CONTENTS:
 
 3.1 CITING GeoPDEs
 
- * GeoPDEs has been developed as a part of our research, and is funded by 
-    our respective institutions. The best way to support us is by citing
+ * GeoPDEs has been developed as a part of our research. The best way to support the development of GeoPDEs is by citing
 
       C. de Falco, A. Reali, R. Vazquez. 
       GeoPDES: a research tool for Isogeometric Analysis of PDEs, 
@@ -162,6 +161,7 @@ Version geopdes_***-2.1.0 (never released officially)
 * convert_geo07_to_geo10: to convert from the old format to the new one.
 * geopdes_base: functions to evaluate msh and space in a given list of elements.
 * Better use of sp_eval, to allow computing several quantities at once.
+* New function mp_interface_hdiv
 
 Version geopdes_***-2.0.4
 * geopdes_base, added functions for the advection-diffusion problem with SUPG stabilization: op_mat_stab_SUPG, op_mat_stab_SUPG_tp, op_rhs_stab_SUPG, op_rhs_stab_SUPG_tp, solve_adv_diff_2d, ex_advection_diffusion_square.
