@@ -2,9 +2,9 @@
 %
 % Example to solve the problem
 %
-%    curl ( epsilon(x) curl (u)) + mu u = f    in Omega = F((0,1)^n)
-%              (epsilon(x) curl(u)) x n = g    on Gamma_N
-%                                 u x n = h    on Gamma_D
+%    curl ( epsilon(x) curl (u)) + mu u = f     in Omega = F((0,1)^n)
+%              (epsilon(x) curl(u)) x n = g     on Gamma_N
+%                                 u x n = h x n on Gamma_D
 %
 % USAGE:
 %

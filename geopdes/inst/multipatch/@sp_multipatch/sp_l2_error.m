@@ -36,7 +36,12 @@ function errl2 = sp_l2_error (space, msh, u, uex)
   end
 
   for iptc = 1:msh.npatch
-    error_l2(iptc) = sp_l2_error (space.sp_patch{iptc}, msh.msh_patch{iptc}, u(space.gnum{iptc}), uex);
+    if (isempty (space.dofs_ornt))
+      u_ptc = u(space.gnum{iptc});
+    else
+      u_ptc = u(space.gnum{iptc}) .* space.dofs_ornt{iptc}.';
+    end
+    error_l2(iptc) = sp_l2_error (space.sp_patch{iptc}, msh.msh_patch{iptc}, u_ptc, uex);
   end
   errl2 = sqrt (sum (error_l2 .* error_l2));
 

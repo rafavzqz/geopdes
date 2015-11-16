@@ -39,8 +39,13 @@ function [errhcurl, errl2, errcurl] = sp_hcurl_error (space, msh, u, uex, curlue
   end
 
   for iptc = 1:msh.npatch
+    if (isempty (space.dofs_ornt))
+      u_ptc = u(space.gnum{iptc});
+    else
+      u_ptc = u(space.gnum{iptc}) .* space.dofs_ornt{iptc}.';
+    end
     [error_hcurl(iptc), error_l2(iptc), error_curl(iptc)] = ...
-        sp_hcurl_error (space.sp_patch{iptc}, msh.msh_patch{iptc}, u(space.gnum{iptc}), uex, curluex);
+        sp_hcurl_error (space.sp_patch{iptc}, msh.msh_patch{iptc}, u_ptc, uex, curluex);
   end
   errl2 = sqrt (sum (error_l2 .* error_l2));
   errhcurl = sqrt (sum (error_hcurl .* error_hcurl));

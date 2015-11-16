@@ -39,8 +39,13 @@ function [errh1, errl2, errh1s] = sp_h1_error (space, msh, u, uex, graduex)
   end
 
   for iptc = 1:msh.npatch
+    if (isempty (space.dofs_ornt))
+      u_ptc = u(space.gnum{iptc});
+    else
+      u_ptc = u(space.gnum{iptc}) .* space.dofs_ornt{iptc}.';
+    end
     [error_h1(iptc), error_l2(iptc), error_h1s(iptc)] = ...
-        sp_h1_error (space.sp_patch{iptc}, msh.msh_patch{iptc}, u(space.gnum{iptc}), uex, graduex);
+        sp_h1_error (space.sp_patch{iptc}, msh.msh_patch{iptc}, u_ptc, uex, graduex);
   end
   errl2 = sqrt (sum (error_l2 .* error_l2));
   errh1 = sqrt (sum (error_h1 .* error_h1));
