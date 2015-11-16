@@ -105,6 +105,12 @@ CONTENTS:
     In the paper we give an explanation of the architecture, the design and
     the main features of the code. This paper can be seen as brief user's guide.
 
+ * All the functions in GeoPDEs contain a detailed description, that can be
+    accessed with "help <function_name>". You can see a list of all the 
+    functions in the package, typing in the Octave prompt:
+     pkg describe -verbose geopdes
+     help geopdes (Matlab users)
+
  * The format for the geometry files is explained in the files
 
      geopdes/doc/geo_specs_v21.txt      % Single patch geometry
