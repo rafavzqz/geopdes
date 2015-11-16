@@ -1,3 +1,21 @@
+% OP_U_OTIMES_N_V_OTIMES_N: assemble the matrix A = [A(i,j)], A(i,j) = (epsilon (u \otimes n)_j, (v \otimes n)_i ).
+%
+%   A = op_u_otimes_n_v_otimes_n (spu, spv, msh, coeff);
+%
+% INPUT:
+%
+%   spu:   structure representing the space of trial functions (see sp_vector/sp_eval_boundary_side)
+%   spv:   structure representing the space of test functions (see sp_vector/sp_eval_boundary_side)
+%   msh:   structure containing the domain partition and the quadrature rule for the boundary, 
+%           since it must contain the normal vector (see msh_cartesian/msh_eval_boundary_side)
+%   coeff: vector-valued function f, evaluated at the quadrature points
+%
+% OUTPUT:
+%
+%   A: assembled matrix
+% 
+% Copyright (C) 2015, Rafael Vazquez
+%
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
 %    the Free Software Foundation, either version 3 of the License, or
