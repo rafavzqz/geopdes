@@ -24,6 +24,8 @@
 %        dofs_ornt       (1 x npatch cell-array)       global orientation of the degrees for freedom, for curl-conforming and div-conforming spaces
 %        boundary        (1 x 1 object)                a (ndim-1) dimensional "sp_multipatch" object for the whole boundary 
 %        dofs            (1 x ndof vector)             only for boundary spaces, degrees of freedom that do not vanish on the boundary
+%        orientation     (1 x ndof vector)             only for boundary spaces with 'curl-preserving' transform, global orientation
+%                                                       of the boundary dofs with respect to the volumetric one.
 %        constructor     function handle               function handle to construct the same discrete space in a different msh
 %
 %       METHODS
@@ -126,18 +128,25 @@ function sp = sp_multipatch (spaces, msh, interfaces, boundary_interfaces)
     sp.boundary = sp_multipatch (sp_bnd, msh.boundary, boundary_interfaces);
     
     dofs = zeros (sp.boundary.ndof, 1);
+    boundary_orientation = []; %boundary_orient = zeros (sp.boundary.ndof, 1);
     for iptc = 1:msh.boundary.npatch
       patch_number = msh.boundary.patch_numbers(iptc);
       side_number  = msh.boundary.side_numbers(iptc);
       dofs(sp.boundary.gnum{iptc}) = sp.gnum{patch_number}(sp.sp_patch{patch_number}.boundary(side_number).dofs);
+      if (~isempty (sp.boundary.dofs_ornt))
+        boundary_orientation(sp.boundary.gnum{iptc}) = sp.boundary.dofs_ornt{iptc} .* ...
+          sp.dofs_ornt{patch_number}(sp.sp_patch{patch_number}.boundary(side_number).dofs);
+      end
     end
     sp.boundary.dofs = dofs;
+    sp.boundary.boundary_orientation = boundary_orientation;
     
   else
     sp.boundary = [];
   end
   
   sp.dofs = [];
+  sp.boundary_orientation = [];
   
   sp.constructor = @(MSH) sp_multipatch (patches_constructor(spaces, MSH), MSH, interfaces);
     function spaux = patches_constructor (spaces, MSH)

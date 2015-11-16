@@ -56,5 +56,9 @@ function [u, dofs] = mp_sp_drchlt_l2_proj (space, msh, h, boundaries, refs, dumm
   
   u = M(bnd_dofs,bnd_dofs) \ rhs(bnd_dofs);
   dofs = space.boundary.dofs(bnd_dofs);
+  
+  if (~isempty (space.boundary.boundary_orientation))
+    u = u(:) .* space.boundary.boundary_orientation(:);
+  end
 
 end
