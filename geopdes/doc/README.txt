@@ -18,69 +18,48 @@ CONTENTS:
 
   Download and uncompress the file GeoPDEs_full.tar.gz. This file contains 
    all that is necessary to install GeoPDEs:
-   - The NURBS toolbox: nurbs-1.3.9.tar.gz
-   - The GeoPDEs packages:
-      geopdes_base-2.0.4.tar.gz, geopdes_elasticity-2.0.4.tar.gz, 
-      geopdes_fluid-2.0.4.tar.gz, geopdes_maxwell-2.0.4.tar.gz, 
-      geopdes_multipatch-2.0.4.tar.gz, geopdes_tsplines-2.0.4.tar.gz
+   - The NURBS toolbox: nurbs-1.3.11.tar.gz
+   - The GeoPDEs package: geopdes-3.0.0.tar.gz
    - The technical report: GeoPDES_report.pdf
-   - A beamer presentation about the package: GeoPDEs_presentation.pdf
+   - An old beamer presentation about the package: GeoPDEs_presentation.pdf
    - This README file.
    - For Matlab users, the mex files of the NURBS toolbox: nurbs_mex_files.tar.gz
-   - For Matlab users, the file geopdes_setpath.m
-   
+
     
 1.1. OCTAVE
 
 1.1.1 - Install
  
- * Be sure to have installed Octave version 3.6.4 or higher. 
-    Source code is available from http://www.octave.org, 
-    binary packages for Mac OSX and Windows are available
-    from http://octave.sf.net, Linux binary packages are
-    included with all major binary distributions.
-
  * Install the "nurbs" package by typing at the octave prompt
     pkg install nurbs-<version>.tar.gz
-    pkg load nurbs
 
- * Install geopdes_base package by typing at the octave prompt
-    pkg install geopdes_base-<version>.tar.gz
-    pkg load geopdes_base
-
- * After installing the geopdes_base package, the other packages 
-    can be installed in an analogous way.
+ * Install and load GeoPDEs by typing at the octave prompt
+    pkg install geopdes-<version>.tar.gz
+    pkg load geopdes
 
 1.1.2 - Note for Windows users
 
    The mingw-based binary version of Octave distributed on
     http://octave.sf.net by default installs dynamically loaded binary
     functions in a different location as that of script functions. This
-    can create problems when installing geopdes_base. The procedure to 
-    install the package in Windows is as follows: 
+    can create problems when installing GeoPDEs. In this case, we
+    recommend you to use the non-compiled version of the package. 
 
- * Install octave and the nurbs package, like in
-    steps 1 to 2 of Section 1.1.1.
+ * Install the nurbs package, like in step 1 of Section 1.1.1.
 
- * Be sure to put the file geopdes_base-<version>.tar.gz to a folder 
-    without blanks in the name, for instance, c:\tmp
-
- * In Octave, change the package installation prefix and install geopdes_base:
-     cd c:\tmp
-     mkdir c:\octave-packages
-     pkg prefix c:\octave-packages c:\octave-packages
-     system ("tar xzf geopdes_base-<version>.tar.gz")
-     pkg install geopdes_base
-
-   If this procedure fails, you can run GeoPDEs using the M-files, instead 
-     of the compiled oct-files. Simply uncompress and untar the packages, 
-     and add them to your Octave path, including the subfolders (see the
-     Matlab install below).
+ * Uncompress and untar the GeoPDEs package, and add to the path the 
+    folder "geopdes", including its subfolders, typing at the octave prompt:
+    addpath (genpath ('geopdes'))
 
 1.2. MATLAB
 
- * Install the "nurbs" package available on http://octave.sf.net:
-   - uncompress and untar the file nurbs-<version>.tar.gz. 
+ * Uncompress and untar the NURBS and the GeoPDEs packages, in the files
+    nurbs-<version>.tar.gz, geopdes-<version>.tar.gz, respectively.
+
+ * Add the generated folders to the path, including their subfolders. 
+    You can do this by typing in in the command window:
+    addpath (genpath ('nurbs'))
+    addpath (genpath ('geopdes'))
 
  * Install the mex-files for the "nurbs" package (OPTIONAL):
    - uncompress and untar the file nurbs_mex_files.tar.gz in the folder 
@@ -88,38 +67,26 @@ CONTENTS:
    - in Matlab, go to the folder "nurbs/inst" and run the script file 'compile'.
       This will compile the files and save the nurbs package to your Matlab path
 
- * Install the geopdes_base package:
-   - uncompress and untar the file geopdes_base-<version>.tar.gz
-   - add the directory "geopdes_base/inst" and its subfolders to
-      Matlab's default path (see below)
-
- * The other packages are installed analogously, but the geopdes_base
-    package must be also installed in order to make them work.
-
- * For convenience, you can set the path using the script "geopdes_setpath.m".
-   - replace "my_path" by the path of the folder where you saved the packages
-   - run the script, typing "geopdes_setpath" in Matlab command window
-   
 2. GETTING STARTED
 
 2.1. EXAMPLES
- 
- * Each package contains a set of simple examples, that can be run with the 
-    command <geopdes_package>_examples. For instance, typing at the Octave prompt
 
+ * GeoPDEs contains a set of simple examples, that can be run with the commands:
     geopdes_base_examples
+    geopdes_elasticity_examples
+    geopdes_fluid_examples
+    geopdes_maxwell_examples
+ 
+    These will guide you through a set of menus to choose some examples for solving different problems. 
 
-    will guide you through a set of menus to choose some simple yet useful 
-    examples for solving the Poisson problem.
-
- * The source code and the data files for these examples can be found in the directory
-    <geopdes_package>/inst/examples
+ * The source code and the data files for these examples can be found in the directories:
+    geopdes/inst/examples
+    geopdes/inst/solve
 
  * A collection of simple geometries constructed with NURBS can be found 
-    in the following directories
+    in the following directory:
 
-     geopdes_base/inst/examples/geometry_files
-     geopdes_multipatch/inst/examples/geometry_files
+     geopdes/inst/examples/geometry_files
 
 2.2. HELP
 
@@ -140,13 +107,8 @@ CONTENTS:
 
  * The format for the geometry files is explained in the files
 
-     geopdes_base/doc/geo_specs_v07.txt
-     geopdes_multipatch/doc/geo_specs_mp_v07.txt
-
-   Notice that multipatch geometries will not run correctly outside the 
-    geopdes_multipatch package. At the time of this release, multipatch 
-    problems have been also implemented in geopdes_maxwell, geopdes_elasticity,
-    and geopdes_fluid for Taylor-Hood elements.
+     geopdes/doc/geo_specs_v21.txt      % Single patch geometry
+     geopdes/doc/geo_specs_mp_v21.txt   % Multiple patches geometry
 
 3. HOW TO CONTRIBUTE
 
@@ -178,7 +140,19 @@ CONTENTS:
 
 Below is a list of the main changes introduced with each new release
 
-Version geopdes_***-2.1.0
+Version geopdes-3.0.0
+ In this version we clearly separate functions that work on structures (as in version 1), and those that work on tensor-product classes (As in version 2). 
+* Added sp_scalar and sp_vector, with the transformation as an argument, to replace the old classes for spaces.
+* Added new classes msh_multipatch and sp_multipatch.
+* Moved sp_eval, sp_to_vtk into the space classes.
+* Moved sp_*_error into the classes, and maintain out of the class the same functions from version 1.
+* Added the functions sp_*_transform, that work on structures.
+* Moved the operators op_*_tp into the corresponding classes.
+* Generated the operators op_*_mp, for multipatch domains.
+* Added functions sp_get_(cells, neighbors, basis_functions).
+* Combine the five old packages into a single one.
+
+Version geopdes_***-2.1.0 (never released officially)
 * Functions modified to work on any dimension (3D surfaces and 1D problems).
 * Added msh_cartesian to replace the old msh_2d and msh_3d.
 * Added sp_bspline and sp_nurbs to replace the old classes for spaces.
@@ -187,6 +161,7 @@ Version geopdes_***-2.1.0
 * Changed the file format of the geometry, to allow for 3D surfaces.
 * convert_geo07_to_geo10: to convert from the old format to the new one.
 * geopdes_base: functions to evaluate msh and space in a given list of elements.
+* Better use of sp_eval, to allow computing several quantities at once.
 
 Version geopdes_***-2.0.4
 * geopdes_base, added functions for the advection-diffusion problem with SUPG stabilization: op_mat_stab_SUPG, op_mat_stab_SUPG_tp, op_rhs_stab_SUPG, op_rhs_stab_SUPG_tp, solve_adv_diff_2d, ex_advection_diffusion_square.
@@ -273,4 +248,4 @@ Version geopdes_base-1.0.1 (17/11/2010)
 
 * inst/space/bsp_2_nrb_1d__.m, inst/space/bsp_2_nrb_2d__.m,
   inst/space/bsp_2_nrb_3d__.m. Fixed a bug where the modified shape
-  functions where not returned in the output.
+  functions were not returned in the output.
