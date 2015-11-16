@@ -53,7 +53,7 @@
 %   sp_bspline_fluid
 %   sp_bspline_1d_param
 %   sp_grad_preserving_transform
-%   sp_integral_presering_transform
+%   sp_integral_preserving_transform
 %   sp_vector_grad_preserving_transform
 %   sp_vector_curl_preserving_transform
 %   sp_vector_div_preserving_transform 
