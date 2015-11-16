@@ -5,8 +5,8 @@
 
 % INPUT:
 %
-%   spv:     object that defines the space of trial functions (see sp_vector_curl_transform)
-%   spp:     object that defines the space of the multiplier (see sp_bspline_nforms)
+%   spv:     object that defines the vector-valued space of trial functions (see sp_vector)
+%   spp:     object that defines the scalar-valued space of the multiplier (see sp_scalar)
 %   msh:     object that defines the domain partition and the quadrature rule (see msh_cartesian)
 %   epsilon: function handle to compute some physical coefficient
 %

@@ -5,8 +5,8 @@
 %
 % INPUT:
 %
-%   spu:     class representing the space of trial functions (see sp_bspline)
-%   spv:     class representing the space of test functions (see sp_bspline)
+%   spu:     class representing the space of trial functions (see sp_scalar)
+%   spv:     class representing the space of test functions (see sp_scalar)
 %   msh:     class defining the domain partition and the quadrature rule (see msh_cartesian)
 %   epsilon: function handle to compute the diffusion coefficient
 %

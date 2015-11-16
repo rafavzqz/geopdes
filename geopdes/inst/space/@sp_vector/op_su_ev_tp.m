@@ -1,12 +1,12 @@
 % OP_SU_EV_TP: assemble the matrix A = [a(i,j)], a(i,j) = 1/2 (sigma (u_j), epsilon (v_i)), exploiting the tensor product structure.
 %
-%   mat = op_su_ev (spu, spv, msh, lambda, mu);
-%   [rows, cols, values] = op_su_ev (spu, spv, msh, lambda, mu);
+%   mat = op_su_ev_tp (spu, spv, msh, lambda, mu);
+%   [rows, cols, values] = op_su_ev_tp (spu, spv, msh, lambda, mu);
 %
 % INPUT:
 %    
-%   spu:     object representing the space of trial functions (see sp_bspline)
-%   spv:     object representing the space of test functions (see sp_bspline)
+%   spu:     object representing the space of trial functions (see sp_vector)
+%   spv:     object representing the space of test functions (see sp_vector)
 %   msh:     object that defines the domain partition and the quadrature rule (see msh_cartesian)
 %   lambda, mu: function handles to compute the Lame' coefficients
 %

@@ -83,6 +83,10 @@ value_param = value || grad_param;
 
 sp = sp_evaluate_element_list_param (space, msh, 'value', value_param, 'gradient', grad_param, 'curl', curl, 'divergence', divergence);
 
+if (isempty (msh.elem_list))
+  return
+end
+
 switch (lower (space.transform))
   case {'grad-preserving'}
     sp = sp_vector_grad_preserving_transform (sp, msh, value, gradient, curl, divergence);

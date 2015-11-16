@@ -5,8 +5,8 @@
 %
 % INPUT:
 %
-%  spu:   object representing the space of trial functions (see sp_bspline)
-%  spv:   object representing the space of test functions (see sp_bspline)
+%  spu:   object representing the space of trial functions (see sp_scalar)
+%  spv:   object representing the space of test functions (see sp_scalar)
 %  msh:   object defining the domain partition and the quadrature rule (see msh_cartesian)
 %  coeff: function handle to compute the reaction coefficient
 %

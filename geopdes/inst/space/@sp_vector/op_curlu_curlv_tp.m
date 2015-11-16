@@ -7,8 +7,8 @@
 %
 % INPUT:
 %
-%   spu:     object that defines the space of trial functions (see sp_vector_curl_transform)
-%   spv:     object that defines the space of test functions (see sp_vector_curl_transform)
+%   spu:     object that defines the space of trial functions (see sp_vector)
+%   spv:     object that defines the space of test functions (see sp_vector)
 %   msh:     object that defines the domain partition and the quadrature rule (see msh_cartesian)
 %   epsilon: function handle to compute some physical coefficient
 %

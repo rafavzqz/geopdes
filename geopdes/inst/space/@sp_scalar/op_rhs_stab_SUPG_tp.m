@@ -5,8 +5,8 @@
 %
 % INPUT:
 %
-%   spv:   class representing the function space (see sp_bspline)
-%   msh:   class defining the domain partition and the quadrature rule (see msh_cartesian)
+%   spv:   object representing the function space (see sp_scalar)
+%   msh:   object defining the domain partition and the quadrature rule (see msh_cartesian)
 %   mu:    function handle for the diffusion coefficient
 %   vel:   function handle for the advection coefficient( vectorial function )
 %   f:     function handle to compute the source function
