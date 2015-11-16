@@ -1,13 +1,13 @@
 % GeoPDEs: An Octave/Matlab research tool for IsoGeometric Analysis of PDEs
 %  Version 3.0.0  13-Nov-2015
 %
-%
-%
-% To run the first examples
+% To run the first examples, use the following scripts
 %   geopdes_base_examples
 %   geopdes_elasticity_examples
 %   geopdes_fluid_examples
 %   geopdes_maxwell_examples
+%
+% The package contains the following functions. A detailed help for each function is available typing "help <function_name>"
 %
 % Solve: solvers for some simple problems, that you can modify to solve your own problem
 %   solve_laplace
@@ -48,11 +48,8 @@
 %   sp_l2_error
 %   sp_hcurl_error
 %   sp_eval_msh
-%   sp_to_vtk
 %   sp_to_vtk_b64
 %   sp_to_vtk_raw
-%   sp_weak_drchlt_bc
-%   sp_drchlt_l2_proj
 %   sp_bspline_fluid
 %   sp_bspline_1d_param
 %   sp_grad_preserving_transform
@@ -72,6 +69,7 @@
 %   @sp_scalar/sp_precompute_param
 %   @sp_scalar/sp_eval
 %   @sp_scalar/sp_to_vtk
+%   @sp_scalar/sp_drchlt_l2_proj
 %   @sp_scalar/sp_get_basis_functions
 %   @sp_scalar/sp_get_cells
 %   @sp_scalar/sp_get_neighbors
@@ -88,6 +86,8 @@
 %   @sp_vector/sp_precompute
 %   @sp_vector/sp_precompute_param
 %   @sp_vector/sp_to_vtk
+%   @sp_vector/sp_drchlt_l2_proj
+%   @sp_vector/sp_weak_drchlt_bc
 %   @sp_vector/sp_get_basis_functions
 %   @sp_vector/sp_get_cells
 %   @sp_vector/sp_get_neighbors
@@ -147,6 +147,4 @@
 % Utilities: other functions in the package
 %   knt_derham
 %   msh_to_vtk
-%
-% A detailed help for each function is available, using "help <function_name>"
 %
