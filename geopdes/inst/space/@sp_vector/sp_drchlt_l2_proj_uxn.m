@@ -33,7 +33,7 @@
 
 function [u, dofs] = sp_drchlt_l2_proj_uxn (sp, msh, h, sides)
 
-  if (~strcmpi (space.transform, 'curl-preserving'))
+  if (~strcmpi (sp.transform, 'curl-preserving'))
     warning ('SP_DRCHLT_L2_PROJ_UXN is deprecated. Consider using SP_DRCHLT_L2_PROJ, instead')
   end
 

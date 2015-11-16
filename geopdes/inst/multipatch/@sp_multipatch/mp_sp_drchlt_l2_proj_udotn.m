@@ -31,7 +31,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [u, normal_dofs] = mp_sp_drchlt_l2_proj_udotn (space, msh, boundaries, refs, bnd_func)
+function [u, normal_dofs] = mp_sp_drchlt_l2_proj_udotn (space, msh, boundaries, refs, bnd_func, varargin)
 
   if (nargin ~= 5)
     error ('The function MP_SP_DRCHLT_L2_PROJ_UDOTN has changed in version 3, to work with multipatch classes.')
