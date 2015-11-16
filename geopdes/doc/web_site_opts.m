@@ -8,7 +8,7 @@
 
 ws_version = "forge";
 site_root  = "http://geopdes.sf.net";
-pkg_name   = "geopdes_base"
+pkg_name   = "geopdes"
 
 if strcmpi (ws_version, "docbrowser")
 

@@ -133,9 +133,6 @@
 %   mp_solve_maxwell_eig_mixed1
 %   mp_solve_stokes
 %   mp_solve_stokes_div_conforming
-%   mp_sp_drchlt_l2_proj
-%   mp_sp_drchlt_l2_proj_udotn
-%   mp_sp_weak_drchlt_bc
 %   msh_multipatch
 %   @msh_multipatch/msh_evaluate_element_list
 %   sp_multipatch
@@ -147,6 +144,9 @@
 %   @sp_multipatch/sp_get_cells
 %   @sp_multipatch/sp_get_basis_functions
 %   @sp_multipatch/sp_get_neighbors
+%   @sp_multipatch/mp_sp_drchlt_l2_proj
+%   @sp_multipatch/mp_sp_drchlt_l2_proj_udotn
+%   @sp_multipatch/mp_sp_weak_drchlt_bc
 %
 % Utilities: other functions in the package
 %   knt_derham
