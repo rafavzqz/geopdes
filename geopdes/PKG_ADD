@@ -10,14 +10,14 @@ dir = fileparts (mfilename ("fullpath"));
 if (! exist (fullfile (dir, "inst"), "dir"))
   ## Run this if the package is installed
   putenv  ("GEOPDES_INCLUDE_DIR", [ "-I" canonicalize_file_name([dir filesep() ".."]) filesep() "include"])
-  for ii=1:length(dirlist)
-    addpath ( [ canonicalize_file_name([dir "/.."]) "/" dirlist{ii}], "-end")
+  for my_ppp=1:length(dirlist)
+    addpath ( [ canonicalize_file_name([dir "/.."]) "/" dirlist{my_ppp}], "-end")
   endfor
 else
   ## Run this if we are testing the package without installation        
   putenv  ("GEOPDES_INCLUDE_DIR", [ "-I" canonicalize_file_name(dir) "/inst/include"])
-  for ii=1:length(dirlist)
-    addpath ([ canonicalize_file_name(dir) "/inst/" dirlist{ii}])
+  for my_ppp=1:length(dirlist)
+    addpath ([ canonicalize_file_name(dir) "/inst/" dirlist{my_ppp}])
     addpath ([ canonicalize_file_name(dir) "/src/"])
   endfor
   ## if the package is not installed, dependencies are not
@@ -27,4 +27,4 @@ endif
 
 warning ("off", "Octave:fopen-file-in-path");
 warning ("off", "Octave:load-file-in-path");
-clear dirlist dir
+clear dirlist dir my_ppp

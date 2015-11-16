@@ -7,15 +7,15 @@ dirlist        = {"examples", "examples/geometry_files", "examples/geometry_file
 
 [basename,dir] = fileparts(fileparts (mfilename ("fullpath")));
 
-for ii=1:length(dirlist)
+for my_ppp=1:length(dirlist)
   if (! exist (fullfile (basename, "inst"), "dir"))
     ## Run this if the package is installed
-    rmpath ( [ basename "/" dirlist{ii}])
+    rmpath ( [ basename "/" dirlist{my_ppp}])
   else
     ## Run this if we are testing the package without installation
-    rmpath ([ fileparts(canonicalize_file_name (mfilename ("fullpath"))) "/inst/" dirlist{ii}])
+    rmpath ([ fileparts(canonicalize_file_name (mfilename ("fullpath"))) "/inst/" dirlist{my_ppp}])
     rmpath ([ fileparts(canonicalize_file_name (mfilename ("fullpath"))) "/src/"])
   end
 end
 
-clear dirlist basename dir
+clear dirlist basename dir my_ppp
