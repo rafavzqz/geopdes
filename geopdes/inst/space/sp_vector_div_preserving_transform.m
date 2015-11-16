@@ -109,9 +109,6 @@ function sp = sp_vector_div_preserving_transform (sp, msh, value, gradient, curl
 
 % The transformation is applied to the value only at the end, to avoid
 %  conflicts with the computation of the gradient
-
-% This is still not working fine. One is forced to compute the boundary with
-% msh_eval_boundary_side, instead of using the _tp operators.
   if (value)
     sp.shape_functions = geopdes_prod__ (msh.geo_map_jac, sp.shape_functions);
     jacdet = reshape (jacdet, 1, msh.nqn, 1, msh.nel);
@@ -137,7 +134,7 @@ function shape_fun_grads = piola_transform_grad__ (sp, msh, shp, shg)
 %
 % INPUT:
 %     
-%    space: structure representing the discrete function space (see sp_vector_div_transform/sp_evaluate_col).
+%    space: structure representing the discrete function space (see sp_vector/sp_evaluate_col).
 %    msh: structure containing the quadrature information (see msh_cartesian/msh_evaluate_col)
 %    shp: basis functions evaluated in the parametric domain
 %    shg: gradient of the basis functions, in the parametric domain

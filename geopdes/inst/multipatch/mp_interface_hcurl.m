@@ -5,7 +5,7 @@
 % INPUT:
 %
 %  interfaces: structure with the information of the interfaces between patches (see mp_geo_read_file)
-%  sp:         object representing the space of discrete functions (see sp_vector_curl_transform)
+%  sp:         object representing the space of discrete functions, with the curl-preserving transform (see sp_vector)
 %
 % OUTPUT:
 %
