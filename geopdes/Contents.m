@@ -139,6 +139,10 @@
 %   msh_multipatch
 %   @msh_multipatch/msh_evaluate_element_list
 %   sp_multipatch
+%   @sp_multipatch/sp_l2_error
+%   @sp_multipatch/sp_h1_error
+%   @sp_multipatch/sp_hcurl_error
+%   @sp_multipatch/sp_to_vtk
 %   @sp_multipatch/sp_evaluate_element_list
 %   @sp_multipatch/sp_get_cells
 %   @sp_multipatch/sp_get_basis_functions
