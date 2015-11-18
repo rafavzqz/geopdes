@@ -120,7 +120,7 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options)
   
   F = reshape (F, [msh.rdim, npts]);
   for iopt = 1:nopts
-    eu{iopt} = reshape (eu{iopt}, eusize{iopt});
+    eu{iopt} = reshape (eu{iopt}, [eusize{iopt}, 1]); % The extra 1 makes things work also in 1D
   end
 
   if (nopts == 1)
