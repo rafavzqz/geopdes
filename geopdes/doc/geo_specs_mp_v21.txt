@@ -22,9 +22,9 @@
 #
 #  ndim : dimension of the parametric domain
 #  rdim : dimension of the physical domain
-#  Np: number of patches to construct the geometry
-#  Ni: total number of interfaces, each one connecting two patches
-#  Ns: total number of subdomains, formed by the union of patches
+#  Np:    number of patches to construct the geometry
+#  Ni:    total number of interfaces, each one connecting two patches
+#  Ns:    total number of subdomains, formed by the union of patches
 3 3 3 2 2
 #
 # Then follows the information for each patch. This consists of the following:
@@ -32,10 +32,10 @@
 # The name of the patch (string)
 PATCH 1
 #
-# p(i): the degree in each Cartesian direction (N integers)
+# p(i): the degree in each Cartesian direction (ndim integers)
 1 1 1
 #
-# ncp(i): the number of control points in each direction (N integers)
+# ncp(i): the number of control points in each direction (ndim integers)
 2 2 2
 #
 # knots{i}: knot sequence in the Cartesian direction (ncp(i)+p(i)+1 floats)
@@ -43,9 +43,10 @@ PATCH 1
 0.00000   0.00000   1.00000   1.00000
 0.00000   0.00000   1.00000   1.00000
 #
-# cp_x, cp_y, cp_z: coordinates of the weighted control points
-#   (see Section 4.2 of The NURBS Book, L. Piegl & W. Tiller)
-#   (N rows, each one with prod_{i=1}^{N} ncp(i) float values)
+# cp_x, cp_y, cp_z: coordinates of the control points in HOMOGENEOUS COORDINATES
+#                    sometimes also called weighted control points
+#                   (see Section 4.2 of The NURBS Book, L. Piegl & W. Tiller)
+#   (N rows, each one with prod_{i=1}^{rdim} ncp(i) float values)
 #
 # The control points are numbered in a reverse lexicographic order: starting
 #  from the origin, we first increase the parametric coordinate x_1 and then 
@@ -55,7 +56,7 @@ PATCH 1
 0.00000   0.00000   0.00000   0.00000   1.00000   1.00000   1.00000   1.00000
 #
 # weights: weight associated to each basis function (or control point)
-#          (prod(ncp ) float values)
+#          (prod_{i=1}^{ndim} ncp(i) float values)
 1.00000   1.00000   1.00000   1.00000   1.00000   1.00000   1.00000   1.00000
 #
 # An analogous description is given for the other patches
@@ -226,8 +227,9 @@ BOUNDARY 8
 #
 #  For 3D multipatch geometries
 #
-# flag:  a flag telling if the two parameters directions on side1 coincide 
-#         with the two parameter directions on side2.
+# flag:  a flag telling if the two parameter coordinates on side1 coincide 
+#         with the two parameter coordinates on side2 (the first coordinate
+#         in one side is also the first in the other, and the same for the second)
 # ornt1: a flag telling if the first parameter direction on side1 matches the 
 #         corresponding parameter direction on side2.
 # ornt2: a flag telling if the second parameter direction on side1 matches the
