@@ -58,10 +58,9 @@ function sp = sp_evaluate_element_list (space, msh, varargin)
   for iptc = 1:space.npatch
     sp.sp_patch{iptc} = sp_evaluate_element_list (space.sp_patch{iptc}, msh.msh_patch{iptc}, varargin{:});
     
-    if (~isempty (dofs_ornt))
+    if (~isempty (space.dofs_ornt))
       error ('You have to multiply by the orientation')
     end
-    sp.sp_patch{iptc}.connectivity = space.gnum{iptc}(sp.sp_patch{iptc}.connectivity);
   end
 
 end
