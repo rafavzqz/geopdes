@@ -5,9 +5,8 @@
 %
 % INPUTS:
 %     
-%    space_v:    multipatch space, formed by several tensor product spaces plus the connectivity (see sp_multipatch). 
+%    space:      multipatch space, formed by several tensor product spaces plus the connectivity (see sp_multipatch). 
 %    msh:        multipatch mesh, consisting of several Cartesian meshes (see msh_multipatch)
-%    boundaries: array of structures containing the information for the boundaries (see mp_geo_load)
 %    bnd_sides:  boundary sides on which the Dirichlet condition is imposed
 %    bnd_func:   the condition to be imposed (h in the equation)
 %   
@@ -31,15 +30,16 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [u, normal_dofs] = mp_sp_drchlt_l2_proj_udotn (space, msh, boundaries, refs, bnd_func, varargin)
+function [u, normal_dofs] = mp_sp_drchlt_l2_proj_udotn (space, msh, refs, bnd_func, varargin)
 
-  if (nargin ~= 5)
+  if (nargin ~= 4)
     error ('The function MP_SP_DRCHLT_L2_PROJ_UDOTN has changed in version 3, to work with multipatch classes.')
   end
   
   M = spalloc (space.boundary.ndof, space.boundary.ndof, 3*space.boundary.ndof);
   rhs = zeros (space.boundary.ndof, 1);
   
+  boundaries = msh.boundaries;
   Nbnd = cumsum ([0, boundaries.nsides]);
   bnd_dofs = [];
   for iref = refs

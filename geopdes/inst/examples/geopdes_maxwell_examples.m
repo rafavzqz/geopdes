@@ -291,14 +291,12 @@ while (iopt > 0)
          case 7
           clc;
           fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_fichera_mp.m \n \n');
-          fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
           ex_maxwell_eig_fichera_mp;
           input ('Press <Enter> to continue: ');
 
          case 8
           clc;
           fprintf (1, 'You can have a look at the source file: ex_maxwell_eig_mixed1_fichera_mp.m \n \n');
-          fprintf (1, 'You may also modify the file to solve in the same geometry with rotated patches\n \n');
           ex_maxwell_eig_mixed1_fichera_mp;
           input ('Press <Enter> to continue: ');
         end %# switch

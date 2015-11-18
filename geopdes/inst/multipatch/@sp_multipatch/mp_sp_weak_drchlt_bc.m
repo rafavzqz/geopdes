@@ -14,13 +14,12 @@
 %  and g the boundary condition to be imposed.
 %
 %
-%   [N_mat, N_rhs] = mp_sp_weak_drchlt_bc  (space, msh, boundaries, refs, bnd_func, coeff, Cpen)
+%   [N_mat, N_rhs] = mp_sp_weak_drchlt_bc  (space, msh, refs, bnd_func, coeff, Cpen)
 %
 % INPUTS:
 %
 %  space_v:    multipatch space, formed by several tensor product spaces plus the connectivity (see sp_multipatch). 
 %  msh:        multipatch mesh, consisting of several Cartesian meshes (see msh_multipatch)
-%  boundaries: array of structures containing the information for the boundaries (see mp_geo_load)
 %  refs:       boundary sides on which the Dirichlet condition is imposed
 %  bnd_func:   the condition to be imposed (g in the equations)
 %  coeff:      function handle for the viscosity coefficient (mu in the equation)
@@ -47,16 +46,16 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [A, rhs] = mp_sp_weak_drchlt_bc (space, msh, boundaries, refs, bnd_func, coeff, Cpen)
+function [A, rhs] = mp_sp_weak_drchlt_bc (space, msh, refs, bnd_func, coeff, Cpen)
 
   A = spalloc (space.ndof, space.ndof, 3*space.ndof);
   rhs = zeros (space.ndof, 1);
 
 % Compute the matrices to impose the tangential boundary condition weakly
   for iref = refs
-    for bnd_side = 1:boundaries(iref).nsides
-      iptc = boundaries(iref).patches(bnd_side);
-      iside = boundaries(iref).faces(bnd_side);
+    for bnd_side = 1:msh.boundaries(iref).nsides
+      iptc = msh.boundaries(iref).patches(bnd_side);
+      iside = msh.boundaries(iref).faces(bnd_side);
 
       msh_side = msh_eval_boundary_side (msh.msh_patch{iptc}, iside);
       msh_side_from_interior = msh_boundary_side_from_interior (msh.msh_patch{iptc}, iside);

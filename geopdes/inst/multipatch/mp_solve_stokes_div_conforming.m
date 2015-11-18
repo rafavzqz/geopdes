@@ -80,6 +80,9 @@ end
 [geometry, boundaries, interfaces, ~, boundary_interfaces] = mp_geo_load (geo_name);
 npatch = numel (geometry);
 
+msh = cell (1, npatch);
+spv = cell (1, npatch);
+spp = cell (1, npatch);
 for iptc = 1:npatch
 % Construct msh structure using the finest mesh
   msh_breaks = msh_set_breaks (element_name, ...
@@ -117,8 +120,8 @@ press = zeros (space_p.ndof, 1);
 A = A + mp_dg_penalty (space_v, msh, interfaces, viscosity, Cpen);
 
 % Apply Dirichlet boundary conditions
-[N_mat, N_rhs] = mp_sp_weak_drchlt_bc (space_v, msh, boundaries, drchlt_sides, h, viscosity, Cpen);
-[vel_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj_udotn (space_v, msh, boundaries, drchlt_sides, h);
+[N_mat, N_rhs] = mp_sp_weak_drchlt_bc (space_v, msh, drchlt_sides, h, viscosity, Cpen);
+[vel_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj_udotn (space_v, msh, drchlt_sides, h);
 vel(drchlt_dofs) = vel_drchlt;
 
 int_dofs = setdiff (1:space_v.ndof, drchlt_dofs);

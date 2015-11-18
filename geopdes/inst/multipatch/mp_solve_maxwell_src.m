@@ -66,7 +66,7 @@ end
 [geometry, boundaries, interfaces, ~, boundary_interfaces] = mp_geo_load (geo_name);
 npatch = numel (geometry);
 
-msh = cell (1, npatch); 
+msh = cell (1, npatch);
 sp = cell (1, npatch);
 for iptc = 1:npatch
   [knots, zeta] = ...
@@ -106,7 +106,7 @@ end
 
 % Apply Dirichlet boundary conditions
 u = zeros (space.ndof, 1);
-[u_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj (space, msh, h, boundaries, drchlt_sides);
+[u_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj (space, msh, h, drchlt_sides);
 u(drchlt_dofs) = u_drchlt;
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
 

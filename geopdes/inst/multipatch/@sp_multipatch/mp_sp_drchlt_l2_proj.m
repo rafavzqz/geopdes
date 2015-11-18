@@ -1,13 +1,12 @@
 % MP_SP_DRCHLT_L2_PROJ: assign the degrees of freedom of Dirichlet boundaries through an L2 projection, in multipatch geometries.
 %
-%   [u, dofs] = mp_sp_drchlt_l2_proj (sp, msh, h, boundaries, refs)
+%   [u, dofs] = mp_sp_drchlt_l2_proj (sp, msh, h, refs)
 %
 % INPUT:
 %
 %  sp:         object representing the multipatch space of trial functions (see sp_multipatch)
 %  msh:        object containing the domain partition and the quadrature rule (see msh_multipatch)
 %  h:          function handle to compute the Dirichlet condition
-%  boundaries: array of structures containing the information for the boundaries (see mp_geo_load)
 %  refs:       boundary references on which a Dirichlet condition is imposed
 %
 % OUTPUT:
@@ -30,9 +29,9 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [u, dofs] = mp_sp_drchlt_l2_proj (space, msh, h, boundaries, refs, dummy)
+function [u, dofs] = mp_sp_drchlt_l2_proj (space, msh, h, refs, varargin)
 
-  if (nargin == 6)
+  if (nargin ~= 4)
     error (['The function MP_SP_DRCHLT_L2_PROJ has changed in version 3, to work with multipatch classes. ' ...
         'The old version can be called with MP_SP_DRCHLT_L2_PROJ_OLD'])
   end
@@ -40,6 +39,7 @@ function [u, dofs] = mp_sp_drchlt_l2_proj (space, msh, h, boundaries, refs, dumm
   M = spalloc (space.boundary.ndof, space.boundary.ndof, 3*space.boundary.ndof);
   rhs = zeros (space.boundary.ndof, 1);
   
+  boundaries = msh.boundaries;
   Nbnd = cumsum ([0, boundaries.nsides]);
   bnd_dofs = [];
   for iref = refs

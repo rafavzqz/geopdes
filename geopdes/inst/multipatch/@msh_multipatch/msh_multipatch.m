@@ -25,6 +25,7 @@
 %     boundary      (1 x 1 object)             it contains an (ndim-1)-dimensional 'msh_multipatch' object for the whole boundary
 %     patch_numbers (1 x npatch array)         only for boundary objects, the volumetric patch to which the boundary patch belongs
 %     side_numbers  (1 x npatch array)         only for boundary objects, the side number that the patch occupies in the volumetric patch
+%     boundaries    (struct array)             information (patch and side) for each group of boundary sides (see mp_geo_load)
 %
 %     METHOD NAME
 %     msh_evaluate_element_list: compute the parameterization (and its derivatives) at
@@ -57,20 +58,24 @@ function msh = msh_multipatch (meshes, boundaries)
   msh.nel_per_patch = [aux.nel];
   msh.msh_patch = meshes;
 
+  msh.boundaries = [];
   msh.patch_numbers = [];
   msh.side_numbers  = [];
+  msh.boundary = [];
   
-  if (nargin == 2 && ~isempty (meshes{1}.boundary))
-    patch_numbers = (vertcat (boundaries.patches)).';
-    side_numbers  = (vertcat (boundaries.faces)).';
-    for ind = 1:numel(patch_numbers)
-      msh_bnd{ind} = meshes{patch_numbers(ind)}.boundary(side_numbers(ind));
+  if (nargin == 2)
+    msh.boundaries = boundaries;
+    if (~isempty (meshes{1}.boundary))
+
+      patch_numbers = (vertcat (boundaries.patches)).';
+      side_numbers  = (vertcat (boundaries.faces)).';
+      for ind = 1:numel(patch_numbers)
+        msh_bnd{ind} = meshes{patch_numbers(ind)}.boundary(side_numbers(ind));
+      end
+      msh.boundary = msh_multipatch (msh_bnd);
+      msh.boundary.patch_numbers = patch_numbers;
+      msh.boundary.side_numbers  = side_numbers;
     end
-    msh.boundary = msh_multipatch (msh_bnd);
-    msh.boundary.patch_numbers = patch_numbers;
-    msh.boundary.side_numbers  = side_numbers;
-  else
-    msh.boundary = [];
   end
 
   msh = class (msh, 'msh_multipatch');
