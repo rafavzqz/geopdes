@@ -55,12 +55,67 @@ function sp = sp_evaluate_element_list (space, msh, varargin)
 
   if (isempty (msh.elem_list)), return, end
 
+  sp.nsh_max = [];
+  fields = {'nsh', 'connectivity', 'shape_functions', 'shape_function_gradients', 'shape_function_hessians', 'shape_function_laplacians'};
+  cat_position = [2, 2, 3, 4, 5, 3];
+  for ii = 1:numel(fields)
+    sp.(fields{ii}) = [];
+  end
+  
   for iptc = 1:space.npatch
-    sp.sp_patch{iptc} = sp_evaluate_element_list (space.sp_patch{iptc}, msh.msh_patch{iptc}, varargin{:});
-    
-    if (~isempty (space.dofs_ornt))
-      error ('You have to multiply by the orientation')
+%     msh_patch = msh_evaluate_element_list (msh.msh_patch{iptc}, msh.elem_list_of_patch{iptc}); % Not working anymore
+    msh_patch = msh_restrict_to_patch (msh, iptc);
+
+    sp_patch = sp_evaluate_element_list (space.sp_patch{iptc}, msh_patch, varargin{:});
+    sp_patch.connectivity = space.gnum{iptc}(sp_patch.connectivity);
+
+    for ii = 1:numel(fields)
+      if (isfield (sp_patch, fields{ii}))
+        sp.(fields{ii}) = cat (cat_position(ii), sp.(fields{ii}), sp_patch.(fields{ii}));
+      end
     end
   end
+  sp.nsh_max = max (sp.nsh);
 
+  for ii = 1:numel(fields)
+    if (isempty (sp.(fields{ii})))
+      sp = rmfield (sp, fields{ii});
+    end
+  end
+  
+  if (~isempty (space.dofs_ornt))
+    error ('You have to multiply by the orientation')
+  end
+  
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% MSH_RESTRICT_TO_PATCH: extracts the fields corresponding to the selected elements of a given patch, 
+%       from the ones of a mesh struct, computed with msh_multipatch/msh_evaluate_element_list.
+% The result is the same as calling msh_cartesian/msh_evaluate_element_list, but avoids recomputing.
+%
+function msh_ptc = msh_restrict_to_patch (msh, patch)
+
+  msh_ptc.ndim = msh.ndim;
+  msh_ptc.rdim = msh.rdim;
+  msh_ptc.elem_list = msh.elem_list_of_patch{patch}(:).';
+
+  msh_ptc.nel = msh.nel_per_patch(patch);
+  msh_ptc.nel_dir = msh.nel_dir_of_patch{patch};
+  msh_ptc.nqn = msh.nqn;
+  msh_ptc.nqn_dir = msh.nqn_dir;
+
+  if (isempty (msh_ptc.elem_list)), return, end
+  
+  Nelem = cumsum ([0, msh.nel_per_patch]);
+  
+  global_elem_list = Nelem(patch)+1:Nelem(patch+1);
+  msh_ptc.quad_weights = msh.quad_weights(:,global_elem_list);
+  msh_ptc.geo_map      = msh.geo_map(:,:,global_elem_list);
+  msh_ptc.geo_map_jac  = msh.geo_map_jac(:,:,:,global_elem_list);
+  msh_ptc.geo_map_der2 = msh.geo_map_der2(:,:,:,:,global_elem_list);
+  msh_ptc.jacdet       = msh.jacdet(:,global_elem_list);
+  msh_ptc.element_size = msh.element_size(:,global_elem_list);
+  
 end

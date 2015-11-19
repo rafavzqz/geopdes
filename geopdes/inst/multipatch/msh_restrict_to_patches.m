@@ -36,52 +36,44 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function msh_col = msh_evaluate_element_list (msh, elem_list, varargin)
-
-  elem_list = elem_list(:)';
+function msh_col = msh_restrict_to_patches (msh, patches)
 
   msh_col.npatch = msh.npatch;
   msh_col.ndim = msh.ndim;
   msh_col.rdim = msh.rdim;
 
-  msh_col.nel  = numel (elem_list);
-  msh_col.elem_list = elem_list;
-
-  if (isempty (elem_list)), return, end
+  msh_col.nel  = [];
   
-  fields = {'quad_weights', 'geo_map', 'geo_map_jac', 'geo_map_der2', 'jacdet', 'element_size'};
-  cat_position = [2 3 4 5 2 2];
-  for ii = 1:numel (fields)
-    msh_col.(fields{ii}) = [];
+  msh_col.nel_per_patch = zeros (1, msh.npatch);
+  msh_col.nel_dir_of_patch = cell (1, msh.npatch);
+  msh_col.nel_per_patch(patches) = msh.nel_per_patch(patches);
+  for iptc = patches
+    msh_col.nel_dir_of_patch{iptc} = msh.nel_dir_of_patch{iptc};
   end
+  msh_col.nel = sum (msh_col.nel_per_patch);
+
+  msh_col.elem_list = [];
+  
+  nonactive_patches = setdiff (1:msh.npatch, patches);
+  msh_col.elem_list_of_patch = msh.elem_list_of_patch;
+  for iptc = nonactive_patches
+    msh_col.elem_list_of_patch{iptc} = [];
+  end
+  msh_col.nqn = msh.nqn;
+  msh_col.nqn_dir = msh.nqn_dir;
   
   Nelem = cumsum ([0, msh.nel_per_patch]);
-  
-  indices = cell (1, msh.npatch);
-  for iptc = 1:msh.npatch
-    [~,indices{iptc},~] = intersect ((Nelem(iptc)+1):Nelem(iptc+1), elem_list);
+  global_elem_list = [];
+  for iptc = patches
+    global_elem_list = union (global_elem_list, Nelem(iptc)+1:Nelem(iptc+1));
   end
-  active_patches = find (~cellfun (@isempty, indices));
+  msh_col.elem_list = msh.elem_list(global_elem_list);
 
+  msh_col.quad_weights = msh.quad_weights(:,global_elem_list);
+  msh_col.geo_map      = msh.geo_map(:,:,global_elem_list);
+  msh_col.geo_map_jac  = msh.geo_map_jac(:,:,:,global_elem_list);
+  msh_col.geo_map_der2 = msh.geo_map_der2(:,:,:,:,global_elem_list);
+  msh_col.jacdet       = msh.jacdet(:,global_elem_list);
+  msh_col.element_size = msh.element_size(:,global_elem_list);
   
-  for iptc = active_patches
-    msh_patch = msh_evaluate_element_list (msh.msh_patch{iptc}, indices{iptc});
-    
-    if (msh_patch.nqn_dir ~= msh.msh_patch{active_patches(1)}.nqn_dir)
-      error ('msh_evaluate_element_list: for multipatch geometries, the number of quadrature points should be the same on each patch')
-    end
-
-    for ii = 1:numel (fields)
-      msh_col.(fields{ii}) = cat (cat_position(ii), msh_col.(fields{ii}), msh_patch.(fields{ii}));
-    end
-  end
-  
-  msh_col.nel_per_patch = cellfun (@numel, indices);
-  msh_col.elem_list_of_patch = indices;
-  for iptc = active_patches
-    msh_col.nel_dir_of_patch{iptc} = msh.msh_patch{iptc}.nel_dir;
-  end
-  msh_col.nqn = msh.msh_patch{active_patches(1)}.nqn;
-  msh_col.nqn_dir = msh.msh_patch{active_patches(1)}.nqn_dir;
-
 end
