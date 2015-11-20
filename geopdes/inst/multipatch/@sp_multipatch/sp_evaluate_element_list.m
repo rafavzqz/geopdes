@@ -27,10 +27,10 @@
 %    npatch          (scalar)                  number of patches
 %    ncomp           (scalar)                  number of components of the functions of the space
 %    ndof            (scalar)                  total number of degrees of freedom
-%    sp_patch        (1 x npatch cell-array)   the computed space structures for each patch
-%
-% The information for each patch is stored in a cell-array, to allow
-%  different degrees (or quadrature rules) in each direction
+%    nsh             (1 x nel)                 number of non-vanishing functions on each element
+%    nsh_max         (scalar)                  maximum number of nsh
+%    connectivity    (nsh_max x nel)           global numbering of the non-vanishing functions on each element
+%    shape_functions, shape_function_gradients... (see sp_evaluate_col for details)
 %
 % Copyright (C) 2015 Rafael Vazquez
 %

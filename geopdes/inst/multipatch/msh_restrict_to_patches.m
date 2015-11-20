@@ -1,26 +1,36 @@
-% MSH_EVALUATE_ELEMENT_LIST: evaluate the parameterization in a given list of elements.
+% MSH_RESTRICT_TO_PATCHES: restrict a struct, computed for a given list of
+%   elements, to the elements that only belong to a certain list of patches.
 %
-%     msh_elems = msh_evaluate_element_list (msh, elements)
+% This function is useful for the current version of hierarchical splines, 
+%  in particular for boundary conditions, since only some patches need to
+%  be computed.
+% The function allows to avoid recomputing the parametrization, which is
+%  the most expensive part in the current version of hierarchical splines.
+%
+%     msh_elems = msh_restrict_to_patches (msh, patch_list)
 %
 % INPUTS:
 %
-%    msh:          mesh object (see msh_cartesian)
-%    element_list: numbering of the elements where the evaluations are performed.
+%    msh:        mesh struct, computed with msh_multipatch/msh_evaluate_element_list
+%    patch_list: numbering of the elements where the evaluations are performed.
 %
 % OUTPUT:
 %
 %     msh_elems: structure containing the quadrature rule in the given elements of the physical domain, which contains the following fields
 %
-%     FIELD_NAME    (SIZE)                    DESCRIPTION
-%     npatch        (scalar)                  number of patches
-%     ndim          (scalar)                  dimension of the parametric space
-%     rdim          (scalar)                  dimension of the physical space
-%     nel           (scalar)                  number of elements in the list
-%     elem_list     (1 x nel)                 numbering of the elements in the list
-%     msh_patch     (1 x npatch cell-array)   evaluated elements on each patch
+%     FIELD_NAME         (SIZE)                  DESCRIPTION
+%     npatch             (scalar)                total number of patches
+%     ndim               (scalar)                dimension of the parametric space
+%     rdim               (scalar)                dimension of the physical space
+%     nel                (scalar)                number of elements in the list
+%     elem_list          (1 x nel)               numbering of the elements in the list
+%     nqn                (scalar)                number of quadrature points per element (must be the same for every patch)
+%     nqn_dir            (1 x ndim)              number of quadrature points in each direction (must be the same for every patch)
+%     nel_per_patch      (1 x npatch)            number of selected elements on each patch
+%     elem_list_of_patch (1 x npatch cell-array) selected elements on the patch, with local numbering
+%     nel_dir_of_patch   (1 x npatch cell-array) the total number of elements in each direction, for each patch
+%     quad_weights, geo_map, geo_map_jac, deo_map_der2, jacdet, element_size (see msh_evaluate_col for details)
 %
-%  For more details, see the documentation
-% 
 % Copyright (C) 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify

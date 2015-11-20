@@ -11,16 +11,21 @@
 %
 %     msh_elems: structure containing the quadrature rule in the given elements of the physical domain, which contains the following fields
 %
-%     FIELD_NAME    (SIZE)                    DESCRIPTION
-%     npatch        (scalar)                  number of patches
-%     ndim          (scalar)                  dimension of the parametric space
-%     rdim          (scalar)                  dimension of the physical space
-%     nel           (scalar)                  number of elements in the list
-%     elem_list     (1 x nel)                 numbering of the elements in the list
-%     msh_patch     (1 x npatch cell-array)   evaluated elements on each patch
+%     FIELD_NAME         (SIZE)                  DESCRIPTION
+%     npatch             (scalar)                number of patches
+%     ndim               (scalar)                dimension of the parametric space
+%     rdim               (scalar)                dimension of the physical space
+%     nel                (scalar)                number of elements in the list
+%     elem_list          (1 x nel)               numbering of the elements in the list
+%     nqn                (scalar)                number of quadrature points per element (must be the same for every patch)
+%     nqn_dir            (1 x ndim)              number of quadrature points in each direction (must be the same for every patch)
+%     nel_per_patch      (1 x npatch)            number of selected elements on each patch
+%     elem_list_of_patch (1 x npatch cell-array) selected elements on the patch, with local numbering
+%     nel_dir_of_patch   (1 x npatch cell-array) the total number of elements in each direction, for each patch
+%     quad_weights, geo_map, geo_map_jac, deo_map_der2, jacdet, element_size (see msh_evaluate_col for details)
 %
-%  For more details, see the documentation
-% 
+% The function only works if the number of quadrature points is the same for all the patches and all directions.
+%
 % Copyright (C) 2015 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
