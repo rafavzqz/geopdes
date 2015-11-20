@@ -28,14 +28,15 @@
 
 function [cell_indices, indices_per_function] = sp_get_cells (space, msh, fun_indices)
 
-fun_indices = transpose (fun_indices(:));
+fun_indices = fun_indices(:).';
 
 indices_per_function = cell (numel (fun_indices), 1);
 cell_indices = [];
 Nelem = cumsum ([0 msh.nel_per_patch]);
 for iptc = 1:space.npatch
   sp_patch = sp_precompute_param (space.sp_patch{iptc}, msh.msh_patch{iptc}, 'value', false);
-  sp_patch.connectivity = space.gnum{iptc}(sp_patch.connectivity);
+% The reshape avoid an error when there is only one element
+  sp_patch.connectivity = reshape (space.gnum{iptc}(sp_patch.connectivity), sp_patch.nsh_max, msh.msh_patch{iptc}.nel);
   
   conn_indices = arrayfun (@(x) find (sp_patch.connectivity == x), fun_indices, 'UniformOutput', false);
   [~, ind_per_fun] = cellfun (@(x) ind2sub ([sp_patch.nsh_max, msh.msh_patch{iptc}.nel], x), conn_indices, 'UniformOutput', false);
@@ -45,6 +46,7 @@ for iptc = 1:space.npatch
 
   if (nargout == 2)
     [~,local_funs,~] = intersect (fun_indices, space.gnum{iptc});
+    local_funs = local_funs(:).';
     for ifun = local_funs
       indices_per_function{ifun} = union (indices_per_function{ifun}, ind_per_fun{ifun});
     end
