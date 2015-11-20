@@ -5,7 +5,7 @@
 %
 % INPUTS:
 %     
-%     msh:  and object of the msh_multipatch class (see msh_multipatch)
+%     msh:  an object of the msh_multipatch class (see msh_multipatch)
 %     nsub: number of uniform subdivisions to apply on the elements, and for each direction
 %   
 % OUTPUT:

@@ -5,7 +5,7 @@
 %
 % INPUTS:
 %     
-%     msh:  and object of the msh_cartesian class (see msh_cartesian)
+%     msh:  an object of the msh_cartesian class (see msh_cartesian)
 %     nsub: number of uniform subdivisions to apply on the elements, and for each direction
 %   
 % OUTPUT:

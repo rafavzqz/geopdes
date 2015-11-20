@@ -1,6 +1,7 @@
 % SP_MULTIPATCH: Constructor of the class for multipatch spaces.
 %
 %     sp = sp_multipatch (spaces, msh, interfaces)
+%     sp = sp_multipatch (spaces, msh, interfaces, boundary_interfaces)
 %
 % INPUTS:
 %
@@ -117,6 +118,8 @@ function sp = sp_multipatch (spaces, msh, interfaces, boundary_interfaces)
     error ('sp_multipatch: Unknown space class')
   end
 
+  sp.interfaces = interfaces;
+  
 % Boundary construction
   if (nargin == 4 && ~isempty (msh.boundary) && ~isempty (spaces{1}.boundary))
     sp_bnd = cell (msh.boundary.npatch, 1);
