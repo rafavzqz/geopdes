@@ -80,6 +80,7 @@ function msh_col = msh_evaluate_element_list (msh, elem_list, varargin)
   
   msh_col.nel_per_patch = cellfun (@numel, indices);
   msh_col.elem_list_of_patch = indices;
+  msh_col.nel_dir_of_patch = cell (1, msh.npatch);
   for iptc = active_patches
     msh_col.nel_dir_of_patch{iptc} = msh.msh_patch{iptc}.nel_dir;
   end
