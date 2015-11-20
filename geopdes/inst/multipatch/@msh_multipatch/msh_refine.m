@@ -29,6 +29,7 @@
 
 function msh_fine = msh_refine (msh, nsub)
 
+  boundary = ~isempty (msh.boundary);
   msh_patch = cell (msh.npatch, 1);
   for iptc = 1:msh.npatch
     msh_ptc = msh.msh_patch{iptc};
@@ -43,7 +44,13 @@ function msh_fine = msh_refine (msh, nsub)
       auxiliary_geometry.map_der2 = msh_ptc.map_der2;
     end
 
-    msh_patch{iptc} = msh_cartesian (zeta, qn, qw, auxiliary_geometry, 'boundary', false);
+    for ii = 1:numel (msh_ptc.boundary)
+      bnd(ii).rdim = msh_ptc.boundary.rdim;
+      bnd(ii).map = msh_ptc.boundary.map;
+      bnd(ii).map_der = msh_ptc.boundary.map_der;
+      auxiliary_geometry.boundary = bnd;
+    end
+    msh_patch{iptc} = msh_cartesian (zeta, qn, qw, auxiliary_geometry, 'boundary', boundary);
   end
 
   msh_fine = msh_multipatch (msh_patch, msh.boundaries);

@@ -40,6 +40,13 @@ function msh_fine = msh_refine (msh, nsub)
     auxiliary_geometry.map_der2 = msh.map_der2;
   end
 
-  msh_fine = msh_cartesian (zeta, qn, qw, auxiliary_geometry, 'boundary', false);
+  boundary = ~isempty (msh.boundary);
+  for ii = 1:numel (msh.boundary)
+    bnd(ii).rdim = msh.boundary.rdim;
+    bnd(ii).map = msh.boundary.map;
+    bnd(ii).map_der = msh.boundary.map_der;
+    auxiliary_geometry.boundary = bnd;
+  end
+  msh_fine = msh_cartesian (zeta, qn, qw, auxiliary_geometry, 'boundary', boundary);
 
 end
