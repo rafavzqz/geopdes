@@ -72,7 +72,9 @@ function msh_col = msh_evaluate_element_list (msh, elem_list, varargin)
     end
 
     for ii = 1:numel (fields)
-      msh_col.(fields{ii}) = cat (cat_position(ii), msh_col.(fields{ii}), msh_patch.(fields{ii}));
+      if (isfield (msh_patch, fields{ii}))
+        msh_col.(fields{ii}) = cat (cat_position(ii), msh_col.(fields{ii}), msh_patch.(fields{ii}));
+      end
     end
   end
   

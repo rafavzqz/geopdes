@@ -67,7 +67,7 @@ function sp = sp_evaluate_element_list (space, msh, varargin)
     msh_patch = msh_restrict_to_patch (msh, iptc);
 
     sp_patch = sp_evaluate_element_list (space.sp_patch{iptc}, msh_patch, varargin{:});
-    sp_patch.connectivity = space.gnum{iptc}(sp_patch.connectivity);
+    sp_patch.connectivity = reshape (space.gnum{iptc}(sp_patch.connectivity), sp_patch.nsh_max, msh_patch.nel);
 
     for ii = 1:numel(fields)
       if (isfield (sp_patch, fields{ii}))
