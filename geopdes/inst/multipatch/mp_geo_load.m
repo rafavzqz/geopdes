@@ -123,6 +123,14 @@ function [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = m
       error ('mp_geo_load: unknown file extension');
     end
 
+  elseif (isstruct (in) && isfield (in, 'form') && strcmpi (in(1).form, 'B-NURBS'))
+    for iptc = 1:numel(in)
+      geometry(iptc) = geo_load (in(iptc));
+    end
+    warning ('Automatically generating the interface and boundary information with nrbmultipatch')
+    [interfaces, boundaries] = nrbmultipatch (in);
+    subdomains(1).name = 'SUBDOMAIN 1';
+    subdomains(1).patches = 1:numel(in);
   else
     error ('mp_geo_load: wrong input type');
   end
@@ -150,27 +158,33 @@ function [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = m
       geometry(iptc).map      =  @(PTS) geo_nurbs (geometry(iptc).nurbs, deriv, deriv2, PTS, 0, rdim);
       geometry(iptc).map_der  =  @(PTS) geo_nurbs (geometry(iptc).nurbs, deriv, deriv2, PTS, 1, rdim);
       geometry(iptc).map_der2 =  @(PTS) geo_nurbs (geometry(iptc).nurbs, deriv, deriv2, PTS, 2, rdim);
-    
-      bnd = nrbextract (geometry(iptc).nurbs);
-      for ibnd = 1:numel (bnd)
-        [deriv, deriv2] = nrbderiv (bnd(ibnd));
-        geometry(iptc).boundary(ibnd).nurbs    = bnd(ibnd);
-        geometry(iptc).boundary(ibnd).dnurbs   = deriv;
-        geometry(iptc).boundary(ibnd).dnurbs2  = deriv2;
-        geometry(iptc).boundary(ibnd).rdim     = rdim;
-        geometry(iptc).boundary(ibnd).map      = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 0, rdim);
-        geometry(iptc).boundary(ibnd).map_der  = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 1, rdim);
-        geometry(iptc).boundary(ibnd).map_der2 = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 2, rdim);
+
+      if (numel (geometry(1).nurbs.order) > 1)
+        bnd = nrbextract (geometry(iptc).nurbs);
+        for ibnd = 1:numel (bnd)
+          [deriv, deriv2] = nrbderiv (bnd(ibnd));
+          geometry(iptc).boundary(ibnd).nurbs    = bnd(ibnd);
+          geometry(iptc).boundary(ibnd).dnurbs   = deriv;
+          geometry(iptc).boundary(ibnd).dnurbs2  = deriv2;
+          geometry(iptc).boundary(ibnd).rdim     = rdim;
+          geometry(iptc).boundary(ibnd).map      = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 0, rdim);
+          geometry(iptc).boundary(ibnd).map_der  = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 1, rdim);
+          geometry(iptc).boundary(ibnd).map_der2 = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 2, rdim);
+        end
       end
     end
     
     if (~isempty (boundaries))
       patch_numbers = vertcat (boundaries.patches);
       side_numbers  = vertcat (boundaries.faces);
-      for iptc = 1:numel(patch_numbers)
-        bnd_nurbs(iptc) = geometry(patch_numbers(iptc)).boundary(side_numbers(iptc)).nurbs;
+      if (numel (geometry(1).nurbs.order) > 1)
+        for iptc = 1:numel(patch_numbers)
+          bnd_nurbs(iptc) = geometry(patch_numbers(iptc)).boundary(side_numbers(iptc)).nurbs;
+        end
+        boundary_interfaces = nrbmultipatch (bnd_nurbs);
+      else
+        boundary_interfaces = [];
       end
-      boundary_interfaces = nrbmultipatch (bnd_nurbs);
     end
     
   else
