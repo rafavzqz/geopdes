@@ -62,12 +62,16 @@ function [sp_fine, Proj] = sp_refine (space, msh, nsub, degree, regularity)
 % Overkilling to compute the new weights, but does not change that much
     coefs = zeros ([4, size(space.weights)]);
     coefs(4,:,:,:) = space.weights;
-    aux_nurbs = nrbdegelev (nrbmak (coefs, space.knots), degree - space.degree);
+    if (numel (space.knots) ~= 1)
+      aux_nurbs = nrbdegelev (nrbmak (coefs, space.knots), degree - space.degree);
+    else
+      aux_nurbs = nrbdegelev (nrbmak (coefs, space.knots{1}), degree - space.degree);
+    end
     
     [knots,~,new_knots] = kntrefine (aux_nurbs.knots, nsub-1, aux_nurbs.order-1, regularity);
     aux_nurbs = nrbkntins (aux_nurbs, new_knots);
-    weights = reshape (aux_nurbs.coefs(4,:,:), aux_nurbs.number);
-      
+    weights = reshape (aux_nurbs.coefs(4,:,:,:), [aux_nurbs.number, 1]); % The extra 1 makes things work in any dimension
+
     sp_fine = sp_nurbs (knots, degree, weights, msh);
 
     if (nargout == 2)

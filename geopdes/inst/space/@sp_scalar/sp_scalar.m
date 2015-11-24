@@ -100,6 +100,11 @@ function sp = sp_scalar (knots, degree, weights, msh, transform)
   sp.ndof     = prod (sp.ndof_dir);
   sp.ncomp    = 1;
 
+% Fix a bug for 1D geometries
+  if (~isempty (sp.weights))
+    sp.weights = reshape (sp.weights, [sp.ndof_dir, 1]);
+  end
+  
 % Boundary construction  
   if (msh.ndim > 1 && strcmpi (transform, 'grad-preserving'))
     for iside = 1:2*msh.ndim
