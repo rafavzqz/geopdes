@@ -1,0 +1,220 @@
+/*
+	Eleganta by TEMPLATED
+    templated.co @templatedco
+    Released for free under the Creative Commons Attribution 3.0 license (templated.co/license)
+*/
+
+/*********************************************************************************/
+/* Basic                                                                         */
+/*********************************************************************************/
+
+	body,input,textarea,select
+	{
+		line-height: 1.75em;
+		font-size: 10pt;
+		letter-spacing: 0;
+	}
+
+	body
+	{
+		padding-top: 44px;
+	}
+
+	h2, h3, h4, h5, h6
+	{
+		font-size: 1.5em;
+	}
+
+	.container {
+		padding: 0;
+	}
+
+	section,
+	article
+	{
+		clear: both;
+		margin: 2em 0 2em 0 !important;
+	}
+
+	section > :first-child,
+	article > :first-child
+	{
+		margin-top: 0 !important;
+	}
+
+	section:first-child,
+	article:first-child
+	{
+		margin-top: 0 !important;
+	}
+	
+	.button
+	{
+		display: block;
+		text-align: center;
+	}
+
+	header
+	{
+		margin-bottom: 2em;
+	}
+	
+		header h2
+		{
+			font-weight: 900;
+			font-size: 2em;
+		}
+
+/*********************************************************************************/
+/* UI                                                                            */
+/*********************************************************************************/
+
+	#titleBar
+	{
+		background: #2b140a;
+	}
+
+		#titleBar .title
+		{
+			display: block;
+			color: #fff;
+			text-align: center;
+			line-height: 44px;
+			letter-spacing: 1px;
+			text-transform: uppercase;
+			font-size: 1.4em;
+		}
+		
+		#titleBar .title span
+		{
+			display: none;
+		}
+
+		#titleBar .toggle
+		{
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 80px;
+			height: 60px;
+		}
+
+			#titleBar .toggle:after
+			{
+				content: '';
+				display: block;
+				width: 20px;
+				height: 12px;
+				position: absolute;
+				left: 10px;
+				top: 15px;
+				background: url('images/toggle.svg') 0px 0px no-repeat;
+				opacity: 0.5;
+			}
+
+			#titleBar .toggle:active:after
+			{
+				opacity: 0.75;
+			}
+
+	#navPanel
+	{
+		background: #2e170d;
+	}
+
+		#navPanel .link
+		{
+			display: block;
+			color: #888;
+			text-decoration: none;
+			height: 44px;
+			line-height: 44px;
+			border-top: solid 1px #381c10;
+			text-transform: uppercase;
+			padding: 0 1em 0 1em;
+		}
+		
+			#navPanel .link:first-child
+			{
+				border-top: 0;
+			}
+			
+			#navPanel .link.depth-0
+			{
+				color: #fff;
+			}
+
+			#navPanel .indent-1 { display: inline-block; width: 1em; }
+			#navPanel .indent-2 { display: inline-block; width: 2em; }
+			#navPanel .indent-3 { display: inline-block; width: 3em; }
+			#navPanel .indent-4 { display: inline-block; width: 4em; }
+			#navPanel .indent-5 { display: inline-block; width: 5em; }
+			#navPanel .depth-0 { color: #fff; }
+			
+/*********************************************************************************/
+/* Banner                                                                        */
+/*********************************************************************************/
+
+	#banner
+	{
+		margin-bottom: 2em;
+	}
+
+/*********************************************************************************/
+/* Header                                                                        */
+/*********************************************************************************/
+
+	#header
+	{
+	}
+
+	#logo
+	{
+		display: none;
+	}
+	
+	#nav
+	{
+		display: none;
+	}
+
+/*********************************************************************************/
+/* Main                                                                          */
+/*********************************************************************************/
+
+	#main
+	{
+		padding: 3em 2em 4em 2em;
+	}
+
+	.homepage #main
+	{
+		padding: 2em 2em 4em 2em;
+	}
+
+	#content
+	{
+	}
+	
+	#sidebar header h2,
+	#sidebar1 header h2
+	{
+		font-size: 1.8em;
+	}
+	
+	#sidebar1 h3
+	{
+		margin-bottom: 1em;
+		text-transform: uppercase;
+		font-size: 1.4em;
+		font-weight: 800;
+	}	
+	
+/*********************************************************************************/
+/* Footer                                                                        */
+/*********************************************************************************/
+
+	#footer
+	{
+		padding: 4em 2em 0 2em;
+	}

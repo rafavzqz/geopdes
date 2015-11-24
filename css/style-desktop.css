@@ -1,0 +1,170 @@
+/*
+	Eleganta by TEMPLATED
+    templated.co @templatedco
+    Released for free under the Creative Commons Attribution 3.0 license (templated.co/license)
+*/
+
+/*********************************************************************************/
+/* Basic                                                                         */
+/*********************************************************************************/
+
+	body
+	{
+	}
+
+	body,input,textarea,select
+	{
+	}
+
+/*********************************************************************************/
+/* Header                                                                        */
+/*********************************************************************************/
+
+	#header
+	{
+		padding: 5em 0em;
+		text-align: center;
+	}
+	
+		.homepage #header
+		{
+			padding: 5em 0em 4em 0em;
+		}
+
+		#header .container
+		{
+		}
+
+/*********************************************************************************/
+/* Logo                                                                          */
+/*********************************************************************************/
+
+	#logo
+	{
+	}
+	
+		#logo h1
+		{
+			color: #FFF;
+		}
+	
+		#logo h1 a
+		{
+			display: block;
+			letter-spacing: 1px;
+			text-decoration: none;
+			text-transform: uppercase;
+			font-size: 3em;
+			font-weight: 900;
+			color: #FFF;
+		}
+
+		#logo span
+		{
+			display: block;
+			padding-top: 1em;
+			letter-spacing: 1px;
+			text-transform: uppercase;
+			font-size: 1.2em;
+			color: #FD5113;
+		}			
+			
+
+/*********************************************************************************/
+/* Nav                                                                           */
+/*********************************************************************************/
+
+	#nav
+	{
+		background: #281208;
+	}
+	
+		#nav ul
+		{
+			display: block;
+			text-align: center;
+		}
+
+		#nav > ul > li
+		{
+			display: inline-block;
+		}
+		
+			#nav > ul > li:last-child
+			{
+				padding-right: 0;
+			}
+
+			#nav > ul > li > a,
+			#nav > ul > li > span
+			{
+				display: block;
+				padding: 1.3em 1.5em;
+				letter-spacing: 1px;
+				text-decoration: none;
+				text-transform: uppercase;
+				font-weight: 200;
+				font-size: 1em;
+				outline: 0;
+				color: #FD5113;
+			}
+
+
+			#nav > ul > li > a:hover
+			{
+				color: rgba(255,255,255,1);
+			}
+
+			#nav li.active a
+			{
+				color: #FFF;
+			}
+
+			#nav > ul > li > ul
+			{
+				display: none;
+			}
+
+/*********************************************************************************/
+/* Banner                                                                        */
+/*********************************************************************************/
+
+	#banner
+	{
+		margin-bottom: 4em;
+	}
+
+/*********************************************************************************/
+/* Main                                                                          */
+/*********************************************************************************/
+
+	#main
+	{
+		padding: 4em 2em 4em 2em;
+	}
+
+	.homepage #main
+	{
+		padding: 2em 2em 4em 2em;
+	}
+
+	#content
+	{
+	}
+	
+	#sidebar header h2,
+	#sidebar1 header h2
+	{
+		text-transform: uppercase;
+		font-weight: 800;
+		font-size: 1.8em;
+	}
+	
+	#sidebar1 h3
+	{
+		display: inline-block;
+		margin-bottom: 1em;
+		text-transform: uppercase;
+		font-size: 1.2em;
+		font-weight: 800;
+	}
