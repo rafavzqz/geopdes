@@ -90,7 +90,7 @@ end
 grad_param = gradient || divergence || curl;
 value_param = value || grad_param;
 
-sp_out = sp_precompute_param (sp, msh, 'value', value_param, 'gradient', grad_param, 'curl', curl, 'divergence', divergence);
+sp_out = sp_precompute_param (sp, msh, 'value', value_param, 'gradient', grad_param);
 
 switch (lower (sp.transform))
   case {'grad-preserving'}

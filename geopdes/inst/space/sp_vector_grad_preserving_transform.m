@@ -69,10 +69,13 @@ function sp = sp_vector_grad_preserving_transform (sp, msh, value, gradient, cur
   if (gradient || curl || divergence)
     JinvT = geopdes_invT__ (msh.geo_map_jac);
     JinvT = reshape (JinvT, [msh.rdim, msh.ndim, msh.nqn, msh.nel]);
+    grads = zeros (sp.ncomp, msh.rdim, msh.nqn, sp.nsh_max, msh.nel);
     for icomp = 1:sp.ncomp
-      sp.shape_function_gradients(icomp,:,:,:,:) = geopdes_prod__ (JinvT, ...
-          reshape (sp.shape_function_gradients(icomp,:,:,:,:), msh.rdim, msh.nqn, sp.nsh_max, msh.nel));
+      grads(icomp,:,:,:,:) = geopdes_prod__ (JinvT, ...
+          reshape (sp.shape_function_gradients(icomp,:,:,:,:), msh.ndim, msh.nqn, sp.nsh_max, msh.nel));
     end
+    sp.shape_function_gradients = grads;
+    clear grads
     
     if (divergence)
       if (sp.ncomp == msh.rdim)

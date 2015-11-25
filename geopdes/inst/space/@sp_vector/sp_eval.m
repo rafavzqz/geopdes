@@ -133,7 +133,7 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options, lambda_lame, mu_l
         end
         eu{iopt} = zeros (space.ncomp, msh.rdim, msh.nqn, msh.nel);
         eunum{iopt} = {1:space.ncomp, 1:msh.rdim, 1:msh.nqn};
-        eusize{iopt} = [sp.ncomp, ndim, npts];
+        eusize{iopt} = [sp.ncomp, msh.rdim, npts];
         grad = true; divergence = true;
     end
   end

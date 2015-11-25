@@ -82,7 +82,7 @@ end
 grad_param = gradient || divergence || curl;
 value_param = value || grad_param;
 
-sp = sp_evaluate_col_param (space, msh, 'value', value_param, 'gradient', grad_param, 'curl', curl, 'divergence', divergence);
+sp = sp_evaluate_col_param (space, msh, 'value', value_param, 'gradient', grad_param);
 
 switch (lower (space.transform))
   case {'grad-preserving'}
