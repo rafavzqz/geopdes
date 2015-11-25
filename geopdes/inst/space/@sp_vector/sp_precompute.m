@@ -89,8 +89,15 @@ end
   
 grad_param = gradient || divergence || curl;
 value_param = value || grad_param;
+div_param = false; curl_param = false;
+switch (lower (sp.transform))
+  case {'curl-preserving'}
+    curl_param = curl;
+  case {'div-preserving'}
+    div_param = divergence;
+end
 
-sp_out = sp_precompute_param (sp, msh, 'value', value_param, 'gradient', grad_param);
+sp_out = sp_precompute_param (sp, msh, 'value', value_param, 'gradient', grad_param, 'divergence', div_param, 'curl', curl_param);
 
 switch (lower (sp.transform))
   case {'grad-preserving'}

@@ -80,8 +80,15 @@ end
 
 grad_param = gradient || divergence || curl;
 value_param = value || grad_param;
+div_param = false; curl_param = false;
+switch (lower (space.transform))
+  case {'curl-preserving'}
+    curl_param = curl;
+  case {'div-preserving'}
+    div_param = divergence;
+end
 
-sp = sp_evaluate_element_list_param (space, msh, 'value', value_param, 'gradient', grad_param);
+sp = sp_evaluate_element_list_param (space, msh, 'value', value_param, 'gradient', grad_param, 'divergence', div_param, 'curl', curl_param);
 
 if (isempty (msh.elem_list))
   return
