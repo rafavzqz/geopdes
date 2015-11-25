@@ -39,6 +39,12 @@
 
 function mp_sp_to_vtk (u, space, geometry, gnum, npts, filename, fieldname, varargin)
 
+  if (isa (space, 'sp_multipatch'))
+    warning ('For a space of the class SP_MULTIPATCH, we use the method SP_TO_VTK in the class, instead of the (deprecated) MP_SP_TO_VTK')
+    sp_to_vtk (u, space, geometry, npts, filename, fieldname, varargin{:});
+    return
+  end
+
   str1 = cat (2,'<?xml version="1.0"?> \n', ...
 '<VTKFile type="Collection" version="0.1"> \n', ...
 '<Collection> \n');

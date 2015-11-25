@@ -46,8 +46,13 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [A, rhs] = mp_sp_weak_drchlt_bc (space, msh, refs, bnd_func, coeff, Cpen)
+function [A, rhs] = mp_sp_weak_drchlt_bc (space, msh, refs, bnd_func, coeff, Cpen, varargin)
 
+  if (nargin ~= 6)
+    error (['The function MP_SP_WEAK_DRCHLT_BC has changed in version 3, to work with multipatch classes.' ...
+        'The old version, for a cell-array of spaces, can be called with MP_SP_WEAK_DRCHLT_BC_OLD'])
+  end
+  
   A = spalloc (space.ndof, space.ndof, 3*space.ndof);
   rhs = zeros (space.ndof, 1);
 

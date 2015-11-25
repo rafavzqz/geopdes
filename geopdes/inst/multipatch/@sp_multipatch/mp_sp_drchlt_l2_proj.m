@@ -33,7 +33,7 @@ function [u, dofs] = mp_sp_drchlt_l2_proj (space, msh, h, refs, varargin)
 
   if (nargin ~= 4)
     error (['The function MP_SP_DRCHLT_L2_PROJ has changed in version 3, to work with multipatch classes. ' ...
-        'The old version can be called with MP_SP_DRCHLT_L2_PROJ_OLD'])
+        'The old version, for a cell-array of spaces, can be called with MP_SP_DRCHLT_L2_PROJ_OLD'])
   end
 
   M = spalloc (space.boundary.ndof, space.boundary.ndof, 3*space.boundary.ndof);

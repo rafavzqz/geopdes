@@ -42,6 +42,12 @@
 
 function A = mp_dg_penalty_old (space, msh, gnum, ornt, interfaces, visc, Cpen)
 
+if (isa (space, 'sp_multipatch'))
+  warning ('For spaces of the class SP_MULTIPATCH, using MP_DG_PENALTY')
+  A = mp_dg_penalty (space, msh, interfaces, visc, Cpen);
+  return
+end
+
 ndof = max([gnum{:}]);
 rA = []; cA = []; vA = [];
 

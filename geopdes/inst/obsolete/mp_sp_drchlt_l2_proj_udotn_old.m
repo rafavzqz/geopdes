@@ -35,6 +35,12 @@
 
 function [u, normal_dofs] = mp_sp_drchlt_l2_proj_udotn_old (space, msh, gnum, ornt, boundaries, refs, bnd_func)
 
+  if (isa (space, 'sp_multipatch'))
+    warning ('For spaces of the class SP_MULTIPATCH, using the function MP_SP_DRCHLT_PROJ_UDOTN inside the class')
+    [u, dofs] = mp_sp_drchlt_proj_udotn (sp, msh, refs, bnd_func);
+    return
+  end
+  
   ndof = max ([gnum{:}]);
   M = spalloc (ndof, ndof, 3*ndof);
   rhs = zeros (ndof, 1);

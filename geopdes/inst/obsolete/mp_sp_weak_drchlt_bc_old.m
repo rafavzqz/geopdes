@@ -51,6 +51,12 @@
 
 function [A, rhs] = mp_sp_weak_drchlt_bc_old (space, msh, gnum, ornt, boundaries, refs, bnd_func, coeff, Cpen)
 
+  if (isa (space, 'sp_multipatch'))
+    warning ('For spaces of the class SP_MULTIPATCH, using the function MP_SP_WEAK_DRCHLT_BC inside the class')
+    [A, rhs] = mp_sp_weak_drchlt_bc (space, msh, refs, bnd_func, coeff, Cpen);
+    return
+  end
+  
   ndof = max ([gnum{:}]);
 
   A = spalloc (ndof, ndof, 3*ndof);

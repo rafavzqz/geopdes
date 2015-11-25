@@ -38,8 +38,13 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function A = mp_dg_penalty (space, msh, interfaces, visc, Cpen)
+function A = mp_dg_penalty (space, msh, interfaces, visc, Cpen, varargin)
 
+if (nargin ~= 5)
+  error (['The function MP_DG_PENALTY has changed in version 3, to work with multipatch classes. ' ...
+        'The old version, for a cell-array of spaces, can be called with MP_DG_PENALTY_OLD'])
+end
+  
 rA = []; cA = []; vA = [];
 
 ndim = msh.ndim;

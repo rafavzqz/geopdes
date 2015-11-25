@@ -35,6 +35,12 @@
 
 function [u, dofs] = mp_sp_drchlt_l2_proj_old (sp, msh, h, gnum, boundaries, refs)
 
+  if (isa (space, 'sp_multipatch'))
+    warning ('For spaces of the class SP_MULTIPATCH, using the function MP_SP_DRCHLT_PROJ inside the class')
+    [u, dofs] = mp_sp_drchlt_proj (sp, msh, h, refs);
+    return
+  end
+
   dofs = [];
   ndof = max ([gnum{:}]);
   M    = spalloc (ndof, ndof, ndof);
