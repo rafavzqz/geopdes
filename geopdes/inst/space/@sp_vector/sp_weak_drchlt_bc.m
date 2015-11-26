@@ -4,11 +4,11 @@
 %
 % The code computes the following terms in the left hand-side
 % 
-%  - \int_{Gamma_D} mu*{(\grad u)n \cdot v - (\grad v)n \cdot n + (Cpen /  he) * (u cdot v)}
+%  - \int_{Gamma_D} mu*{(\grad u)n \cdot v - (\grad v)n \cdot u + (Cpen /  he) * (u \cdot v)}
 %
 % and in the right hand-side
 %
-%  - \int_{Gamma_D} mu*{(\grad v)n \cdot g + (Cpen / he) * (v cdot g)}
+%  - \int_{Gamma_D} mu*{(\grad v)n \cdot g + (Cpen / he) * (v \cdot g)}
 %
 % with u the trial function, v the test function, he the normal characteristic length, 
 %  and g the boundary condition to be imposed.
