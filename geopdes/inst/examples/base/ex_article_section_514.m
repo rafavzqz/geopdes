@@ -51,25 +51,22 @@ for iside = nmnn_sides
 end
 
 drchlt_dofs = [];
-for iside = 1:numel (drchlt_sides)
-  drchlt_dofs = union (drchlt_dofs, space.boundary(drchlt_sides(iside)).dofs);
-end
-int_dofs = setdiff (1:space.ndof, drchlt_dofs);
 M_drchlt = spalloc (space.ndof, space.ndof, space.ndof);
 rhs_drchlt = zeros (space.ndof, 1);
-
+u = zeros (space.ndof, 1);
 for iside = drchlt_sides
-  hside = @(x, y) exp(x) .* sin(y);
   dofs = space.boundary(iside).dofs;
+  drchlt_dofs = union (drchlt_dofs, dofs);
+  
+  hside = @(x, y) exp(x) .* sin(y);
   M_side = op_u_v_tp (space.boundary(iside), space.boundary(iside), msh.boundary(iside), @(x,y) ones (size(x)));
   M_drchlt(dofs, dofs) = M_drchlt(dofs,dofs) + M_side;
   rhs_drchlt(dofs) = rhs_drchlt(dofs) + op_f_v_tp (space.boundary(iside), msh.boundary(iside), hside);
 end
+int_dofs = setdiff (1:space.ndof, drchlt_dofs);
 
-u = zeros (space.ndof, 1);
 u(drchlt_dofs) = M_drchlt(drchlt_dofs, drchlt_dofs) \ rhs_drchlt(drchlt_dofs);
-rhs(int_dofs) = rhs(int_dofs) - mat(int_dofs, drchlt_dofs) * ...
-    u(drchlt_dofs);
+rhs(int_dofs) = rhs(int_dofs) - mat(int_dofs, drchlt_dofs) * u(drchlt_dofs);
 
 u(int_dofs) = mat(int_dofs, int_dofs) \ rhs(int_dofs);
 
