@@ -64,7 +64,6 @@ for iside = drchlt_sides
   rhs_drchlt(dofs) = rhs_drchlt(dofs) + op_f_v_tp (space.boundary(iside), msh.boundary(iside), hside);
 end
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
-
 u(drchlt_dofs) = M_drchlt(drchlt_dofs, drchlt_dofs) \ rhs_drchlt(drchlt_dofs);
 rhs(int_dofs) = rhs(int_dofs) - mat(int_dofs, drchlt_dofs) * u(drchlt_dofs);
 

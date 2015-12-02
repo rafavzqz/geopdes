@@ -6,20 +6,20 @@ clear problem_data
 problem_data.geo_name = 'geo_plate_with_hole.txt';
 
 % Type of boundary conditions
-problem_data.nmnn_sides   = [];
-problem_data.drchlt_sides = [3];
-problem_data.press_sides  = [1 2 4];
-problem_data.symm_sides   = [];
+problem_data.nmnn_sides   = [4];
+problem_data.drchlt_sides = [];
+problem_data.press_sides  = [];
+problem_data.symm_sides   = [1 2];
 
 % Physical parameters
-E  =  1; nu = .3; 
+E  =  1e5; nu = .3; 
 problem_data.lambda_lame = @(x, y) ((nu*E)/((1+nu)*(1-2*nu)) * ones (size (x)));
 problem_data.mu_lame = @(x, y) (E/(2*(1+nu)) * ones (size (x)));
 
 % Source and boundary terms
 problem_data.f = @(x, y) zeros (2, size (x, 1), size (x, 2));
+problem_data.g = @test_plate_with_hole_g_nmnn;
 problem_data.h = @(x, y, ind) zeros (2, size (x, 1), size (x, 2));
-problem_data.p = @(x, y, ind) 0.5 * ones (size (x));
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
@@ -41,20 +41,18 @@ sp_to_vtk (u, space, geometry, vtk_pts, output_file, {'displacement', 'stress'},
     problem_data.lambda_lame, problem_data.mu_lame)
 
 % 4.2) Plot in Matlab
-[eu, F] = sp_eval (u, space, geometry, vtk_pts);
+[eu, F] = sp_eval (u, space, geometry, vtk_pts, {'value', 'stress'}, problem_data.lambda_lame, problem_data.mu_lame);
 [X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
 
 figure
-subplot (1, 2, 1)
-quiver (X, Y, squeeze(eu(1,:,:)), squeeze(eu(2,:,:)))
+quiver (X, Y, squeeze(eu{1}(1,:,:)), squeeze(eu{1}(2,:,:)))
 axis equal tight
-title ('Computed solution')
+title ('Computed displacement')
 
-subplot (1, 2, 2)
-def_geom = geo_deform (u, space, geometry);
-nrbplot (def_geom.nurbs, [20 20], 'light', 'on')
-view(2)
-title ('Deformed configuration')
+figure
+surf (X, Y, squeeze(eu{2}(1,1,:,:)))
+view(2); axis equal; shading interp; colorbar;
+title ('Stress component \sigma_{xx}')
 
 %!demo
 %! ex_plane_strain_plate
