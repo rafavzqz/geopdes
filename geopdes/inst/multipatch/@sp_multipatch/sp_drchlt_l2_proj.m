@@ -1,6 +1,6 @@
-% MP_SP_DRCHLT_L2_PROJ: assign the degrees of freedom of Dirichlet boundaries through an L2 projection, in multipatch geometries.
+% SP_DRCHLT_L2_PROJ: assign the degrees of freedom of Dirichlet boundaries through an L2 projection, in multipatch geometries.
 %
-%   [u, dofs] = mp_sp_drchlt_l2_proj (sp, msh, h, refs)
+%   [u, dofs] = sp_drchlt_l2_proj (sp, msh, h, refs)
 %
 % INPUT:
 %
@@ -29,12 +29,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [u, dofs] = mp_sp_drchlt_l2_proj (space, msh, h, refs, varargin)
-
-  if (nargin ~= 4)
-    error (['The function MP_SP_DRCHLT_L2_PROJ has changed in version 3, to work with multipatch classes. ' ...
-        'The old version, for a cell-array of spaces, can be called with MP_SP_DRCHLT_L2_PROJ_OLD'])
-  end
+function [u, dofs] = sp_drchlt_l2_proj (space, msh, h, refs, varargin)
 
   M = spalloc (space.boundary.ndof, space.boundary.ndof, 3*space.boundary.ndof);
   rhs = zeros (space.boundary.ndof, 1);

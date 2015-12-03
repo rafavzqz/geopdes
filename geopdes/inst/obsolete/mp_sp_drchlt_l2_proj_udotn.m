@@ -33,11 +33,11 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [u, normal_dofs] = mp_sp_drchlt_l2_proj_udotn_old (space, msh, gnum, ornt, boundaries, refs, bnd_func)
+function [u, normal_dofs] = mp_sp_drchlt_l2_proj_udotn (space, msh, gnum, ornt, boundaries, refs, bnd_func)
 
   if (isa (space, 'sp_multipatch'))
-    warning ('For spaces of the class SP_MULTIPATCH, using the function MP_SP_DRCHLT_PROJ_UDOTN inside the class')
-    [u, dofs] = mp_sp_drchlt_proj_udotn (sp, msh, refs, bnd_func);
+    warning ('For spaces of the class SP_MULTIPATCH, using the function SP_DRCHLT_PROJ_L2_UDOTN inside the class')
+    [u, dofs] = sp_drchlt_proj_l2_udotn (sp, msh, refs, bnd_func);
     return
   end
   

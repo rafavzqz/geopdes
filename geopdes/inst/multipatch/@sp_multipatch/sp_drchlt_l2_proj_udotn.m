@@ -1,7 +1,7 @@
-% MP_SP_DRCHLT_L2_PROJ_UDOTN: assign the normal degrees of freedom through an L2 projection for a multipatch geometry. 
+% SP_DRCHLT_L2_PROJ_UDOTN: assign the normal degrees of freedom through an L2 projection for a multipatch geometry. 
 %  To be used with the 'RT' and 'NDL' spaces (div-preserving). The imposed condition reads   u \cdot n = h \cdot n
 %
-%   [vel, normal_dofs] = mp_sp_drchlt_l2_proj_udotn (space, msh, bnd_sides, bnd_func)
+%   [vel, normal_dofs] = sp_drchlt_l2_proj_udotn (space, msh, bnd_sides, bnd_func)
 %
 % INPUTS:
 %     
@@ -30,13 +30,8 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [u, normal_dofs] = mp_sp_drchlt_l2_proj_udotn (space, msh, refs, bnd_func, varargin)
+function [u, normal_dofs] = sp_drchlt_l2_proj_udotn (space, msh, refs, bnd_func, varargin)
 
-  if (nargin ~= 4)
-    error (['The function MP_SP_DRCHLT_L2_PROJ_UDOTN has changed in version 3, to work with multipatch classes.' ...
-        'The old version, for a cell-array of spaces, can be called with MP_SP_DRCHLT_L2_PROJ_UDOTN_OLD'])
-  end
-  
   M = spalloc (space.boundary.ndof, space.boundary.ndof, 3*space.boundary.ndof);
   rhs = zeros (space.boundary.ndof, 1);
   

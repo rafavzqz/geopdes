@@ -134,9 +134,9 @@ Multipatch: functions of different kinds to solve problems in domains defined by
  @sp_multipatch/sp_get_cells
  @sp_multipatch/sp_get_basis_functions
  @sp_multipatch/sp_get_neighbors
- @sp_multipatch/mp_sp_drchlt_l2_proj
- @sp_multipatch/mp_sp_drchlt_l2_proj_udotn
- @sp_multipatch/mp_sp_weak_drchlt_bc
+ @sp_multipatch/sp_drchlt_l2_proj
+ @sp_multipatch/sp_drchlt_l2_proj_udotn
+ @sp_multipatch/sp_weak_drchlt_bc
 Utilities: other functions in the package
  knt_derham
  msh_to_vtk

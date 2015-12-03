@@ -115,7 +115,7 @@ vel   = zeros (space_v.ndof, 1);
 press = zeros (space_p.ndof, 1);
 
 % Apply Dirichlet boundary conditions
-[vel_drchlt, drchlt_dofs] = mp_sp_drchlt_l2_proj (space_v, msh, h, drchlt_sides);
+[vel_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space_v, msh, h, drchlt_sides);
 vel(drchlt_dofs) = vel_drchlt;
 
 int_dofs = setdiff (1:space_v.ndof, drchlt_dofs);

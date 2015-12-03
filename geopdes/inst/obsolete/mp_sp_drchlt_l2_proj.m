@@ -1,4 +1,4 @@
-% MP_SP_DRCHLT_L2_PROJ_OLD: assign the degrees of freedom of Dirichlet boundaries through an L2 projection, in multipatch geometries.
+% MP_SP_DRCHLT_L2_PROJ: assign the degrees of freedom of Dirichlet boundaries through an L2 projection, in multipatch geometries.
 %  This function from version 2 of GeoPDEs is deprecated.
 %
 %   [u, dofs] = mp_sp_drchlt_l2_proj (sp, msh, h, gnum, boundaries, refs)
@@ -33,11 +33,11 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [u, dofs] = mp_sp_drchlt_l2_proj_old (sp, msh, h, gnum, boundaries, refs)
+function [u, dofs] = mp_sp_drchlt_l2_proj (sp, msh, h, gnum, boundaries, refs)
 
-  if (isa (space, 'sp_multipatch'))
-    warning ('For spaces of the class SP_MULTIPATCH, using the function MP_SP_DRCHLT_PROJ inside the class')
-    [u, dofs] = mp_sp_drchlt_proj (sp, msh, h, refs);
+  if (isa (sp, 'sp_multipatch'))
+    warning ('For spaces of the class SP_MULTIPATCH, using the function SP_DRCHLT_L2_PROJ inside the class')
+    [u, dofs] = sp_drchlt_l2_proj (sp, msh, h, refs);
     return
   end
 
