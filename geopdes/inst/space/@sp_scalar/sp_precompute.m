@@ -87,12 +87,12 @@ function sp_out = sp_precompute (sp, msh, varargin)
   if (~isstruct (msh))
     msh = msh_precompute (msh);
   end
+
+  hessian_param = hessian || laplacian;
+  grad_param = gradient || hessian_param;
+  value_param = value || grad_param;
   
-  if (isempty (varargin))
-    sp_out = sp_precompute_param (sp, msh);
-  else
-    sp_out = sp_precompute_param (sp, msh, varargin{:});
-  end
+  sp_out = sp_precompute_param (sp, msh, 'value', value_param, 'gradient', grad_param, 'hessian', hessian_param);
 
   switch (lower (sp.transform))
     case {'grad-preserving'}
