@@ -61,7 +61,7 @@ divergence = false;
 curl = false;
 if (~isempty (varargin))
   if (~rem (length (varargin), 2) == 0)
-    error ('sp_evaluate_col: options must be passed in the [option, value] format');
+    error ('sp_evaluate_element_list_param: options must be passed in the [option, value] format');
   end
   for ii=1:2:length(varargin)-1
     if (strcmpi (varargin {ii}, 'value'))
@@ -73,7 +73,7 @@ if (~isempty (varargin))
     elseif (strcmpi (varargin {ii}, 'divergence'))
       divergence = varargin {ii+1};
     else
-      error ('sp_evaluate_col_param: unknown option %s', varargin {ii});
+      error ('sp_evaluate_element_list_param: unknown option %s', varargin {ii});
     end
   end
 end
