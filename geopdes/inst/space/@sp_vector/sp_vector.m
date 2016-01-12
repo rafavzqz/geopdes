@@ -130,6 +130,9 @@ function sp = sp_vector (scalar_spaces, msh, transform)
             sp.boundary(iside) = sp_scalar (sp_bnd.knots, sp_bnd.degree, sp_bnd.weights, msh.boundary(iside), 'integral-preserving');
           end
         end
+
+      else
+        error ('sp_vector: unknown transformation')
       end
 
       dofs = [];
