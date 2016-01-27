@@ -1,14 +1,14 @@
 % OP_U_V_TP: assemble the mass matrix M = [m(i,j)], m(i,j) = (mu u_j, v_i), exploiting the tensor product structure.
 %
-%   mat = op_u_v_tp (spu, spv, msh, coeff);
-%   [rows, cols, values] = op_u_v_tp (spu, spv, msh, coeff);
+%   mat = op_u_v_tp (spu, spv, msh, [coeff]);
+%   [rows, cols, values] = op_u_v_tp (spu, spv, msh, [coeff]);
 %
 % INPUT:
 %
 %  spu:   object representing the space of trial functions (see sp_vector)
 %  spv:   object representing the space of test functions (see sp_vector)
 %  msh:   object defining the domain partition and the quadrature rule (see msh_cartesian)
-%  coeff: function handle to compute the reaction coefficient
+%  coeff: function handle to compute the reaction coefficient (optional)
 %
 % OUTPUT:
 %
@@ -18,6 +18,7 @@
 %  values: values of the nonzero entries
 % 
 % Copyright (C) 2011, Carlo de Falco, Rafael Vazquez
+% Copyright (C) 2016, Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -41,11 +42,16 @@ function varargout = op_u_v_tp (space1, space2, msh, coeff)
     sp1_col = sp_evaluate_col (space1, msh_col);
     sp2_col = sp_evaluate_col (space2, msh_col);
 
-    for idim = 1:msh.rdim
-      x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
+    if (nargin == 4)
+      for idim = 1:msh.rdim
+        x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
+      end
+      coeffs = coeff (x{:});
+    else
+      coeffs = ones (msh_col.nqn, msh_col.nel);
     end
 
-    A = A + op_u_v (sp1_col, sp2_col, msh_col, coeff (x{:}));
+    A = A + op_u_v (sp1_col, sp2_col, msh_col, coeffs);
   end
 
   if (nargout == 1)

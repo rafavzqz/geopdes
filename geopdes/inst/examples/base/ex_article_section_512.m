@@ -38,7 +38,7 @@ msh = msh_cartesian (knots, qn, qw, geometry);
 
 space = sp_bspline (knots, [4 4], msh);
 
-mat = op_gradu_gradv_tp (space, space, msh, @(x, y) ones (size (x))); 
+mat = op_gradu_gradv_tp (space, space, msh);
 rhs = op_f_v_tp (space, msh, @(x, y) (8-9*sqrt(x.^2+y.^2)).*sin(2*atan(y./x))./(x.^2+y.^2));
 
 drchlt_dofs = [];

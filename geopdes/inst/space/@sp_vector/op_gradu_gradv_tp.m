@@ -1,14 +1,14 @@
 % OP_GRADU_GRADV_TP: assemble the stiffness matrix A = [a(i,j)], a(i,j) = (epsilon grad u_j, grad v_i), exploiting the tensor product structure.
 %
-%   mat = op_gradu_gradv_tp (spu, spv, msh, epsilon);
-%   [rows, cols, values] = op_gradu_gradv_tp (spu, spv, msh, epsilon);
+%   mat = op_gradu_gradv_tp (spu, spv, msh, [epsilon]);
+%   [rows, cols, values] = op_gradu_gradv_tp (spu, spv, msh, [epsilon]);
 %
 % INPUT:
 %
 %   spu:     object representing the space of trial functions (see sp_vector)
 %   spv:     object representing the space of test functions (see sp_vector)
 %   msh:     object defining the domain partition and the quadrature rule (see msh_cartesian)
-%   epsilon: function handle to compute the diffusion coefficient
+%   epsilon: function handle to compute the diffusion coefficient (optional)
 %
 % OUTPUT:
 %
@@ -18,6 +18,7 @@
 %   values: values of the nonzero entries
 % 
 % Copyright (C) 2011, Carlo de Falco, Rafael Vazquez
+% Copyright (C) 2016, Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -41,11 +42,16 @@ function varargout = op_gradu_gradv_tp (space1, space2, msh, coeff)
     sp1_col = sp_evaluate_col (space1, msh_col, 'value', false, 'gradient', true);
     sp2_col = sp_evaluate_col (space2, msh_col, 'value', false, 'gradient', true);
 
-    for idim = 1:msh.rdim
-      x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
+    if (nargin == 4)
+      for idim = 1:msh.rdim
+        x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
+      end
+      coeffs = coeff (x{:});
+    else
+      coeffs = ones (msh_col.nqn, msh_col.nel);
     end
 
-    A = A + op_gradu_gradv (sp1_col, sp2_col, msh_col, coeff (x{:}));
+    A = A + op_gradu_gradv (sp1_col, sp2_col, msh_col, coeffs);
   end
 
   if (nargout == 1)

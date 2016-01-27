@@ -80,7 +80,7 @@ function PI = b2nst__ (space, knots, degree, msh)
 % Computation of the projection
 %  We cannot use the op_f_v_tp operator, because our function handles fun{jj}
 %  are for points in the parametric domain, not in the physical domain
-  M = op_u_v_tp (space, space, msh, @(x, y) ones (size(x)));
+  M = op_u_v_tp (space, space, msh);
 
   rhs = zeros (space.ndof, ns);
   for iel = 1:msh.nel_dir(1)

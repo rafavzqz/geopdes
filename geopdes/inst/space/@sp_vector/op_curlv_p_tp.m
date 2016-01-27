@@ -1,14 +1,14 @@
 % OP_CURLV_P: assemble the matrix B = [b(i,j)], b(i,j) = (coeff p_i, curl v_j), exploiting the tensor product structure.
 %
-%   mat = op_curlv_p_tp (spv, spp, msh, coeff);
-%   [rows, cols, values] = op_curlv_p (spv, spp, msh, coeff);
+%   mat = op_curlv_p_tp (spv, spp, msh, [coeff]);
+%   [rows, cols, values] = op_curlv_p (spv, spp, msh, [coeff]);
 
 % INPUT:
 %
 %   spv:     object that defines the vector-valued space of trial functions (see sp_vector)
 %   spp:     object that defines the scalar-valued space of the multiplier (see sp_scalar)
 %   msh:     object that defines the domain partition and the quadrature rule (see msh_cartesian)
-%   epsilon: function handle to compute some physical coefficient
+%   epsilon: function handle to compute some physical coefficient (optional)
 %
 % OUTPUT:
 %
@@ -17,7 +17,7 @@
 %   cols:   column indices of the nonzero entries
 %   values: values of the nonzero entries
 % 
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011, 2016 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -43,11 +43,16 @@ function varargout = op_curlv_p_tp (spv, spp, msh, coeff)
     spv_col = sp_evaluate_col (spv, msh_col, 'value', false, 'curl', true);
     spp_col = sp_evaluate_col (spp, msh_col);
 
-    for idim = 1:ndim
-      x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
+    if (nargin == 4)
+      for idim = 1:msh.rdim
+        x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
+      end
+      coeffs = coeff (x{:});
+    else
+      coeffs = ones (msh_col.nqn, msh_col.nel);
     end
 
-    A = A + op_curlv_p (spv_col, spp_col, msh_col, coeff (x{:}));
+    A = A + op_curlv_p (spv_col, spp_col, msh_col, coeffs);
   end
 
   if (nargout == 1)

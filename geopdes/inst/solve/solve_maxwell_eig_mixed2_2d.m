@@ -99,7 +99,7 @@ clear scalar_spaces
 sqrt_invmu = @(x, y) sqrt (1./c_magn_perm (x, y));
 mass_mat  = op_u_v_tp (space, space, msh, c_elec_perm);
 mass_mul_mat = op_u_v_tp (sp_mul, sp_mul, msh, sqrt_invmu);
-saddle_mat   = op_curlv_p_tp (space, sp_mul, msh, @(x, y) ones (size (x)));
+saddle_mat   = op_curlv_p_tp (space, sp_mul, msh);
 % E = op_f_v_tp (sp_mul, msh, @(x,y) ones (size(x)));
 
 % Apply homogeneous Dirichlet boundary conditions

@@ -41,7 +41,7 @@ msh = msh_cartesian (knots, qn, qw, geometry);
 
 space  = sp_nurbs (geometry.nurbs, msh);
 
-mat = op_gradu_gradv_tp (space, space, msh, @(x, y) ones (size (x))); 
+mat = op_gradu_gradv_tp (space, space, msh); 
 rhs = zeros (space.ndof, 1);
 
 for iside = nmnn_sides
@@ -59,7 +59,7 @@ for iside = drchlt_sides
   drchlt_dofs = union (drchlt_dofs, dofs);
   
   hside = @(x, y) exp(x) .* sin(y);
-  M_side = op_u_v_tp (space.boundary(iside), space.boundary(iside), msh.boundary(iside), @(x,y) ones (size(x)));
+  M_side = op_u_v_tp (space.boundary(iside), space.boundary(iside), msh.boundary(iside));
   M_drchlt(dofs, dofs) = M_drchlt(dofs,dofs) + M_side;
   rhs_drchlt(dofs) = rhs_drchlt(dofs) + op_f_v_tp (space.boundary(iside), msh.boundary(iside), hside);
 end
