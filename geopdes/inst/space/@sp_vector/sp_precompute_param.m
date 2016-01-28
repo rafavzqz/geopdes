@@ -118,7 +118,7 @@ if (value)
 end
 
 if (gradient || divergence || curl)
-  shape_fun_grads = zeros (sp.ncomp_param, msh.rdim, msh.nqn, sp.nsh_max, msh.nel);
+  shape_fun_grads = zeros (sp.ncomp_param, msh.ndim, msh.nqn, sp.nsh_max, msh.nel);
   aux = 0;
   for icomp = 1:sp.ncomp_param
     shape_fun_grads(icomp,:,:,aux+(1:sp_scalar(icomp).nsh_max),:) = ...
