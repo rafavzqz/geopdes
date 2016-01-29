@@ -45,11 +45,11 @@ function msh_fine = msh_refine (msh, nsub)
     end
 
     for ii = 1:numel (msh_ptc.boundary)
-      bnd(ii).rdim = msh_ptc.boundary.rdim;
-      bnd(ii).map = msh_ptc.boundary.map;
-      bnd(ii).map_der = msh_ptc.boundary.map_der;
-      auxiliary_geometry.boundary = bnd;
+      bnd(ii).rdim = msh_ptc.boundary(ii).rdim;
+      bnd(ii).map = msh_ptc.boundary(ii).map;
+      bnd(ii).map_der = msh_ptc.boundary(ii).map_der;
     end
+    auxiliary_geometry.boundary = bnd;
     msh_patch{iptc} = msh_cartesian (zeta, qn, qw, auxiliary_geometry, 'boundary', boundary);
   end
 

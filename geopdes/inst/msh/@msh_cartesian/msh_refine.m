@@ -45,8 +45,8 @@ function msh_fine = msh_refine (msh, nsub)
     bnd(ii).rdim = msh.boundary(ii).rdim;
     bnd(ii).map = msh.boundary(ii).map;
     bnd(ii).map_der = msh.boundary(ii).map_der;
-    auxiliary_geometry.boundary = bnd;
   end
+  auxiliary_geometry.boundary = bnd;
   msh_fine = msh_cartesian (zeta, qn, qw, auxiliary_geometry, 'boundary', boundary);
 
 end
