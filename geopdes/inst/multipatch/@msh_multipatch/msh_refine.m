@@ -44,6 +44,7 @@ function msh_fine = msh_refine (msh, nsub)
       auxiliary_geometry.map_der2 = msh_ptc.map_der2;
     end
 
+    bnd = [];
     for ii = 1:numel (msh_ptc.boundary)
       bnd(ii).rdim = msh_ptc.boundary(ii).rdim;
       bnd(ii).map = msh_ptc.boundary(ii).map;

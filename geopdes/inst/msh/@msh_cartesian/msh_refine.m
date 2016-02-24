@@ -42,6 +42,7 @@ function msh_fine = msh_refine (msh, nsub)
 
   boundary = ~isempty (msh.boundary);
   if (msh.ndim > 1)
+    bnd = [];
     for ii = 1:numel (msh.boundary)
       bnd(ii).rdim = msh.boundary(ii).rdim;
       bnd(ii).map = msh.boundary(ii).map;
