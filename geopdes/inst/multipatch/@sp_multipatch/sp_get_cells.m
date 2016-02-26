@@ -11,7 +11,7 @@
 %    cell_indices: indices of the cells within the support of the basis functions.
 %    indices_per_function: indices of the cells within the support of each basis function.
 %
-% Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2015, 2016 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -32,23 +32,17 @@ fun_indices = fun_indices(:).';
 
 indices_per_function = cell (numel (fun_indices), 1);
 cell_indices = [];
-Nelem = cumsum ([0 msh.nel_per_patch]);
 for iptc = 1:space.npatch
-  sp_patch = sp_precompute_param (space.sp_patch{iptc}, msh.msh_patch{iptc}, 'value', false);
-% The reshape avoid an error when there is only one element
-  sp_patch.connectivity = reshape (space.gnum{iptc}(sp_patch.connectivity), sp_patch.nsh_max, msh.msh_patch{iptc}.nel);
-  
-  conn_indices = arrayfun (@(x) find (sp_patch.connectivity == x), fun_indices, 'UniformOutput', false);
-  [~, ind_per_fun] = cellfun (@(x) ind2sub ([sp_patch.nsh_max, msh.msh_patch{iptc}.nel], x), conn_indices, 'UniformOutput', false);
-  
-  ind_per_fun = cellfun (@(x) x + Nelem(iptc), ind_per_fun, 'UniformOutput', false);
-  cell_indices = union (cell_indices, vertcat (ind_per_fun{:}));
+  [~, patch_indices, local_funs] = intersect (space.gnum{iptc}, fun_indices);
+  patch_indices = patch_indices(:).';
+  [aux_cell_indices, ind_per_fun] = sp_get_cells (space.sp_patch{iptc}, msh.msh_patch{iptc}, patch_indices);
+
+  cell_indices = union (cell_indices, aux_cell_indices);
 
   if (nargout == 2)
-    [~,local_funs,~] = intersect (fun_indices, space.gnum{iptc});
     local_funs = local_funs(:).';
-    for ifun = local_funs
-      indices_per_function{ifun} = union (indices_per_function{ifun}, ind_per_fun{ifun});
+    for ifun = 1:numel(patch_indices)
+      indices_per_function{local_funs(ifun)} = union (indices_per_function{local_funs(ifun)}, ind_per_fun{ifun});
     end
   end
 end

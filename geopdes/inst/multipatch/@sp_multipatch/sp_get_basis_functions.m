@@ -10,7 +10,7 @@
 % OUTPUT:
 %    fun_indices: indices of the basis functions acting on the cells.
 %
-% Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2015, 2016 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -28,12 +28,11 @@
 function function_indices = sp_get_basis_functions (space, msh, cell_indices)
 
 function_indices = [];
-
 Nelem = cumsum ([0 msh.nel_per_patch]);
 for iptc = 1:space.npatch
-  sp_patch = sp_precompute_param (space.sp_patch{iptc}, msh.msh_patch{iptc}, 'value', false);
   [~,local_cell_indices,~] = intersect ((Nelem(iptc)+1):Nelem(iptc+1), cell_indices);
-  function_indices = union (function_indices, space.gnum{iptc}(sp_patch.connectivity(:,local_cell_indices)));
+  aux_indices = sp_get_basis_functions (space.sp_patch{iptc}, msh.msh_patch{iptc}, local_cell_indices);
+  function_indices = union (function_indices, space.gnum{iptc}(aux_indices));
 end
 
 end

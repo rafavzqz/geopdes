@@ -10,7 +10,7 @@
 % OUTPUT:
 %    neighbors_indices: indices of the functions that interact with the given ones.
 %
-% Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2015, 2016 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
