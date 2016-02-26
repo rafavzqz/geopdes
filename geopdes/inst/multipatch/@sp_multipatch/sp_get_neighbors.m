@@ -31,8 +31,10 @@ neighbors_indices = [];
 
 for iptc = 1:space.npatch
   [~,patch_indices,~] = intersect (space.gnum{iptc}, fun_indices);
-  aux_indices = sp_get_neighbors (space.sp_patch{iptc}, msh.msh_patch{iptc}, patch_indices);
-  neighbors_indices = union (neighbors_indices, space.gnum{iptc}(aux_indices));
+  if (~isempty (patch_indices))
+    aux_indices = sp_get_neighbors (space.sp_patch{iptc}, msh.msh_patch{iptc}, patch_indices);
+    neighbors_indices = union (neighbors_indices, space.gnum{iptc}(aux_indices));
+  end
 end
 
 end

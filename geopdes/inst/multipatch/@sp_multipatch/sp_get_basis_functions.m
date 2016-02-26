@@ -31,8 +31,10 @@ function_indices = [];
 Nelem = cumsum ([0 msh.nel_per_patch]);
 for iptc = 1:space.npatch
   [~,local_cell_indices,~] = intersect ((Nelem(iptc)+1):Nelem(iptc+1), cell_indices);
-  aux_indices = sp_get_basis_functions (space.sp_patch{iptc}, msh.msh_patch{iptc}, local_cell_indices);
-  function_indices = union (function_indices, space.gnum{iptc}(aux_indices));
+  if (~isempty (local_cell_indices))
+    aux_indices = sp_get_basis_functions (space.sp_patch{iptc}, msh.msh_patch{iptc}, local_cell_indices);
+    function_indices = union (function_indices, space.gnum{iptc}(aux_indices));
+  end
 end
 
 end
