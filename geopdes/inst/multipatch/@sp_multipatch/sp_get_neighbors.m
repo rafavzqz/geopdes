@@ -29,18 +29,10 @@ function neighbors_indices = sp_get_neighbors (space, msh, fun_indices)
 
 neighbors_indices = [];
 
-Nelem = cumsum ([0 msh.nel_per_patch]);
 for iptc = 1:space.npatch
-  sp_patch = sp_precompute_param (space.sp_patch{iptc}, msh.msh_patch{iptc}, 'value', false);
-% The reshape avoids an error when there is only one element
-  sp_patch.connectivity = reshape (space.gnum{iptc}(sp_patch.connectivity), sp_patch.nsh_max, msh.msh_patch{iptc}.nel);
-  
-  conn_indices = arrayfun (@(x) find (sp_patch.connectivity == x), fun_indices, 'UniformOutput', false);
-  [~, ind_per_fun] = cellfun (@(x) ind2sub ([sp_patch.nsh_max, msh.msh_patch{iptc}.nel], x), conn_indices, 'UniformOutput', false);
-  
-  cell_indices = vertcat (ind_per_fun{:});
-  
-  neighbors_indices = union (neighbors_indices, sp_patch.connectivity(:,cell_indices));
+  [~,patch_indices,~] = intersect (space.gnum{iptc}, fun_indices);
+  aux_indices = sp_get_neighbors (space.sp_patch{iptc}, msh.msh_patch{iptc}, patch_indices);
+  neighbors_indices = union (neighbors_indices, space.gnum{iptc}(aux_indices));
 end
 
 end
