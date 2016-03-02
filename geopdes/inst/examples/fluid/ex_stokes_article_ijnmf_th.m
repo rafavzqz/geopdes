@@ -51,8 +51,8 @@ title('Computed solution')
 [div, F] = sp_eval (vel, space_v, geometry, vtk_pts, 'divergence');
 figure()
 surf (X, Y, div)
+axis equal tight
 view(2)
-axis equal
 title('Computed divergence')
 colorbar
 
