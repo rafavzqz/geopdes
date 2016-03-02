@@ -58,6 +58,7 @@ surf (X, Y, div)
 view(2)
 axis equal
 title('Computed divergence')
+colorbar
 
 %!demo
 %! ex_stokes_article_ijnmf_th
