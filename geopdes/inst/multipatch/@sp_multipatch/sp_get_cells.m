@@ -32,18 +32,20 @@ fun_indices = fun_indices(:).';
 
 indices_per_function = cell (numel (fun_indices), 1);
 cell_indices = [];
+
+Nelem = cumsum ([0 msh.nel_per_patch]);
 for iptc = 1:space.npatch
   [~, patch_indices, local_funs] = intersect (space.gnum{iptc}, fun_indices);
   if (~isempty (patch_indices))
     patch_indices = patch_indices(:).';
     [aux_cell_indices, ind_per_fun] = sp_get_cells (space.sp_patch{iptc}, msh.msh_patch{iptc}, patch_indices);
 
-    cell_indices = union (cell_indices, aux_cell_indices);
+    cell_indices = union (cell_indices, Nelem(iptc)+aux_cell_indices);
 
     if (nargout == 2)
       local_funs = local_funs(:).';
       for ifun = 1:numel(patch_indices)
-        indices_per_function{local_funs(ifun)} = union (indices_per_function{local_funs(ifun)}, ind_per_fun{ifun});
+        indices_per_function{local_funs(ifun)} = union (indices_per_function{local_funs(ifun)}, Nelem(iptc)+ind_per_fun{ifun});
       end
     end
   end
