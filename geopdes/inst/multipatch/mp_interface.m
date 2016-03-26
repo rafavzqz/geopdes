@@ -38,7 +38,7 @@ function [glob_num, glob_ndof] = mp_interface (interfaces, sp)
     ttform   = cell (numel (sp), numel (interfaces));
     ppnum    = cell (numel (interfaces), 1);
     for iptc = 1:numel(sp)
-      glob_num{iptc} = zeros (1, sp{iptc}.ndof);
+      glob_num{iptc} = zeros (sp{iptc}.ndof, 1);
       patch_intrfc{iptc} = union (find([interfaces.patch1] == iptc), ...
                                   find([interfaces.patch2] == iptc));
     end
