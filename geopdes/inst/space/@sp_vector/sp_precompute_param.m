@@ -79,6 +79,8 @@ else
       curl = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'divergence'))
       divergence = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'hessian'))
+      hessian = varargin {ii+1};
     else
       error ('sp_precompute: unknown option %s', varargin {ii});
     end

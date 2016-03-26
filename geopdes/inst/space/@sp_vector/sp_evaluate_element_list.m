@@ -59,6 +59,7 @@ value = true;
 gradient = false;
 divergence = false;
 curl = false;
+hessian = false;
 if (~isempty (varargin))
   if (~rem (length (varargin), 2) == 0)
     error ('sp_evaluate_element_list: options must be passed in the [option, value] format');
@@ -72,13 +73,15 @@ if (~isempty (varargin))
       curl = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'divergence'))
       divergence = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'hessian'))
+      hessian = varargin {ii+1};
     else
       error ('sp_evaluate_element_list: unknown option %s', varargin {ii});
     end
   end
 end
 
-grad_param = gradient || divergence || curl;
+grad_param = gradient || divergence || curl || hessian;
 value_param = value || grad_param;
 div_param = false; curl_param = false;
 switch (lower (space.transform))
@@ -88,7 +91,7 @@ switch (lower (space.transform))
     div_param = divergence;
 end
 
-sp = sp_evaluate_element_list_param (space, msh, 'value', value_param, 'gradient', grad_param, 'divergence', div_param, 'curl', curl_param);
+sp = sp_evaluate_element_list_param (space, msh, 'value', value_param, 'gradient', grad_param, 'divergence', div_param, 'curl', curl_param, 'hessian', hessian);
 
 if (isempty (msh.elem_list))
   return
@@ -96,14 +99,17 @@ end
 
 switch (lower (space.transform))
   case {'grad-preserving'}
-    sp = sp_vector_grad_preserving_transform (sp, msh, value, gradient, curl, divergence);
+    sp = sp_vector_grad_preserving_transform (sp, msh, value, gradient, curl, divergence, hessian);
   case {'curl-preserving'}
     sp = sp_vector_curl_preserving_transform (sp, msh, value, curl);
-    if (gradient || divergence)
-      warning ('Gradient and divergence not implemented for curl-preserving transformation')
+    if (gradient || divergence || hessian)
+      warning ('Gradient, divergence and hessian not implemented for curl-preserving transformation')
     end
   case {'div-preserving'}
     sp = sp_vector_div_preserving_transform (sp, msh, value, gradient, curl, divergence);
+    if (hessian)
+      warning ('Hessian not implemented for div-preserving transformation')
+    end
 end
 
 end

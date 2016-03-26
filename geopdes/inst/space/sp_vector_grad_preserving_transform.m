@@ -1,6 +1,6 @@
 % SP_VECTOR_GRAD_PRESERVING_TRANSFORM: apply the grad-preserving transform to the functions in the parametric domain
 %
-%     sp = sp_vector_grad_preserving_transform (space, msh, value, gradient, curl, divergence)
+%     sp = sp_vector_grad_preserving_transform (space, msh, [value, gradient, curl, divergence, hessian])
 %
 % INPUTS:
 %     
@@ -15,6 +15,7 @@
 %            gradient   |      false      |  compute shape_function_gradients
 %            curl       |      false      |  compute shape_function_curls
 %            divergence |      false      |  compute shape_function_divs
+%            hessian    |      false      |  compute shape_function_hessians
 %
 % OUTPUT:
 %
@@ -51,7 +52,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp = sp_vector_grad_preserving_transform (sp, msh, value, gradient, curl, divergence)
+function sp = sp_vector_grad_preserving_transform (sp, msh, value, gradient, curl, divergence, hessian)
 
   if (nargin < 3)
     value = true;
@@ -64,6 +65,41 @@ function sp = sp_vector_grad_preserving_transform (sp, msh, value, gradient, cur
   end
   if (nargin < 6)
     divergence = false;
+  end
+  if (nargin < 7)
+    hessian = false;
+  end
+
+  if (hessian)
+    [Jinv, Jinv2] = geopdes_inv_der2__ (msh.geo_map_jac, msh.geo_map_der2);
+    Jinv  = reshape (Jinv, [msh.ndim, msh.rdim, msh.nqn, 1, msh.nel]);
+    JinvT = permute (Jinv, [2 1 3 4 5]);
+    Jinv2 = reshape (Jinv2, [msh.ndim, msh.rdim, msh.rdim, msh.nqn, 1, msh.nel]);
+
+    shape_function_hessians = zeros (sp.ncomp, msh.ndim, msh.ndim, msh.nqn, sp.nsh_max, msh.nel);
+
+    shh_size = [1, 1, 1, msh.nqn, sp.nsh_max, msh.nel];
+
+    for icomp = 1:sp.ncomp
+      shg = reshape (sp.shape_function_gradients(icomp,:,:,:,:), ...
+        [msh.ndim, 1, 1, msh.nqn, sp.nsh_max, msh.nel]);
+      shh = reshape (sp.shape_function_hessians(icomp,:,:,:,:,:), ...
+         msh.ndim, msh.ndim, msh.nqn, sp.nsh_max, msh.nel);
+      for idim = 1:msh.rdim
+        for jdim = 1:msh.rdim
+          D2v_DF = sum (bsxfun(@times, shh, Jinv(:,idim,:,:,:)),1);
+          DFT_D2v_DF = sum (bsxfun (@times, JinvT(jdim,:,:,:,:), D2v_DF), 2);
+          Dv_D2F = sum (bsxfun (@times, shg, Jinv2(:,idim,jdim,:,:,:)), 1);
+
+          shape_function_hessians(icomp, idim,jdim,:,:,:) = ...
+            reshape (DFT_D2v_DF, shh_size) + reshape (Dv_D2F, shh_size);
+        end
+      end
+    end
+
+    if (hessian)
+      sp.shape_function_hessians = shape_function_hessians;
+    end
   end
 
   if (gradient || curl || divergence)
@@ -109,10 +145,9 @@ function sp = sp_vector_grad_preserving_transform (sp, msh, value, gradient, cur
     elseif (isfield (sp, 'shape_function_curls'))
       sp = rmfield (sp, 'shape_function_curls');
     end
-    
-    if (~gradient)
-      sp = rmfield (sp, 'shape_function_gradients');
-    end
+  end
+  if (~gradient && isfield (sp, 'shape_function_gradients'))
+    sp = rmfield (sp, 'shape_function_gradients');
   end
 
   if (~value && isfield (sp, 'shape_functions'))

@@ -60,6 +60,7 @@ function sp_out = sp_precompute (sp, msh, varargin)
 gradient = false;
 divergence = false;
 curl = false;
+hessian = false;
 
 if (isempty (varargin))
   value = true;
@@ -77,6 +78,8 @@ else
       curl = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'divergence'))
       divergence = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'hessian'))
+      hessian = varargin {ii+1};
     else
       error ('sp_precompute: unknown option %s', varargin {ii});
     end
@@ -87,7 +90,7 @@ if (~isstruct (msh))
   msh = msh_precompute (msh);
 end
   
-grad_param = gradient || divergence || curl;
+grad_param = gradient || divergence || curl || hessian;
 value_param = value || grad_param;
 div_param = false; curl_param = false;
 switch (lower (sp.transform))
@@ -97,18 +100,21 @@ switch (lower (sp.transform))
     div_param = divergence;
 end
 
-sp_out = sp_precompute_param (sp, msh, 'value', value_param, 'gradient', grad_param, 'divergence', div_param, 'curl', curl_param);
+sp_out = sp_precompute_param (sp, msh, 'value', value_param, 'gradient', grad_param, 'divergence', div_param, 'curl', curl_param, 'hessian', hessian);
 
 switch (lower (sp.transform))
   case {'grad-preserving'}
-    sp_out = sp_vector_grad_preserving_transform (sp_out, msh, value, gradient, curl, divergence);
+    sp_out = sp_vector_grad_preserving_transform (sp_out, msh, value, gradient, curl, divergence, hessian);
   case {'curl-preserving'}
     sp_out = sp_vector_curl_preserving_transform (sp_out, msh, value, curl);
-    if (gradient || divergence)
-      warning ('Gradient and divergence not implemented for curl-preserving transformation')
+    if (gradient || divergence || hessian)
+      warning ('Gradient, divergence and hessian not implemented for curl-preserving transformation')
     end
   case {'div-preserving'}
     sp_out = sp_vector_div_preserving_transform (sp_out, msh, value, gradient, curl, divergence);
+    if (hessian)
+      warning ('Hessian not implemented for div-preserving transformation')
+    end
 end
 
 end
