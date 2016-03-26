@@ -15,6 +15,7 @@
 %            gradient   |      false      |  compute shape_function_gradients
 %            divergence |      false      |  compute shape_function_divs
 %            curl       |      false      |  compute shape_function_curls
+%            hessian    |      false      |  compute shape_function_hessians
 %
 % OUTPUT:
 %
@@ -32,7 +33,9 @@
 %    connectivity    (nsh_max x msh.nel vector)            indices of basis functions that do not vanish in each element
 %    shape_functions (ncomp_param x msh.nqn x nsh_max x msh.nel) basis functions evaluated at each quadrature node in each element
 %    shape_function_gradients
-%             (ncomp_param x ndim x msh.nqn x nsh_max x msh.nel) basis function gradients evaluated at each quadrature node in each element
+%      (ncomp_param x ndim x msh.nqn x nsh_max x msh.nel)        basis function gradients evaluated at each quadrature node in each element
+%    shape_function_hessians
+%      (ncomp_param x ndim x ndim x msh.nqn x nsh_max x msh.nel) basis function hessians evaluated at each quadrature node in each element
 %    shape_function_divs (msh.nqn x nsh_max x msh.nel)           basis function divergence evaluated at each quadrature node in each element
 %    shape_function_curls
 %         2D:  (msh.nqn x nsh_max x msh.nel)                     basis function curl evaluated at each quadrature node in each element
@@ -59,7 +62,7 @@ function sp_out = sp_precompute_param (sp, msh, varargin)
 gradient = false;
 divergence = false;
 curl = false;
-
+hessian = false;
 if (isempty (varargin))
   value = true;
 else
@@ -88,7 +91,7 @@ end
   
 first_der = gradient || divergence || curl;
 for icomp = 1:sp.ncomp_param
-  sp_scalar(icomp) = sp_precompute_param (sp.scalar_spaces{icomp}, msh, 'value', value, 'gradient', first_der);
+  sp_scalar(icomp) = sp_precompute_param (sp.scalar_spaces{icomp}, msh, 'value', value, 'gradient', first_der, 'hessian', hessian);
 end
 
 ndof_scalar = [sp_scalar.ndof];
@@ -152,6 +155,14 @@ if (gradient || divergence || curl)
       end
       sp_out.shape_function_curls = shape_fun_curls;
     end
+  end
+end
+
+if (hessian)
+  sp_out.shape_function_hessians = zeros (sp.ncomp, msh.ndim, msh.ndim, msh.nqn, sp_out.nsh_max, msh.nel);
+  for icomp = 1:sp.ncomp_param
+    indices = sp.cumsum_nsh(icomp)+(1:sp_scalar(icomp).nsh_max);
+    sp_out.shape_function_hessians(icomp,:,:,:,indices,:) = sp_scalar(icomp).shape_function_hessians;
   end
 end
 

@@ -16,6 +16,7 @@
 %            gradient   |      false      |  compute shape_function_gradients
 %            divergence |      false      |  compute shape_function_divs
 %            curl       |      false      |  compute shape_function_curls
+%            hessian    |      false      |  compute shape_function_hessians
 %
 % OUTPUT:
 %
@@ -32,6 +33,8 @@
 %    shape_functions (ncomp_param x msh_col.nqn x nsh_max x msh_col.nel)  basis functions evaluated at each quadrature node in each element
 %    shape_function_gradients
 %       (ncomp_param x ndim x msh_col.nqn x nsh_max x msh_col.nel) basis function gradients evaluated at each quadrature node in each element
+%    shape_function_hessians
+%       (ncomp_param x ndim x ndim x msh_col.nqn x nsh_max x msh_col.nel) basis function hessians evaluated at each quadrature node in each element
 %    shape_function_divs (msh_col.nqn x nsh_max x msh_col.nel)     basis function divergence evaluated at each quadrature node in each element
 %    shape_function_curls 
 %         2D:  (msh_col.nqn x nsh_max x msh_col.nel)               basis function curl evaluated at each quadrature node in each element
@@ -59,6 +62,7 @@ value = true;
 gradient = false;
 divergence = false;
 curl = false;
+hessian = false;
 if (~isempty (varargin))
   if (~rem (length (varargin), 2) == 0)
     error ('sp_evaluate_element_list_param: options must be passed in the [option, value] format');
@@ -72,6 +76,8 @@ if (~isempty (varargin))
       curl = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'divergence'))
       divergence = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'hessian'))
+      hessian = varargin {ii+1};
     else
       error ('sp_evaluate_element_list_param: unknown option %s', varargin {ii});
     end
@@ -80,7 +86,7 @@ end
 
 first_der = gradient || divergence || curl;
 for icomp = 1:space.ncomp_param
-  sp_col_scalar(icomp) = sp_evaluate_element_list_param (space.scalar_spaces{icomp}, msh, 'value', value, 'gradient', first_der);
+  sp_col_scalar(icomp) = sp_evaluate_element_list_param (space.scalar_spaces{icomp}, msh, 'value', value, 'gradient', first_der, 'hessian', hessian);
 end
 
 ndof_scalar = [sp_col_scalar.ndof];
@@ -146,12 +152,12 @@ if (gradient || curl || divergence)
   end
 end
 
-% if (hessian)
-%   sp.shape_function_hessians = zeros (space.ncomp, msh.ndim, msh.ndim, msh.nqn, sp.nsh_max, msh.nel);
-%   for icomp = 1:space.ncomp
-%     indices = space.cumsum_nsh(icomp)+(1:sp_col_scalar(icomp).nsh_max);
-%     sp.shape_function_hessians(icomp,:,:,:,indices,:) = sp_col_scalar(icomp).shape_function_hessians;
-%   end
-% end
+if (hessian)
+  sp.shape_function_hessians = zeros (space.ncomp, msh.ndim, msh.ndim, msh.nqn, sp.nsh_max, msh.nel);
+  for icomp = 1:space.ncomp_param
+    indices = space.cumsum_nsh(icomp)+(1:sp_col_scalar(icomp).nsh_max);
+    sp.shape_function_hessians(icomp,:,:,:,indices,:) = sp_col_scalar(icomp).shape_function_hessians;
+  end
+end
 
 end
