@@ -86,5 +86,9 @@ function sp = sp_vector_curl_preserving_transform (sp, msh, value, curl)
   if (isfield (sp, 'shape_function_gradients'))
     sp = rmfield (sp, 'shape_function_gradients');
   end
+
+  if (isfield (sp, 'shape_function_hessians'))
+    sp = rmfield (sp, 'shape_function_hessians');
+  end
   
 end

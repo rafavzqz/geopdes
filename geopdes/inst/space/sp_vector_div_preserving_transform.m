@@ -123,6 +123,10 @@ function sp = sp_vector_div_preserving_transform (sp, msh, value, gradient, curl
     sp = rmfield (sp, 'shape_functions');
   end
   
+  if (isfield (sp, 'shape_function_hessians'))
+    sp = rmfield (sp, 'shape_function_hessians');
+  end
+  
 end
 
 
