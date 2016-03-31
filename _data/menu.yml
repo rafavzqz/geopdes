@@ -1,5 +1,5 @@
 - title: "Description"
-  href: "/{{ site.github.url }}/index"
+  href: "/{{ site.github.url }}/"
 
 - title: "Download"
   href: "/{{ site.github.url }}/download/"
