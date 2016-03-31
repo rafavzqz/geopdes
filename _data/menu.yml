@@ -2,7 +2,7 @@
   href: "/index/"
 
 - title: "Download"
-  href: "/download/"
+  href: "{{site.github.url}}/download/"
 
 - title: "Documentation"
   href: "/documentation/"
