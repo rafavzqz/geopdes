@@ -1,0 +1,117 @@
+Summary of important changes for geopdes-3.0.1:
+-----------------------------------------------------------------------------
+* Computation of the hessian for vector fields, with grad preserving transform
+
+Summary of important changes for geopdes-3.0.0:
+-----------------------------------------------------------------------------
+ In this version we clearly separate functions that work on structures (as in version 1), and those that work on tensor-product classes (As in version 2). 
+* Added sp_scalar and sp_vector, with the transformation as an argument, to replace the old classes for spaces.
+* Added new classes msh_multipatch and sp_multipatch.
+* Moved sp_eval, sp_to_vtk into the space classes.
+* Moved sp_*_error into the classes, and maintain out of the class the same functions from version 1.
+* Added the functions sp_*_transform, that work on structures.
+* Moved the operators op_*_tp into the corresponding classes.
+* Generated the operators op_*_mp, for multipatch domains.
+* Added functions sp_get_(cells, neighbors, basis_functions).
+* Combine the five old packages into a single one.
+
+Summary of important changes for geopdes_***-2.1.0 (not officially released):
+-----------------------------------------------------------------------------
+* Functions modified to work on any dimension (3D surfaces and 1D problems).
+* Added msh_cartesian to replace the old msh_2d and msh_3d.
+* Added sp_bspline and sp_nurbs to replace the old classes for spaces.
+* Replaced the solve_*d files with a dimension-independent version.
+* The boundary entities for msh and space are now objects of the same class as the non-boundary one, with lower dimension.
+* Changed the file format of the geometry, to allow for 3D surfaces.
+* convert_geo07_to_geo10: to convert from the old format to the new one.
+* geopdes_base: functions to evaluate msh and space in a given list of elements.
+* Better use of sp_eval, to allow computing several quantities at once.
+* New function mp_interface_hdiv
+
+Summary of important user-visible changes for geopdes_***-2.0.4:
+-----------------------------------------------------------------------------
+* geopdes_base, added functions for the advection-diffusion problem with SUPG stabilization: op_mat_stab_SUPG, op_mat_stab_SUPG_tp, op_rhs_stab_SUPG, op_rhs_stab_SUPG_tp, solve_adv_diff_2d, ex_advection_diffusion_square.
+* geopdes_base, added functions for the bilaplacian: op_laplaceu_laplacev, op_laplaceu_laplacev_tp, solve_bilaplace_2d_iso.
+* geopdes_elasticity, added functions for the bilaplacian: op_gradgradu_gradgradv, op_gradgradu_gradgradv_tp, solve_bilaplace_gradgrad_2d_iso, ex_kirchhoff_*.
+* geopdes_fluid, added functions for the Nitsche's method: sp_weak_dirichlet_bc, op_udotn_vdotn, op_fdotn_vdotn, op_gradv_n_u, op_gradv_n_f.
+* solve_stokes_2d, sp_bspline_fluid_2d: modified to use Nitsche's method.
+* msh_2d/msh_eval_boundary_side: added computation of the normal characteristic length.
+* sp_eval_stress: modified to work also with the Piola transformation.
+
+Summary of important user-visible changes for geopdes_***-2.0.3:
+-----------------------------------------------------------------------------
+* In geopdes.h, "quad_nodes" replaced by "geo_map_jac" to check the dimension.
+* Fixed bug in the functions mp_interface_#d
+
+Summary of important user-visible changes for geopdes_***-2.0.2:
+-----------------------------------------------------------------------------
+* sp_eval and sp_to_vtk: added the possibility to plot curl and gradient
+* Added the function(s) sp_eval_grad(div,curl)_msh
+* Added the old version of the operators, at the end of the new ones,
+    for didactic purposes
+* Linear elasticity: added pressure and symmetric conditions in 3D
+* Linear elasticity: changed the name of the variables for Lame parameters
+* @msh_3d/msh_precompute: fixed bug in the loop
+
+Summary of important user-visible changes for geopdes_***-2.0.1:
+-----------------------------------------------------------------------------
+* Modified the oct-operators to be compatible with Octave 3.2
+* Fixed bug in the function names sp_vector_#d_curl_transform
+
+Summary of important user-visible changes for geopdes_***-2.0.0:
+-----------------------------------------------------------------------------
+* Added the classes msh_2d and msh_3d, with their methods.
+* Added the classes sp_bspline_2d, sp_bspline_3d, sp_nurbs_2d, sp_nurbs_3d,
+    sp_vector_2d, sp_vector_3d, sp_vector_2d_piola_transform, 
+    sp_vector_2d_curl_transform, sp_vector_3d_curl_transform,
+    sp_bspline_2d_3forms, with their methods.
+* Removed many functions that became unnecessary with the classes.
+* Functions sp_eval and sp_to_vtk work now for 2D and 3D geometries.
+* Added the functions sp_eval_msh, sp_eval_div_msh.
+* Added the tensor product version of the operators (like op_u_v_tp.m).
+    They only work for classes.
+* Modified the m-version of the operators, to make them even faster.
+
+Summary of important user-visible changes for geopdes_***-1.1.0:
+-----------------------------------------------------------------------------
+* Added the function grule to the "utils" folder.
+* Changed the way the examples are called.
+* Make use of tensor product in msh_push_forward_2d(3d) and geo_2d(3d)_nurbs.
+    This requires version 1.3.4 of the nurbs toolbox.
+* New file format for multipatch geometries (v.0.7).
+* Changed the way the multipatch numbering (and orientation) is set.
+* Added a new function to compute the deformed geometry in geopdes_elasticity.
+* Added multipatch examples in geopdes_elasticity.
+* Added Subgrid method in geopdes_fluid.
+* Added multipatch examples for TH and SG elements in geopdes_fluid.
+* Modified the C version of the operators to be compatible with Octave 3.4.
+* Modified the operators to return the vectors that build the sparse matrix.
+* Modified the m-version of the operators to make them faster.
+* Modified matrix assembly in multipatch examples, to make it faster.
+* Modified matrix assembly in sp_drchlt_* files.
+* sp_nurbs_*_param. Fixed a bug for the functions on the boundary.
+* sp_scalar_to_vector_2d. Fixed a bug where the field ndof_dir was missing.
+
+Summary of important user-visible changes for geopdes_maxwell-1.0.1 (not released):
+-----------------------------------------------------------------------------
+* mp_interface_hcurl_3d.m, fixed a bug in setting the orientation of 
+   the functions associated to the edges.
+
+* op_curlu_curlv.cc, fixed a bug where the coefficient was not actually used.
+
+Summary of important user-visible changes for geopdes_base-1.0.2 (18/11/2010):
+-----------------------------------------------------------------------------
+* msh_push_forward_2d.m, msh_push_forward_3d.m. Fixed a bug in the
+   computation of the normal vector exterior to the boundary.
+
+* msh_2d_tensor_product.m, msh_3d_tensor_product.m. Added the 
+   computation of the normal vector exterior to the boundary.
+
+* sp_scalar_to_vector_3d.m. Fixed a bug where the field ndof_dir 
+   was missing.
+
+Summary of important user-visible changes for geopdes_base-1.0.1 (17/11/2010):
+-----------------------------------------------------------------------------
+* inst/space/bsp_2_nrb_1d__.m, inst/space/bsp_2_nrb_2d__.m,
+  inst/space/bsp_2_nrb_3d__.m. Fixed a bug where the modified shape
+  functions were not returned in the output.
