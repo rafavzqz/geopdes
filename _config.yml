@@ -10,7 +10,7 @@ title: "GeoPDEs: a package for Isogeometric Analysis in Matlab and Octave"
 # email: your-email@domain.com
 description: > # this means to ignore newlines until "baseurl:"
   GeoPDEs is an open source and free package for Isogeometric Analysis in Matlab and Octave
-baseurl: "/geopdes/" # the subpath of your site, e.g. /blog/
+baseurl: "/geopdes" # the subpath of your site, e.g. /blog/
 url: "http://rafavzqz.github.io" # the base hostname & protocol for your site
 github_username:  rafavzqz
 

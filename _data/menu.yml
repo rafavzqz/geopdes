@@ -1,14 +1,14 @@
 - title: "Description"
-  href: "/index/"
+  href: "/geopdes/index/"
 
 - title: "Download"
-  href: "/download/"
+  href: "/geopdes/download/"
 
 - title: "Documentation"
-  href: "/documentation/"
+  href: "/geopdes/documentation/"
 
 - title: "Contributors"
-  href: "/contributors/"
+  href: "/geopdes/contributors/"
 #  subcategories:
 #    - subtitle: "Item 1"
 #      subhref: "/miscellany/item-1/"
@@ -16,4 +16,4 @@
 #      subhref: "/miscellany/item-2/"
 
 - title: "Publications"
-  href: "/publications/"
+  href: "/geopdes/publications/"
