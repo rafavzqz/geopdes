@@ -1,0 +1,30 @@
+# Welcome to Jekyll!
+#
+# This config file is meant for settings that affect your whole blog, values
+# which you are expected to set up once and rarely need to edit after that.
+# For technical reasons, this file is *NOT* reloaded automatically when you use
+# 'jekyll serve'. If you change this file, please restart the server process.
+
+# Site settings
+title: "GeoPDEs: a package for Isogeometric Analysis in Matlab and Octave"
+# email: your-email@domain.com
+description: > # this means to ignore newlines until "baseurl:"
+  GeoPDEs is an open source and free package for Isogeometric Analysis in Matlab and Octave
+baseurl: "" # the subpath of your site, e.g. /blog/
+url: "http://yourdomain.com" # the base hostname & protocol for your site
+github_username:  rafavzqz
+
+# Build settings
+markdown: kramdown
+
+# Other options
+permalink: pretty
+# permalink: blog/:year/:month/:title
+# job.title: "Assistant Professor"
+excerpt_separator: "<!--more-->"
+
+# SEO stuff
+# google_author: ""
+# google_site_verification: ""
+# bing_webmastertools_id: ""
+
