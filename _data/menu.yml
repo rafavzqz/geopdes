@@ -1,14 +1,14 @@
 - title: "Description"
-  href: "/{{ site.github.url }}/"
+  href: "/geopdes/"
 
 - title: "Download"
-  href: "/{{ site.github.url }}/download/"
+  href: "/geopdes/download/"
 
 - title: "Documentation"
-  href: "/{{ site.github.url }}/documentation/"
+  href: "/geopdes/documentation/"
 
 - title: "Contributors"
-  href: "/{{ site.github.url }}/contributors/"
+  href: "/geopdes/contributors/"
 #  subcategories:
 #    - subtitle: "Item 1"
 #      subhref: "/miscellany/item-1/"
@@ -16,4 +16,4 @@
 #      subhref: "/miscellany/item-2/"
 
 - title: "Publications"
-  href: "/{{ site.github.url }}/publications/"
+  href: "/geopdes/publications/"
