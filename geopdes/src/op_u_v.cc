@@ -122,7 +122,7 @@ OUTPUT: \n\
         } 
       else if (nargout == 3)
 	{
-          for (icmp = 0; icmp < I.length(); icmp++) 
+          for (icmp = 0; icmp < I.numel (); icmp++) 
             {
               Iptr[icmp] += 1;
               Jptr[icmp] += 1;
