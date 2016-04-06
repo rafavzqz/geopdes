@@ -57,9 +57,7 @@ function msh_col = msh_restrict_to_patches (msh, patches)
   msh_col.nel_per_patch = zeros (1, msh.npatch);
   msh_col.nel_dir_of_patch = cell (1, msh.npatch);
   msh_col.nel_per_patch(patches) = msh.nel_per_patch(patches);
-  for iptc = patches
-    msh_col.nel_dir_of_patch{iptc} = msh.nel_dir_of_patch{iptc};
-  end
+  msh_col.nel_dir_of_patch = msh.nel_dir_of_patch;
   msh_col.nel = sum (msh_col.nel_per_patch);
 
   msh_col.elem_list = [];
