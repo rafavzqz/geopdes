@@ -124,6 +124,8 @@ function [eu, F] = sp_eval_msh (u, space, msh, options, lambda_lame, mu_lame)
         indaux = [4, 2];
         eusize{iopt} = {1:space.ncomp, 1:msh.rdim, 1:msh.nqn};
 
+      otherwise
+        error ('sp_eval_msh: unknown option: %s', options{iopt})
     end
   end
   
