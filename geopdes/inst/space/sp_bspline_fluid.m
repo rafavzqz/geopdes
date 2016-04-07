@@ -61,11 +61,12 @@ switch (lower (element_name))
     regularity_v = regularity_p;
     nsub_v = nsub_p;
     knots_v = kntrefine (knots, nsub_v-1, degree_v, regularity_v);
+    scalar_space = sp_bspline (knots_v, degree_v, msh);
     for idim = 1:msh.ndim
-      scalar_spaces{idim} = sp_bspline (knots_v, degree_v, msh);
+      scalar_spaces{idim} = scalar_space;
     end
     spv = sp_vector (scalar_spaces, msh);
-    clear scalar_spaces
+    clear scalar_spaces scalar_space
 
   case {'sg'}
     knotsp = kntrefine (knots, nsub_p-1, degree_p, regularity_p);
@@ -75,11 +76,12 @@ switch (lower (element_name))
     regularity_v = regularity_p+1;
     nsub_v = 2*nsub_p;
     knots_v = kntrefine (knots, nsub_v-1, degree_v, regularity_v);
+    scalar_space = sp_bspline (knots_v, degree_v, msh);
     for idim = 1:msh.ndim
-      scalar_spaces{idim} = sp_bspline (knots_v, degree_v, msh);
+      scalar_spaces{idim} = scalar_space;
     end
     spv = sp_vector (scalar_spaces, msh);
-    clear scalar_spaces
+    clear scalar_spaces scalar_space
 
   case {'ndl'}
 % In this case the regularity is assigned first in the velocity space

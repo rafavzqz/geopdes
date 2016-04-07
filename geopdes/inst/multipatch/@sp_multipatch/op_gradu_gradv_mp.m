@@ -58,5 +58,14 @@ function A = op_gradu_gradv_mp (spu, spv, msh, coeff, patch_list)
 
   A = sparse (rows, cols, vals, spv.ndof, spu.ndof);
   clear rows cols vals rs cs vs
-
+  
 end
+
+%% COPY OF THE CODE IN THE TECHNICAL REPORT, SIMPLER TO UNDERSTAND
+% for iptc = 1:space.npatch
+%   local_msh = msh.msh_patch{iptc}
+%   local_spu = spu.sp_patch{iptc};
+%   local_spv = spv.sp_patch{iptc};
+%   A_loc = op_gradu_gradv_tp (local_spu, local_spv, local_msh);
+%   A(spv.gnum{iptc}, spu.gnum{iptc}) = A(spv.gnum{iptc}, spu.gnum{iptc}) + A_loc;
+% end
