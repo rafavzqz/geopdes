@@ -61,7 +61,8 @@ function A = op_gradu_gradv_mp (spu, spv, msh, coeff, patch_list)
   
 end
 
-%% COPY OF THE CODE IN THE TECHNICAL REPORT, SIMPLER TO UNDERSTAND
+%% COPY OF THE CODE AS IN THE TECHNICAL REPORT, SIMPLER TO UNDERSTAND
+%% It does not use the last two input arguments, and assembles the matrix directly
 % for iptc = 1:space.npatch
 %   local_msh = msh.msh_patch{iptc}
 %   local_spu = spu.sp_patch{iptc};
