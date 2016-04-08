@@ -1,7 +1,7 @@
 % GEOPDES_BASE_EXAMPLES: Run some simple examples on how to use GeoPDEs.
 %
 % Copyright (C) 2006-2009, Thomas Treichl <treichl@users.sourceforge.net>
-% Copyright (C) 2010-2015, Rafael Vazquez
+% Copyright (C) 2010-2016, Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ while (iopt > 0)
            ['GeoPDEs examples menu:\n', ...
             '----------------------\n', ...
             '\n', ...
-            '   (1) Examples appearing in the article. \n \n', ...
+            '   (1) Examples appearing in the articles. \n \n', ...
             '   (2) Other examples in 2D: Poisson and advection-diffusion problems. \n \n',...
             '   (3) Other examples in 3D surfaces and volumes: Poisson problem. \n \n',...
             '   (4) Multipatch examples for Poisson problem. \n \n']);
@@ -48,12 +48,15 @@ while (iopt > 0)
                 '   (2) The same example with k-refinement (section 5.1.1). \n \n', ...
                 '   (3) The non-isoparametric approach (section 5.1.2). \n \n', ...
                 '   (4) A different quadrature rule (section 5.1.3). \n \n', ...
-                '   (5) A problem with non-homogeneous boundary conditions (section 5.1.4). \n \n'])
+                '   (5) A problem with non-homogeneous boundary conditions (section 5.1.4). \n \n', ...
+                '   (6) A simple multipatch geometry, with two patches. \n \n'])
       iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
-      if (~isempty (iopt2) && iopt2 > 0 && iopt2 < 6)
+      if (~isempty (iopt2) && iopt2 > 0 && iopt2 < 7)
         vexa = do_example (iopt2);
-        index = strfind (vexa,'%!') - 1;
-        disp (vexa(1:index(1)));
+        if (iopt2 < 6)
+          index = strfind (vexa,'%!') - 1;
+          disp (vexa(1:index(1)));
+        end
         eval (vexa);
         input ('Press <Enter> to continue: ');
       end
@@ -86,7 +89,7 @@ while (iopt > 0)
       iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
 
       if (~isempty (iopt2) && iopt2 > 0 && iopt2 < 10)
-        [vexa, filename] = do_example (iopt2+5);
+        [vexa, filename] = do_example (iopt2+6);
         clc
         fprintf (1, 'You can have a look at the source file: %s \n \n', filename);
         eval (vexa);
@@ -116,7 +119,7 @@ while (iopt > 0)
       iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
 
       if (~isempty (iopt2) && iopt2 > 0 && iopt2 < 5)
-        [vexa, filename] = do_example (14+iopt2);
+        [vexa, filename] = do_example (15+iopt2);
         clc
         fprintf (1, 'You can have a look at the source file: %s \n \n', filename);        
         eval (vexa);
@@ -184,30 +187,32 @@ switch (number)
  case 5
   filename = 'ex_article_section_514.m';
  case 6
-  filename = 'ex_laplace_iso_plate.m';
+  filename = 'ex_articlev3_example51.m';
  case 7
-  filename = 'ex_laplace_iso_ring.m';
+  filename = 'ex_laplace_iso_plate.m';
  case 8
-  filename = 'ex_laplace_iso_ring_mixed_bc.m';
+  filename = 'ex_laplace_iso_ring.m';
  case 9
-  filename = 'ex_laplace_square.m';
+  filename = 'ex_laplace_iso_ring_mixed_bc.m';
  case 10
-  filename = 'ex_laplace_plate.m';
+  filename = 'ex_laplace_square.m';
  case 11
-  filename = 'ex_laplace_ring.m';
+  filename = 'ex_laplace_plate.m';
  case 12
-  filename = 'ex_laplace_ring_mixed_bc.m';
+  filename = 'ex_laplace_ring.m';
  case 13
-  filename = 'ex_advection_diffusion_square.m';
+  filename = 'ex_laplace_ring_mixed_bc.m';
  case 14
-  filename = 'ex_laplace_eig_square.m';
+  filename = 'ex_advection_diffusion_square.m';
  case 15
-  filename = 'ex_laplace_iso_thick_ring.m';  
+  filename = 'ex_laplace_eig_square.m';
  case 16
-  filename = 'ex_laplace_cube.m';  
+  filename = 'ex_laplace_iso_thick_ring.m';  
  case 17
-  filename = 'ex_laplace_thick_ring.m';  
+  filename = 'ex_laplace_cube.m';  
  case 18
+  filename = 'ex_laplace_thick_ring.m';  
+ case 19
   filename = 'ex_laplace_beltrami.m';  
 end
 
