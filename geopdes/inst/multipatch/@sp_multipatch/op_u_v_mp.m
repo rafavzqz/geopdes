@@ -1,20 +1,20 @@
 % OP_U_V_MP: assemble the mass matrix M = [m(i,j)], m(i,j) = (mu u_j, v_i), in a multipatch domain.
 %
-%   mat = op_u_v_mp (spu, spv, msh, coeff, [patches]);
+%   mat = op_u_v_mp (spu, spv, msh, [coeff], [patches]);
 %
 % INPUT:
 %
 %  spu:     object representing the space of trial functions (see sp_multipatch)
 %  spv:     object representing the space of test functions (see sp_multipatch)
 %  msh:     object defining the domain partition and the quadrature rule (see msh_multipatch)
-%  coeff:   function handle to compute the reaction coefficient
+%  coeff:   function handle to compute the reaction coefficient. Equal to one if left empty.
 %  patches: list of patches where the integrals have to be computed. By default, all patches are selected.
 %
 % OUTPUT:
 %
 %  mat:    assembled mass matrix
 % 
-% Copyright (C) 2015, Rafael Vazquez
+% Copyright (C) 2015, 2016 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -41,7 +41,11 @@ function A = op_u_v_mp (spu, spv, msh, coeff, patch_list)
   
   ncounter = 0;
   for iptc = patch_list
-    [rs, cs, vs] = op_u_v_tp (spu.sp_patch{iptc}, spv.sp_patch{iptc}, msh.msh_patch{iptc}, coeff);
+    if (nargin < 4 || isempty (coeff))
+      [rs, cs, vs] = op_u_v_tp (spu.sp_patch{iptc}, spv.sp_patch{iptc}, msh.msh_patch{iptc});
+    else
+      [rs, cs, vs] = op_u_v_tp (spu.sp_patch{iptc}, spv.sp_patch{iptc}, msh.msh_patch{iptc}, coeff);
+    end
     rows(ncounter+(1:numel (rs))) = spv.gnum{iptc}(rs);
     cols(ncounter+(1:numel (rs))) = spu.gnum{iptc}(cs);
 
