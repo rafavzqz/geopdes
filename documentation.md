@@ -21,7 +21,9 @@ These will guide you through a set of menus to choose some examples for solving 
 
 Each function in GeoPDEs comes with a detailed help, explaining its functionality and its input and output arguments. The documentation for each function can be accessed with the _help_ command, as for any other Octave/Matlab function. 
 
-The list of available functions in GeoPDEs is available in the INDEX file, inside the package. It can also be accessed with the command (Matlab users only) _help geopdes_.
+After the installation, the list of available functions in GeoPDEs can be accessed with the commands
+pkg describe -verbose geopdes (Octave users)
+help geopdes (Matlab users, or Octave users not using the pkg installation).
 
 # Getting support
 
