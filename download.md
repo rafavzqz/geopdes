@@ -34,17 +34,6 @@ Add the two folders, with all their subfolders, to the Matlab path.
 
 More detailed installation instructions are found in the README file.
 
-# <a name="examples"></a>Getting started: running the examples
-
-GeoPDEs contains a set of simple examples, that can be run with the commands:
-
-* geopdes_base_examples
-* geopdes_elasticity_examples
-* geopdes_fluid_examples
-* geopdes_maxwell_examples
- 
-These will guide you through a set of menus to choose some examples for solving different model problems.
-
 # GeoPDEs in GitHub
 
 The source code of GeoPDEs is now available in [GitHub](https://github.com/rafavzqz/geopdes). Older versions of GeoPDEs are also available in the repository.

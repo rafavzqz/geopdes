@@ -6,7 +6,16 @@ permalink: /documentation/
 
 GeoPDEs has been released along with a [**technical report**]() explaining its design and its main features, to be used as a brief user's guide. The technical report is included among the files to [**download**](../download).
 
+# <a name="examples"></a>Getting started: running the examples
 
+GeoPDEs contains a set of simple examples, that can be run with the commands:
+
+* geopdes_base_examples
+* geopdes_elasticity_examples
+* geopdes_fluid_examples
+* geopdes_maxwell_examples
+ 
+These will guide you through a set of menus to choose some examples for solving different model problems.
 
 # Function help
 
