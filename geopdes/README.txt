@@ -107,13 +107,13 @@ CONTENTS:
 3.2. HELP
 
  * A detailed documentation for the software is not likely to be published.
-    We suggest you to read the papers
+    We suggest you to read the paper
 
       R. Vazquez.
       A new design for the implementation of isogeometric analysis
       in Octave and Matlab: GeoPDEs 3.0, Tech. report, IMATI-CNR, 2016
 
-    In the papers we give an explanation of the architecture, the design and
+    In the paper we give an explanation of the architecture, the design and
     the main features of the code. This paper can be seen as brief user's guide.
 
  * All the functions in GeoPDEs contain a detailed description, that can be
