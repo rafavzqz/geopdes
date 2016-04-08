@@ -17,7 +17,7 @@ CONTENTS:
 
 1. DESCRIPTION
 
-  GeoPDEs is an open source and free package for the research and teaching of Isogeometric Analysis, written in Octave and fully compatible with Matlab.
+  GeoPDEs is an open and free package for the research and teaching of Isogeometric Analysis, written in Octave and fully compatible with Matlab.
 
   The GeoPDEs package provides a common and flexible framework for implementing and testing new isogeometric methods for the solution of partial differential equations.
 
