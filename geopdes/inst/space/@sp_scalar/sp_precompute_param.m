@@ -95,6 +95,7 @@ function sp = sp_precompute_param (sp, msh, varargin)
     nsh = nsh .* nsh_grid{idim};
   end
   sp.nsh = nsh(:)';
+  clear nsh
 
   for idim = 1:msh.ndim
     csize = ones (1, 2*msh.ndim);
