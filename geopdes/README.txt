@@ -120,7 +120,7 @@ CONTENTS:
     accessed with "help <function_name>". You can see a list of all the 
     functions in the package, typing in the Octave prompt:
      pkg describe -verbose geopdes
-     help geopdes (Matlab users)
+     help geopdes (if the package is not installed, also valid for Matlab users)
 
  * The format for the geometry files is explained in the files
 
