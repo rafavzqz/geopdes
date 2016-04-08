@@ -19,26 +19,29 @@
 %               faces:   local numbering of the faces in their patch
 %
 %   interfaces: an array of structures that contain the following fields
+%
+%               patch1: the index of the first coinciding patch, 
+%               side1:  the local index in patch1 of the interface boundary vertex (1D), edge (2D) or face (3D)
+%               patch2: the index of the second coinciding patch
+%               side2:  the local index in patch2 of the interface boundary vertex (1D), edge (2D) or face (3D)
 %      2D Case
-%               ref:    reference number of each interface
-%               patch1: the index of the first coinciding patch, and the index of its interface boundary edge
-%               patch2: the index of the second coinciding patch, and the index of its interface boundary edge
-%               ornt:   a flag telling if the direction on patch1 matches the direction on patch2
+%               ornt:          a flag telling if the direction on patch1 matches the direction on patch2
 %      3D Case
-%               ref:    reference number of each interface
-%               patch1: the index of the first coinciding patch, and the index of its interface boundary face
-%               patch2: the index of the second coinciding patch, and the index of its interface boundary face
-%               flag:   a flag telling if the u- and v- parameter directions on the first face coincide with the u- and v- directions on the second face
-%               ornt1:  a flag telling if the u- direction on the first face matches the direction on patch2
-%               ornt2:  a flag telling if the v- direction on the first face matches the direction on patch2
+%               flag:          a flag telling if the u- and v- parameter directions on the first face coincide 
+%                                   with the u- and v- directions on the second face
+%               ornt1:         a flag telling if the u- direction on the first face matches the direction on patch2
+%               ornt2:         a flag telling if the v- direction on the first face matches the direction on patch2
 %
 %   subdomains: an array of structures that contains the following fields
 %               name:    the name of the subdomain
 %               patches: indices of the patches belonging to the subdomain
 %
+%   boundary_interfaces: similar to interfaces, but for the (n-1) dimensional boundary
 %
 % This format is based on the paper
-% [1] T. Dokken, E. Quak, V. Skytt, Requirements from Isogeometric Analysis for Changes in Product Design Ontologies. Proceedings of the Focus K3D Conference on Semantic 3D Media and Content, Sophia Antipolis (France), 2010.
+% T. Dokken, E. Quak, V. Skytt, 
+%  Requirements from Isogeometric Analysis for Changes in Product Design Ontologies. 
+%  Proceedings of the Focus K3D Conference on Semantic 3D Media and Content, Sophia Antipolis (France), 2010.
 %
 % Copyright (C) 2010, 2011 Carlo de Falco, Rafael Vazquez
 % Copyright (C) 2013, 2015 Rafael Vazquez
