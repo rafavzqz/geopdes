@@ -28,27 +28,27 @@
 
 function [cell_indices, indices_per_function] = sp_get_cells (space, msh, fun_indices)
 
-space = sp_precompute_param (space, msh, 'value', false);
-
-conn_indices = arrayfun (@(x) find (space.connectivity == x), fun_indices, 'UniformOutput', false);
-[~, indices_per_function] = cellfun (@(x) ind2sub ([space.nsh_max, msh.nel], x), conn_indices, 'UniformOutput', false);
-cell_indices = unique (vertcat (indices_per_function{:}));
-
-% % Old version, to be used in case of unexpected memory problems
-% subindices = cell (msh.ndim, 1);
-% [subindices{:}] = ind2sub ([space.ndof_dir, 1], fun_indices); % The extra one makes it work in any dimension
+% space = sp_precompute_param (space, msh, 'value', false);
 % 
-% indices_per_function = cell (numel (fun_indices), 1);
-% for ifun = 1:numel (fun_indices)
-%   cells = cell (msh.ndim, 1);
-%   for idim = 1:msh.ndim
-%     cells_1d{idim} = space.sp_univ(idim).supp{subindices{idim}(ifun)};
-%   end
-%   [cells{:}] = ndgrid (cells_1d{:});
-%   indices_per_function{ifun} = sub2ind ([msh.nel_dir, 1], cells{:});
-% end
-% 
-% indices_per_function = cellfun(@(x) x(:), indices_per_function, 'UniformOutput', false);
+% conn_indices = arrayfun (@(x) find (space.connectivity == x), fun_indices, 'UniformOutput', false);
+% [~, indices_per_function] = cellfun (@(x) ind2sub ([space.nsh_max, msh.nel], x), conn_indices, 'UniformOutput', false);
 % cell_indices = unique (vertcat (indices_per_function{:}));
+
+% Old version, to be used in case of unexpected memory problems
+subindices = cell (msh.ndim, 1);
+[subindices{:}] = ind2sub ([space.ndof_dir, 1], fun_indices); % The extra one makes it work in any dimension
+
+indices_per_function = cell (numel (fun_indices), 1);
+for ifun = 1:numel (fun_indices)
+  cells = cell (msh.ndim, 1);
+  for idim = 1:msh.ndim
+    cells_1d{idim} = space.sp_univ(idim).supp{subindices{idim}(ifun)};
+  end
+  [cells{:}] = ndgrid (cells_1d{:});
+  indices_per_function{ifun} = sub2ind ([msh.nel_dir, 1], cells{:});
+end
+
+indices_per_function = cellfun(@(x) x(:), indices_per_function, 'UniformOutput', false);
+cell_indices = unique (vertcat (indices_per_function{:}));
 
 end

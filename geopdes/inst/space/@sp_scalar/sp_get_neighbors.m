@@ -34,4 +34,27 @@ cell_indices = unique (vertcat (indices_per_function{:}));
 
 neighbors_indices = unique (space.connectivity (:,cell_indices));
 
+
+indices_per_function = cell (numel (fun_indices), 1);
+subindices = cell (msh.ndim, 1);
+[subindices{:}] = ind2sub ([space.ndof_dir, 1], fun_indices); % The extra one makes it work in any dimension
+
+for ifun = 1:numel(fun_indices)
+  funs = cell (msh.ndim, 1);
+  fun_1d = cell (msh.ndim, 1);
+  for idim = 1:msh.ndim
+    [~,elem_1d] = find (space.sp_univ(idim).connectivity == subindices{idim}(ifun));
+    elem_1d = unique (elem_1d);
+    fun_1d{idim} = unique (space.sp_univ(idim).connectivity(:,elem_1d));
+  end
+  [funs{:}] = ndgrid (fun_1d{:});
+  
+  indices_per_function{ifun} = unique (sub2ind ([space.ndof_dir, 1], funs{:})); % The extra 1 makes things work in any dimension
+end
+
+neighbors_indices2 = vertcat (indices_per_function{:});
+neighbors_indices2 = unique (neighbors_indices2);
+
+disp (max (abs (neighbors_indices(:) - neighbors_indices2(:))));
+
 end
