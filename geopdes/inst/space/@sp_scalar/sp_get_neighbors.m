@@ -27,13 +27,12 @@
 
 function neighbors_indices = sp_get_neighbors (space, msh, fun_indices)
 
-space = sp_precompute_param (space, msh, 'value', false);
-conn_indices = arrayfun (@(x) find (space.connectivity == x), fun_indices, 'UniformOutput', false);
-[~, indices_per_function] = cellfun (@(x) ind2sub ([space.nsh_max, msh.nel], x), conn_indices, 'UniformOutput', false);
-cell_indices = unique (vertcat (indices_per_function{:}));
-
-neighbors_indices = unique (space.connectivity (:,cell_indices));
-
+% space = sp_precompute_param (space, msh, 'value', false);
+% conn_indices = arrayfun (@(x) find (space.connectivity == x), fun_indices, 'UniformOutput', false);
+% [~, indices_per_function] = cellfun (@(x) ind2sub ([space.nsh_max, msh.nel], x), conn_indices, 'UniformOutput', false);
+% cell_indices = unique (vertcat (indices_per_function{:}));
+% 
+% neighbors_indices = unique (space.connectivity (:,cell_indices));
 
 indices_per_function = cell (numel (fun_indices), 1);
 subindices = cell (msh.ndim, 1);
@@ -52,9 +51,7 @@ for ifun = 1:numel(fun_indices)
   indices_per_function{ifun} = unique (sub2ind ([space.ndof_dir, 1], funs{:})); % The extra 1 makes things work in any dimension
 end
 
-neighbors_indices2 = vertcat (indices_per_function{:});
-neighbors_indices2 = unique (neighbors_indices2);
-
-disp (max (abs (neighbors_indices(:) - neighbors_indices2(:))));
+neighbors_indices = vertcat (indices_per_function{:});
+neighbors_indices = unique (neighbors_indices);
 
 end

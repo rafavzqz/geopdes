@@ -11,7 +11,7 @@
 %    cell_indices: indices of the cells within the support of the basis functions.
 %    indices_per_function: indices of the cells within the support of each basis function.
 %
-% Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2015, 2016 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -28,10 +28,33 @@
 
 function [cell_indices, indices_per_function] = sp_get_cells (space, msh, fun_indices)
 
-space = sp_precompute_param (space, msh, 'value', false);
+% space_aux = sp_precompute_param (space, msh, 'value', false);
+% 
+% conn_indices = arrayfun (@(x) find (space_aux.connectivity == x), fun_indices, 'UniformOutput', false);
+% [~, indices_per_function] = cellfun (@(x) ind2sub ([space_aux.nsh_max, msh.nel], x), conn_indices, 'UniformOutput', false);
+% cell_indices = unique (vertcat (indices_per_function{:}));
 
-conn_indices = arrayfun (@(x) find (space.connectivity == x), fun_indices, 'UniformOutput', false);
-[~, indices_per_function] = cellfun (@(x) ind2sub ([space.nsh_max, msh.nel], x), conn_indices, 'UniformOutput', false);
+indices_per_function = cell (numel (fun_indices), 1);
+for icomp = 1:space.ncomp_param
+  [aux_indices, indices] = ismember (fun_indices, space.cumsum_ndof(icomp)+1:space.cumsum_ndof(icomp+1));
+  global_indices = find (aux_indices); 
+  indices = indices (aux_indices);
+  
+  subindices = cell (msh.ndim, 1);
+  [subindices{:}] = ind2sub ([space.scalar_spaces{icomp}.ndof_dir, 1], indices); % The extra one makes it work in any dimension
+
+  for ifun = 1:numel (indices)
+    cells = cell (msh.ndim, 1);
+    cells_1d = cell (msh.ndim, 1);
+    for idim = 1:msh.ndim
+      cells_1d{idim} = space.scalar_spaces{icomp}.sp_univ(idim).supp{subindices{idim}(ifun)};
+    end
+    [cells{:}] = ndgrid (cells_1d{:});
+    indices_per_function{global_indices(ifun)} = sub2ind ([msh.nel_dir, 1], cells{:});
+  end
+end
+
+indices_per_function = cellfun(@(x) x(:), indices_per_function, 'UniformOutput', false);
 cell_indices = unique (vertcat (indices_per_function{:}));
 
 end

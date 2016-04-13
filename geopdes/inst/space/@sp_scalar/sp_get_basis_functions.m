@@ -10,7 +10,7 @@
 % OUTPUT:
 %    fun_indices: indices of the basis functions acting on the cells.
 %
-% Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2015, 2016 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -32,13 +32,13 @@ function function_indices = sp_get_basis_functions (space, msh, cell_indices)
 % function_indices = unique (function_indices(:));
 
 % Old version, to be used in case of unexpected memory problems
-
 subindices = cell (msh.ndim, 1);
 [subindices{:}] = ind2sub ([msh.nel_dir, 1], cell_indices); % The extra one makes it work in any dimension
 
 indices = cell (numel (cell_indices), 1);
 for iel = 1:numel (cell_indices)
   conn = cell (msh.ndim, 1);
+  conn_1d = cell (msh.ndim, 1);
   for idim = 1:msh.ndim
     conn_1d{idim} = space.sp_univ(idim).connectivity(:,subindices{idim}(iel));
   end
