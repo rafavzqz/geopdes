@@ -34,38 +34,7 @@ function neighbors_indices = sp_get_neighbors (space, msh, fun_indices)
 % 
 % neighbors_indices = unique (space_aux.connectivity (:,cell_indices));
 
-indices_per_comp = cell (numel (space.ncomp_param), 1);
-for icomp = 1:space.ncomp_param
-  [~,indices,~] = intersect (space.cumsum_ndof(icomp)+1:space.cumsum_ndof(icomp+1), fun_indices);
-  
-  subindices = cell (msh.ndim, 1);
-  [subindices{:}] = ind2sub ([space.scalar_spaces{icomp}.ndof_dir, 1], indices); % The extra one makes it work in any dimension
-
-  indices_per_function = cell (numel (indices), 1);
-  for ifun = 1:numel(indices)
-    funs = cell (msh.ndim, 1);
-    fun_1d = cell (msh.ndim, space.ncomp_param);
-    elem_1d = cell (msh.ndim, 1);
-    indaux = cell (space.ncomp_param, 1);
-    
-    for idim = 1:msh.ndim
-      [~,elem_1d{idim}] = find (space.scalar_spaces{icomp}.sp_univ(idim).connectivity == subindices{idim}(ifun));
-      elem_1d{idim} = unique (elem_1d{idim});
-    end
-    
-    for jcomp = 1:space.ncomp_param
-      for idim = 1:msh.ndim
-        fun_1d{idim,jcomp} = unique (space.scalar_spaces{jcomp}.sp_univ(idim).connectivity(:,elem_1d{idim}));
-      end
-      [funs{:}] = ndgrid (fun_1d{:,jcomp});
-      indaux{jcomp} = space.cumsum_ndof(jcomp) + unique (sub2ind ([space.scalar_spaces{jcomp}.ndof_dir, 1], funs{:}));
-    end
-  
-    indices_per_function{ifun} = vertcat (indaux{:});
-  end
-  indices_per_comp{icomp} = unique (vertcat (indices_per_function{:}));
-end
-
-neighbors_indices = unique (vertcat (indices_per_comp{:}));
+cells = sp_get_cells (space, msh, fun_indices);
+neighbors_indices = sp_get_basis_functions (space, msh, cells);
 
 end

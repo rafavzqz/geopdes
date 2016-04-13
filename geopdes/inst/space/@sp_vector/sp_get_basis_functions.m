@@ -30,25 +30,11 @@ function function_indices = sp_get_basis_functions (space, msh, cell_indices)
 % space_aux = sp_precompute_param (space, msh, 'value', false);
 % function_indices = space_aux.connectivity (:,cell_indices);
 % function_indices = unique (function_indices(:));
-% 
-subindices = cell (msh.ndim, 1);
-[subindices{:}] = ind2sub ([msh.nel_dir, 1], cell_indices); % The extra one makes it work in any dimension
 
-indices = cell (numel (cell_indices), space.ncomp_param);
-
-for iel = 1:numel (cell_indices)
-  for icomp = 1:space.ncomp_param
-    conn = cell (msh.ndim, 1);
-    conn_1d = cell (msh.ndim, 1);
-    for idim = 1:msh.ndim
-      conn_1d{idim} = space.scalar_spaces{icomp}.sp_univ(idim).connectivity(:,subindices{idim}(iel));
-    end
-    [conn{:}] = ndgrid (conn_1d{:});
-
-    indices{iel,icomp} = space.cumsum_ndof(icomp) + sub2ind ([space.scalar_spaces{icomp}.ndof_dir, 1], conn{:}); % The extra 1 makes things work in any dimension
-  end
+indices = cell (space.ncomp_param, 1);
+for icomp = 1:space.ncomp_param
+  indices{icomp} = space.cumsum_ndof(icomp) + sp_get_basis_functions (space.scalar_spaces{icomp}, msh, cell_indices);
 end
 function_indices = [indices{:}];
-function_indices = unique (function_indices(:));
 
 end

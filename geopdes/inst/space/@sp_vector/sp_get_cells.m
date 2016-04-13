@@ -34,27 +34,16 @@ function [cell_indices, indices_per_function] = sp_get_cells (space, msh, fun_in
 % [~, indices_per_function] = cellfun (@(x) ind2sub ([space_aux.nsh_max, msh.nel], x), conn_indices, 'UniformOutput', false);
 % cell_indices = unique (vertcat (indices_per_function{:}));
 
+cell_indices = [];
 indices_per_function = cell (numel (fun_indices), 1);
 for icomp = 1:space.ncomp_param
   [aux_indices, indices] = ismember (fun_indices, space.cumsum_ndof(icomp)+1:space.cumsum_ndof(icomp+1));
-  global_indices = find (aux_indices); 
   indices = indices (aux_indices);
+
+  [cells, ind_per_fun] = sp_get_cells (space.scalar_spaces{icomp}, msh, indices);
+  indices_per_function(aux_indices) = ind_per_fun;
   
-  subindices = cell (msh.ndim, 1);
-  [subindices{:}] = ind2sub ([space.scalar_spaces{icomp}.ndof_dir, 1], indices); % The extra one makes it work in any dimension
-
-  for ifun = 1:numel (indices)
-    cells = cell (msh.ndim, 1);
-    cells_1d = cell (msh.ndim, 1);
-    for idim = 1:msh.ndim
-      cells_1d{idim} = space.scalar_spaces{icomp}.sp_univ(idim).supp{subindices{idim}(ifun)};
-    end
-    [cells{:}] = ndgrid (cells_1d{:});
-    indices_per_function{global_indices(ifun)} = sub2ind ([msh.nel_dir, 1], cells{:});
-  end
+  cell_indices = union (cell_indices, cells);  
 end
-
-indices_per_function = cellfun(@(x) x(:), indices_per_function, 'UniformOutput', false);
-cell_indices = unique (vertcat (indices_per_function{:}));
 
 end
