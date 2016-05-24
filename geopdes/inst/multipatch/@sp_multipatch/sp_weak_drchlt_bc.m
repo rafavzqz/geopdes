@@ -61,7 +61,7 @@ function [A, rhs] = sp_weak_drchlt_bc (space, msh, refs, bnd_func, coeff, Cpen, 
       msh_side_from_interior = msh_boundary_side_from_interior (msh.msh_patch{iptc}, iside);
 
       sp_bnd = space.sp_patch{iptc}.constructor (msh_side_from_interior);
-      sp_bnd = struct (sp_precompute (sp_bnd, msh_side_from_interior, 'value', true, 'gradient', true));
+      sp_bnd = sp_precompute (sp_bnd, msh_side_from_interior, 'value', true, 'gradient', true);
 
       for idim = 1:msh.rdim
         x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
