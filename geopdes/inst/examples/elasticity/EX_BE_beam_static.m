@@ -1,6 +1,3 @@
-clc;
-clear all;
-
 %Geometry domain
 L=15; H=1; B=1; A=H*B; I = B*H^3/12;
 interval = nrbline ([0 0],[L 0]);
@@ -14,9 +11,10 @@ problem_data.drchlt2_ends = [true false]; %rotation angles, homogeneous
 problem_data.nmnn1_ends   = [true false]; %forces 
 problem_data.nmnn2_ends   = [false true]; %moments
 
-M_L = 10; P = 3;
-problem_data.M_L = M_L; %moment values
-problem_data.P   = P; %force value 
+M(1) = 0; M(2) = 10; 
+P = 3;
+problem_data.M = M; %moment values
+problem_data.P = P; %force value 
 
 f_c = 0.5;
 problem_data.f = @(x) f_c * sin(pi*x/L); %distributed loading
@@ -37,9 +35,9 @@ method_data.nquad      = 5;     % Points for the Gaussian quadrature rule
 %Postprocessing
 %Exact solution
 c1 = (L*f_c+P*pi)/(pi*E*I);
-c2 = -(L^2*f_c+L*P*pi+M_L*pi)/(pi*E*I);
+c2 = -(L^2*f_c+L*P*pi+M(2)*pi)/(pi*E*I);
 c3 = -f_c*L^3/(pi^3*E*I);
-c4 = L^2*(2*L^2*pi^2*f_c+2*L*P*pi^3+3*M_L*pi^3+6*L^2*f_c)/(pi^3*E*I*6);
+c4 = L^2*(2*L^2*pi^2*f_c+2*L*P*pi^3+3*M(2)*pi^3+6*L^2*f_c)/(pi^3*E*I*6);
 
 w_ex = @(x) f_c*sin(pi*x/L)/E/I*(L/pi)^4 + c1*x.^3/6 + c2*x.^2/2 + c3*x + c4;
 %Gradient of exact solution
@@ -52,10 +50,15 @@ hesswex = @(x) -f_c*sin(pi*x/L)/E/I*(L/pi)^2 + c1*x + c2;
 [errh2, errh1, errl2] = sp_h2_error (space, msh, w, w_ex, gradwex, hesswex);
 errors = [errh2, errh1, errl2]
 [normh2, normh1, norml2] = sp_h2_error (space, msh, zeros (size (w)), w_ex, gradwex, hesswex);
-errors = [errh2/normh2, errh1/normh1, errl2/norml2]
+relative_errors = [errh2/normh2, errh1/normh1, errl2/norml2]
 
 [eu, F] = sp_eval (w, space, geometry, 100);
 plot(F,eu,F,w_ex(F),'--')
 legend('FEM-solution', 'Exact solution')
 xlabel('x')
 ylabel('w')
+
+%!test
+%! EX_BE_beam_static
+%! assert (errors, [6.84302818527209e-06 1.70080152944782e-06 6.76904252902807e-07], 1e-13);
+%! assert (relative_errors, [5.42472021205277e-06 1.34836849504780e-06 5.39573922058711e-07], 1e-13);

@@ -1,9 +1,6 @@
-clc;
-clear all;
-
 %Geometry domain
 L=20; H=1; B=1; A=H*B; I = B*H^3/12;
-interval = nrbline([0 0],[L 0]);
+interval = nrbline ([0 0],[L 0]);
 problem_data.geo_name = interval;
 
 %Boundary conditions
@@ -14,9 +11,10 @@ problem_data.drchlt2_ends = [false true]; %rotation angles, homogeneous
 problem_data.nmnn1_ends   = [true false]; %forces 
 problem_data.nmnn2_ends   = [true false]; %moments
 
-M_0 = -20; P = 2;
-problem_data.M_0 = M_0; %moment values
-problem_data.P   = P; %force value 
+M(1) = -20; M(2) = 0;
+P = 2;
+problem_data.M = M; %moment values
+problem_data.P = P; %force value 
 
 f_c = 0.5;
 problem_data.f = @(x) f_c * sin(pi*x/L); %distributed loading
@@ -37,9 +35,9 @@ method_data.nquad      = 5;     % Points for the Gaussian quadrature rule
 %Postprocessing
 %Exact solution
 c1 = (L*f_c+P*pi)/(pi*E*I);
-c2 = M_0/(E*I);
-c3 = -L*(L^2*pi^2*f_c+L*P*pi^3+2*M_0*pi^3-2*L^2*f_c)/(pi^3*E*I*2);
-c4 = L^2*(2*L^2*pi^2*f_c+2*L*P*pi^3+3*M_0*pi^3-6*L^2*f_c)/(pi^3*E*I*6);
+c2 = M(1)/(E*I);
+c3 = -L*(L^2*pi^2*f_c+L*P*pi^3+2*M(1)*pi^3-2*L^2*f_c)/(pi^3*E*I*2);
+c4 = L^2*(2*L^2*pi^2*f_c+2*L*P*pi^3+3*M(1)*pi^3-6*L^2*f_c)/(pi^3*E*I*6);
 
 w_ex = @(x) f_c*sin(pi*x/L)/E/I*(L/pi)^4 + c1*x.^3/6 + c2*x.^2/2 + c3*x + c4;
 %Gradient of exact solution
@@ -52,10 +50,15 @@ hesswex = @(x) -f_c*sin(pi*x/L)/E/I*(L/pi)^2 + c1*x + c2;
 [errh2, errh1, errl2] = sp_h2_error (space, msh, w, w_ex, gradwex, hesswex);
 errors = [errh2, errh1, errl2]
 [normh2, normh1, norml2] = sp_h2_error (space, msh, zeros (size (w)), w_ex, gradwex, hesswex);
-errors = [errh2/normh2, errh1/normh1, errl2/norml2]
+relative_errors = [errh2/normh2, errh1/normh1, errl2/norml2]
 
 [eu, F] = sp_eval (w, space, geometry, 100);
 plot(F,eu,F,w_ex(F),'--')
 legend('FEM-solution', 'Exact solution')
 xlabel('x')
 ylabel('w')
+
+%!test
+%! EX_BE_beam_static_2
+%! assert (errors, [1.34809548424854e-07 5.36802751858740e-09 3.37319777487171e-09], 1e-11);
+%! assert (relative_errors, [1.36390120772112e-07 5.43119954277585e-09 3.42965859344646e-09], 1e-11);

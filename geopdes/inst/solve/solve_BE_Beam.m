@@ -114,6 +114,24 @@ for iside = 1:2*msh.ndim
   end
 end
 
+
+% Apply 2nd Dirichlet boundary conditions by using the Lagrange multipliers method
+%  and 2nd Neumann boundary conditions
+for iside = 1:2*msh.ndim
+  if (drchlt2_ends(iside) || nmnn2_ends(iside))
+    msh_aux = msh_boundary_side_from_interior (msh, iside);
+    sp_side = sp_precompute (sp.constructor (msh_aux), msh_aux, 'gradient', true);
+    
+%     if (drchlt2_ends(iside))
+%     end
+    if (nmnn2_ends(iside))
+      rhs(sp_side.connectivity) = rhs(sp_side.connectivity) - ...
+          M(iside) * reshape (sp_side.shape_function_gradients(:,:,:), sp_side.nsh, 1);
+    end
+  end
+end
+    
+    
 n_d2 = sum(drchlt2_ends);
 n_n2 = sum(nmnn2_ends);
 %Calculation of the non-zero basis functions and their derivatives 
@@ -150,16 +168,6 @@ if n_d2 ~= 0
 else
     int_dofs = setdiff (1:sp.ndof, drchlt_dofs);
     u = zeros (sp.ndof, 1);
-end
-
-% Apply 2nd Neumann boundary conditions
-if nmnn2_ends(1) 
-  rhs(1) = rhs(1) - M_0*Basis_ders(1,2,1);
-  rhs(2) = rhs(2) - M_0*Basis_ders(1,2,2);
-end
-if nmnn2_ends(2) 
-  rhs(sp.ndof)   = rhs(sp.ndof) - M_L*Basis_ders(2,2,sp.degree+1);
-  rhs(sp.ndof-1) = rhs(sp.ndof-1) - M_L*Basis_ders(2,2,sp.degree);
 end
 
 % Solve the static problem
