@@ -70,6 +70,14 @@ function [eu, F] = sp_eval_msh (u, space, msh, options, lambda_lame, mu_lame)
         ind(iopt) = 4;
         eusize{iopt} = {1:space.ncomp, 1:msh.rdim, 1:msh.nqn};
         
+      case 'hessian'
+        eu{iopt} = zeros (space.ncomp, msh.rdim, msh.rdim, msh.nqn, msh.nel);
+        wsize{iopt} = [1 1 1 1];
+        shp_size{iopt} = [space.ncomp, msh.rdim, msh.rdim];
+        field{iopt} = 'shape_function_hessians';
+        ind(iopt) = 5;
+        eusize{iopt} = {1:space.ncomp, 1:msh.rdim, 1:msh.rdim, 1:msh.nqn};
+        
       case 'laplacian'
         eu{iopt} = zeros (space.ncomp, msh.nqn, msh.nel);
         wsize{iopt} = [1 1];
