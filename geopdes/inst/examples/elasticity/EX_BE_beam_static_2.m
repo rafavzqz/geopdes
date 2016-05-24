@@ -53,6 +53,7 @@ errors = [errh2, errh1, errl2]
 relative_errors = [errh2/normh2, errh1/normh1, errl2/norml2]
 
 [eu, F] = sp_eval (w, space, geometry, 100);
+han = figure;
 plot(F,eu,F,w_ex(F),'--')
 legend('FEM-solution', 'Exact solution')
 xlabel('x')
@@ -60,5 +61,6 @@ ylabel('w')
 
 %!test
 %! EX_BE_beam_static_2
+%! close (han)
 %! assert (errors, [3.42006802485252e-06 5.44598574884688e-07 1.51095034097015e-07], 1e-11);
 %! assert (relative_errors, [3.46016655651430e-06 5.51007520112053e-07 1.53624073269057e-07], 1e-11);
