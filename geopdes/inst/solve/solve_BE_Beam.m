@@ -108,68 +108,34 @@ drchlt_dofs = [];
 for iside = 1:2*msh.ndim
   if (drchlt1_ends(iside))
     drchlt_dofs = [drchlt_dofs, sp.boundary(iside).dofs];
-  end
-  if (nmnn1_ends(iside))
+  elseif (nmnn1_ends(iside))
     rhs(sp.boundary(iside).dofs) = rhs(sp.boundary(iside).dofs) + P;
   end
 end
 
-
 % Apply 2nd Dirichlet boundary conditions by using the Lagrange multipliers method
 %  and 2nd Neumann boundary conditions
+n_d2 = sum (drchlt2_ends);
+C = sparse (numel(drchlt2_ends), sp.ndof);
 for iside = 1:2*msh.ndim
   if (drchlt2_ends(iside) || nmnn2_ends(iside))
     msh_aux = msh_boundary_side_from_interior (msh, iside);
     sp_side = sp_precompute (sp.constructor (msh_aux), msh_aux, 'gradient', true);
     
-%     if (drchlt2_ends(iside))
-%     end
-    if (nmnn2_ends(iside))
+    if (drchlt2_ends(iside))
+      C(iside, sp_side.connectivity) = reshape (sp_side.shape_function_gradients(:,:,:), 1, sp_side.nsh);
+    elseif (nmnn2_ends(iside))
       rhs(sp_side.connectivity) = rhs(sp_side.connectivity) - ...
           M(iside) * reshape (sp_side.shape_function_gradients(:,:,:), sp_side.nsh, 1);
     end
   end
 end
+stiff_mat = [stiff_mat,         C(drchlt2_ends, :).'; ...
+             C(drchlt2_ends,:), sparse(n_d2, n_d2)];
+rhs(sp.ndof+(1:n_d2)) = 0;
+u = zeros (sp.ndof + n_d2, 1);
+int_dofs = setdiff (1:(sp.ndof+n_d2), drchlt_dofs);
     
-    
-n_d2 = sum(drchlt2_ends);
-n_n2 = sum(nmnn2_ends);
-%Calculation of the non-zero basis functions and their derivatives 
-%on the end points of the beam
-if n_d2 + n_n2 ~= 0
-    H = [0 1]; %End points in the parametric space
-    span = findspan (numel(sp.knots{1})-sp.degree-2, sp.degree+1, H, sp.knots{1});
-    Basis_ders = basisfunder (span, sp.degree, H, sp.knots{1}, 1); 
-   %Basis_ders: Basis_ders(Point(depends on H),deriv.order+1,Function_number)
-    jac = squeeze(geometry.map_der ({H}));
-    %From local to global derivatives:
-    Basis_ders(1,2,:) = Basis_ders(1,2,:)/jac(1); 
-    Basis_ders(2,2,:) = Basis_ders(2,2,:)./jac(2);
-end
-
-% Apply 2nd Dirichlet boundary conditions by using the Lagrange multipliers method
-if n_d2 ~= 0 
-    C = zeros(n_d2, sp.ndof+n_d2);
-% w' = b on x=0 : N'_1(0)*d_1 + N'_2(0)*d_2 = b  
-    if drchlt2_ends(1)
-        C(1,1) = Basis_ders(1,2,1); 
-        C(1,2) = Basis_ders(1,2,2); 
-    end
-% w' = b on x=L : N'_n(L)*d_n + N'_{n-1}(L)*d_{n-1} = b      
-    if drchlt2_ends(2)
-        C(n_d2,sp.ndof) = Basis_ders(2,2,sp.degree+1); 
-        C(n_d2,sp.ndof-1) = Basis_ders(2,2,sp.degree); 
-    end
-    stiff_mat(:,sp.ndof+1:sp.ndof+n_d2) = C(:,1:sp.ndof)';
-    stiff_mat(sp.ndof+1:sp.ndof+n_d2,:) = C;
-    rhs(sp.ndof+1:sp.ndof+n_d2) = zeros(n_d2,1);
-    int_dofs = setdiff (1:sp.ndof+n_d2, drchlt_dofs);
-    u = zeros (sp.ndof+n_d2, 1);
-else
-    int_dofs = setdiff (1:sp.ndof, drchlt_dofs);
-    u = zeros (sp.ndof, 1);
-end
-
 % Solve the static problem
 K = stiff_mat(int_dofs, int_dofs);
 F = rhs(int_dofs);
