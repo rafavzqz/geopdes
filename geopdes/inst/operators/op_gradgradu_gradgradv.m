@@ -46,14 +46,14 @@ function mat = op_gradgradu_gradgradv (spu, spv, msh, coeff)
      if (all (msh.jacdet(:,iel)))
        mat_loc = zeros (spv.nsh(iel), spu.nsh(iel));
        for idof = 1:spv.nsh(iel)
-           ishh = reshape(der2v(:,:,:,idof,iel),spv.ncomp * ndir, []);
+           ishh = reshape(der2v(:,:,:,idof,iel), spv.ncomp * ndir, []);
            for jdof = 1:spu.nsh(iel) 
-               jshh = reshape(der2u(:,:,:,jdof,iel),spu.ncomp * ndir, []);
+               jshh = reshape(der2u(:,:,:,jdof,iel), spu.ncomp * ndir, []);
            % The cycle on the quadrature points is vectorized
            %for inode = 1:msh.nqn
                mat_loc(idof, jdof) = mat_loc(idof, jdof) + ...
                    sum (msh.jacdet(:,iel) .* msh.quad_weights(:, iel) .* ...
-                   sum (ishh([1,4,2,2],:) .* jshh([1,4,2,2],:), 1).' .* coeff(:,iel));
+                   sum (ishh .* jshh, 1).' .* coeff(:,iel));
            %end
            end
        end
