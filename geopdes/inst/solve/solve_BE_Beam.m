@@ -103,20 +103,15 @@ stiff_mat = op_gradgradu_gradgradv_tp (sp, sp, msh, EI);
 rhs = op_f_v_tp (sp, msh, f);
 
 % Apply homogeneous 1st Dirichlet boundary conditions
+%  and 1st Neumann boundary conditions
 drchlt_dofs = [];
-if drchlt1_ends(1)
-  drchlt_dofs = 1;
-end
-if drchlt1_ends(2) 
-  drchlt_dofs = [drchlt_dofs sp.ndof];
-end
-
-% Apply 1st Neumann boundary conditions
-if nmnn1_ends(1) 
-  rhs(1) = rhs(1) + P;
-end
-if nmnn1_ends(2) 
-  rhs(sp.ndof) = rhs(sp.ndof) + P;
+for iside = 1:2*msh.ndim
+  if (drchlt1_ends(iside))
+    drchlt_dofs = [drchlt_dofs, sp.boundary(iside).dofs];
+  end
+  if (nmnn1_ends(iside))
+    rhs(sp.boundary(iside).dofs) = rhs(sp.boundary(iside).dofs) + P;
+  end
 end
 
 n_d2 = sum(drchlt2_ends);
@@ -168,8 +163,9 @@ if nmnn2_ends(2)
 end
 
 % Solve the static problem
-K = full (stiff_mat(int_dofs, int_dofs));
-F = full (rhs(int_dofs));
-u(int_dofs) = K\F; 
+K = stiff_mat(int_dofs, int_dofs);
+F = rhs(int_dofs);
+u(int_dofs) = K\F;
 u = u(1:sp.ndof);
+
 end
