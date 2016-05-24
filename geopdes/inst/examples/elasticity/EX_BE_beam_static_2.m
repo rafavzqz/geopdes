@@ -26,7 +26,7 @@ problem_data.EI = @(x) E * I* ones (size (x));
 % Discretization parameters
 method_data.degree     = 3;     % Degree of the basis functions
 method_data.regularity = 2;     % Regularity of the basis functions
-method_data.nsub       = 100;     % Number of subdivisions
+method_data.nsub       = 20;     % Number of subdivisions
 method_data.nquad      = 5;     % Points for the Gaussian quadrature rule
 
 % Solving
@@ -60,5 +60,5 @@ ylabel('w')
 
 %!test
 %! EX_BE_beam_static_2
-%! assert (errors, [1.34809548424854e-07 5.36802751858740e-09 3.37319777487171e-09], 1e-11);
-%! assert (relative_errors, [1.36390120772112e-07 5.43119954277585e-09 3.42965859344646e-09], 1e-11);
+%! assert (errors, [3.42006802485252e-06 5.44598574884688e-07 1.51095034097015e-07], 1e-11);
+%! assert (relative_errors, [3.46016655651430e-06 5.51007520112053e-07 1.53624073269057e-07], 1e-11);
