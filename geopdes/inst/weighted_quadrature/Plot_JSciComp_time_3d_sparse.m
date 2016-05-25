@@ -80,43 +80,6 @@ for p = pp1
     TEMPI_MASS_3D_veloce(p,nel)=toc(total_time);
     disp(sprintf('Costruz matrice massa 3D Nuovo Metodo %0.5g',TEMPI_MASS_3D_veloce(p,nel)))        
     clear MM_3D_veloce
-%         %%%%%%%%%%%%%%%%%%%%%%%%
-%         % Geometria GeoPdes
-%         %%%%%%%%%%%%%%%%%%%%%%%
-%         clear method_data        
-%         time_geom_GEOPDES = clock;
-%         method_data.degree     = [p p p];       % Degree of the splines
-%         method_data.regularity = [p-1 p-1 p-1];       % Regularity of the splines
-%         method_data.nsub       = [nel nel nel];       % Number of subdivisions
-%         method_data.nquad      = [p+1 p+1 p+1];       % Points for the Gaussian quadrature rule
-%         % Extract the fields from the data structures into local variables
-%         data_names = fieldnames (problem_data);
-%         for iopt  = 1:numel (data_names)
-%             eval ([data_names{iopt} '= problem_data.(data_names{iopt});']);
-%         end
-%         data_names = fieldnames (method_data);
-%         for iopt  = 1:numel (data_names)
-%             eval ([data_names{iopt} '= method_data.(data_names{iopt});']);
-%         end
-%         geometry  = geo_load ('geo_cube.txt');
-%         [knots, zeta] = kntrefine (geometry.nurbs.knots, nsub-1, degree, regularity);
-%         rule     = msh_gauss_nodes (nquad);
-%         [qn, qw] = msh_set_quad_nodes (zeta, rule);
-%         msh      = msh_cartesian (zeta, qn, qw, geometry);
-%         % Construct space structure
-%         space    = sp_bspline (knots, degree, msh);
-%         TEMPI_Mesh_geopdes(p,nel)=etime(clock,time_geom_GEOPDES);
-%         disp(sprintf('Costruz Mesh GeoPdes %0.5g',TEMPI_Mesh_geopdes(p,nel)))        
-%         
-%         % Assemble the matrices
-% %         [mass_mat,t ]= op_u_v_tp_modif(space, space, msh, c_diff);
-%         tic
-%         mass_mat= op_u_v_tp(space, space, msh, c_diff);
-%         disp(sprintf('Costruz matrice GeoPdes %0.5g',toc))
-%         timeGeoPDES(p,nel)=toc;
-%         %disp(sprintf('Differenza tra i due metodi %0.5g', norm(MM_3D_veloce-mass_mat,'fro') ))
-%         clear mass_mat 
-%          
 
     end
  end
