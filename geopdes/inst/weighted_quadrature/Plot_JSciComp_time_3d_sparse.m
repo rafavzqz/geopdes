@@ -37,6 +37,40 @@ for p = pp1
     time_costruz_1D = clock;
     [my_JJ,p,dist_knots,mult_kv]=Index1D(Knot_vect);
     [my_QQ, Cond_G]=global_mid(p,q,dist_knots);
+    
+    sp1d = space.sp_univ(1);
+%     for ii = 1:sp1d.ndof; my_JJ.neighbors2{ii} = unique (sp1d.connectivity(:,sp1d.supp{ii}))'; end
+    my_JJ.neighbors = cellfun (@(x) unique (sp1d.connectivity(:,x)).', sp1d.supp, 'UniformOutput', false);
+    my_JJ.num_neigh = cellfun (@numel, my_JJ.neighbors);
+    my_JJ.first_elem = cellfun (@(x) x(1), sp1d.supp); % NOT USED
+    my_JJ.last_elem = cellfun (@(x) x(end), sp1d.supp); % NOT USED
+    
+% Generate a new GeoPDEs mesh with the new quadrature points
+    all_points = unique ([my_QQ.quad_points{:}]);
+    my_QQ.all_points = all_points;
+    for ii = 1:sp1d.ndof % Probably this can be improved
+      [~,my_QQ.ind_points{ii}] = ismember (my_QQ.quad_points{ii}, all_points);
+    end
+    for jj = 1:3
+      brk{jj} = [all_points(1), all_points(1) + diff(all_points)/2, all_points(end)];
+      qn{jj} = all_points;
+    end
+    new_msh = msh_cartesian (brk, qn, [], geometry);
+    sp = space.constructor (new_msh);
+    sp1d = sp.sp_univ(1);
+
+    % And we can probably improve also this one
+    clear my_BBS
+    for ii = 1:sp1d.ndof
+      shape_funs = sp1d.shape_functions(:,:,my_QQ.ind_points{ii});
+      conn = sp1d.connectivity(:,my_QQ.ind_points{ii});
+      nsh = sp1d.nsh(my_QQ.ind_points{ii});
+      for iq = 1:my_QQ.nquad_points(ii)
+        [~,ind_supp,ind_elem] = intersect (my_JJ.neighbors{ii}, conn(:,iq));
+        my_BBS{ii}(ind_supp,iq) = reshape (shape_funs(:,ind_elem,iq), [numel(ind_supp), 1]);
+      end
+    end
+    
     BBS=BS_QP(p,q,dist_knots,Knot_vect,my_QQ,my_JJ);
     TEMPI_costruz_1D(p,nel)=etime(clock,time_costruz_1D);
     disp(sprintf('Costruzioni 1D %0.5g',TEMPI_costruz_1D(p,nel)))
