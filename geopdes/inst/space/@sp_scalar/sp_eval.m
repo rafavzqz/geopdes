@@ -79,7 +79,7 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options)
   sp  = space.constructor (msh);
 
   
-  value = false; grad = false; laplacian = false;
+  value = false; grad = false; laplacian = false; hessian = false;
   
   for iopt = 1:nopts
     switch (lower (options{iopt}))
@@ -100,6 +100,12 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options)
         eunum{iopt} = {1:msh.nqn};
         eusize{iopt} = npts;
         laplacian = true;
+
+      case 'hessian'
+        eu{iopt} = zeros (msh.rdim, msh.rdim, msh.nqn, msh.nel);
+        eunum{iopt} = {1:msh.rdim, 1:msh.rdim, 1:msh.nqn};
+        eusize{iopt} = [msh.rdim, msh.rdim, npts];
+        hessian = true;
     end
   end
 
@@ -108,7 +114,7 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options)
   for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
     sp_col  = sp_evaluate_col (sp, msh_col, 'value', value, 'gradient', grad, ...
-          'laplacian', laplacian);
+          'laplacian', laplacian, 'hessian', hessian);
 
     eu_aux = sp_eval_msh (u, sp_col, msh_col, options);
     
