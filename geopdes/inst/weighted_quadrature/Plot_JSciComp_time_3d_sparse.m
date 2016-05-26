@@ -60,17 +60,30 @@ for p = pp1
     sp1d = sp.sp_univ(1);
 
     % And we can probably improve also this one
-    clear my_BBS
+    my_BBS = cell(sp1d.ndof, 1);
     for ii = 1:sp1d.ndof
       shape_funs = sp1d.shape_functions(:,:,my_QQ.ind_points{ii});
       conn = sp1d.connectivity(:,my_QQ.ind_points{ii});
-      nsh = sp1d.nsh(my_QQ.ind_points{ii});
       for iq = 1:my_QQ.nquad_points(ii)
         [~,ind_supp,ind_elem] = intersect (my_JJ.neighbors{ii}, conn(:,iq));
         my_BBS{ii}(ind_supp,iq) = reshape (shape_funs(:,ind_elem,iq), [numel(ind_supp), 1]);
       end
     end
     
+% Alternative (one single element with all points)
+    for jj = 1:msh.ndim
+      brk{jj} = [space.knots{jj}(1), space.knots{jj}(end)];
+      qn{jj} = all_points(:);
+    end
+    new_msh = msh_cartesian (brk, qn, [], geometry);
+    sp = space.constructor (new_msh);
+    sp1d = sp.sp_univ(1);
+
+    my_BBS2 = cell(sp1d.ndof, 1);
+    for ii = 1:sp1d.ndof
+      my_BBS2{ii} = sp1d.shape_functions(my_QQ.ind_points{ii}, my_JJ.neighbors{ii}).';
+    end
+
     BBS=BS_QP(p,q,dist_knots,Knot_vect,my_QQ,my_JJ);
     TEMPI_costruz_1D(p,nel)=etime(clock,time_costruz_1D);
     disp(sprintf('Costruzioni 1D %0.5g',TEMPI_costruz_1D(p,nel)))
