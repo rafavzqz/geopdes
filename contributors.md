@@ -9,6 +9,7 @@ permalink: /contributors/
 
 ## List of contributors
 
+* **Viacheslav Balobanov**, Bernoulli-Euler beam, error in H^2 norm.
 * **Andrea Bressan**, implementation of SubGrid methods and other contributions for Stokes problem.
 * **Elena Bulgarello**, contributions to the 3D div-conforming splines.
 * **Adriano Côrtes**, Nitsche's method for enforcing Dirichlet conditions with div-conforming splines.
