@@ -4,6 +4,7 @@ clear
 
 % Physical domain, defined as NURBS map given in a text file
 problem_data.geo_name = 'geo_square.txt';
+%problem_data.geo_name = 'geo_ring.txt';
 
 % Type of boundary conditions for each side of the domain
 problem_data.nmnn_sides   = [];
@@ -18,13 +19,16 @@ problem_data.g = @(x, y, ind) zeros(size(x));
 problem_data.h = @(x, y, ind) zeros(size(x));
 
 % Exact solution (optional)
-problem_data.uex     = @(x, y) x(1-x) .* sin(pi*y);
+problem_data.uex     = @(x, y) x.*(1-x) .* sin(pi*y);
+problem_data.graduex = @(x, y) cat (1, ...
+                       reshape ((1-2*x).*sin(pi*y), [1, size(x)]), ...
+                       reshape (pi*x.*(1-x).*cos(pi*y), [1, size(x)]));
 
                                      
 % discretization parameters (p and h)
 
 method_data.degree     = [3 3];       % Degree of the splines, obtained by k-refinement of geometry
-method_data.h_level    = [3 3];       % 2^{hlev-1} nodes in each dir
+method_data.h_level    = [5 5];       % 2^{hlev-1} nodes in each dir
             
 
 %% ================================  geometry ================================
@@ -61,70 +65,73 @@ knots=geo_refined.nurbs.knots;
 %% ================================ Collocation ================================
 
 
-% now we need to generate the collocation points. We generate a mesh object and place coll pts in the elements
-% of the mesh. Geopdes treats them as quadrature points, but provides also a mean of evaluating the basis
-% functions in those points, we go for it
+% now we need to generate the collocation points. We define a sequence of coll_pts and create
+% a fictitious knot line so that we have 1 point per element. Then we build a mesh object
+% over this knot line and the collocation points. Then Geopdes treats them as quadrature points, 
+% but provides also a mean of evaluating the basis functions in those points, we go for it
 
 
-% Let [x,w]=quadrule(n) be a quadrature formula over [-1 1]. Then I need its tensor version
-% {[x1,w1],[x2,w2],[x3,w3]} = quadrulevect([n1 n2 n3])
-% Consider
-% knots = {knots1 knots2 knots3}
-% where knotsK is the knot line along the K dir (even with repetition), defining N elements along K (total
-% N1xN2xN3 elements).  Then
-% [qn,qw] = msh_set_quad_nodes( knots, quadrulevect([n1 n2 n3]) )
-% returns
-% qn= {PT1 PT2 PT3}
-% where PT1 is a matrix size n1 x N1 where each column are the points in each element
+%%%%%%  aveknt(T,K)  returns the averages of successive  K-1  knots, K ordine, K-1 grado
 
+% define the collocation points along each dir
+univ_cpt=linspace(0,1,40); univ_cpt(1)=[]; univ_cpt(end)=[];
+coll_pts={univ_cpt,univ_cpt};
 
-%[ qn, qw ] = msh_set_quad_nodes( knots, msh_gauss_nodes( [4 6] ) );
-n_points_each_D = [3 3];
-[ qn, qw ] = msh_set_quad_nodes( knots, n_points_quadrule( n_points_each_D ) );
-msh = msh_cartesian( knots, qn, qw, geo_refined,'der2',true ); 
+% for each dim, we generate a fictitious knot line, so that there is one coll point per element.
+% we define this by taking as knot line [0 midpoint(coll-pt1, coll-pt2) midpoint(coll-pt2, coll-pt3) ... 1]
 
+for d = 1:problem_data.D
+    coll_pts{d} = coll_pts{d}(:)';
+    if numel(coll_pts{d}) > 1
+        brk{d} = [knots{d}(1), coll_pts{d}(1:end-1) + diff(coll_pts{d})/2, knots{d}(end)];
+    else
+        brk{d} = [knots{d}(1) knots{d}(end)];
+    end
+end
+
+% here's the mesh with one coll pt per element
+coll_msh = msh_cartesian (brk, coll_pts, [], geo_refined, 'boundary', true,'der2',true);
 
 % now we generate the spline basis function set
-space = sp_nurbs( geo_refined.nurbs, msh );
+space = sp_nurbs( geo_refined.nurbs, coll_msh );
+
 
 % now we evaluate each spline in the collocation points and collect everything into the design matrix, i.e. a
-% matrix whose n-th row is the euqation collocated in the n-th point
+% matrix whose n-th row is the equation collocated in the n-th point. Remember that we have built coll_msh
+% to have 1 pt per element, so the number of coll pts is exactly the number of elements of coll_msh
 
-tot_nb_coll_pts = prod(n_points_each_D)*msh.nel;  % sidenote ---------------------------------------------------> this one changes if alternating. How to force #pts = ndof?
+tot_nb_coll_pts = coll_msh.nel;
 nb_dofs = space.ndof;
-
 A = zeros(tot_nb_coll_pts,nb_dofs);
 
-
 % evaluate parameterization 
-mesh_eval = msh_precompute(msh);
+coll_mesh_eval = msh_precompute(coll_msh);
 % evaluate basis fun 
-sp_evals  = sp_precompute(space, mesh_eval, 'gradient', false, 'laplacian', true);
+sp_evals  = sp_precompute(space, coll_mesh_eval, 'gradient', false, 'laplacian', true);
 
 % sp_evals.shape_function_laplacian contains evaluations stored in a matrix of size
 % [msh.nqn x nsh_max x msh.nel double]      
 % i.e. for each node of an element (msh.nqn) only nonzero functions (nsh_max) 
 % the nonzero functions are included in the matrix connectivity, whose size is (nsh_max x msh.nel vector)         
-% so we need to unpack this information
+% so we need to unpack this information. To do this, we loop over the number of elements (i.e., over coll pts for this case),
+% detect the list of nonzero functions on that element and store the evaluations in A
 
-for iel = 1:msh.nel
+for iel = 1:coll_msh.nel %remember that although this formally spans elements, in practice it spans coll pts too
     
     %the nonzero funs on this element
     list_fun = sp_evals.connectivity(:,iel);
     
-    % for each node, introduce a global numbering and store in A the evaluations
-    for p = 1:mesh_eval.nqn        
-        glob_p = p+ (iel-1)*mesh_eval.nqn;         
-        A(glob_p,list_fun) = -sp_evals.shape_function_laplacians(p,:,iel); % sidenote ------------------------------> not this easy if instead we are solving -div{a grad u}=f
-    end
+    % since we have only 1 pt per element, shape_function_laplacian has in practice size
+    % [1 x nonzerofun x nb_mesh_el] 
+    A(iel,list_fun) = -sp_evals.shape_function_laplacians(1,:,iel); % sidenote ------------------------------> not this easy if instead we are solving -div{a grad u}=f
     
 end
 
 
 % generate rhs. Recover coordinates of collocation points and evaluate forcing 
 x={};
-for idir = 1:mesh_eval.rdim
-    x{idir} = reshape (mesh_eval.geo_map(idir,:,:), mesh_eval.nqn*msh.nel, 1);
+for idir = 1:coll_mesh_eval.rdim
+    x{idir} = reshape (coll_mesh_eval.geo_map(idir,:,:), coll_mesh_eval.nqn*coll_msh.nel, 1);
 end
 rhs  = problem_data.f(x{1},x{2});
 
@@ -194,3 +201,34 @@ plot(u_gal,'-x','DisplayName','Gal dofs')
 hold on
 plot(u_coll,'-or','DisplayName','Coll dofs')
 legend show
+
+
+% compute errors of coll and gal. Create yet another mesh, which provides quad points for the error
+quad_err_nquad      = [9 9];     % Points for the Gaussian quadrature rule
+[quad_err_qn, quad_err_qw] = msh_set_quad_nodes (knots, msh_gauss_nodes(quad_err_nquad));
+quad_err_msh      = msh_cartesian (knots, quad_err_qn, quad_err_qw, geo_refined);
+
+% I also build another space, to evaluate the basis functions in the right quadrature points for error
+quad_err_space = sp_nurbs( geo_refined.nurbs, quad_err_msh ); 
+
+
+% Display errors of the computed solution in the L2 and H1 norm
+format long
+[error_h1_coll, error_l2_coll] = sp_h1_error (quad_err_space, quad_err_msh, u_coll, problem_data.uex, problem_data.graduex);
+[error_h1_gal, error_l2_gal] = sp_h1_error (quad_err_space, quad_err_msh, u_gal, problem_data.uex, problem_data.graduex);
+
+
+% plot of solution
+plot_pts = {linspace(0, 1, 40), linspace(0, 1, 40)};
+
+%[eu, F] = sp_eval (u_gal, gal_space, geo_refined, plot_pts);
+[eu, F] = sp_eval (u_coll, space, geo_refined, plot_pts);
+
+[X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
+subplot (1,2,1)
+surf (X, Y, eu)
+title ('Numerical solution'), axis tight
+subplot (1,2,2)
+surf (X, Y, problem_data.uex (X,Y))
+title ('Exact solution'), axis tight
+
