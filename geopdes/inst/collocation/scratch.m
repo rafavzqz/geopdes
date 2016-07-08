@@ -37,7 +37,7 @@ switch problem_case
         problem_data.geo_name = 'geo_ring.txt';        
         % initial import of geometry
         geom_no_ref  = geo_load (problem_data.geo_name);
-        %geom_no_ref.nurbs = nrbdegelev(geom_no_ref.nurbs,[1 0]); % this way I get degree two in each direction        
+        geom_no_ref.nurbs = nrbdegelev(geom_no_ref.nurbs,[1 0]); % this way I get degree two in each direction        
         problem_data.D = geom_no_ref.rdim;
 
         % Type of boundary conditions for each side of the domain
