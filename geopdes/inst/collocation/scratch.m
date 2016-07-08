@@ -2,49 +2,85 @@ clear
 
 %% ================================ problem and choice of discretization  ================================
 
-% Physical domain, defined as NURBS map given in a text file
-problem_data.geo_name = 'geo_square.txt';
-%problem_data.geo_name = 'geo_ring.txt';
+% problem_case = 1; % square 2D
+problem_case = 2; % ring 2D
 
-% Type of boundary conditions for each side of the domain
-problem_data.nmnn_sides   = [];
-problem_data.drchlt_sides = [1 2 3 4];
+switch problem_case
+    
+    case 1    
+        % Physical domain, defined as NURBS map given in a text file
+        problem_data.geo_name = 'geo_square.txt';        
+        % initial import of geometry
+        geom_no_ref  = geo_load (problem_data.geo_name);
+        problem_data.D = geom_no_ref.rdim;
+        
+        % Type of boundary conditions for each side of the domain
+        problem_data.nmnn_sides   = [];
+        problem_data.drchlt_sides = [1 2 3 4];        
+        
+        % Physical parameters
+        problem_data.c_diff  = @(x, y) ones(size(x));
+        
+        % Source and boundary terms
+        problem_data.f = @(x, y) 2*sin(pi*y) + pi^2*x.*(1-x).*sin(pi*y);
+        problem_data.g = @(x, y, ind) zeros(size(x));
+        problem_data.h = @(x, y, ind) zeros(size(x));
+        
+        % Exact solution (optional)
+        problem_data.uex     = @(x, y) x.*(1-x) .* sin(pi*y);
+        problem_data.graduex = @(x, y) cat (1, ...
+            reshape ((1-2*x).*sin(pi*y), [1, size(x)]), ...
+            reshape (pi*x.*(1-x).*cos(pi*y), [1, size(x)]));
+        
+    case 2
+        % Physical domain, defined as NURBS map given in a text file
+        problem_data.geo_name = 'geo_ring.txt';        
+        % initial import of geometry
+        geom_no_ref  = geo_load (problem_data.geo_name);
+        %geom_no_ref.nurbs = nrbdegelev(geom_no_ref.nurbs,[1 0]); % this way I get degree two in each direction        
+        problem_data.D = geom_no_ref.rdim;
 
-% Physical parameters
-problem_data.c_diff  = @(x, y) ones(size(x));
+        % Type of boundary conditions for each side of the domain
+        problem_data.nmnn_sides   = [];
+        problem_data.drchlt_sides = [1 2 3 4];        
 
-% Source and boundary terms
-problem_data.f = @(x, y) 2*sin(pi*y) + pi^2*x.*(1-x).*sin(pi*y);
-problem_data.g = @(x, y, ind) zeros(size(x));
-problem_data.h = @(x, y, ind) zeros(size(x));
-
-% Exact solution (optional)
-problem_data.uex     = @(x, y) x.*(1-x) .* sin(pi*y);
-problem_data.graduex = @(x, y) cat (1, ...
-                       reshape ((1-2*x).*sin(pi*y), [1, size(x)]), ...
-                       reshape (pi*x.*(1-x).*cos(pi*y), [1, size(x)]));
-
-                                     
+        % Physical parameters
+        problem_data.c_diff  = @(x, y) ones(size(x));
+        
+        % Source and boundary terms
+        problem_data.f = @(x,y) 2*x.*(22.*x.^2.*y.^2+21.*y.^4-45.*y.^2+x.^4-5.*x.^2+4);
+        problem_data.g = @(x, y, ind) zeros(size(x));
+        problem_data.h = @(x, y, ind) zeros(size(x));
+        
+        % Exact solution (optional)
+        problem_data.uex     = @(x, y) -(x.^2+y.^2-1).*(x.^2+y.^2.-4).*x.*y.^2;
+        problem_data.graduex = @(x, y) cat (1,  reshape (-2*(x.*y).^2.*((x.^2+y.^2-1)+(x.^2+y.^2-4)) - (x.^2+y.^2-1).*(x.^2+y.^2-4).*y.^2, [1, size(x)]), ...
+                                        reshape ( -2*x.*y.^3.*((x.^2+y.^2-1)+(x.^2+y.^2-4)) -   2*x.*y.*(x.^2+y.^2-1).*(x.^2+y.^2-4), [1, size(x)]));        
+                
+end
+                   
+                   
+                   
 % discretization parameters (p and h)
 
 method_data.degree     = [3 3];       % Degree of the splines, obtained by k-refinement of geometry
-method_data.h_level    = [5 5];       % 2^{hlev-1} nodes in each dir
+method_data.h_level    = [4 4];       % 2^{hlev-1} nodes in each dir
             
 
 %% ================================  geometry ================================
 
 
-
-% initial import of geometry
-geom_no_ref  = geo_load (problem_data.geo_name);
-problem_data.D = geom_no_ref.rdim; 
-
 % make sure degree is identical in each direction
+if length(unique(geom_no_ref.nurbs.order))>1
+    error('different degrees in different dim')
+end
+
+% compute how many degrees to elev. If 0 or less, something is wrong
 degelev  = max (method_data.degree - (geom_no_ref.nurbs.order-1), 0);
 if max(degelev)<=0,
     error(strcat('max(degelev)=',num2str(max(degelev)),', stop! You need to fix the user set simulation degree'))
 end
-% if so, to degree elev
+% otherwise, do degree elev
 nurbs_ptemp    = nrbdegelev (geom_no_ref.nurbs, degelev);
 
 % next h-ref (so the overall procedure is k-ref). 
@@ -221,14 +257,17 @@ format long
 % plot of solution
 plot_pts = {linspace(0, 1, 40), linspace(0, 1, 40)};
 
-%[eu, F] = sp_eval (u_gal, gal_space, geo_refined, plot_pts);
 [eu, F] = sp_eval (u_coll, space, geo_refined, plot_pts);
-
 [X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
-subplot (1,2,1)
+subplot (1,3,1)
 surf (X, Y, eu)
-title ('Numerical solution'), axis tight
-subplot (1,2,2)
+title ('collocation solution'), axis tight
+subplot (1,3,2)
+[eu, F] = sp_eval (u_gal, gal_space, geo_refined, plot_pts);
+[X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
+surf (X, Y, eu)
+title ('galerkin solution'), axis tight
+subplot (1,3,3)
 surf (X, Y, problem_data.uex (X,Y))
 title ('Exact solution'), axis tight
 
