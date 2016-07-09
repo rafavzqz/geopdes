@@ -64,7 +64,7 @@ end
 % discretization parameters (p and h)
 
 method_data.degree     = [3 3];       % Degree of the splines, obtained by k-refinement of geometry
-method_data.h_level    = [6 6];       % 2^{hlev} nodes in each dir
+method_data.h_level    = [4 4];       % 2^{hlev} nodes in each dir
             
 
 %% ================================  geometry ================================
@@ -108,7 +108,12 @@ knots=geo_refined.nurbs.knots;
 
 
 %pts_case = 1; % equispaced
-pts_case = 2; % greville
+pts_case = 2; % greville -----------------------------------------------------------------> with greville I have coll-pts = DoFs so in 
+                                                                                        % principle I do not need to use least squares. 
+                                                                                        % However, I keep using it for the moment because 
+                                                                                        % I want to be general in the choice of points
+                                                                                        % and also the Dir BC are treated eliminating 
+                                                                                        % the DoFs (matrix columns) but not rows
 switch pts_case
     case 1
         cpt_1=linspace(0,1,40); cpt_1(1)=[]; cpt_1(end)=[];
@@ -225,7 +230,6 @@ gal_rhs       = op_f_v_tp (gal_space, gal_msh, problem_data.f);
 
 % Apply Dirichlet boundary conditions --------------------------------------------------------------------> homogenous dir hardcoded
 u_gal = zeros (gal_space.ndof, 1);
-%[u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (gal_space, gal_msh, problem_data.h, problem_data.drchlt_sides); %-----------------------> this is not workgin???
 
 gal_nb_boundaries = length(gal_space.boundary);
 gal_boundary_dofs=[];
@@ -234,7 +238,6 @@ for bb=1:gal_nb_boundaries
 end
 gal_int_dofs = setdiff (1:gal_space.ndof, gal_boundary_dofs);
 
-%gal_rhs(int_dofs) = gal_rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt;
 
 % Solve the linear system
 u_gal(gal_int_dofs) = gal_stiff_mat(gal_int_dofs, gal_int_dofs) \ gal_rhs(gal_int_dofs);
@@ -244,10 +247,24 @@ u_gal(gal_int_dofs) = gal_stiff_mat(gal_int_dofs, gal_int_dofs) \ gal_rhs(gal_in
 
 %% ============================== the comparison =======================================
 
-plot(u_gal,'-x','DisplayName','Gal dofs')
-hold on
-plot(u_coll,'-or','DisplayName','Coll dofs')
-legend show
+
+% plot of solution
+plot_pts = {linspace(0, 1, 40), linspace(0, 1, 40)};
+figure
+[eu, F] = sp_eval (u_coll, space, geo_refined, plot_pts);
+[X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
+subplot (1,3,1)
+surf (X, Y, eu)
+title ('collocation solution'), axis tight
+subplot (1,3,2)
+[eu, F] = sp_eval (u_gal, gal_space, geo_refined, plot_pts);
+[X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
+surf (X, Y, eu)
+title ('galerkin solution'), axis tight
+subplot (1,3,3)
+surf (X, Y, problem_data.uex (X,Y))
+title ('Exact solution'), axis tight
+
 
 
 % compute errors of coll and gal. Create yet another mesh, which provides quad points for the error
@@ -266,23 +283,6 @@ format long
 
 [error_l2_gal error_h1_gal error_l2_coll error_h1_coll]
 
-% plot of solution
-plot_pts = {linspace(0, 1, 40), linspace(0, 1, 40)};
-
-[eu, F] = sp_eval (u_coll, space, geo_refined, plot_pts);
-[X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
-subplot (1,3,1)
-surf (X, Y, eu)
-title ('collocation solution'), axis tight
-subplot (1,3,2)
-[eu, F] = sp_eval (u_gal, gal_space, geo_refined, plot_pts);
-[X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
-surf (X, Y, eu)
-title ('galerkin solution'), axis tight
-subplot (1,3,3)
-surf (X, Y, problem_data.uex (X,Y))
-title ('Exact solution'), axis tight
-
 
 
 %% ======= a small table of numerical errors obtained by repeatedly running the code with different h, to check convergence order ======
@@ -298,6 +298,7 @@ err= [ 0.006607242321582   0.098667163584905   0.221683362376558   0.82697858759
 
 h = 1./(2.^(2:6));    
 
+figure
 loglog(h,err(:,1),'-ob','DisplayName','L^2 Galerkin')
 hold on
 loglog(h,h.^4,'--b','DisplayName','h^4')
