@@ -64,8 +64,10 @@ end
 % discretization parameters (p and h)
 
 method_data.degree     = [3 3];       % Degree of the splines, obtained by k-refinement of geometry
-method_data.h_level    = [4 4];       % 2^{hlev} nodes in each dir
-            
+method_data.n_sub      = [16 16];     % will divide each subinterval of the original knot span in n_sub many subinterval
+                                      % i.e., we add nsub-1 knots in each interval of the original knotline.
+                                      % note that if the original geometry has even number of subintervals, all possible
+                                      % refinements with this strategy will have even subintervals
 
 %% ================================  geometry ================================
 
@@ -84,10 +86,21 @@ end
 nurbs_ptemp    = nrbdegelev (geom_no_ref.nurbs, degelev);
 
 % next h-ref (so the overall procedure is k-ref). 
-%  sidenote ------------------------------------------------------------------------> For the moment, exploiting diadic division is hard-coded for search of new points. See solve_laplace_iso for generic code
 new_knots = cell(1,problem_data.D);
+
 for d=1:problem_data.D
-    new_knots{d}= ( 1 : (2^method_data.h_level(d)-1) ) /2^method_data.h_level(d) ;
+        
+    knotline = unique(nurbs_ptemp.knots{d});
+    nb_sub0 = length(knotline)-1;
+    NN = method_data.n_sub(d);
+    new_knots{d} = [];
+
+    for i = 1:nb_sub0
+        tmp_new = linspace(knotline(i),knotline(i+1),NN+1);
+        tmp_new(1)=[]; tmp_new(end)=[];
+        new_knots{d}(end+1:end+method_data.n_sub(d)-1) = tmp_new;
+    end
+    
 end
 
 % this is the final domain to use for computations
@@ -287,7 +300,7 @@ format long
 
 %% ======= a small table of numerical errors obtained by repeatedly running the code with different h, to check convergence order ======
 
-% settings: ring problem 2D, greville abscissae, spline degree 3, h_level: 2 to 6
+% settings: ring problem 2D, greville abscissae, spline degree 3, n_sub = [4 8 16 32 64]
 % [error_l2_gal error_h1_gal error_l2_coll error_h1_coll]
 err= [ 0.006607242321582   0.098667163584905   0.221683362376558   0.826978587598251;
        0.000321871231424   0.012273598137088   0.070945374842625   0.263695190251720;
@@ -296,7 +309,7 @@ err= [ 0.006607242321582   0.098667163584905   0.221683362376558   0.82697858759
        0.000000077011984   0.000025712824749   0.001215783435746   0.004602652148439;
 ];
 
-h = 1./(2.^(2:6));    
+h = 1./[4 8 16 32 64];    
 
 figure
 loglog(h,err(:,1),'-ob','DisplayName','L^2 Galerkin')
