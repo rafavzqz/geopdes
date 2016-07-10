@@ -64,7 +64,7 @@ end
 % discretization parameters (p and h)
 
 method_data.degree     = [3 3];       % Degree of the splines, obtained by k-refinement of geometry
-method_data.n_sub      = [16 16];     % will divide each subinterval of the original knot span in n_sub many subinterval
+method_data.n_sub      = [65 65];       % will divide each subinterval of the original knot span in n_sub many subinterval
                                       % i.e., we add nsub-1 knots in each interval of the original knotline.
                                       % note that if the original geometry has even number of subintervals, all possible
                                       % refinements with this strategy will have even subintervals
@@ -121,12 +121,13 @@ knots=geo_refined.nurbs.knots;
 
 
 %pts_case = 1; % equispaced
-pts_case = 2; % greville -----------------------------------------------------------------> with greville I have coll-pts = DoFs so in 
+%pts_case = 2; % greville -----------------------------------------------------------------> with greville I have coll-pts = DoFs so in 
                                                                                         % principle I do not need to use least squares. 
                                                                                         % However, I keep using it for the moment because 
                                                                                         % I want to be general in the choice of points
                                                                                         % and also the Dir BC are treated eliminating 
                                                                                         % the DoFs (matrix columns) but not rows
+pts_case = 3; % external function prescribing points
 switch pts_case
     case 1
         cpt_1=linspace(0,1,40); cpt_1(1)=[]; cpt_1(end)=[];
@@ -137,6 +138,10 @@ switch pts_case
         % for an open knot line with n+p+1 and degree p, we then pass as second argument p+1
         cpt_1 = aveknt(knots{1},method_data.degree(1)+1); 
         cpt_2 = aveknt(knots{2},method_data.degree(2)+1); 
+    case 3
+        % put your function here
+        % cpt_1 = ...
+        % cpt_2 = ...
 end
 
 coll_pts={cpt_1,cpt_2};
@@ -290,7 +295,7 @@ quad_err_space = sp_nurbs( geo_refined.nurbs, quad_err_msh );
 
 
 % Display errors of the computed solution in the L2 and H1 norm
-format long
+format longg
 [error_h1_coll, error_l2_coll] = sp_h1_error (quad_err_space, quad_err_msh, u_coll, problem_data.uex, problem_data.graduex);
 [error_h1_gal, error_l2_gal] = sp_h1_error (quad_err_space, quad_err_msh, u_gal, problem_data.uex, problem_data.graduex);
 
