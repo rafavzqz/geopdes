@@ -3,7 +3,9 @@ clear
 %% ================================ problem and choice of discretization  ================================
 
 % problem_case = 1; % square 2D
-problem_case = 2; % ring 2D
+% problem_case = 2; % ring 2D
+problem_case = 3; % ring 3D
+
 
 switch problem_case
     
@@ -56,15 +58,48 @@ switch problem_case
         problem_data.uex     = @(x, y) -(x.^2+y.^2-1).*(x.^2+y.^2.-4).*x.*y.^2;
         problem_data.graduex = @(x, y) cat (1,  reshape (-2*(x.*y).^2.*((x.^2+y.^2-1)+(x.^2+y.^2-4)) - (x.^2+y.^2-1).*(x.^2+y.^2-4).*y.^2, [1, size(x)]), ...
                                         reshape ( -2*x.*y.^3.*((x.^2+y.^2-1)+(x.^2+y.^2-4)) -   2*x.*y.*(x.^2+y.^2-1).*(x.^2+y.^2-4), [1, size(x)]));        
-                
+
+                                    
+                                    
+    case 3
+        % Physical domain, defined as NURBS map given in a text file
+        problem_data.geo_name = 'geo_thick_ring.txt';        
+        % initial import of geometry
+        geom_no_ref  = geo_load (problem_data.geo_name);
+        geom_no_ref.nurbs = nrbdegelev(geom_no_ref.nurbs,[1 0 1]); % this way I get degree two in each direction
+        problem_data.D = geom_no_ref.rdim;
+
+        % Type of boundary conditions for each side of the domain
+        problem_data.nmnn_sides   = [];
+        problem_data.drchlt_sides = [ 1 2 3 4 5 6];
+
+        
+        % Physical parameters
+        problem_data.c_diff  = @(x, y, z) ones(size(x));
+        
+        % Source and boundary terms
+        problem_data.f = @(x,y,z) (20*x.^3.*y.^2-30*x.*y.^2+12*x.*y.^4+2*x.^5+30*x.*y.^4-10*x.^3-60*x.*y.^2+24*x.^3.*y.^2+8*x).*sin(pi*z) - pi^2*(x.^2+y.^2-1).*(x.^2+y.^2-4).*x.*y.^2.*sin(pi*z);
+        problem_data.g = @(x, y, z, ind) zeros(size(x));
+        problem_data.h = @(x, y, z, ind) zeros(size(x));
+
+        problem_data.uex = @(x,y,z) -(x.^2+y.^2-1).*(x.^2+y.^2-4).*x.*y.^2.*sin(pi*z);
+        problem_data.dx_uex = @(x,y,z) -(4*x.^3-10*x+4*x.*y.^2).*x.*y.^2.*sin(pi*z) - (x.^4+y.^4-5*x.^2-5*y.^2+2*x.^2.*y.^2+4).*y.^2.*sin(pi*z);
+        problem_data.dy_uex = @(x,y,z) -(4*y.^3-10*y+4*y.*x.^2).*x.*y.^2.*sin(pi*z) - (x.^4+y.^4-5*x.^2-5*y.^2+2*x.^2.*y.^2+4).*(2*y).*x.*sin(pi*z);
+        problem_data.dz_uex = @(x,y,z) -(x.^2+y.^2-1).*(x.^2+y.^2-4).*x.*y.^2.*pi.*cos(pi*z);
+        problem_data.graduex = @(x,y,z) cat (1,  reshape (problem_data.dx_uex(x,y,z), [1, size(x)]), ...
+                                                  reshape (problem_data.dy_uex(x,y,z), [1, size(x)]),...
+                                                  reshape (problem_data.dz_uex(x,y,z), [1, size(x)]));
+                                    
 end
                    
-                   
+D = problem_data.D;                   
                    
 % discretization parameters (p and h)
 
-method_data.degree     = [3 3];       % Degree of the splines, obtained by k-refinement of geometry
-method_data.n_sub      = [65 65];       % will divide each subinterval of the original knot span in n_sub many subinterval
+method_data.degree     = 3*ones(1,D); % Degree of the splines, obtained by k-refinement of geometry, 
+                                      % e.g [3 3] or [3 3 3]
+method_data.n_sub      = 8*ones(1,D); % will divide each subinterval of the original knot span in n_sub many subinterval
+                                      % e.g. [9 9] or [9 9 9]
                                       % i.e., we add nsub-1 knots in each interval of the original knotline.
                                       % note that if the original geometry has even number of subintervals, all possible
                                       % refinements with this strategy will have even subintervals
@@ -88,7 +123,7 @@ nurbs_ptemp    = nrbdegelev (geom_no_ref.nurbs, degelev);
 % next h-ref (so the overall procedure is k-ref). 
 new_knots = cell(1,problem_data.D);
 
-for d=1:problem_data.D
+for d=1:D
         
     knotline = unique(nurbs_ptemp.knots{d});
     nb_sub0 = length(knotline)-1;
@@ -99,6 +134,7 @@ for d=1:problem_data.D
         tmp_new = linspace(knotline(i),knotline(i+1),NN+1);
         tmp_new(1)=[]; tmp_new(end)=[];
         new_knots{d}(end+1:end+method_data.n_sub(d)-1) = tmp_new;
+        clear tmp_new
     end
     
 end
@@ -121,36 +157,39 @@ knots=geo_refined.nurbs.knots;
 
 
 %pts_case = 1; % equispaced
-%pts_case = 2; % greville -----------------------------------------------------------------> with greville I have coll-pts = DoFs so in 
+pts_case = 2; % greville -----------------------------------------------------------------> with greville I have coll-pts = DoFs so in 
                                                                                         % principle I do not need to use least squares. 
                                                                                         % However, I keep using it for the moment because 
                                                                                         % I want to be general in the choice of points
                                                                                         % and also the Dir BC are treated eliminating 
                                                                                         % the DoFs (matrix columns) but not rows
-pts_case = 3; % external function prescribing points
+% pts_case = 3; % external function prescribing points
+coll_pts = cell(1,D);
 switch pts_case
     case 1
-        cpt_1=linspace(0,1,40); cpt_1(1)=[]; cpt_1(end)=[];
-        cpt_2=linspace(0,1,40); cpt_2(1)=[]; cpt_2(end)=[];
+        for d=1:D
+            tmp = linspace(0,1,40); tmp(1)=[]; tmp(end)=[];
+            coll_pts{d} = tmp; 
+            clear tmp
+        end
     case 2
         %  aveknt(knot_line,k)  returns the averages of successive  k-1  knots. To comply
         % with the definition of greville as g_j = ( zeta_{j+1} + ... + zeta_{j+p})/p
         % for an open knot line with n+p+1 and degree p, we then pass as second argument p+1
-        cpt_1 = aveknt(knots{1},method_data.degree(1)+1); 
-        cpt_2 = aveknt(knots{2},method_data.degree(2)+1); 
+        for d=1:D
+            coll_pts{d} = aveknt(knots{d},method_data.degree(d)+1); 
+        end
     case 3
         % put your function here
-        % cpt_1 = ...
-        % cpt_2 = ...
+        % coll_pts{d} = ...
 end
 
-coll_pts={cpt_1,cpt_2};
 
 
 % for each dim, we generate a fictitious knot line, so that there is one coll point per element.
 % we define this by taking as knot line [0 midpoint(coll-pt1, coll-pt2) midpoint(coll-pt2, coll-pt3) ... 1]
-
-for d = 1:problem_data.D
+brk = cell(1,D);
+for d = 1:D
     coll_pts{d} = coll_pts{d}(:)';
     if numel(coll_pts{d}) > 1
         brk{d} = [knots{d}(1), coll_pts{d}(1:end-1) + diff(coll_pts{d})/2, knots{d}(end)];
@@ -199,13 +238,16 @@ end
 
 
 % generate rhs. Recover coordinates of collocation points and evaluate forcing 
-x={};
-for idir = 1:coll_mesh_eval.rdim
-    x{idir} = reshape (coll_mesh_eval.geo_map(idir,:,:), coll_mesh_eval.nqn*coll_msh.nel, 1);
+x=cell(1,D);
+for d = 1:D
+    x{d} = reshape (coll_mesh_eval.geo_map(d,:,:), coll_mesh_eval.nqn*coll_msh.nel, 1);
 end
-rhs  = problem_data.f(x{1},x{2});
-
-
+switch D
+    case 2
+        rhs = problem_data.f(x{1},x{2});
+    case 3
+        rhs = problem_data.f(x{1},x{2},x{3});
+end
 % remove DoF of boundary condition. Sidenote ----------------------------------------------------------> homogeneous Dir hardcoded here
 
 nb_boundaries = length(sp_evals.boundary);
@@ -232,7 +274,7 @@ u_coll(internal_dofs)=sol;
 %% ================================ Galerkin for comparison ================================
 
 % fix quad points, for good this time, and build mesh
-nquad      = [5 5];     % Points for the Gaussian quadrature rule
+nquad      = 5*ones(1,D);     % Points for the Gaussian quadrature rule, e.g [5 5] or [5 5 5]
 [gal_qn, gal_qw] = msh_set_quad_nodes (knots, msh_gauss_nodes (nquad));
 gal_msh      = msh_cartesian (knots, gal_qn, gal_qw, geo_refined);
   
@@ -266,27 +308,28 @@ u_gal(gal_int_dofs) = gal_stiff_mat(gal_int_dofs, gal_int_dofs) \ gal_rhs(gal_in
 %% ============================== the comparison =======================================
 
 
-% plot of solution
-plot_pts = {linspace(0, 1, 40), linspace(0, 1, 40)};
-figure
-[eu, F] = sp_eval (u_coll, space, geo_refined, plot_pts);
-[X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
-subplot (1,3,1)
-surf (X, Y, eu)
-title ('collocation solution'), axis tight
-subplot (1,3,2)
-[eu, F] = sp_eval (u_gal, gal_space, geo_refined, plot_pts);
-[X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
-surf (X, Y, eu)
-title ('galerkin solution'), axis tight
-subplot (1,3,3)
-surf (X, Y, problem_data.uex (X,Y))
-title ('Exact solution'), axis tight
-
+% plot of solution (only for D=2)
+if D==2
+    plot_pts = {linspace(0, 1, 40), linspace(0, 1, 40)};
+    figure
+    [eu, F] = sp_eval (u_coll, space, geo_refined, plot_pts);
+    [X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
+    subplot (1,3,1)
+    surf (X, Y, eu)
+    title ('collocation solution'), axis tight
+    subplot (1,3,2)
+    [eu, F] = sp_eval (u_gal, gal_space, geo_refined, plot_pts);
+    [X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
+    surf (X, Y, eu)
+    title ('galerkin solution'), axis tight
+    subplot (1,3,3)
+    surf (X, Y, problem_data.uex (X,Y))
+    title ('Exact solution'), axis tight
+end
 
 
 % compute errors of coll and gal. Create yet another mesh, which provides quad points for the error
-quad_err_nquad      = [9 9];     % Points for the Gaussian quadrature rule
+quad_err_nquad      = 9*ones(1,D);     % Points for the Gaussian quadrature rule, like [9 9] or [9 9 9]
 [quad_err_qn, quad_err_qw] = msh_set_quad_nodes (knots, msh_gauss_nodes(quad_err_nquad));
 quad_err_msh      = msh_cartesian (knots, quad_err_qn, quad_err_qw, geo_refined);
 
@@ -328,3 +371,9 @@ loglog(h,err(:,4),'-x','Color',[0 0.8 0],'DisplayName','H^1 Coll Greville')
 grid on
 legend show
 set(legend,'Location','SouthEast')
+
+%%
+% [0.00471971284781849        0.0738079958638735        0.0501182154801697           0.2696108895832;
+% 0.000231737926128796       0.00897166469034144        0.0180805395788261        0.0924538091970723;]
+
+ 
