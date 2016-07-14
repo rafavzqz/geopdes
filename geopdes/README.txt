@@ -111,7 +111,9 @@ CONTENTS:
 
       R. Vazquez.
       A new design for the implementation of isogeometric analysis
-      in Octave and Matlab: GeoPDEs 3.0, Tech. report, IMATI-CNR, 2016
+      in Octave and Matlab: GeoPDEs 3.0, 
+      Computers and Mathematics with Applications, 72 (2016), pp. 523-554
+      doi:10.1016/j.camwa.2016.05.010
 
     In the paper we give an explanation of the architecture, the design and
     the main features of the code. This paper can be seen as brief user's guide.
@@ -135,11 +137,13 @@ CONTENTS:
 
       R. Vazquez.
       A new design for the implementation of isogeometric analysis
-      in Octave and Matlab: GeoPDEs 3.0, Tech. report, IMATI-CNR, 2016
+      in Octave and Matlab: GeoPDEs 3.0, 
+      Computers and Mathematics with Applications, 72 (2016), pp. 523-554
+      doi:10.1016/j.camwa.2016.05.010
 
       C. de Falco, A. Reali, R. Vazquez. 
       GeoPDES: a research tool for Isogeometric Analysis of PDEs, 
-      Advances in Engineering Software, 42(12), 2011
+      Advances in Engineering Software, 42 (2011), pp. 1020-1034
       doi:10.1016/j.advengsoft.2011.06.010
 
     in any paper where GeoPDEs is used to obtain numerical results.
