@@ -3,11 +3,7 @@
 % By Rafael Vazquez and Lorenzo Tamellini
 % 
 %
-% C. De Falco, A. Reali, R. Vazquez
-% GeoPDEs: a research tool for IsoGeometric Analysis of PDEs
-%
-% Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011, 2015 Rafael Vazquez
+% Copyright (C) 2016 Lorenzo Tamellini, Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
