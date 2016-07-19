@@ -1,10 +1,37 @@
+% This program implements stochastic collocation for the Poisson equation 
+% with homogeneous Dirichlet boundary conditions on a 2D/3D domain.
+% By Rafael Vazquez and Lorenzo Tamellini
+% 
+%
+% C. De Falco, A. Reali, R. Vazquez
+% GeoPDEs: a research tool for IsoGeometric Analysis of PDEs
+%
+% Copyright (C) 2009, 2010 Carlo de Falco
+% Copyright (C) 2011, 2015 Rafael Vazquez
+%
+%    This program is free software: you can redistribute it and/or modify
+%    it under the terms of the GNU General Public License as published by
+%    the Free Software Foundation, either version 3 of the License, or
+%    (at your option) any later version.
+
+%    This program is distributed in the hope that it will be useful,
+%    but WITHOUT ANY WARRANTY; without even the implied warranty of
+%    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+%    GNU General Public License for more details.
+%
+%    You should have received a copy of the GNU General Public License
+%    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+
 clear 
 
 %% ================================ problem and choice of discretization  ================================
 
 % problem_case = 1; % square 2D
-% problem_case = 2; % ring 2D
-problem_case = 3; % ring 3D
+problem_case = 2; % ring 2D
+% problem_case = 3; % ring 3D
 
 
 switch problem_case
@@ -163,7 +190,7 @@ pts_case = 2; % greville -------------------------------------------------------
                                                                                         % I want to be general in the choice of points
                                                                                         % and also the Dir BC are treated eliminating 
                                                                                         % the DoFs (matrix columns) but not rows
-% pts_case = 3; % external function prescribing points
+% pts_case = 3; % any external function prescribing points
 coll_pts = cell(1,D);
 switch pts_case
     case 1
@@ -371,9 +398,4 @@ loglog(h,err(:,4),'-x','Color',[0 0.8 0],'DisplayName','H^1 Coll Greville')
 grid on
 legend show
 set(legend,'Location','SouthEast')
-
-%%
-% [0.00471971284781849        0.0738079958638735        0.0501182154801697           0.2696108895832;
-% 0.000231737926128796       0.00897166469034144        0.0180805395788261        0.0924538091970723;]
-
  
