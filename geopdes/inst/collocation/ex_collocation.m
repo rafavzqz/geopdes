@@ -363,31 +363,3 @@ format longg
 
 [error_l2_gal error_h1_gal error_l2_coll error_h1_coll]
 
-
-
-%% ======= a small table of numerical errors obtained by repeatedly running the code with different h, to check convergence order ======
-
-% settings: ring problem 2D, greville abscissae, spline degree 3, n_sub = [4 8 16 32 64]
-% [error_l2_gal error_h1_gal error_l2_coll error_h1_coll]
-err= [ 0.006607242321582   0.098667163584905   0.221683362376558   0.826978587598251;
-       0.000321871231424   0.012273598137088   0.070945374842625   0.263695190251720;
-       0.000019497341911   0.001588947267174   0.019005325968532   0.071420226306507;
-       0.000001224267705   0.000203182231291   0.004839925626712   0.018288070038202;
-       0.000000077011984   0.000025712824749   0.001215783435746   0.004602652148439;
-];
-
-h = 1./[4 8 16 32 64];    
-
-figure
-loglog(h,err(:,1),'-ob','DisplayName','L^2 Galerkin')
-hold on
-loglog(h,h.^4,'--b','DisplayName','h^4')
-loglog(h,err(:,2),'-or','DisplayName','H^1 Galerkin')
-loglog(h,h.^3,'--r','DisplayName','h^3')
-loglog(h,err(:,3),'-ok','DisplayName','L^2 Coll Greville')
-loglog(h,h.^2,'--k','DisplayName','h^2')
-loglog(h,err(:,4),'-x','Color',[0 0.8 0],'DisplayName','H^1 Coll Greville')
-grid on
-legend show
-set(legend,'Location','SouthEast')
- 
