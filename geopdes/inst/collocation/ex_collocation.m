@@ -35,7 +35,7 @@ switch problem_case
         problem_data.geo_name = 'geo_square.txt';
         % initial import of geometry
         geom_no_ref  = geo_load (problem_data.geo_name);
-        problem_data.D = geom_no_ref.rdim;
+% %         problem_data.D = geom_no_ref.rdim;
         
         % Type of boundary conditions for each side of the domain
         problem_data.nmnn_sides   = [];
@@ -60,8 +60,8 @@ switch problem_case
         problem_data.geo_name = 'geo_ring.txt';
         % initial import of geometry
         geom_no_ref  = geo_load (problem_data.geo_name);
-%         geom_no_ref.nurbs = nrbdegelev(geom_no_ref.nurbs,[1 0]); % this way I get degree two in each direction
-        problem_data.D = geom_no_ref.rdim;
+% %         geom_no_ref.nurbs = nrbdegelev(geom_no_ref.nurbs,[1 0]); % this way I get degree two in each direction
+% %         problem_data.D = geom_no_ref.rdim;
         
         % Type of boundary conditions for each side of the domain
         problem_data.nmnn_sides   = [];
@@ -111,14 +111,14 @@ switch problem_case
 end
 
 if (isfield (geom_no_ref, 'nurbs'))
-  ndim = numel (geom_no_ref.nurbs.order);
+    ndim = numel (geom_no_ref.nurbs.order);
 end
 
 % % D = problem_data.D;                   
                    
 % discretization parameters (p and h)
 
-method_data.degree = 3*ones(1,ndim); % Degree of the splines, obtained by k-refinement of geometry, 
+method_data.degree = 4*ones(1,ndim); % Degree of the splines, obtained by k-refinement of geometry, 
                                      % e.g [3 3] or [3 3 3]
 method_data.nsub   = 8*ones(1,ndim); % will divide each subinterval of the original knot span in nsub many subinterval
                                      % e.g. [8 8] or [8 8 8]
@@ -178,10 +178,10 @@ knots = geo_refined.nurbs.knots;
 
 % Now we need to generate the collocation points. Since GeoPDEs is based on
 %  a mesh structure, we generate an auxiliary "mesh" with only one point 
-%  per element, using the midpoints between knots. 
-%  Although this is not the most efficient way to implement
-%  collocation, it allows us to use all the functionality in GeoPDEs, in
-%  particular the evaluation of basis functions, without further changes.
+%  per element, using the midpoints between collocation points. 
+%  Although this is not the most efficient way to implement collocation,
+%  it allows us to use all the functionality in GeoPDEs, in particular
+%  the evaluation of basis functions, without further changes.
 
 % % % now we need to generate the collocation points. We define a sequence of coll_pts and create
 % % % an auxiliary knot line so that we have 1 point per element. Then we build a mesh object
@@ -189,14 +189,15 @@ knots = geo_refined.nurbs.knots;
 % % % but provides also a mean of evaluating the basis functions in those points, we go for it
 
 
-%pts_case = 1; % equispaced
+% XXX This should go into method_data
+% pts_case = 1; % equispaced
 pts_case = 2; % greville -----------------------------------------------------------------> with greville I have coll-pts = DoFs so in 
                                                                                         % principle I do not need to use least squares. 
                                                                                         % However, I keep using it for the moment because 
                                                                                         % I want to be general in the choice of points
                                                                                         % and also the Dir BC are treated eliminating 
                                                                                         % the DoFs (matrix columns) but not rows
-% pts_case = 3; % any external function prescribing points
+% % pts_case = 3; % any external function prescribing points
 coll_pts = cell(1,ndim);
 switch pts_case
     case 1
@@ -214,9 +215,11 @@ switch pts_case
 % %             coll_pts{d} = aveknt(knots{d},method_data.degree(d)+1); 
             coll_pts{d} = aveknt (knots{d}, nurbs.order(d)); 
         end
-    case 3
-        % put your function here
-        % coll_pts{d} = ...
+    otherwise
+        error ('That choice of the collocation points is not implemented (yet)')
+% %     case 3
+% %         % put your function here
+% %         % coll_pts{d} = ...
 end
 
 % % % For each dim, we generate an auxiliary knot line, so that there is one coll point per element.
@@ -241,7 +244,6 @@ space = sp_nurbs (geo_refined.nurbs, coll_msh);
 % Now we evaluate each spline in the collocation points and collect everything into the design matrix, i.e. a
 % matrix whose n-th row is the equation collocated in the n-th point. Remember that we have built coll_msh
 % to have 1 pt per element, so the number of coll pts is exactly the number of elements of coll_msh
-
 tot_nb_coll_pts = coll_msh.nel;
 nb_dofs = space.ndof;
 % % A = zeros (tot_nb_coll_pts, nb_dofs);
@@ -299,7 +301,7 @@ u_coll(internal_dofs) = AA\rr;
 nquad            = nurbs.order;     % Points for the Gaussian quadrature rule, equal to the order (degree + 1)
 [gal_qn, gal_qw] = msh_set_quad_nodes (knots, msh_gauss_nodes (nquad));
 gal_msh          = msh_cartesian (knots, gal_qn, gal_qw, geo_refined);
-gal_space = space.constructor (gal_msh);
+gal_space        = space.constructor (gal_msh);
 % % gal_space = sp_nurbs(geo_refined.nurbs, gal_msh);
 % % % gal_space    = sp_bspline (knots, method_data.degree, gal_msh);
 
@@ -317,18 +319,16 @@ for bb=1:gal_nb_boundaries
 end
 gal_int_dofs = setdiff (1:gal_space.ndof, gal_boundary_dofs);
 
-
 % Solve the linear system
 u_gal(gal_int_dofs) = gal_stiff_mat(gal_int_dofs, gal_int_dofs) \ gal_rhs(gal_int_dofs);
-
 
 
 
 %% ============================== the comparison =======================================
 
 
-% plot of solution (only for D=2)
-if ndim==2
+% Plot of solution (only for D=2)
+if (ndim == 2)
     plot_pts = {linspace(0, 1, 40), linspace(0, 1, 40)};
     figure
     [eu, F] = sp_eval (u_coll, space, geo_refined, plot_pts);
@@ -346,20 +346,28 @@ if ndim==2
     title ('Exact solution'), axis tight
 end
 
+% Compute errors of collocation and Galerkin. 
+% % WHY DO YOU NEED A DIFFERENT MESH? We can use the one from Galerkin. It is less accurate, but should be fine enough.
+% % Create yet another mesh, which provides quad points for the error
+% % quad_err_nquad      = 9*ones(1,ndim);     % Points for the Gaussian quadrature rule, like [9 9] or [9 9 9]
+% % [quad_err_qn, quad_err_qw] = msh_set_quad_nodes (knots, msh_gauss_nodes(quad_err_nquad));
+% % quad_err_msh      = msh_cartesian (knots, quad_err_qn, quad_err_qw, geo_refined);
+% % 
+% % % I also build another space, to evaluate the basis functions in the right quadrature points for error
+% % quad_err_space = sp_nurbs( geo_refined.nurbs, quad_err_msh ); 
+% % 
+% % 
+% % % Display errors of the computed solution in the L2 and H1 norm
+% % format longg
+% % [error_h1_coll, error_l2_coll] = sp_h1_error (quad_err_space, quad_err_msh, u_coll, problem_data.uex, problem_data.graduex);
+% % [error_h1_gal, error_l2_gal] = sp_h1_error (quad_err_space, quad_err_msh, u_gal, problem_data.uex, problem_data.graduex);
+% % 
+% % [error_l2_gal error_h1_gal error_l2_coll error_h1_coll]
 
-% compute errors of coll and gal. Create yet another mesh, which provides quad points for the error
-quad_err_nquad      = 9*ones(1,ndim);     % Points for the Gaussian quadrature rule, like [9 9] or [9 9 9]
-[quad_err_qn, quad_err_qw] = msh_set_quad_nodes (knots, msh_gauss_nodes(quad_err_nquad));
-quad_err_msh      = msh_cartesian (knots, quad_err_qn, quad_err_qw, geo_refined);
+disp ('Error in H1 and L2 norms, for isogeometric collocation')
+[error_h1_coll, error_l2_coll] = sp_h1_error (gal_space, gal_msh, u_coll, problem_data.uex, problem_data.graduex);
+disp([error_l2_coll error_h1_coll])
 
-% I also build another space, to evaluate the basis functions in the right quadrature points for error
-quad_err_space = sp_nurbs( geo_refined.nurbs, quad_err_msh ); 
-
-
-% Display errors of the computed solution in the L2 and H1 norm
-format longg
-[error_h1_coll, error_l2_coll] = sp_h1_error (quad_err_space, quad_err_msh, u_coll, problem_data.uex, problem_data.graduex);
-[error_h1_gal, error_l2_gal] = sp_h1_error (quad_err_space, quad_err_msh, u_gal, problem_data.uex, problem_data.graduex);
-
-[error_l2_gal error_h1_gal error_l2_coll error_h1_coll]
-
+disp ('Error in H1 and L2 norms, for isogeometric Galerkin')
+[error_h1_gal, error_l2_gal] = sp_h1_error (gal_space, gal_msh, u_gal, problem_data.uex, problem_data.graduex);
+disp ([error_l2_gal error_h1_gal])
