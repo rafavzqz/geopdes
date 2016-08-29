@@ -1,6 +1,6 @@
 function Q = new_global_mid(space)
 % Questa funzione genera le informazioni sulla quadratura 1D 
-% N. B. Ancora non può gestire nodi ripetuti
+% N. B. Ancora non puï¿½ gestire nodi ripetuti
 %
 % INPUT: 
 % space           spazio di spline univariate
@@ -73,7 +73,7 @@ for i = 1:ndof
 	
 end
 
-
+end
 function [x,w]=ggauss_Nab_xw(N,a,b)
 %
 % Calculates the gauss nodes (x) and weights (w):
