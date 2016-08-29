@@ -111,13 +111,14 @@ end
 
 % discretization parameters (p and h)
 
-method_data.degree = 4*ones(1,ndim); % Degree of the splines, obtained by k-refinement of geometry, 
-                                     % e.g [3 3] or [3 3 3]
-method_data.nsub   = 8*ones(1,ndim); % will divide each subinterval of the original knot span in nsub many subinterval
-                                     % e.g. [8 8] or [8 8 8]
-                                     % i.e., we add nsub-1 knots in each interval of the original knotline.
-                                     % note that if the original geometry has even number of subintervals, all possible
-                                     % refinements with this strategy will have even subintervals
+method_data.degree     = 4*ones(1,ndim); % Degree of the splines
+                                         % e.g [3 3] or [3 3 3]
+method_data.regularity = method_data.degree - 1; % Regularity of the splines, should be at least C^1.
+method_data.nsub       = 8*ones(1,ndim); % will divide each subinterval of the original knot span in nsub many subinterval
+                                         % e.g. [8 8] or [8 8 8]
+                                         % i.e., we add nsub-1 knots in each interval of the original knotline.
+                                         % note that if the original geometry has even number of subintervals, all possible
+                                         % refinements with this strategy will have even subintervals
 
 %% ================================  geometry ================================
 
@@ -126,13 +127,13 @@ method_data.nsub   = 8*ones(1,ndim); % will divide each subinterval of the origi
 degelev  = max (method_data.degree - (geom_no_ref.nurbs.order-1), 0);
 if (any (degelev < 0))
     warning('The degree provided is lower than the degree of the original geometry')
-elseif (any (method_data.degree < 2))
+elseif (any (method_data.degree < 2) || any (method_data.regularity < 1))
     error ('Collocation for the Laplacian requires at least C^1 continuity. Degree should be at least 2')
 end
 nurbs_ptemp = nrbdegelev (geom_no_ref.nurbs, degelev);
 
 % next h-ref (so the overall procedure is k-ref). 
-[~, ~, new_knots] = kntrefine (nurbs_ptemp.knots, method_data.nsub-1, nurbs_ptemp.order-1, nurbs_ptemp.order-2);
+[~, ~, new_knots] = kntrefine (nurbs_ptemp.knots, method_data.nsub-1, nurbs_ptemp.order-1, method_data.regularity);
 
 nurbs = nrbkntins (nurbs_ptemp, new_knots);
 geo_refined = geo_load (nurbs);
@@ -250,29 +251,33 @@ u_coll(internal_dofs) = AA\rr;
 
 %% ================================ Galerkin for comparison ================================
 
-% Even if we want to use the same space as before, we need to rebuild the
-% space object because now mesh is different
-nquad            = nurbs.order;     % Points for the Gaussian quadrature rule, equal to the order (degree + 1)
-[gal_qn, gal_qw] = msh_set_quad_nodes (knots, msh_gauss_nodes (nquad));
-gal_msh          = msh_cartesian (knots, gal_qn, gal_qw, geo_refined);
-gal_space        = space.constructor (gal_msh);
+% % Even if we want to use the same space as before, we need to rebuild the
+% % space object because now mesh is different
+% % nquad            = nurbs.order;     % Points for the Gaussian quadrature rule, equal to the order (degree + 1)
+method_data.nquad = nurbs.order;
 
-% Assemble the matrices
-gal_stiff_mat = op_gradu_gradv_tp (gal_space, gal_space, gal_msh, problem_data.c_diff);
-gal_rhs       = op_f_v_tp (gal_space, gal_msh, problem_data.f);
+[~, gal_msh, gal_space, u_gal] = solve_laplace_iso (problem_data, method_data);
 
-% Apply Dirichlet boundary conditions --------------------------------------------------------------------> homogenous dir hardcoded
-u_gal = zeros (gal_space.ndof, 1);
-
-gal_nb_boundaries = length(gal_space.boundary);
-gal_boundary_dofs=[];
-for bb=1:gal_nb_boundaries
-    gal_boundary_dofs = union(gal_boundary_dofs,gal_space.boundary(bb).dofs);
-end
-gal_int_dofs = setdiff (1:gal_space.ndof, gal_boundary_dofs);
-
-% Solve the linear system
-u_gal(gal_int_dofs) = gal_stiff_mat(gal_int_dofs, gal_int_dofs) \ gal_rhs(gal_int_dofs);
+% % [gal_qn, gal_qw] = msh_set_quad_nodes (knots, msh_gauss_nodes (nquad));
+% % gal_msh          = msh_cartesian (knots, gal_qn, gal_qw, geo_refined);
+% % gal_space        = space.constructor (gal_msh);
+% % 
+% % % Assemble the matrices
+% % gal_stiff_mat = op_gradu_gradv_tp (gal_space, gal_space, gal_msh, problem_data.c_diff);
+% % gal_rhs       = op_f_v_tp (gal_space, gal_msh, problem_data.f);
+% % 
+% % % Apply Dirichlet boundary conditions --------------------------------------------------------------------> homogenous dir hardcoded
+% % u_gal = zeros (gal_space.ndof, 1);
+% % 
+% % gal_nb_boundaries = length(gal_space.boundary);
+% % gal_boundary_dofs=[];
+% % for bb=1:gal_nb_boundaries
+% %     gal_boundary_dofs = union(gal_boundary_dofs,gal_space.boundary(bb).dofs);
+% % end
+% % gal_int_dofs = setdiff (1:gal_space.ndof, gal_boundary_dofs);
+% % 
+% % % Solve the linear system
+% % u_gal(gal_int_dofs) = gal_stiff_mat(gal_int_dofs, gal_int_dofs) \ gal_rhs(gal_int_dofs);
 
 
 
