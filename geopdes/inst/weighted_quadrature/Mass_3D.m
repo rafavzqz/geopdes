@@ -1,36 +1,38 @@
 function [Mass_matrix] = Mass_3D(msh, space, geometry, coeff_fun)
 
-d = 3; 
-
-for i = 1:d
-    sp1d = space.sp_univ(i);
-    Connectivity(i).neighbors = cellfun (@(x) unique (sp1d.connectivity(:,x)).', sp1d.supp, 'UniformOutput', false);
-    Connectivity(i).num_neigh = cellfun (@numel, Connectivity(i).neighbors);
+for idim = 1:msh.ndim
+    sp1d = space.sp_univ(idim);
+    Connectivity(idim).neighbors = cellfun (@(x) unique (sp1d.connectivity(:,x)).', sp1d.supp, 'UniformOutput', false);
+    Connectivity(idim).num_neigh = cellfun (@numel, Connectivity(idim).neighbors);
     
-    Quad_rule(i) = global_mid(sp1d);
+    Quad_rule(idim) = global_mid(sp1d);
     %Quad_rule(i) = global_mid_nonzero(sp1d);
  
-    brk{i} = [space.knots{i}(1), space.knots{i}(end)];
-    qn{i} = Quad_rule(i).all_points';
+    brk{idim} = [space.knots{idim}(1), space.knots{idim}(end)];
+    qn{idim} = Quad_rule(idim).all_points';
 end
 
 % Generate a new GeoPDEs mesh with the new quadrature points
 new_msh = msh_cartesian (brk, qn, [], geometry);
 sp = space.constructor (new_msh);
 
-for i = 1:d
-    sp1d = sp.sp_univ(i);
+for idim = 1:msh.ndim
+    sp1d = sp.sp_univ(idim);
     for ii = 1:sp1d.ndof
-      BSval{i,ii} = sp1d.shape_functions(Quad_rule(i).ind_points{ii}, Connectivity(i).neighbors{ii}).';
+      BSval{idim,ii} = sp1d.shape_functions(Quad_rule(idim).ind_points{ii}, Connectivity(idim).neighbors{ii}).';
     end 	
 end
 
 % calcolo le funzioni che compaiono nell'integrale
-[x,y,z] = ndgrid(qn{1},qn{2},qn{3});
-coeff = coeff_fun(x(:),y(:),z(:));
-coeff = reshape (coeff, [length(qn{1}), length(qn{2}), length(qn{3})]);
+x = cell (msh.ndim, 1);
+[x{:}] = ndgrid(qn{:});
+coeff = coeff_fun(x{:});
+
+aux_size = cellfun (@numel, qn);
+coeff = reshape (coeff, aux_size);
+
 jacdet = abs (geopdes_det__ (msh.map_der(qn)));
-jacdet = reshape (jacdet, [length(qn{1}), length(qn{2}), length(qn{3})]);
+jacdet = reshape (jacdet, aux_size);
 fun_val = jacdet.*coeff; 
 
 Mass_matrix = massSF_veloce3d(space,Quad_rule,Connectivity,BSval,fun_val);
@@ -44,7 +46,7 @@ function Mass_matrix = massSF_veloce3d(space,Quad_rule,Connectivity,BSval,fun_va
 % space          spazio spline
 % Quad_rule      tensore che contiene informazione sui punti/pesi di quadratura
 % fun_val        input che contiene informazione sui coefficienti
-% Connectivity   matrice che contiene informazione sulla connettività 1D
+% Connectivity   matrice che contiene informazione sulla connettivitï¿½ 1D
 % BSval          struttura che contiene i valori delle B-splines nei punti di quadratura
 
 d=3; % dimesnione
