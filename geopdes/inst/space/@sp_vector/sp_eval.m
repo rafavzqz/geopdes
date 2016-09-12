@@ -38,6 +38,10 @@
 
 function [eu, F] = sp_eval (u, space, geometry, npts, options, lambda_lame, mu_lame)
 
+  if (numel (u) ~= space.ndof)
+    error ('The number of degrees of freedom of the vector and the space do not match')
+  end
+
   if (nargin < 5)
     options = {'value'};
     lambda_lame = [];

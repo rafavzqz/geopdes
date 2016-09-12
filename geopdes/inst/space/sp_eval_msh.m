@@ -36,6 +36,10 @@
 
 function [eu, F] = sp_eval_msh (u, space, msh, options, lambda_lame, mu_lame)
 
+  if (numel (u) ~= space.ndof)
+    error ('The number of degrees of freedom of the vector and the space do not match')
+  end
+
   output_cell = true;
   if (nargin < 4)
     options = {'value'};
