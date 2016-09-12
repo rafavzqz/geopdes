@@ -98,7 +98,8 @@ for ii = 1:ndof
 %     local_B = spcol(extended_local_knots, degree+1, Q.quad_points{ii})';
 %     local_knots = knots(ii:ii+degree+1);
 
-    neighbors = unique (num(Q.ind_points{ii},:));
+%     neighbors = unique (num(Q.ind_points{ii},:));
+    neighbors = unique (space.connectivity(:, supp{ii}));
     local_B = full (B_global(Q.ind_points{ii}, neighbors).');
 	% costruisco il rhs con la quadratura gaussiana
     x_gauss=[];w_gauss=[];
