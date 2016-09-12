@@ -5,8 +5,8 @@ for idim = 1:msh.ndim
     Connectivity(idim).neighbors = cellfun (@(x) unique (sp1d.connectivity(:,x)).', sp1d.supp, 'UniformOutput', false);
     Connectivity(idim).num_neigh = cellfun (@numel, Connectivity(idim).neighbors);
     
-    Quad_rule(idim) = global_mid(sp1d);
-    %Quad_rule(i) = global_mid_nonzero(sp1d);
+%     Quad_rule(idim) = global_mid(sp1d);
+    Quad_rule(idim) = global_mid_nonzero(sp1d);
  
     brk{idim} = [space.knots{idim}(1), space.knots{idim}(end)];
     qn{idim} = Quad_rule(idim).all_points';
