@@ -27,9 +27,11 @@ q_first_el = linspace (distinct_knots(1)+eps, distinct_knots(2), degree+2);
 q_last_el = linspace (distinct_knots(end-1), distinct_knots(end)-eps, degree+2);
 q_int_el = sort ([distinct_knots(3:end-2) 0.5*(distinct_knots(2:end-2)+distinct_knots(3:end-1))]);
 all_points = [q_first_el q_int_el q_last_el];
+quad_points = unique (quad_points);
 Q.all_points = all_points;
 
-% Construction of a global collocation basis, with the value of the basis functions at the chosen points
+% Construction of a global collocation basis, a matrix whose (i,j) entry 
+% is the value at the i-th quadrature point of the j-th basis function
 iv = findspan (space.ndof, degree, all_points, knots);
 B_loc = basisfun (iv, all_points, degree, knots);
 num = numbasisfun (iv, all_points, degree, knots) + 1;
