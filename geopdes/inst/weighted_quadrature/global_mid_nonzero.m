@@ -32,7 +32,7 @@ Q.all_points = all_points;
 
 % Construction of a global collocation basis, a matrix whose (i,j) entry 
 % is the value at the i-th quadrature point of the j-th basis function
-iv = findspan (space.ndof, degree, all_points, knots);
+iv = findspan (space.ndof-1, degree, all_points, knots);
 B_loc = basisfun (iv, all_points, degree, knots);
 num = numbasisfun (iv, all_points, degree, knots) + 1;
 % B_global = sparse (numel(all_points), ndof);
