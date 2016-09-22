@@ -21,10 +21,9 @@ supp = space.supp;
 Q = struct ('all_points',[],'nquad_points', [], 'quad_weights', [], 'quad_points', [],'ind_points',[]);
 
 % Quadrature points in the first, the last, and the internal elements
-%  I use eps to ensure that the values are inside the domain, and to avoid possible truncation errors
 distinct_knots = unique (knots);
-q_first_el = linspace (distinct_knots(1)+eps, distinct_knots(2), degree+2);
-q_last_el = linspace (distinct_knots(end-1), distinct_knots(end)-eps, degree+2);
+q_first_el = linspace (distinct_knots(1), distinct_knots(2), degree+2);
+q_last_el = linspace (distinct_knots(end-1), distinct_knots(end), degree+2);
 q_int_el = sort ([distinct_knots(3:end-2) 0.5*(distinct_knots(2:end-2)+distinct_knots(3:end-1))]);
 all_points = [q_first_el q_int_el q_last_el];
 all_points = unique (all_points);

@@ -20,10 +20,9 @@ supp = space.supp;
 Q = struct ('all_points',[],'nquad_points', [], 'quad_weights', [], 'quad_points', [],'ind_points',[]);
 
 % Quadrature points in the first, the last, and the internal elements
-%  I use eps to ensure that the values are inside the domain, and to avoid possible truncation errors
 distinct_knots = unique(knots);
-q_first_el = linspace(distinct_knots(1)+eps,distinct_knots(2),degree+1); % punti di quadratura nel primo elemento
-q_last_el = linspace(distinct_knots(end-1),distinct_knots(end)-eps,degree+1);  % punti di quadratura nell'ultimo elemento
+q_first_el = linspace(distinct_knots(1),distinct_knots(2),degree+1); % punti di quadratura nel primo elemento
+q_last_el = linspace(distinct_knots(end-1),distinct_knots(end),degree+1);  % punti di quadratura nell'ultimo elemento
 q_int_el = sort([distinct_knots(3:end-2) 0.5*(distinct_knots(2:end-2)+distinct_knots(3:end-1))]); % punti di quadratura negli elementi interni
 all_points = [q_first_el q_int_el q_last_el];
 all_points = unique(all_points);
@@ -31,7 +30,7 @@ Q.all_points = all_points;
 
 % Construction of a global collocation basis, a matrix whose (i,j) entry 
 % is the value at the i-th quadrature point of the j-th basis function
-iv = findspan (space.ndof, degree, all_points, knots);
+iv = findspan (space.ndof-1, degree, all_points, knots);
 B_loc = basisfun (iv, all_points, degree, knots);
 num = numbasisfun (iv, all_points, degree, knots) + 1;
 % B_global = sparse (numel(all_points), ndof);
