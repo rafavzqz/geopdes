@@ -1,17 +1,16 @@
-function Q = global_mid_nonzero(space)
-% Questa funzione genera le informazioni sulla quadratura 1D 
-% In questa variante, ad una funzione corrispondono solo nodi di quadratura in cui la funzione stessa ? diversa da zero 
-% N. B. Ancora non pu? gestire nodi ripetuti
+function Q = global_mid_nonzero (space)
+% This function computes the 1D quadrature rules necessary to build the mass matrix 
+% Note: still cannot handle non-uniform knot
 %
 % INPUT: 
-% space           spazio di spline univariate
+% space: univariate spline space, as in space.sp_univ (see sp_scalar)
 % 
-% OUTUPT: struttura Q
-% Q.all_points      vettore dei punti di quadratura
-% Q.nquad_points    vettore di lunghezza ndof; nquad_points(i) = numero di punti di quadratura nel supporto della funzione i
-% Q.quad_points     struttura di dimensione ndof; quad_points{i} = vettore dei punti di quadratura nel supporto della funzione i
-% Q.quad_weights    struttura di dimensione ndof; quad_wights{i} = vettore dei punti di quadratura nel supporto della funzione i
-% Q.ind_points      struttura di dimensione ndof; ind_points{i} = vettore degli indici dei dei punti di quad_points{i} nel vettore all_points
+% OUTPUT: structure Q, which contains the following fields
+% Q.all_points    (array)               vector of quadrature points
+% Q.nquad_points  (1 x ndof array)      number of quadrature points in the support of each basis function
+% Q.quad_points   (1 x ndof cell-array) vector of quadrature points in the support of each basis function 
+% Q.quad_weights  (1 x ndof cell-array) vector of quadrature weights in the support of each basis function 
+% Q.ind_points    (1 x ndof cell-array) vector of indices of the points in quad_points{i} in the vector all_points 
 
 knots = space.knots;
 ndof = space.ndof;
@@ -19,6 +18,10 @@ degree = space.degree;
 supp = space.supp;
 
 Q = struct ('all_points',[],'nquad_points', [], 'quad_weights', [], 'quad_points', [],'ind_points',[]);
+Q.nquad_points = zeros (ndof, 1);
+Q.quad_weights = cell (ndof, 1);
+Q.quad_points = cell (ndof, 1);
+Q.ind_points = cell (ndof, 1);
 
 % Quadrature points in the first, the last, and the internal elements
 distinct_knots = unique (knots);
@@ -30,24 +33,18 @@ all_points = unique (all_points);
 Q.all_points = all_points;
 
 % Construction of a global collocation basis, a matrix whose (i,j) entry 
-% is the value at the i-th quadrature point of the j-th basis function
+%  is the value at the i-th quadrature point of the j-th basis function
 iv = findspan (space.ndof-1, degree, all_points, knots);
 B_loc = basisfun (iv, all_points, degree, knots);
 num = numbasisfun (iv, all_points, degree, knots) + 1;
-% B_global = sparse (numel(all_points), ndof);
-% for ii = 1:numel(all_points)
-%   B_global(ii, num(ii,:)) = B_loc(ii,:);
-% end
 rows = repmat ((1:numel(all_points)).', 1, degree+1);
 B_global = sparse (rows, num, B_loc, numel(all_points), ndof);
 
 % Construction of a global collocation basis, with standard Gaussian quadrature points
+%  It is assumed that the space is constructed on the standard Gaussian
+%  quadrature. Otherwise, we have to evaluate the basis function on x_gauss, below.
 nqn = size (space.shape_functions, 1);
 nel = size (space.shape_functions, 3);
-% B_gauss = sparse (nqn * nel, ndof);
-% for iel = 1:nel
-%   B_gauss(nqn*(iel-1)+(1:nqn), space.connectivity(:,iel)) = space.shape_functions(:,:,iel);
-% end
 rows = repmat (reshape (1:nqn*nel, [nqn, 1, nel]), [1, space.nsh_max, 1]);
 cols = repmat (reshape (space.connectivity, [1, space.nsh_max, nel]), [nqn, 1, 1]);
 B_gauss = sparse (rows(:), cols(:), space.shape_functions(:), nqn*nel, ndof);
@@ -62,16 +59,11 @@ for ii = 1:ndof
 	distinct_local_knots = unique(local_knots);
 	
     if (ii == 1)
-%         quad_points = linspace(distinct_local_knots(1),distinct_local_knots(2),degree+2);
-%         quad_points = quad_points(1:degree+1);
         quad_points = all_points(1:degree+1);
     elseif (ii == ndof)
-%         quad_points = linspace(distinct_local_knots(1),distinct_local_knots(2),degree+2);
-%         quad_points = quad_points(2:degree+2);
         quad_points = all_points(end-degree:end);
     else
         if (distinct_local_knots(1) == distinct_knots(1))
-%             quad_points = linspace(distinct_local_knots(1),distinct_local_knots(2),degree+2);
             quad_points = all_points(1:degree+2);
         else
             quad_points = [distinct_local_knots(1) 0.5*(distinct_local_knots(1)+distinct_local_knots(2)) distinct_local_knots(2)];
@@ -79,12 +71,11 @@ for ii = 1:ndof
         quad_points = [quad_points sort([distinct_local_knots(3:end-2) 0.5*(distinct_local_knots(2:end-2)+distinct_local_knots(3:end-1))])];
 
         if (distinct_local_knots(end) == distinct_knots(end))
-%             quad_points = [quad_points linspace(distinct_local_knots(end-1),distinct_local_knots(end),degree+2)];
             quad_points = [quad_points all_points(end-(degree+1):end)];
         else
             quad_points = [quad_points distinct_local_knots(end-1) 0.5*(distinct_local_knots(end-1)+distinct_local_knots(end)) distinct_local_knots(end)];
         end
-        quad_points = quad_points(2:end-1); % tolgo il primo e l'ultimo nodo, in cui la funzione vale zero 
+        quad_points = quad_points(2:end-1); % Remove the first and lst knot, where the function vanishes
     end
     quad_points = unique (quad_points);
 	Q.quad_points{ii} = quad_points;
@@ -92,29 +83,17 @@ for ii = 1:ndof
 	[~,Q.ind_points{ii}] = ismember (quad_points, all_points);
 end
 
-[x_gauss_rif,w_gauss_rif] = ggauss_Nab_xw(degree+1,0,1);
+gauss_rule = msh_gauss_nodes (degree + 1);
 for ii = 1:ndof
-	% costruisco la matrice di collocazione locale
-%     extended_local_knots = knots(max(1,ii-degree):min(length(knots),ii+2*degree+1)); % devo estendere il vettore dei nodi per beccare tutte le funzioni che mi servono
-%     local_B = spcol(extended_local_knots, degree+1, Q.quad_points{ii})';
-%     local_knots = knots(ii:ii+degree+1);
-
-%     neighbors = unique (num(Q.ind_points{ii},:));
     neighbors = unique (space.connectivity(:, supp{ii}));
     local_B = full (B_global(Q.ind_points{ii}, neighbors).');
-	% costruisco il rhs con la quadratura gaussiana
-    x_gauss=[];w_gauss=[];
 	index_el_supp = supp{ii}'; 
-    for k = index_el_supp
-        a = distinct_knots(k); b = distinct_knots(k+1);
-        x_gauss = [x_gauss, x_gauss_rif'*(b-a)+a];
-        w_gauss = [w_gauss, w_gauss_rif'*(b-a)];
-    end
-%     local_rhs = spcol(extended_local_knots,degree+1,x_gauss)'*((spcol(local_knots,degree+1,x_gauss)'.*w_gauss))';
+
+    [qn, qw] = msh_set_quad_nodes (distinct_knots(index_el_supp(1):index_el_supp(end)+1), gauss_rule);
+    x_gauss = qn(:).'; w_gauss = qw(:).';
     local_points = ((supp{ii}(1)-1)*nqn + 1) : supp{ii}(end)*nqn;
     local_rhs = B_gauss(local_points, neighbors).' * (B_gauss(local_points, ii).' .* w_gauss).';
     
-	% calcolo i pesi
 	quad_weights = local_B\local_rhs;
     Q.quad_weights{ii} = quad_weights';
 end
@@ -122,38 +101,38 @@ end
 end
 
 
-function [x,w]=ggauss_Nab_xw(N,a,b)
 % function [x,w]=ggauss_Nab_xw(N,a,b)
-%
-% Calculates the gauss nodes (x) and weights (w):
-% - N is the number of points of the quadrature rule
-% - [a,b] is the interval where the quadrature formula is requested.
-%
-% if only one input data is given, the formula is calculated in [0,1]
-%
-%
-% Uses the stable algorithm via closed form of recursive coefficients, for
-% details see FCACE2
-%
-
-% DEF
-
-ab=ones(N,2);% coef ricorsivi noti in forma chiusa
-ab(1,2)= 1;
-ab(2:N,2)= 1./(4*(4- 1./([1:N-1].^2) )); 
-ab(1:N,1)= ab(1:N,1)./2;
-J=zeros(N);
-for n=1:N, J(n,n)=ab(n,1); end
-for n=2:N
-  J(n,n-1)=sqrt(ab(n,2));
-  J(n-1,n)=J(n,n-1);
-end
-[V,D]=eig(J);
-[x,I]=sort(diag(D));
-V=V(:,I);
-w=ab(1,2)*V(1,:)'.^2;
-if nargin> 1
- w=w.*(b-a); x=(b-a).*x + a;
-end
-
-end
+% % function [x,w]=ggauss_Nab_xw(N,a,b)
+% %
+% % Calculates the gauss nodes (x) and weights (w):
+% % - N is the number of points of the quadrature rule
+% % - [a,b] is the interval where the quadrature formula is requested.
+% %
+% % if only one input data is given, the formula is calculated in [0,1]
+% %
+% %
+% % Uses the stable algorithm via closed form of recursive coefficients, for
+% % details see FCACE2
+% %
+% 
+% % DEF
+% 
+% ab=ones(N,2);% coef ricorsivi noti in forma chiusa
+% ab(1,2)= 1;
+% ab(2:N,2)= 1./(4*(4- 1./([1:N-1].^2) )); 
+% ab(1:N,1)= ab(1:N,1)./2;
+% J=zeros(N);
+% for n=1:N, J(n,n)=ab(n,1); end
+% for n=2:N
+%   J(n,n-1)=sqrt(ab(n,2));
+%   J(n-1,n)=J(n,n-1);
+% end
+% [V,D]=eig(J);
+% [x,I]=sort(diag(D));
+% V=V(:,I);
+% w=ab(1,2)*V(1,:)'.^2;
+% if nargin> 1
+%  w=w.*(b-a); x=(b-a).*x + a;
+% end
+% 
+% end

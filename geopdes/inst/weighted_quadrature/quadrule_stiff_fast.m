@@ -1,19 +1,19 @@
-function Q = quadrule_stiff_fast(space)
+function Q = quadrule_stiff_fast (space)
 % This function computes the 1D quadrature rules necessary to build the stiffness matrix 
 % Note: still cannot handle non-uniform knot
 %
 % INPUT: 
-% space           space of univariate splines
+% space: univariate spline space, as in space.sp_univ (see sp_scalar)
 % 
-% OUTUPT: structure Q
-% Q.all_points        vector of quadrature points
-% Q.nquad_points      vector of length length(all_points); nquad_points(i) = number of quadrature points in the support of the i-th basis function 
-% Q.quad_points       structure array of length length(all_points); quad_points{i} = vector of quadrature points in the support of the i-th basis function 
-% Q.ind_points        structure array of length length(all_points); ind_points{i} = vector of indices of the points in quad_points{i} in the vector all_points 
-% Q.quad_weights_00   structure array of length length(all_points); quad_wights{i} = vector of quadrature weights relative to I00 in the support of the i-th function
-% Q.quad_weights_10   structure array of length length(all_points); quad_wights{i} = vector of quadrature weights relative to I10 in the support of the i-th function
-% Q.quad_weights_01   structure array of length length(all_points); quad_wights{i} = vector of quadrature weights relative to I01 in the support of the i-th function
-% Q.quad_weights_11   structure array of length length(all_points); quad_wights{i} = vector of quadrature weights relative to I11 in the support of the i-th function
+% OUTPUT: structure Q, which contains the following fields
+% Q.all_points      (array)               vector of quadrature points
+% Q.nquad_points    (1 x ndof array)      number of quadrature points in the support of each basis function
+% Q.quad_points     (1 x ndof cell-array) vector of quadrature points in the support of each basis function 
+% Q.ind_points      (1 x ndof cell-array) vector of indices of the points in quad_points{i} in the vector all_points 
+% Q.quad_weights_00 (1 x ndof cell-array) vector of quadrature weights relative to I00 in the support of each basis function 
+% Q.quad_weights_10 (1 x ndof cell-array) vector of quadrature weights relative to I10 in the support of each basis function 
+% Q.quad_weights_01 (1 x ndof cell-array) vector of quadrature weights relative to I01 in the support of each basis function 
+% Q.quad_weights_11 (1 x ndof cell-array) vector of quadrature weights relative to I11 in the support of each basis function 
 
 Q = struct ('all_points',[],'nquad_points', [], 'quad_weights_00', [], 'quad_weights_01', [], 'quad_weights_10', [], 'quad_weights_11', [], 'quad_points', [],'ind_points',[]);
 
@@ -21,11 +21,18 @@ knots = space.knots;
 ndof = space.ndof;
 degree = space.degree;
 
+Q.nquad_points = zeros (ndof, 1);
+Q.quad_points = cell (ndof, 1);
+Q.ind_points = cell (ndof, 1);
+Q.quad_weights_00 = cell (ndof, 1);
+Q.quad_weights_01 = cell (ndof, 1);
+Q.quad_weights_10 = cell (ndof, 1);
+Q.quad_weights_11 = cell (ndof, 1);
+
 % Quadrature points in the first, the last, and the internal elements
-%  I use eps to ensure that the values are inside the domain, and to avoid possible truncation errors
 distinct_knots = unique (knots);
-q_first_el = linspace (distinct_knots(1)+eps, distinct_knots(2), degree+2);
-q_last_el = linspace (distinct_knots(end-1), distinct_knots(end)-eps, degree+2);
+q_first_el = linspace (distinct_knots(1), distinct_knots(2), degree+2);
+q_last_el = linspace (distinct_knots(end-1), distinct_knots(end), degree+2);
 q_int_el = sort ([distinct_knots(3:end-2) 0.5*(distinct_knots(2:end-2)+distinct_knots(3:end-1))]);
 all_points = [q_first_el q_int_el q_last_el];
 all_points = unique (all_points);
@@ -63,7 +70,7 @@ end
 
 % Construction of a global collocation basis, a matrix whose (i,j) entry 
 % is the value at the i-th quadrature point of the j-th basis function
-iv = findspan (space.ndof-1, degree, all_points, knots); %%%%%%%%%%%%%%%%% ci va il -1 in ndof???
+iv = findspan (space.ndof-1, degree, all_points, knots);
 B_loc = basisfun (iv, all_points, degree, knots);
 num = numbasisfun (iv, all_points, degree, knots) + 1;
 rows = repmat ((1:numel(all_points)).', 1, degree+1);
@@ -83,12 +90,12 @@ degree_der = degree - 1;
 knots_der = knots(2:end-1);
 ndof_der = ndof - 1;
 nqn_der = degree_der + 2;
-rule_der     = msh_gauss_nodes (nqn_der);
+rule_der = msh_gauss_nodes (nqn_der);
 qn_der = msh_set_quad_nodes (distinct_knots, rule_der);
-space_der = sp_bspline_1d_param(knots_der,degree_der,qn_der);
+space_der = sp_bspline_1d_param (knots_der,degree_der,qn_der);
 
 % Construction of a global basis for the derivative space, with given quadrature points
-iv_der = findspan (ndof_der-1, degree_der, all_points, knots_der); %%%%%%%%%%%%%%%%% ci va il -1 in ndof???
+iv_der = findspan (ndof_der-1, degree_der, all_points, knots_der);
 B_loc_der = basisfun (iv_der, all_points, degree_der, knots_der);
 num = numbasisfun (iv_der, all_points, degree_der, knots_der) + 1;
 rows = repmat ((1:numel(all_points)).', 1, degree_der+1);
@@ -101,12 +108,12 @@ B_gauss_der = sparse (rows(:), cols(:), space_der.shape_functions(:), nqn_der*ne
 
 % Computation of the first derivatives of the basis functions at the Gaussian quadrature points
 c = degree./(knots(degree+2:ndof+degree)-knots(2:ndof))';
-B_prime_gauss = B_gauss_der*spdiags([-c c] ,[0 1],ndof-1,ndof);
+B_prime_gauss = B_gauss_der*spdiags([-c c], [0 1], ndof-1, ndof);
 
-Q.quad_weights_00 = quadrule_gen(space,space,Q.ind_points,B_global,B_gauss,B_gauss,degree+1);
-Q.quad_weights_01 = quadrule_gen(space,space_der,Q.ind_points,B_global_der,B_gauss,B_gauss_der,degree+1);
-Q.quad_weights_10 = quadrule_gen(space,space,Q.ind_points,B_global,B_prime_gauss,B_gauss,degree+1);
-Q.quad_weights_11 = quadrule_gen(space,space_der,Q.ind_points,B_global_der,B_prime_gauss,B_gauss_der,degree+1);
+Q.quad_weights_00 = quadrule_gen (space, space, Q.ind_points, B_global, B_gauss, B_gauss, degree+1);
+Q.quad_weights_01 = quadrule_gen (space, space_der, Q.ind_points, B_global_der, B_gauss, B_gauss_der, degree+1);
+Q.quad_weights_10 = quadrule_gen (space, space, Q.ind_points, B_global, B_prime_gauss, B_gauss, degree+1);
+Q.quad_weights_11 = quadrule_gen (space, space_der, Q.ind_points, B_global_der, B_prime_gauss, B_gauss_der, degree+1);
 
 end
 
@@ -114,67 +121,65 @@ end
 function quad_weights = quadrule_gen(space_test,space_trial,ind_points,B_global_trial,B_gauss_test,B_gauss_trial,nqn_gauss)
 % This function computes the weigthed quadrature rule for the test and trial function spaces in input, where the test functions are incorporated into the weights
 
-distinct_knots = unique(space_test.knots);
+distinct_knots = unique (space_test.knots);
 ndof = space_test.ndof;
 supp_test = space_test.supp;
 connectivity_trial = space_trial.connectivity;
 
-[x_gauss_rif,w_gauss_rif] = ggauss_Nab_xw(nqn_gauss,0,1); 
+gauss_rule = msh_gauss_nodes (degree + 1);
 
-for i = 1:ndof
+for ii = 1:ndof
 	% Construction of the local collocation matrix
-    neighbors = unique (connectivity_trial(:, supp_test{i}));
-    local_B = full (B_global_trial(ind_points{i}, neighbors).');
+    neighbors = unique (connectivity_trial(:, supp_test{ii}));
+    local_B = full (B_global_trial(ind_points{ii}, neighbors).');
 	% Construction of the rhs with gaussian quadrature
-    x_gauss=[];w_gauss=[];
-	index_el_supp = supp_test{i}'; 
-    for k = index_el_supp
-        a = distinct_knots(k); b = distinct_knots(k+1);
-        x_gauss = [x_gauss, x_gauss_rif'*(b-a)+a];
-        w_gauss = [w_gauss, w_gauss_rif'*(b-a)];
-    end
-    local_points = ((supp_test{i}(1)-1)*nqn_gauss + 1) : supp_test{i}(end)*nqn_gauss;
-    local_rhs = B_gauss_trial(local_points, neighbors).' * (B_gauss_test(local_points, i).' .* w_gauss).';
+	index_el_supp = supp_test{ii}'; 
+    
+    [qn, qw] = msh_set_quad_nodes (distinct_knots(index_el_supp(1):index_el_supp(end)+1), gauss_rule);
+    x_gauss = qn(:).'; w_gauss = qw(:).';
+
+    local_points = ((supp_test{ii}(1)-1)*nqn_gauss + 1) : supp_test{ii}(end)*nqn_gauss;
+    local_rhs = B_gauss_trial(local_points, neighbors).' * (B_gauss_test(local_points, ii).' .* w_gauss).';
     
 	% computation of the weights
-	quad_weights{i} = (local_B\local_rhs)';
+	quad_weights{ii} = (local_B\local_rhs)';
 end
 
 end
 
 
-function [x,w]=ggauss_Nab_xw(N,a,b)
 % function [x,w]=ggauss_Nab_xw(N,a,b)
-%
-% Calculates the gauss nodes (x) and weights (w):
-% - N is the number of points of the quadrature rule
-% - [a,b] is the interval where the quadrature formula is requested.
-%
-% if only one input data is given, the formula is calculated in [0,1]
-%
-%
-% Uses the stable algorithm via closed form of recursive coefficients, for
-% details see FCACE2
-%
-
-% DEF
-
-ab=ones(N,2);% coef ricorsivi noti in forma chiusa
-ab(1,2)= 1;
-ab(2:N,2)= 1./(4*(4- 1./([1:N-1].^2) )); 
-ab(1:N,1)= ab(1:N,1)./2;
-J=zeros(N);
-for n=1:N, J(n,n)=ab(n,1); end
-for n=2:N
-  J(n,n-1)=sqrt(ab(n,2));
-  J(n-1,n)=J(n,n-1);
-end
-[V,D]=eig(J);
-[x,I]=sort(diag(D));
-V=V(:,I);
-w=ab(1,2)*V(1,:)'.^2;
-if nargin> 1
- w=w.*(b-a); x=(b-a).*x + a;
-end
-
-end
+% % function [x,w]=ggauss_Nab_xw(N,a,b)
+% %
+% % Calculates the gauss nodes (x) and weights (w):
+% % - N is the number of points of the quadrature rule
+% % - [a,b] is the interval where the quadrature formula is requested.
+% %
+% % if only one input data is given, the formula is calculated in [0,1]
+% %
+% %
+% % Uses the stable algorithm via closed form of recursive coefficients, for
+% % details see FCACE2
+% %
+% 
+% % DEF
+% 
+% ab=ones(N,2);% coef ricorsivi noti in forma chiusa
+% ab(1,2)= 1;
+% ab(2:N,2)= 1./(4*(4- 1./([1:N-1].^2) )); 
+% ab(1:N,1)= ab(1:N,1)./2;
+% J=zeros(N);
+% for n=1:N, J(n,n)=ab(n,1); end
+% for n=2:N
+%   J(n,n-1)=sqrt(ab(n,2));
+%   J(n-1,n)=J(n,n-1);
+% end
+% [V,D]=eig(J);
+% [x,I]=sort(diag(D));
+% V=V(:,I);
+% w=ab(1,2)*V(1,:)'.^2;
+% if nargin> 1
+%  w=w.*(b-a); x=(b-a).*x + a;
+% end
+% 
+% end
