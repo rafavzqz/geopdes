@@ -126,7 +126,7 @@ ndof = space_test.ndof;
 supp_test = space_test.supp;
 connectivity_trial = space_trial.connectivity;
 
-gauss_rule = msh_gauss_nodes (degree + 1);
+gauss_rule = msh_gauss_nodes (nqn_gauss);
 
 for ii = 1:ndof
 	% Construction of the local collocation matrix
