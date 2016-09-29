@@ -19,7 +19,7 @@ msh      = msh_cartesian (zeta, qn, qw, geometry);
 space    = sp_bspline (knots, degree, msh);
 
 tempo = tic;
-Stiff_new = Stiff_3D(msh, space, geometry, coeff);
+Stiff_new = Stiff_WQ(msh, space, geometry, coeff);
 tempo_nostro = toc(tempo)
 
 tempo = tic;
