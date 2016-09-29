@@ -59,40 +59,40 @@ indices = cell(1,d);
 [indices{:}] = ind2sub(n_size, 1:N_dof);
 indices = cell2mat(indices);  indices = reshape(indices,[N_dof d]);
 
-for i = 1:N_dof
+for ii = 1:N_dof
 
-	ind = indices(i,:);
-	for l = 1:d
-		points{l} = Quad_rules(l).ind_points{ind(l)}; 
-		j_act{l} = Connectivity(l).neighbors{ind(l)}; 
-		len_j_act(l) = length(j_act{l});
+	ind = indices(ii,:);
+	for ll = 1:d
+		points{ll} = Quad_rules(ll).ind_points{ind(ll)}; 
+		j_act{ll} = Connectivity(ll).neighbors{ind(ll)}; 
+		len_j_act(ll) = length(j_act{ll});
 	end
 	i_nonzeros = prod(len_j_act);
 	
 	for k1 = 1:d % derivative index on the test function
 		for k2 = 1:d % derivative index on the trial function
 			C = aux_val(points{:},k1,k2); % coefficient tensor
-			for l = d:-1:1 % sum_factorization loop
-				if k1 == k2 && l == k1
-					Q = Quad_rules(l).quad_weights_11{ind(l)};
-					B = BSder{l,ind(l)}(1:len_j_act(l),:);
-				elseif k1 ~= k2 && l == k1
-					Q = Quad_rules(l).quad_weights_10{ind(l)};
-					B = BSval{l,ind(l)}(1:len_j_act(l),:);				
-				elseif k1 ~= k2 && l == k2
-					Q = Quad_rules(l).quad_weights_01{ind(l)};
-					B = BSder{l,ind(l)}(1:len_j_act(l),:);
+			for ll = d:-1:1 % sum_factorization loop
+				if (k1 == k2 && ll == k1)
+					Q = Quad_rules(ll).quad_weights_11{ind(ll)};
+					B = BSder{ll,ind(ll)}(1:len_j_act(ll),:);
+				elseif (k1 ~= k2 && ll == k1)
+					Q = Quad_rules(ll).quad_weights_10{ind(ll)};
+					B = BSval{ll,ind(ll)}(1:len_j_act(ll),:);				
+				elseif (k1 ~= k2 && ll == k2)
+					Q = Quad_rules(ll).quad_weights_01{ind(ll)};
+					B = BSder{ll,ind(ll)}(1:len_j_act(ll),:);
 				else
-					Q = Quad_rules(l).quad_weights_00{ind(l)};
-					B = BSval{l,ind(l)}(1:len_j_act(l),:);
+					Q = Quad_rules(ll).quad_weights_00{ind(ll)};
+					B = BSval{ll,ind(ll)}(1:len_j_act(ll),:);
 				end
 				B = bsxfun(@times,Q,B);
-				if d == 3
-					C = tprod(B,C,l);
-				elseif d == 2
-					if l == 1
+				if (d == 3)
+					C = tprod(B,C,ll);
+				elseif (d == 2)
+					if (ll == 1)
 						C = B*C;
-					elseif l == 2
+					elseif (ll == 2)
 						C = C*B';
 					end
 				end
@@ -102,15 +102,15 @@ for i = 1:N_dof
 	end
 	
 	% row indices
-	rows(ncounter+1:ncounter+i_nonzeros) = i;
+	rows(ncounter+1:ncounter+i_nonzeros) = ii;
 	
 	% compute the column indices
 	i_col = zeros(d,i_nonzeros);
-	for l = 1:d
-		rep = len_j_act; rep(l) = 1;
-		perm = ones(1,d); perm(l) = len_j_act(l);
-		ap = repmat(reshape(j_act{l}',perm),rep);
-		i_col(l,:) = ap(:)';
+	for ll = 1:d
+		rep = len_j_act; rep(ll) = 1;
+		perm = ones(1,d); perm(ll) = len_j_act(ll);
+		ap = repmat(reshape(j_act{ll}',perm),rep);
+		i_col(ll,:) = ap(:)';
 	end
 	cols(ncounter+1:ncounter+i_nonzeros) = 1 + (n_size.^(0:d-1))*(i_col-1);
 % 	ap = cell(1,d);
