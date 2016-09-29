@@ -32,11 +32,7 @@ coeff = c_diff(x{:});
 coeff = coeff(:);
 
 aux_size = cellfun (@numel, qn);
-% aux_val = zeros([msh.ndim msh.ndim prod(aux_size)]);
 jac = msh.map_der(qn);
-% for i = 1:prod(aux_size)
-% 	aux_val(:,:,i) = coeff(i)*abs(det(jac(:,:,i)))*inv(jac(:,:,i)'*jac(:,:,i));
-% end
 
 C1 = reshape (coeff .* abs (geopdes_det__(jac)), 1, 1, new_msh.nqn, new_msh.nel);
 jacT = permute (jac, [2 1 3 4]);
@@ -68,6 +64,10 @@ n_size = space.ndof_dir;
 indices = cell(1,d);
 [indices{:}] = ind2sub(n_size, 1:N_dof);
 indices = cell2mat(indices);  indices = reshape(indices,[N_dof d]);
+points = cell(1,d); j_act = cell(1,d); len_j_act = zeros(1,d); n_index = zeros(1,d);
+for ll = 1:d
+    n_index(ll) = prod(n_size(1:ll-1));
+end
 
 for ii = 1:N_dof
 
@@ -120,13 +120,13 @@ for ii = 1:N_dof
 		rep = len_j_act; rep(ll) = 1;
 		perm = ones(1,d); perm(ll) = len_j_act(ll);
 		ap = repmat(reshape(j_act{ll}',perm),rep);
-		i_col(ll,:) = ap(:)';
+		i_col(ll,:) = ap(:)';      
 	end
-	cols(ncounter+1:ncounter+i_nonzeros) = 1 + (n_size.^(0:d-1))*(i_col-1);
+	cols(ncounter+1:ncounter+i_nonzeros) = 1 + n_index*(i_col-1);
 % 	ap = cell(1,d);
 % 	[ap{:}] = ndgrid(j_act{:});
 % 	for k = d:-1:2
-% 		cols(ncounter+1:ncounter+i_nonzeros) = cols(ncounter+1:ncounter+i_nonzeros) + (ap{k}(:)' - 1)*(n_size(k)^(k-1));
+% 		cols(ncounter+1:ncounter+i_nonzeros) = cols(ncounter+1:ncounter+i_nonzeros) + (ap{k}(:)' - 1)*(n_index(k));
 % 	end
 % 	cols(ncounter+1:ncounter+i_nonzeros) = cols(ncounter+1:ncounter+i_nonzeros) + ap{1}(:)';
     
@@ -164,4 +164,3 @@ elseif d == 3
 end
 
 end
-
