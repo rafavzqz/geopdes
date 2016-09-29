@@ -32,11 +32,21 @@ coeff = c_diff(x{:});
 coeff = coeff(:);
 
 aux_size = cellfun (@numel, qn);
-aux_val = zeros([msh.ndim msh.ndim prod(aux_size)]);
+% aux_val = zeros([msh.ndim msh.ndim prod(aux_size)]);
 jac = msh.map_der(qn);
-for i = 1:prod(aux_size)
-	aux_val(:,:,i) = coeff(i)*abs(det(jac(:,:,i)))*inv(jac(:,:,i)'*jac(:,:,i));
-end
+% for i = 1:prod(aux_size)
+% 	aux_val(:,:,i) = coeff(i)*abs(det(jac(:,:,i)))*inv(jac(:,:,i)'*jac(:,:,i));
+% end
+
+C1 = reshape (coeff .* abs (geopdes_det__(jac)), 1, 1, new_msh.nqn, new_msh.nel);
+jacT = permute (jac, [2 1 3 4]);
+
+jacT_reshape = reshape (jacT, msh.ndim, msh.rdim, 1, new_msh.nqn, new_msh.nel);
+jac_reshape = reshape (jac, 1, msh.rdim, msh.ndim, new_msh.nqn, new_msh.nel);
+product = sum (bsxfun (@times, jacT_reshape, jac_reshape), 2);
+product = reshape (product, msh.ndim, msh.ndim, new_msh.nqn, new_msh.nel);
+aux_val = bsxfun (@times, C1, geopdes_inv__ (product));
+
 aux_val = reshape(aux_val,[msh.ndim msh.ndim aux_size]);
 aux_val = permute(aux_val,[3:2+msh.ndim 1 2]); % I put the first two indices in the last positions
 
