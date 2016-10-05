@@ -33,6 +33,10 @@ fprintf ('Number of zero eigenvalues: %i \n', nzeros)
 fprintf ('First nonzero eigenvalues: \n')
 disp (eigv(nzeros+1:nzeros+5))
 
+figure
+sp_plot_solution(eigf(:,perm(nzeros+8)), space, geometry, [30 30])
+title ('8^{th} eigenfunction')
+
 %!demo
 %! ex_maxwell_eig_Lshaped_mp
 

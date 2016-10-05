@@ -61,9 +61,7 @@ sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 
 % Plot of the computed solution
 figure
-[eu, F] = sp_eval (u, space, geometry, vtk_pts);
-[X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
-surf (X, Y, eu)
+sp_plot_solution (u, space, geometry, vtk_pts)
 title ('Numerical solution')
 axis equal
 
