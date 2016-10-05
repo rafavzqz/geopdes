@@ -148,7 +148,8 @@ A = [stiff_mat, saddle_mat.'; ...
 M = [mass_mat, sparse(numel(int_dofs), numel(int_dofs_mul)); ...
      sparse(numel(int_dofs_mul), numel(int_dofs)+numel(int_dofs_mul))];
 
-[eigf, eigv] = eig (full(A), full(M));
+eigf = zeros (space.ndof + space_mul.ndof, numel(int_dofs) + numel(int_dofs_mul));
+[eigf([int_dofs space.ndof+int_dofs_mul], :), eigv] = eig (full(A), full(M));
 eigv = diag (eigv);
 
 end
