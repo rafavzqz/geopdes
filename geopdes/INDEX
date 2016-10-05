@@ -59,6 +59,7 @@ Space: functions to generate and compute discrete spline and NURBS spaces
  @sp_scalar/sp_l2_error
  @sp_scalar/sp_precompute
  @sp_scalar/sp_precompute_param
+ @sp_scalar/sp_plot_solution
  @sp_scalar/sp_eval
  @sp_scalar/sp_to_vtk
  @sp_scalar/sp_drchlt_l2_proj
@@ -77,6 +78,7 @@ Space: functions to generate and compute discrete spline and NURBS spaces
  @sp_vector/sp_hcurl_error
  @sp_vector/sp_precompute
  @sp_vector/sp_precompute_param
+ @sp_vector/sp_plot_solution
  @sp_vector/sp_to_vtk
  @sp_vector/sp_drchlt_l2_proj
  @sp_vector/sp_weak_drchlt_bc
@@ -129,6 +131,7 @@ Multipatch: functions of different kinds to solve problems in domains defined by
  @sp_multipatch/sp_l2_error
  @sp_multipatch/sp_h1_error
  @sp_multipatch/sp_hcurl_error
+ @sp_multipatch/sp_plot_solution
  @sp_multipatch/sp_to_vtk
  @sp_multipatch/sp_evaluate_element_list
  @sp_multipatch/sp_get_cells
