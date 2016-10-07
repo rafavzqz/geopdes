@@ -20,7 +20,10 @@
 %     Proj:    the coefficients relating 1D splines of the coarse and the fine spaces
 %               and for each component. Cell-array of size ncomp_(param) x ndim
 %
-% Copyright (C) 2015 Rafael Vazquez
+% If degree is not given, the same degree of the coarse space is used. If
+%  regularity is not given, it is taken as degree minus one.
+%
+% Copyright (C) 2015, 2016 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -36,6 +39,14 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function [sp_fine, Proj] = sp_refine (space, msh, nsub, degree, regularity)
+
+  if (nargin < 4 || isempty (degree))
+    degree = space.degree;
+  end
+
+  if (nargin < 5 || isempty (regularity))
+    regularity = degree - 1;
+  end
 
 % The number of scalar spaces can be equal to ncomp or to ncomp_param
   nspaces = numel (space.scalar_spaces);
