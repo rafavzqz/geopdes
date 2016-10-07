@@ -41,11 +41,11 @@
 function [sp_fine, Proj] = sp_refine (space, msh, nsub, degree, regularity)
 
   if (nargin < 4 || isempty (degree))
-    degree = space.degree;
+    degree = cellfun (@(x) x.degree, space.scalar_spaces, 'UniformOutput', false);
   end
 
   if (nargin < 5 || isempty (regularity))
-    regularity = degree - 1;
+    regularity = cellfun (@(x) x-1, degree, 'UniformOutput', false);
   end
 
 % The number of scalar spaces can be equal to ncomp or to ncomp_param
