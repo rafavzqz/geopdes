@@ -49,6 +49,8 @@
 
 function sp = sp_evaluate_element_list (space, msh, varargin)
 
+  is_scalar = isa (space.sp_patch{1}, 'sp_scalar');
+
   sp.npatch = space.npatch;
   sp.ncomp = space.ncomp;
   sp.ndof = space.ndof;
@@ -56,8 +58,14 @@ function sp = sp_evaluate_element_list (space, msh, varargin)
   if (isempty (msh.elem_list)), return, end
 
   sp.nsh_max = [];
-  fields = {'nsh', 'connectivity', 'shape_functions', 'shape_function_gradients', 'shape_function_hessians', 'shape_function_laplacians'};
-  cat_position = [2, 2, 3, 4, 5, 3];
+  if (is_scalar)
+    fields = {'nsh', 'connectivity', 'shape_functions', 'shape_function_gradients', 'shape_function_hessians', 'shape_function_laplacians'};
+    cat_position = [2, 2, 3, 4, 5, 3];
+  else
+    fields = {'nsh', 'connectivity', 'shape_functions', 'shape_function_gradients', 'shape_function_hessians', ...
+      'shape_function_laplacians', 'shape_function_divs'};
+    cat_position = [2, 2, 4, 5, 6, 4, 3];
+  end
   for ii = 1:numel(fields)
     sp.(fields{ii}) = [];
   end
