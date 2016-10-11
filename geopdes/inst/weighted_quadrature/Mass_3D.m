@@ -1,5 +1,14 @@
 function [Mass_matrix] = Mass_3D(msh, space, geometry, coeff_fun)
 
+if (any (msh.nqn_dir ~= space.degree + 1))
+  warning (['To compute the weights of the weighted quadrature the original ' ...
+      'number of quadrature points should be p+1. Changing the points in the mesh.'])
+  rule     = msh_gauss_nodes (space.degree+1);
+  [qn, qw] = msh_set_quad_nodes (space.knots, rule);
+  msh      = msh_cartesian (space.knots, qn, qw, geometry);
+  space    = space.constructor (msh);
+end
+
 for idim = 1:msh.ndim
     sp1d = space.sp_univ(idim);
     Connectivity(idim).neighbors = cellfun (@(x) unique (sp1d.connectivity(:,x)).', sp1d.supp, 'UniformOutput', false);
@@ -14,10 +23,10 @@ end
 
 % Generate a new GeoPDEs mesh with the new quadrature points
 new_msh = msh_cartesian (brk, qn, [], geometry);
-sp = space.constructor (new_msh);
+space_wq = space.constructor (new_msh);
 
 for idim = 1:msh.ndim
-    sp1d = sp.sp_univ(idim);
+    sp1d = space_wq.sp_univ(idim);
     for ii = 1:sp1d.ndof
       BSval{idim,ii} = sp1d.shape_functions(Quad_rule(idim).ind_points{ii}, Connectivity(idim).neighbors{ii}).';
     end 	
