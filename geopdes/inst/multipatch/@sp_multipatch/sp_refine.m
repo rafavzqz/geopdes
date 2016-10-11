@@ -1,7 +1,7 @@
 % SP_REFINE: construct a refined space from a given one. The function only
 %                refines the space, the mesh must be refined separately.
 %
-%     [sp_fine, Proj] = sp_refine (space, msh, nsub, degree, regularity);
+%     [sp_fine, Proj] = sp_refine (space, msh, nsub, [degree], [regularity]);
 %
 % The same number of subdivisions, degree and regularity is applied to every patch
 %
@@ -20,7 +20,7 @@
 %                A cell-array of size 1 x npatch, each entry containing the
 %                coefficients for the patch (either for scalar or vector-valued spaces).
 %
-% Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2015, 2016 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -35,15 +35,15 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [sp_fine, Proj] = sp_refine (space, msh, nsub, degree, regularity)
+function [sp_fine, Proj] = sp_refine (space, msh, nsub, varargin)
 
   sp_fine = cell (1, space.npatch);
   Proj = cell (1, space.npatch);
   for iptc = 1:space.npatch
     if (nargout == 2)
-      [sp_fine{iptc}, Proj{iptc}] = sp_refine (space.sp_patch{iptc}, msh.msh_patch{iptc}, nsub, degree, regularity);
+      [sp_fine{iptc}, Proj{iptc}] = sp_refine (space.sp_patch{iptc}, msh.msh_patch{iptc}, nsub, varargin{:});
     else
-      sp_fine{iptc} = sp_refine (space.sp_patch{iptc}, msh.msh_patch{iptc}, nsub, degree, regularity);
+      sp_fine{iptc} = sp_refine (space.sp_patch{iptc}, msh.msh_patch{iptc}, nsub, varargin{:});
     end
   end
   if (~isempty (space.boundary))

@@ -1,5 +1,6 @@
 Summary of important changes for geopdes-3.0.1:
 -----------------------------------------------------------------------------
+* Added functions sp_plot_solution
 * Computation of the hessian for vector fields, with grad preserving transform
 
 Summary of important changes for geopdes-3.0.0:

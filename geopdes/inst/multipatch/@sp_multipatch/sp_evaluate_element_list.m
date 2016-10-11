@@ -49,6 +49,8 @@
 
 function sp = sp_evaluate_element_list (space, msh, varargin)
 
+  is_scalar = isa (space.sp_patch{1}, 'sp_scalar');
+
   sp.npatch = space.npatch;
   sp.ncomp = space.ncomp;
   sp.ndof = space.ndof;
@@ -56,8 +58,18 @@ function sp = sp_evaluate_element_list (space, msh, varargin)
   if (isempty (msh.elem_list)), return, end
 
   sp.nsh_max = [];
-  fields = {'nsh', 'connectivity', 'shape_functions', 'shape_function_gradients', 'shape_function_hessians', 'shape_function_laplacians'};
-  cat_position = [2, 2, 3, 4, 5, 3];
+  if (is_scalar)
+    fields = {'nsh', 'connectivity', 'shape_functions', 'shape_function_gradients', 'shape_function_hessians', 'shape_function_laplacians'};
+    cat_position = [2, 2, 3, 4, 5, 3];
+  else
+    fields = {'nsh', 'connectivity', 'shape_functions', 'shape_function_gradients', 'shape_function_hessians', ...
+      'shape_function_laplacians', 'shape_function_divs', 'shape_function_curls'};
+    if (msh.ndim == 2)
+      cat_position = [2, 2, 4, 5, 6, 4, 3, 3];
+    elseif (msh.ndim == 3)
+      cat_position = [2, 2, 4, 5, 6, 4, 3, 4];
+    end
+  end
   for ii = 1:numel(fields)
     sp.(fields{ii}) = [];
   end
@@ -67,6 +79,17 @@ function sp = sp_evaluate_element_list (space, msh, varargin)
     msh_patch = msh_restrict_to_patch (msh, iptc);
 
     sp_patch = sp_evaluate_element_list (space.sp_patch{iptc}, msh_patch, varargin{:});
+    if (~isempty (space.dofs_ornt))
+      ornt_per_elem = space.dofs_ornt{iptc}(sp_patch.connectivity);
+      for ii = 3:numel(fields)
+        if (isfield (sp_patch, fields{ii}))
+          aux_size = [ones(1, cat_position(ii)-2), size(sp_patch.connectivity)];
+          ornt_per_elem = reshape (ornt_per_elem, aux_size);
+          sp_patch.(fields{ii}) = bsxfun (@times, sp_patch.(fields{ii}), ornt_per_elem);
+        end
+      end
+    end
+    
     sp_patch.connectivity = reshape (space.gnum{iptc}(sp_patch.connectivity), sp_patch.nsh_max, msh_patch.nel);
 
     for ii = 1:numel(fields)
@@ -81,10 +104,6 @@ function sp = sp_evaluate_element_list (space, msh, varargin)
     if (isempty (sp.(fields{ii})))
       sp = rmfield (sp, fields{ii});
     end
-  end
-  
-  if (~isempty (space.dofs_ornt))
-    error ('You have to multiply by the orientation')
   end
   
 end

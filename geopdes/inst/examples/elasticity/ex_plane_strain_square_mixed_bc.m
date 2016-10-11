@@ -41,12 +41,9 @@ sp_to_vtk (u, space, geometry, vtk_pts, output_file, {'displacement', 'stress'},
     problem_data.lambda_lame, problem_data.mu_lame)
 
 % 4.2) Plot in Matlab.
-[eu, F] = sp_eval (u, space, geometry, vtk_pts);
-[X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
-
 figure
 subplot (1, 2, 1)
-quiver (X, Y, squeeze(eu(1,:,:)), squeeze(eu(2,:,:)))
+sp_plot_solution (u, space, geometry, vtk_pts)
 axis equal tight
 title ('Computed solution')
 

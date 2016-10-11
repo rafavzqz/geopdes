@@ -34,7 +34,8 @@ function function_indices = sp_get_basis_functions (space, msh, cell_indices)
 indices = cell (space.ncomp_param, 1);
 for icomp = 1:space.ncomp_param
   indices{icomp} = space.cumsum_ndof(icomp) + sp_get_basis_functions (space.scalar_spaces{icomp}, msh, cell_indices);
+  indices{icomp} = indices{icomp}(:);
 end
-function_indices = [indices{:}];
+function_indices = vertcat (indices{:});
 
 end

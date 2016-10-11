@@ -4,7 +4,7 @@
 %
 % INPUT :
 %
-%   the input variable may be either
+%   The input variable may be either
 %   - a string variable with the name of the file to be read
 %   - a cell-array of function handles
 %   - a 4x4 matrix representing an affine transformation
