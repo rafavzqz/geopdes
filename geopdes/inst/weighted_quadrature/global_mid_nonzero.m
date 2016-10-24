@@ -1,27 +1,27 @@
-function Q = global_mid_nonzero (space)
+function Quad_rules = global_mid_nonzero (space)
 % This function computes the 1D quadrature rules necessary to build the mass matrix 
 % Note: still cannot handle non-uniform knot
 %
 % INPUT: 
 % space: univariate spline space, as in space.sp_univ (see sp_scalar)
 % 
-% OUTPUT: structure Q, which contains the following fields
-% Q.all_points    (array)               vector of quadrature points
-% Q.nquad_points  (1 x ndof array)      number of quadrature points in the support of each basis function
-% Q.quad_points   (1 x ndof cell-array) vector of quadrature points in the support of each basis function 
-% Q.quad_weights  (1 x ndof cell-array) vector of quadrature weights in the support of each basis function 
-% Q.ind_points    (1 x ndof cell-array) vector of indices of the points in quad_points{i} in the vector all_points 
+% OUTPUT: structure Quad_rules, which contains the following fields
+% Quad_rules.all_points    (array)               vector of quadrature points
+% Quad_rules.nquad_points  (1 x ndof array)      number of quadrature points in the support of each basis function
+% Quad_rules.quad_points   (1 x ndof cell-array) vector of quadrature points in the support of each basis function 
+% Quad_rules.quad_weights  (1 x ndof cell-array) vector of quadrature weights in the support of each basis function 
+% Quad_rules.ind_points    (1 x ndof cell-array) vector of indices of the points in quad_points{i} in the vector all_points 
 
 knots = space.knots;
 ndof = space.ndof;
 degree = space.degree;
 supp = space.supp;
 
-Q = struct ('all_points',[],'nquad_points', [], 'quad_weights', [], 'quad_points', [],'ind_points',[]);
-Q.nquad_points = zeros (ndof, 1);
-Q.quad_weights = cell (ndof, 1);
-Q.quad_points = cell (ndof, 1);
-Q.ind_points = cell (ndof, 1);
+Quad_rules = struct ('all_points',[],'nquad_points', [], 'quad_weights', [], 'quad_points', [],'ind_points',[]);
+Quad_rules.nquad_points = zeros (ndof, 1);
+Quad_rules.quad_weights = cell (ndof, 1);
+Quad_rules.quad_points = cell (ndof, 1);
+Quad_rules.ind_points = cell (ndof, 1);
 
 % Quadrature points in the first, the last, and the internal elements
 distinct_knots = unique (knots);
@@ -30,7 +30,7 @@ q_last_el = linspace (distinct_knots(end-1), distinct_knots(end), degree+2);
 q_int_el = sort ([distinct_knots(3:end-2) 0.5*(distinct_knots(2:end-2)+distinct_knots(3:end-1))]);
 all_points = [q_first_el q_int_el q_last_el];
 all_points = unique (all_points);
-Q.all_points = all_points;
+Quad_rules.all_points = all_points;
 
 % Construction of a global collocation basis, a matrix whose (i,j) entry 
 %  is the value at the i-th quadrature point of the j-th basis function
@@ -78,24 +78,23 @@ for ii = 1:ndof
         quad_points = quad_points(2:end-1); % Remove the first and lst knot, where the function vanishes
     end
     quad_points = unique (quad_points);
-	Q.quad_points{ii} = quad_points;
-	Q.nquad_points(ii) = numel (quad_points);
-	[~,Q.ind_points{ii}] = ismember (quad_points, all_points);
+    Quad_rules.quad_points{ii} = quad_points;
+    Quad_rules.nquad_points(ii) = numel (quad_points);
+    [~,Quad_rules.ind_points{ii}] = ismember (quad_points, all_points);
 end
 
 gauss_rule = msh_gauss_nodes (degree + 1);
 for ii = 1:ndof
     neighbors = unique (space.connectivity(:, supp{ii}));
-    local_B = full (B_global(Q.ind_points{ii}, neighbors).');
+    local_B = full (B_global(Quad_rules.ind_points{ii}, neighbors).');
 	index_el_supp = supp{ii}'; 
 
     [qn, qw] = msh_set_quad_nodes (distinct_knots(index_el_supp(1):index_el_supp(end)+1), gauss_rule);
     x_gauss = qn(:).'; w_gauss = qw(:).';
     local_points = ((supp{ii}(1)-1)*nqn + 1) : supp{ii}(end)*nqn;
     local_rhs = B_gauss(local_points, neighbors).' * (B_gauss(local_points, ii).' .* w_gauss).';
-    
-	quad_weights = local_B\local_rhs;
-    Q.quad_weights{ii} = quad_weights';
+    [Q,R] = qr(local_B',0);
+    Quad_rules.quad_weights{ii} = (Q*(R'\local_rhs))';
 end
 
 end
