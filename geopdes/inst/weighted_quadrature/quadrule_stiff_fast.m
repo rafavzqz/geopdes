@@ -141,8 +141,9 @@ for ii = 1:ndof
     local_points = ((supp_test{ii}(1)-1)*nqn_gauss + 1) : supp_test{ii}(end)*nqn_gauss;
     local_rhs = B_gauss_trial(local_points, neighbors).' * (B_gauss_test(local_points, ii).' .* w_gauss).';
     
-	% computation of the weights
-	quad_weights{ii} = (local_B\local_rhs)';
+    % computation of the weights
+    [Q,R] = qr(local_B',0);
+    quad_weights{ii} = (Q*(R'\local_rhs))';
 end
 
 end
