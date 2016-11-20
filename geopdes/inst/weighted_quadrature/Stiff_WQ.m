@@ -107,7 +107,7 @@ for ii = 1:N_dof
 				end
 				B = bsxfun(@times,Q,B);
 				if (d == 3)
-					C = tprod(B,C,ll);
+					C = tprod__(B,C,ll);
 				elseif (d == 2)
 					if (ll == 1)
 						C = B*C;
@@ -147,29 +147,3 @@ Stiff_matrix = sparse (rows, cols, values, N_dof, N_dof); % assemble the matrix
 
 end
 
-
-function Y = tprod(A,X,d)
-% This function computes the product between matrix A and the 3D tensor X,
-% in the direction d (d = 1,2 or 3)
-
-[nx, ny, nz] = size(X);
-m = size(A,1);
-
-if d == 1
-    
-    Y = A*reshape(X,nx,ny*nz);
-    Y = reshape(Y,m,ny,nz);
-    
-elseif d == 2
-    
-    Y = A*reshape(permute(X,[2 1 3]),ny,nx*nz);
-    Y = permute(reshape(Y,m,nx,nz),[2 1 3]);
-    
-elseif d == 3
-    
-    Y = A*reshape(permute(X,[3 2 1]),nz,nx*ny);
-    Y = permute(reshape(Y,m,ny,nx),[3 2 1]);
-    
-end
-
-end

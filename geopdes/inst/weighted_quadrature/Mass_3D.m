@@ -97,7 +97,7 @@ for i=1:N_dof
         
         % Uso la funzione tprod per implementare il prodotto matrice-tensore
         B = bsxfun(@times,Q,B);
-        C = tprod(B,C,d-l+1);
+        C = tprod__(B,C,d-l+1);
         
     end
 
@@ -120,32 +120,3 @@ Mass_matrix = sparse (rows, cols, values, N_dof, N_dof); % assemblo la matrice
 
 
 end
-
-
-function Y = tprod(A,X,d)
-
-% Questa funzione effettua il prodotto fra la matrice A e il tensore X
-% nella direzione d = 1,2,3
-
-[nx, ny, nz] = size(X);
-m = size(A,1);
-
-if d == 1
-    
-    Y = A*reshape(X,nx,ny*nz);
-    Y = reshape(Y,m,ny,nz);
-    
-elseif d == 2
-    
-    Y = A*reshape(permute(X,[2 1 3]),ny,nx*nz);
-    Y = permute(reshape(Y,m,nx,nz),[2 1 3]);
-    
-elseif d == 3
-    
-    Y = A*reshape(permute(X,[3 2 1]),nz,nx*ny);
-    Y = permute(reshape(Y,m,ny,nx),[3 2 1]);
-    
-end
-
-end
-
