@@ -31,7 +31,7 @@ fprintf ('First computed eigenvalues: \n')
 disp (eigv(1:5))
 
 figure
-sp_plot_solution (u, space, geometry, [30 30]);
+sp_plot_solution (eigf(1:space.ndof,perm(8)), space, geometry, [30 30]);
 title ('8^{th} eigenfunction')
 
 %!demo

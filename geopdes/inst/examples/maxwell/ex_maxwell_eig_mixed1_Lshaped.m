@@ -33,7 +33,7 @@ disp (eigv(1:5))
 
 nzeros = numel (find (eigv < 1e-10));
 figure
-sp_plot_solution (eigf(:,perm(nzeros+8)), space, geometry, [30 30]);
+sp_plot_solution (eigf(1:space.ndof,perm(nzeros+8)), space, geometry, [30 30]);
 title ('8^{th} eigenfunction')
 
 %!demo
