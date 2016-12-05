@@ -44,12 +44,12 @@ jacdet = abs (geopdes_det__ (msh.map_der(qn)));
 jacdet = reshape (jacdet, aux_size);
 fun_val = jacdet.*coeff; 
 
-Mass_matrix = massSF_veloce3d(space,Quad_rule,Connectivity,BSval,fun_val);
+Mass_matrix = Mass(space,Quad_rule,Connectivity,BSval,fun_val);
 
 end
 
 
-function Mass_matrix = massSF_veloce3d(space,Quad_rule,Connectivity,BSval,fun_val)
+function Mass_matrix = Mass(space,Quad_rule,Connectivity,BSval,fun_val)
 
 % INPUT
 % space          spazio spline
@@ -58,65 +58,66 @@ function Mass_matrix = massSF_veloce3d(space,Quad_rule,Connectivity,BSval,fun_va
 % Connectivity   matrice che contiene informazione sulla connettivit� 1D
 % BSval          struttura che contiene i valori delle B-splines nei punti di quadratura
 
-d=3; % dimesnione
+d = ndims(fun_val);
 N_dof = space.ndof;
 
-% nonzeros = sum(JJ1D(:,1))^3; % numero di nonzeri della matrice finale
-nonzeros = sum (Connectivity(1).num_neigh)*sum(Connectivity(2).num_neigh)*sum(Connectivity(3).num_neigh);
+nonzeros = prod(arrayfun(@(i)sum(Connectivity(i).num_neigh),1:d));
 cols = zeros(1,nonzeros); rows = cols; values = cols;
 ncounter = 0;
 
-n1 = space.ndof_dir(1); n2 = space.ndof_dir(2); n3 = space.ndof_dir(3); 
-[i1_vec,i2_vec,i3_vec]=ind2sub([n1,n2,n3], 1:N_dof);
+n_size = space.ndof_dir;
+indices = cell(1,d);
+[indices{:}] = ind2sub(n_size, 1:N_dof);
+indices = cell2mat(indices);  indices = reshape(indices,[N_dof d]);
+points = cell(1,d); j_act = cell(1,d); len_j_act = zeros(1,d); n_index = zeros(1,d);
+for ll = 1:d
+    n_index(ll) = prod(n_size(1:ll-1));
+end
 
-for i=1:N_dof
+% row loop
+for ii = 1:N_dof
 
-    i1 = i1_vec(i); i2 = i2_vec(i); i3 = i3_vec(i);
+	ind = indices(ii,:);
+  
+	for ll = 1:d
+		points{ll} = Quad_rule(ll).ind_points{ind(ll)}; 
+		j_act{ll} = Connectivity(ll).neighbors{ind(ll)}; 
+		len_j_act(ll) = length(j_act{ll});
+	end
+	i_nonzeros = prod(len_j_act);
+	C = fun_val(points{:}); % coefficient tensor
+	for ll = d:-1:1 % sum_factorization loop
+ 		Q = Quad_rule(ll).quad_weights{ind(ll)};
+ 		B = BSval{ll,ind(ll)}(1:len_j_act(ll),:);
+		B = bsxfun(@times,Q,B);
+		if (d == 3)
+			C = tprod(B,C,ll);
+		elseif (d == 2)
+			if (ll == 1)
+				C = B*C;
+			elseif (ll == 2)
+				C = C*B';
+			end
+		end
+	end
+	values(ncounter+1:ncounter+i_nonzeros) = C(:)';
 
-    %valutazione funz nei nodi!
-    C = fun_val(Quad_rule(1).ind_points{i1},Quad_rule(2).ind_points{i2},Quad_rule(3).ind_points{i3});
-    
-    for l=1:d
-
-        if l == 1
-            Q = Quad_rule(3).quad_weights{i3};           % vettore dei pesi di quadratura relativi alla funzione i3
-            j_act_3 = Connectivity(3).neighbors{i3};      % indici delle funzioni di base che si intersecano con la funzione i3
-            l_j_act_3 = length(j_act_3);
-            B = BSval{3,i3}(1:l_j_act_3,:);        % matrice dei valori delle funzioni base (calcolate nei punti di quadratura) che si intersecano con la funzione i3
-        elseif l == 2
-            Q = Quad_rule(2).quad_weights{i2};
-            j_act_2 = Connectivity(2).neighbors{i2};
-            l_j_act_2 = length(j_act_2);
-            B = BSval{2,i2}(1:l_j_act_2,:);
-        elseif l == 3
-            Q = Quad_rule(1).quad_weights{i1};
-            j_act_1 = Connectivity(1).neighbors{i1};
-            l_j_act_1 = length(j_act_1);
-            B = BSval{1,i1}(1:l_j_act_1,:);
-        end
-        
-        % Uso la funzione tprod per implementare il prodotto matrice-tensore
-        B = bsxfun(@times,Q,B);
-        C = tprod__(B,C,d-l+1);
-        
-    end
-
-    C = C(:)';
-    i_nonzeros = length(C);
-    
-    app1 = repmat(j_act_1',[1 l_j_act_2 l_j_act_3]);
-    app2 = repmat(j_act_2,[l_j_act_1 1 l_j_act_3]);
-    app3 = repmat(reshape(j_act_3,[1 1 l_j_act_3]),[l_j_act_1 l_j_act_2 1]);
-    ap1 = app1(:)'; ap2 = app2(:)'; ap3 = app3(:)';
-
-    rows(ncounter+1:ncounter+i_nonzeros) = i;
-    cols(ncounter+1:ncounter+i_nonzeros) = (ap3-1)*n3^2+(ap2-1)*n2+ap1;
-    values(ncounter+1:ncounter+i_nonzeros) = C;
-    ncounter = ncounter + i_nonzeros;
+	% row indices
+	rows(ncounter+1:ncounter+i_nonzeros) = ii;
+	
+	% compute the column indices
+	i_col = zeros(d,i_nonzeros);
+	for ll = 1:d
+		rep = len_j_act; rep(ll) = 1;
+		perm = ones(1,d); perm(ll) = len_j_act(ll);
+		ap = repmat(reshape(j_act{ll}',perm),rep);
+		i_col(ll,:) = ap(:)';      
+	end
+	cols(ncounter+1:ncounter+i_nonzeros) = 1 + n_index*(i_col-1);
+  ncounter = ncounter + i_nonzeros;
    
 end
 
 Mass_matrix = sparse (rows, cols, values, N_dof, N_dof); % assemblo la matrice
-
 
 end
