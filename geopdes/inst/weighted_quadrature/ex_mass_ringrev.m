@@ -24,7 +24,7 @@ for ii = 1:4
   msh      = msh_cartesian (zeta, qn, qw, geometry);
   space    = sp_bspline (knots, degree, msh);
 
-  Mass_new = Mass_3D (msh,space,geometry, coeff);
+  Mass_new = Mass_WQ (msh,space,geometry, coeff);
   Mass_geopdes = op_u_v_tp (space, space, msh, coeff);
   
   rhs = op_f_v_tp (space, msh, f);

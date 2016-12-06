@@ -17,7 +17,7 @@ rule     = msh_gauss_nodes (nquad);
 msh      = msh_cartesian (zeta, qn, qw, geometry);
 space    = sp_bspline (knots, degree, msh);
 
-Mass_new = Mass_3D(msh,space,geometry, coeff);
+Mass_new = Mass_WQ (msh,space,geometry, coeff);
 
 %Mass_geopdes = op_u_v_tp_modif(space, space, msh, coeff);
 %norm(Mass_geopdes - Mass_new,'fro')/norm(Mass_geopdes,'fro')
