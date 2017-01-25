@@ -193,6 +193,8 @@ function [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = m
       else
         boundary_interfaces = [];
       end
+    else
+      boundary_interfaces = [];
     end
     
   else
