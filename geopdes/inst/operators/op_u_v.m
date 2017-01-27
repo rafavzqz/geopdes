@@ -42,24 +42,25 @@ function varargout = op_u_v (spu, spv, msh, coeff)
   cols = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
   values = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
 
+  jacdet_weights = msh.jacdet .* msh.quad_weights .* coeff;
+  
   ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:,iel)))
-      jacdet_weights = reshape (msh.jacdet(:, iel) .* ...
-                       msh.quad_weights(:, iel) .* coeff(:, iel), 1, msh.nqn);
+      shpu_iel = reshape (shpu(:, :, 1:spu.nsh(iel), iel), spu.ncomp, msh.nqn, 1, spu.nsh(iel));
+      shpu_iel = repmat (shpu_iel, [1,1,spv.nsh(iel),1]);
+      shpv_iel = reshape (shpv(:, :, 1:spv.nsh(iel), iel), spv.ncomp, msh.nqn, spv.nsh(iel), 1);
+      shpv_iel = repmat (shpv_iel, [1,1,1,spu.nsh(iel)]);
 
-      shpv_iel = reshape (shpv(:, :, 1:spv.nsh(iel), iel), spv.ncomp, msh.nqn, spv.nsh(iel));
-      shpu_iel = reshape (shpu(:, :, 1:spu.nsh(iel), iel), spu.ncomp, msh.nqn, spu.nsh(iel));
+      jacdet_iel = reshape (jacdet_weights(:,iel), [1,msh.nqn,1,1]);
 
-      shpv_times_jw = bsxfun (@times, jacdet_weights, shpv_iel);
-      for idof = 1:spv.nsh(iel)
-        rows(ncounter+(1:spu.nsh(iel))) = spv.connectivity(idof, iel);
-        cols(ncounter+(1:spu.nsh(iel))) = spu.connectivity(1:spu.nsh(iel), iel);
+      tmp1 = bsxfun (@times, jacdet_iel, sum (shpu_iel .* shpv_iel, 1));
+      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = reshape (sum (tmp1, 2), spv.nsh(iel), spu.nsh(iel));
 
-        aux_val = bsxfun (@times, shpv_times_jw(:,:,idof), shpu_iel);
-        values(ncounter+(1:spu.nsh(iel))) = sum (sum (aux_val, 2), 1);
-        ncounter = ncounter + spu.nsh(iel);
-      end
+      [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
+      rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc;
+      cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc;
+      ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_u_v: singular map in element number %d', iel)
     end
