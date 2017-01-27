@@ -17,7 +17,7 @@
 %   values: values of the nonzero entries
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011, 2017 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -38,23 +38,26 @@ function varargout = op_div_v_q (spv, spq, msh)
   cols = zeros (msh.nel * spq.nsh_max * spv.nsh_max, 1);
   values = zeros (msh.nel * spq.nsh_max * spv.nsh_max, 1);
 
+  jacdet_weights = msh.jacdet .* msh.quad_weights;
+  
   ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:, iel)))
-      jacdet_weights = reshape (msh.jacdet(:,iel) .* msh.quad_weights(:, iel), msh.nqn, 1);
+      divv_iel = reshape (spv.shape_function_divs(:, 1:spv.nsh(iel), iel), ...
+                           msh.nqn, 1, spv.nsh(iel));
+      divv_iel = repmat (divv_iel, [1,spq.nsh(iel),1]);
+      shpq_iel = reshape (spq.shape_functions(:, 1:spq.nsh(iel), iel), msh.nqn, spq.nsh(iel), 1);
+      shpq_iel = repmat (shpq_iel, [1,1,spv.nsh(iel)]);
 
-      shpq_iel = spq.shape_functions(:, 1:spq.nsh(iel), iel);
-      divv_iel = spv.shape_function_divs(:, 1:spv.nsh(iel), iel);
+      jacdet_iel = reshape (jacdet_weights(:,iel), [msh.nqn,1,1]);
 
-      shpq_times_jw = bsxfun (@times, jacdet_weights, shpq_iel);
-      for idof = 1:spq.nsh(iel)
-        rows(ncounter+(1:spv.nsh(iel))) = spq.connectivity(idof, iel);
-        cols(ncounter+(1:spv.nsh(iel))) = spv.connectivity(1:spv.nsh(iel), iel);
+      tmp1 = bsxfun (@times, jacdet_iel, divv_iel .* shpq_iel);
+      values(ncounter+(1:spv.nsh(iel)*spq.nsh(iel))) = reshape (sum (tmp1, 1), spq.nsh(iel), spv.nsh(iel));
 
-        aux_val = bsxfun (@times, shpq_times_jw(:,idof), divv_iel);
-        values(ncounter+(1:spv.nsh(iel))) = sum (aux_val, 1);
-        ncounter = ncounter + spv.nsh(iel);
-      end
+      [rows_loc, cols_loc] = ndgrid (spq.connectivity(:,iel), spv.connectivity(:,iel));
+      rows(ncounter+(1:spv.nsh(iel)*spq.nsh(iel))) = rows_loc;
+      cols(ncounter+(1:spv.nsh(iel)*spq.nsh(iel))) = cols_loc;
+      ncounter = ncounter + spv.nsh(iel)*spq.nsh(iel);
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_div_v_q: singular map in element number %d', iel)
     end
