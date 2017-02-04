@@ -51,15 +51,16 @@ function varargout = op_gradu_gradv (spu, spv, msh, coeff)
   ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:, iel)))
-      gradu_iel = reshape (gradu(:,:,:,1:spu.nsh(iel),iel), spu.ncomp, ndir, msh.nqn, 1, spu.nsh(iel));
-      gradu_iel = repmat (gradu_iel, [1,1,1,spv.nsh(iel),1]);
-      gradv_iel = reshape (gradv(:,:,:,1:spv.nsh(iel),iel), spv.ncomp, ndir, msh.nqn, spv.nsh(iel), 1);
-      gradv_iel = repmat (gradv_iel, [1,1,1,1,spu.nsh(iel)]);
+      gradu_iel = reshape (gradu(:,:,:,1:spu.nsh(iel),iel), spu.ncomp*ndir, msh.nqn, 1, spu.nsh(iel));
+%       gradu_iel = repmat (gradu_iel, [1,1,spv.nsh(iel),1]);
+      gradv_iel = reshape (gradv(:,:,:,1:spv.nsh(iel),iel), spv.ncomp*ndir, msh.nqn, spv.nsh(iel), 1);
+%       gradv_iel = repmat (gradv_iel, [1,1,1,spu.nsh(iel)]);
 
-      jacdet_iel = reshape (jacdet_weights(:,iel), [1,1,msh.nqn,1,1]);
-
-      tmp1 = bsxfun (@times, jacdet_iel, sum (sum (gradu_iel .* gradv_iel, 1), 2));
-      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = reshape (sum (tmp1, 3), spv.nsh(iel), spu.nsh(iel));
+      jacdet_iel = reshape (jacdet_weights(:,iel), [1,msh.nqn,1,1]);
+      
+      jacdet_gradu = bsxfun (@times, jacdet_iel, gradu_iel);
+      tmp1 = sum (bsxfun (@times, jacdet_gradu, gradv_iel), 1);
+      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = reshape (sum (tmp1, 2), spv.nsh(iel), spu.nsh(iel));
 
       [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
       rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc;
