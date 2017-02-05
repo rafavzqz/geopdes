@@ -45,13 +45,14 @@ function varargout = op_div_v_q (spv, spq, msh)
     if (all (msh.jacdet(:, iel)))
       divv_iel = reshape (spv.shape_function_divs(:, 1:spv.nsh(iel), iel), ...
                            msh.nqn, 1, spv.nsh(iel));
-      divv_iel = repmat (divv_iel, [1,spq.nsh(iel),1]);
+%       divv_iel = repmat (divv_iel, [1,spq.nsh(iel),1]);
       shpq_iel = reshape (spq.shape_functions(:, 1:spq.nsh(iel), iel), msh.nqn, spq.nsh(iel), 1);
-      shpq_iel = repmat (shpq_iel, [1,1,spv.nsh(iel)]);
+%       shpq_iel = repmat (shpq_iel, [1,1,spv.nsh(iel)]);
 
       jacdet_iel = reshape (jacdet_weights(:,iel), [msh.nqn,1,1]);
 
-      tmp1 = bsxfun (@times, jacdet_iel, divv_iel .* shpq_iel);
+      jacdet_divv = bsxfun (@times, jacdet_iel, divv_iel);
+      tmp1 = bsxfun (@times, jacdet_divv, shpq_iel);
       values(ncounter+(1:spv.nsh(iel)*spq.nsh(iel))) = reshape (sum (tmp1, 1), spq.nsh(iel), spv.nsh(iel));
 
       [rows_loc, cols_loc] = ndgrid (spq.connectivity(:,iel), spv.connectivity(:,iel));

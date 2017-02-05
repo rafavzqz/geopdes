@@ -47,14 +47,15 @@ function varargout = op_curlu_curlv_3d (spu, spv, msh, coeff)
     if (all (msh.jacdet(:,iel)))
       curlu_iel = reshape (spu.shape_function_curls(:, :, 1:spu.nsh(iel), iel), ...
                            3, msh.nqn, 1, spu.nsh(iel));
-      curlu_iel = repmat (curlu_iel, [1,1,spv.nsh(iel),1]);
+%       curlu_iel = repmat (curlu_iel, [1,1,spv.nsh(iel),1]);
       curlv_iel = reshape (spv.shape_function_curls(:, :, 1:spv.nsh(iel), iel), ...
                            3, msh.nqn, spv.nsh(iel), 1);
-      curlv_iel = repmat (curlv_iel, [1,1,1,spu.nsh(iel)]);
+%       curlv_iel = repmat (curlv_iel, [1,1,1,spu.nsh(iel)]);
 
       jacdet_iel = reshape (jacdet_weights(:,iel), [1,msh.nqn,1,1]);
 
-      tmp1 = bsxfun (@times, jacdet_iel, sum (curlu_iel .* curlv_iel, 1));
+      jacdet_curlu = bsxfun (@times, jacdet_iel, curlu_iel);
+      tmp1 = sum (bsxfun (@times, jacdet_curlu, curlv_iel), 1);
       values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = reshape (sum (tmp1, 2), spv.nsh(iel), spu.nsh(iel));
 
       [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
