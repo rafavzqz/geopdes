@@ -19,7 +19,7 @@
 % 
 % Copyright (C) 2011, Carlo de Falco, Rafael Vazquez
 % Copyright (C) 2013, Marco Pingaro
-% Copyright (C) 2016, Rafael Vazquez
+% Copyright (C) 2016, 2017, Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -40,8 +40,8 @@ function varargout = op_laplaceu_laplacev_tp (space1, space2, msh, coeff)
 
   for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
-    sp1_col = sp_evaluate_col (space1, msh_col, 'value', false, 'gradient', false, 'hessian', true);
-    sp2_col = sp_evaluate_col (space2, msh_col, 'value', false, 'gradient', false, 'hessian', true);
+    sp1_col = sp_evaluate_col (space1, msh_col, 'value', false, 'gradient', false, 'laplacian', true);
+    sp2_col = sp_evaluate_col (space2, msh_col, 'value', false, 'gradient', false, 'laplacian', true);
 
     if (nargin == 4)
       for idim = 1:msh.rdim
