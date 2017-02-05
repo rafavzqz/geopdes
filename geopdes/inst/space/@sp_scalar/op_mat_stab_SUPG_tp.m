@@ -44,7 +44,7 @@ function varargout = op_mat_stab_SUPG_tp (space1, space2, msh, coeff, grad_coeff
   for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
 
-    sp1_col = sp_evaluate_col (space1, msh_col, 'value', false, 'gradient', true, 'hessian', true);
+    sp1_col = sp_evaluate_col (space1, msh_col, 'value', false, 'gradient', true, 'laplacian', true);
     sp2_col = sp_evaluate_col (space2, msh_col, 'value', false, 'gradient', true);
 
     for idim = 1:msh.rdim

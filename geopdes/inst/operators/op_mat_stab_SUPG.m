@@ -50,11 +50,7 @@ function varargout = op_mat_stab_SUPG (spu, spv, msh, coeff_mu, grad_coeff, vel)
 
   ndir = size (gradu, 2);
 
-  laplu = zeros (1, 1, msh.nqn, spu.nsh_max, msh.nel);
-  for idir = 1:ndir
-    laplu = laplu + spu.shape_function_hessians(idir,idir,:,:,:);
-  end
-  laplu = reshape (laplu, spu.ncomp, msh.nqn, spu.nsh_max, msh.nel);
+  laplu = reshape (spu.shape_function_laplacians, spu.ncomp, msh.nqn, spu.nsh_max, msh.nel);
 
   rows = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
   cols = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
@@ -63,10 +59,12 @@ function varargout = op_mat_stab_SUPG (spu, spv, msh, coeff_mu, grad_coeff, vel)
   coeff_mu = reshape (coeff_mu, 1, msh.nqn, msh.nel);
   p = max ([spu.degree(:); spv.degree(:)]);
 
+  jacdet_weights = msh.jacdet .* msh.quad_weights;
+  
   ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:, iel)))
-      vel_iel = reshape (vel(:, :, iel), [], msh.nqn);
+      vel_iel = reshape (vel(:, :, iel), ndir, msh.nqn);
 
 % compute parameters relative to the stabilization coefficient
       h_iel = msh.element_size(iel);
@@ -78,44 +76,32 @@ function varargout = op_mat_stab_SUPG (spu, spv, msh, coeff_mu, grad_coeff, vel)
       Pe = max_vel * h_iel / (2. * max_coeff);
       tau = h_iel / (2. * max_vel) * min (1., Pe / ( 3. * p * p ));
 
-      jacdet_weights = reshape (msh.jacdet(:, iel) .* msh.quad_weights(:, iel) * tau , 1, msh.nqn);
-      jacdet_weights_vel = bsxfun (@times, jacdet_weights, vel_iel);
-
-      %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~      
-      gradu_iel = permute (gradu(:, :, :, 1:spu.nsh(iel), iel), [1 2 4 3]);
-      gradu_iel = reshape (gradu_iel, spu.ncomp * ndir, spu.nsh(iel), msh.nqn);
-      gradu_iel = permute (gradu_iel, [1 3 2]);
-
-      laplu_iel = reshape (laplu(:, :, 1:spu.nsh(iel), iel), spu.ncomp, msh.nqn, spu.nsh(iel));
-
-      gradv_iel = permute (gradv(:, :, :, 1:spv.nsh(iel), iel), [1 2 4 3]);
-      gradv_iel = reshape (gradv_iel, spv.ncomp * ndir, spv.nsh(iel), msh.nqn);
-      gradv_iel = permute (gradv_iel, [1 3 2]);
+      jacdet_weights_tau = reshape (tau * jacdet_weights(:,iel), [1, msh.nqn, 1, 1]);
+      jacdet_weights_vel = reshape (bsxfun (@times, jacdet_weights_tau, vel_iel), [ndir, msh.nqn, 1, 1]);
 
       %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      gradv_dot_vel_times_jw = bsxfun (@times, jacdet_weights_vel, gradv_iel);
-      gradv_dot_vel_times_jw = sum (gradv_dot_vel_times_jw, 1);
+      gradu_iel = reshape (gradu(:,:,:,1:spu.nsh(iel),iel), spu.ncomp*ndir, msh.nqn, 1, spu.nsh(iel));
+      laplu_iel = reshape (laplu(:,:,1:spu.nsh(iel),iel), spu.ncomp, msh.nqn, 1, spu.nsh(iel));
+      gradv_iel = reshape (gradv(:,:,:,1:spv.nsh(iel),iel), spv.ncomp*ndir, msh.nqn, spv.nsh(iel), 1);
+
+      %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      gradv_dot_vel_times_jw = sum (bsxfun (@times, jacdet_weights_vel, gradv_iel), 1);
 
       laplu_times_mu = bsxfun (@times, coeff_mu(:, :, iel), laplu_iel);
-      gradu_times_gradmu = bsxfun (@times, grad_coeff(:, :, iel), gradu_iel);
-      gradu_times_gradmu = sum (gradu_times_gradmu, 1);
-      gradu_dot_vel = bsxfun (@times, vel_iel, gradu_iel);
-      gradu_dot_vel = sum (gradu_dot_vel, 1);
+      gradu_dot_gradmu = sum (bsxfun (@times, grad_coeff(:, :, iel), gradu_iel), 1);
+      gradu_dot_vel = sum (bsxfun (@times, vel_iel, gradu_iel), 1);
 
       %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      aux_sum = laplu_times_mu + gradu_dot_gradmu + gradu_dot_vel;
+      aux_val = bsxfun (@times, gradv_dot_vel_times_jw, aux_sum);
 
-      for idof = 1:spv.nsh(iel)
-        rows(ncounter+(1:spu.nsh(iel))) = spv.connectivity(idof, iel);
-        cols(ncounter+(1:spu.nsh(iel))) = spu.connectivity(1:spu.nsh(iel), iel);
+      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = reshape (sum (sum (aux_val, 2), 1), spv.nsh(iel), spu.nsh(iel));
+      
+      [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
+      rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc;
+      cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc;
+      ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);
 
-        aux_laplu_times_mu = bsxfun (@times, gradv_dot_vel_times_jw(:,:,idof), laplu_times_mu);
-        aux_gradu_times_gradmu = bsxfun (@times, gradv_dot_vel_times_jw(:,:,idof), gradu_times_gradmu);
-        aux_gradu_times_vel = bsxfun (@times, gradv_dot_vel_times_jw(:,:,idof), gradu_dot_vel);
-        aux_val = aux_laplu_times_mu + aux_gradu_times_gradmu + aux_gradu_times_vel;
-        
-        values(ncounter+(1:spu.nsh(iel))) = sum (sum (aux_val, 2), 1);
-        ncounter = ncounter + spu.nsh(iel);
-      end
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_mat_stab_SUPG: singular map in element number %d', iel)
     end
