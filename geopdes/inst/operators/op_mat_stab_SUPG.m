@@ -25,7 +25,7 @@
 %   values: values of the nonzero entries
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011, 2014 Rafael Vazquez
+% Copyright (C) 2011, 2014, 2017 Rafael Vazquez
 % Copyright (C) 2013, Anna Tagliabue
 %
 %    This program is free software: you can redistribute it and/or modify
