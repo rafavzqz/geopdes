@@ -70,7 +70,7 @@ function varargout = op_curlu_curlv_3d (spu, spv, msh, coeff)
   if (nargout == 1)
     varargout{1} = sparse (rows(1:ncounter), cols(1:ncounter), ...
                            values(1:ncounter), spv.ndof, spu.ndof);
-  elseif (nargout == 3)
+  elseif (nargout == 3 || nargout == 0)
     varargout{1} = rows(1:ncounter);
     varargout{2} = cols(1:ncounter);
     varargout{3} = values(1:ncounter);

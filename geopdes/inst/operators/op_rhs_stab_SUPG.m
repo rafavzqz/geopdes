@@ -77,7 +77,7 @@ function rhs = op_rhs_stab_SUPG (space, msh, coeff_mu, vel, coeff)
       rhs_loc = sum (sum (aux_val, 1), 2);
       rhs(space.connectivity(1:space.nsh(iel), iel)) = rhs(space.connectivity(1:space.nsh(iel), iel)) + rhs_loc(:); 
     else
-      warning ('geopdes:jacdet_zero_at_quad_node', 'op_f_v: singular map in element number %d', iel)
+      warning ('geopdes:jacdet_zero_at_quad_node', 'op_rhs_stab_SUPG: singular map in element number %d', iel)
     end
   end
 

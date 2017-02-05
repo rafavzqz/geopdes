@@ -18,7 +18,7 @@
 %   values: values of the nonzero entries
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011, Rafael Vazquez
+% Copyright (C) 2011, 2017 Rafael Vazquez
 % Copyright (C) 2013, Marco Pingaro
 %
 %    This program is free software: you can redistribute it and/or modify
@@ -64,11 +64,11 @@ function varargout = op_laplaceu_laplacev (spu, spv, msh, coeff)
       cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc;
       ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);
     else
-      warning ('geopdes:jacdet_zero_at_quad_node', 'op_u_v: singular map in element number %d', iel)
+      warning ('geopdes:jacdet_zero_at_quad_node', 'op_laplaceu_laplacev: singular map in element number %d', iel)
     end
   end
 
-  if (nargout == 1)
+  if (nargout == 1 || nargout == 0)
     varargout{1} = sparse (rows(1:ncounter), cols(1:ncounter), ...
                            values(1:ncounter), spv.ndof, spu.ndof);
   elseif (nargout == 3)
@@ -76,7 +76,7 @@ function varargout = op_laplaceu_laplacev (spu, spv, msh, coeff)
     varargout{2} = cols(1:ncounter);
     varargout{3} = values(1:ncounter);
   else
-    error ('op_u_v: wrong number of output arguments')
+    error ('op_laplaceu_laplacev: wrong number of output arguments')
   end
 
 end

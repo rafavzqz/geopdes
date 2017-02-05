@@ -64,7 +64,7 @@ function varargout = op_div_v_q (spv, spq, msh)
     end
   end
 
-  if (nargout == 1)
+  if (nargout == 1 || nargout == 0)
     varargout{1} = sparse (rows(1:ncounter), cols(1:ncounter), ...
                            values(1:ncounter), spq.ndof, spv.ndof);
   elseif (nargout == 3)

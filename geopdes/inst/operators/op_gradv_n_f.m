@@ -58,7 +58,7 @@ function rhs = op_gradv_n_f (spv, msh, coeff)
       rhs(spv.connectivity(1:spv.nsh(iel), iel)) = rhs(spv.connectivity(1:spv.nsh(iel), iel)) + rhs_loc(:); 
 
     else
-      warning ('geopdes:jacdet_zero_at_quad_node', 'op_gradv_n_g: singular map in element number %d', iel)
+      warning ('geopdes:jacdet_zero_at_quad_node', 'op_gradv_n_f: singular map in element number %d', iel)
     end
   end
   

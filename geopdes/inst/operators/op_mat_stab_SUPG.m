@@ -121,7 +121,7 @@ function varargout = op_mat_stab_SUPG (spu, spv, msh, coeff_mu, grad_coeff, vel)
     end
   end
 
-  if (nargout == 1)
+  if (nargout == 1 || nargout == 0)
     varargout{1} = sparse (rows(1:ncounter), cols(1:ncounter), ...
                            values(1:ncounter), spv.ndof, spu.ndof);
   elseif (nargout == 3)
@@ -129,7 +129,7 @@ function varargout = op_mat_stab_SUPG (spu, spv, msh, coeff_mu, grad_coeff, vel)
     varargout{2} = cols(1:ncounter);
     varargout{3} = values(1:ncounter);
   else
-    error ('op_gradu_v: wrong number of output arguments')
+    error ('op_mat_stab_SUPG: wrong number of output arguments')
   end
 
 end

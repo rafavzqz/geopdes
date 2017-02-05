@@ -67,7 +67,7 @@ function varargout = op_u_v (spu, spv, msh, coeff)
     end
   end
 
-  if (nargout == 1)
+  if (nargout == 1 || nargout == 0)
     varargout{1} = sparse (rows(1:ncounter), cols(1:ncounter), ...
                            values(1:ncounter), spv.ndof, spu.ndof);
   elseif (nargout == 3)

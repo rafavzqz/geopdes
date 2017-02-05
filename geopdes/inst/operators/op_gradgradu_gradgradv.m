@@ -65,11 +65,11 @@ function varargout = op_gradgradu_gradgradv (spu, spv, msh, coeff)
       ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);
 
     else
-      warning ('geopdes:jacdet_zero_at_quad_node', 'op_gradu_gradv: singular map in element number %d', iel)
+      warning ('geopdes:jacdet_zero_at_quad_node', 'op_gradgradu_gradgradv: singular map in element number %d', iel)
     end
   end
 
-  if (nargout == 1)
+  if (nargout == 1 || nargout == 0)
     varargout{1} = sparse (rows(1:ncounter), cols(1:ncounter), ...
                            values(1:ncounter), spv.ndof, spu.ndof);
   elseif (nargout == 3)

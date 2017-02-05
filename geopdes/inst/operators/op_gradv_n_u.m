@@ -79,7 +79,7 @@ function varargout = op_gradv_n_u (spu, spv, msh, coeff)
   end
   
 
-  if (nargout == 1)
+  if (nargout == 1 || nargout == 0)
     varargout{1} = sparse (rows, cols, values, spv.ndof, spu.ndof);
   elseif (nargout == 3)
     varargout{1} = rows;
