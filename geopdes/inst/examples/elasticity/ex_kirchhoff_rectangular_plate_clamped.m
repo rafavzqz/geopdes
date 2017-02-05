@@ -57,5 +57,6 @@ title ('Numerical solution')
 axis equal
 
 % Max Deflection (in the same points used for plotting)
+eu = sp_eval(u, space, geometry, vtk_pts);
 max_displacement = min (eu(:));
 fprintf ('Computed solution, max. displacement = %e \n', max_displacement);
