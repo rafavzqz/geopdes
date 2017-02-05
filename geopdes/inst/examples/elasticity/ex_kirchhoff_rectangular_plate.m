@@ -57,6 +57,7 @@ title ('Numerical solution')
 axis equal
 
 % Max Deflection (in the same points used for plotting)
+eu = sp_eval(u, space, geometry, vtk_pts);
 max_displacement = min (eu(:));
 analytical_solution = ...
     rectangular_plate_analytical_solution (base, height, tr, E, nu, p);
