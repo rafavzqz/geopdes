@@ -14,7 +14,7 @@
 %
 %   A: assembled matrix
 % 
-% Copyright (C) 2015, Rafael Vazquez
+% Copyright (C) 2015, Rafael, 2017 Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -31,50 +31,46 @@
 
 function varargout = op_u_otimes_n_v_otimes_n (spu, spv, msh, mshv, coeff)
 
-% I don't need the theta-theta component of the gradient
   shpu = reshape (spu.shape_functions, spu.ncomp, msh.nqn, spu.nsh_max, msh.nel);
   shpv = reshape (spv.shape_functions, spv.ncomp, msh.nqn, spv.nsh_max, msh.nel);
   
-  ncomp = spu.ncomp;
-
   rows = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
   cols = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
   values = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
 
+  jacdet_weights = msh.jacdet .* msh.quad_weights .* coeff;
+  
   ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:, iel)))
-      jacdet_weights = reshape (msh.jacdet(:, iel) .* ...
-                       msh.quad_weights(:, iel) .* coeff(:, iel), 1, msh.nqn);
-
-% I cannot use spu.ncomp here
-
       shpu_iel = reshape (shpu(:, :, 1:spu.nsh(iel), iel), spu.ncomp, msh.nqn, spu.nsh(iel));
       shpv_iel = reshape (shpv(:, :, 1:spv.nsh(iel), iel), spv.ncomp, msh.nqn, spv.nsh(iel));
-      u_otimes_n_iel = zeros (ncomp, ncomp, msh.nqn, spu.nsh(iel));
-      v_otimes_n_iel = zeros (ncomp, ncomp, msh.nqn, spv.nsh(iel));
+      
+      u_otimes_n_iel = zeros (spu.ncomp, spu.ncomp, msh.nqn, spu.nsh(iel));
+      v_otimes_n_iel = zeros (spv.ncomp, spv.ncomp, msh.nqn, spv.nsh(iel));
 % I need the normal from both sides
-      normalu = msh.normal (:, :, iel);
-      normalv = mshv.normal (:, :, iel);
-      for ii = 1:ncomp
-        for jj = 1:ncomp
-          u_otimes_n_iel(ii,jj,:,:) = bsxfun (@times, shpu_iel(ii,:,:), normalu(jj,:));
-          v_otimes_n_iel(ii,jj,:,:) = bsxfun (@times, shpv_iel(ii,:,:), normalv(jj,:));
+      normalu_iel = msh.normal (:, :, iel);
+      normalv_iel = mshv.normal (:, :, iel);
+      for ii = 1:spu.ncomp
+        for jj = 1:spu.ncomp
+          u_otimes_n_iel(ii,jj,:,:) = bsxfun (@times, shpu_iel(ii,:,:), normalu_iel(jj,:));
+          v_otimes_n_iel(ii,jj,:,:) = bsxfun (@times, shpv_iel(ii,:,:), normalv_iel(jj,:));
         end
       end
 % Should I permute it, before reshaping?
-      u_otimes_n_iel = reshape (u_otimes_n_iel, ncomp*ncomp, msh.nqn, spv.nsh(iel));
-      v_otimes_n_iel = reshape (v_otimes_n_iel, ncomp*ncomp, msh.nqn, spv.nsh(iel));
+      u_otimes_n_iel = reshape (u_otimes_n_iel, spu.ncomp*spu.ncomp, msh.nqn, 1, spu.nsh(iel));
+      v_otimes_n_iel = reshape (v_otimes_n_iel, spv.ncomp*spv.ncomp, msh.nqn, spv.nsh(iel), 1);
 
-      v_oxn_times_jw = bsxfun (@times, jacdet_weights, v_otimes_n_iel);
-      for idof = 1:spv.nsh(iel)
-        rows(ncounter+(1:spu.nsh(iel))) = spv.connectivity(idof, iel);
-        cols(ncounter+(1:spu.nsh(iel))) = spu.connectivity(1:spu.nsh(iel), iel);
+      jacdet_iel = reshape (jacdet_weights(:,iel), [1, msh.nqn, 1, 1]);
+      v_oxn_times_jw = bsxfun (@times, jacdet_iel, v_otimes_n_iel);
+      tmp1 = sum (bsxfun (@times, v_oxn_times_jw, u_otimes_n_iel), 1);
+      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = reshape (sum (tmp1, 2), spv.nsh(iel), spu.nsh(iel));
 
-        aux_val = bsxfun (@times, v_oxn_times_jw(:,:,idof), u_otimes_n_iel);
-        values(ncounter+(1:spu.nsh(iel))) = sum (sum (aux_val, 2), 1);
-        ncounter = ncounter + spu.nsh(iel);
-      end
+      [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
+      rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc;
+      cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc;
+      ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);
+
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_u_otimes_n_v_otimes_n: singular map in element number %d', iel)
     end
@@ -92,40 +88,3 @@ function varargout = op_u_otimes_n_v_otimes_n (spu, spv, msh, mshv, coeff)
   end
 
 end
-
-
-
-%% COPY OF THE FIRST VERSION OF THE FUNCTION (MORE UNDERSTANDABLE)
-% 
-% function mat = op_gradu_gradv (spu, spv, msh, coeff)
-%   
-%   mat = spalloc (spv.ndof, spu.ndof, 1);
-%   
-%   gradu = reshape (spu.shape_function_gradients, spu.ncomp, [], msh.nqn, spu.nsh_max, msh.nel);
-%   gradv = reshape (spv.shape_function_gradients, spv.ncomp, [], msh.nqn, spv.nsh_max, msh.nel);
-% 
-%   ndir = size (gradu, 2);
-% 
-%   for iel = 1:msh.nel
-%     if (all (msh.jacdet(:,iel)))
-%       mat_loc = zeros (spv.nsh(iel), spu.nsh(iel));
-%       for idof = 1:spv.nsh(iel)
-%         ishg = reshape(gradv(:,:,:,idof,iel),spv.ncomp * ndir, []);
-%         for jdof = 1:spu.nsh(iel) 
-%           jshg = reshape(gradu(:,:,:,jdof,iel),spu.ncomp * ndir, []);
-% % The cycle on the quadrature points is vectorized
-%           %for inode = 1:msh.nqn
-%           mat_loc(idof, jdof) = mat_loc(idof, jdof) + ...
-%              sum (msh.jacdet(:,iel) .* msh.quad_weights(:, iel) .* ...
-%                   sum (ishg .* jshg, 1).' .* coeff(:,iel));
-%           %end  
-%         end
-%       end
-%       mat(spv.connectivity(:, iel), spu.connectivity(:, iel)) = ...
-%         mat(spv.connectivity(:, iel), spu.connectivity(:, iel)) + mat_loc;
-%     else
-%       warning ('geopdes:jacdet_zero_at_quad_node', 'op_gradu_gradv: singular map in element number %d', iel)
-%     end
-%   end
-% 
-% end

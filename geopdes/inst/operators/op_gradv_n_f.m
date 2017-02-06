@@ -1,6 +1,6 @@
-% OP_GRADVN_F: assemble the right hand-side vector r = [r(i)], r(i) = (epsilon (grad v n)_i, f).
+% OP_GRADV_N_F: assemble the right hand-side vector r = [r(i)], r(i) = (epsilon (grad v n)_i, f).
 %
-%   rhs = op_gradvn_f (spv, msh, coeff);
+%   rhs = op_gradv_n_f (spv, msh, coeff);
 %
 % INPUT:
 %
@@ -13,7 +13,8 @@
 %
 %   rhs: assembled right-hand side
 % 
-% Copyright (C) 2014 Adriano Cortes, Rafael Vazquez
+% Copyright (C) 2014 Adriano Cortes
+% Copyright (C) 2014, 2017 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -39,21 +40,17 @@ function rhs = op_gradv_n_f (spv, msh, coeff)
 
   ndim = size (gradv, 2);
 
+  jacdet_weights = reshape (msh.jacdet .* msh.quad_weights, [1, msh.nqn, msh.nel]);
+  coeff_times_jw = bsxfun (@times, jacdet_weights, coeff);
+  
   for iel = 1:msh.nel
     if (all (msh.jacdet(:,iel)))
+      gradv_iel = gradv(:,:,:,1:spv.nsh(iel),iel);
+      normal_iel = reshape (msh.normal(:,:,iel), [1, ndim, msh.nqn]);
 
-      jacdet_weights = reshape (msh.jacdet(:, iel) .* msh.quad_weights(:, iel), 1, msh.nqn);
-
-      coeff_times_jw = bsxfun (@times, jacdet_weights, coeff(:,:,iel));
-
-      gradv_iel = gradv(:, :, :, 1:spv.nsh(iel), iel);
-
-      normal_iel = reshape(msh.normal(:,:,iel), [1 ndim msh.nqn]);
-
-      gradv_n = reshape (sum (bsxfun(@times, gradv_iel, normal_iel), 2), ...
-                        [spv.ncomp, msh.nqn, spv.nsh(iel)]);
-
-      aux_val = bsxfun (@times, coeff_times_jw, gradv_n);
+      gradv_n = reshape (sum (bsxfun (@times, gradv_iel, normal_iel), 2), spv.ncomp, msh.nqn, spv.nsh(iel));
+      
+      aux_val = bsxfun (@times, coeff_times_jw(:,:,iel), gradv_n);
       rhs_loc = sum (sum (aux_val, 1), 2);
       rhs(spv.connectivity(1:spv.nsh(iel), iel)) = rhs(spv.connectivity(1:spv.nsh(iel), iel)) + rhs_loc(:); 
 
