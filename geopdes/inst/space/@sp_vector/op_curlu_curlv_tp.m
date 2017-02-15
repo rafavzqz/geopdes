@@ -39,28 +39,16 @@ function varargout = op_curlu_curlv_tp (space1, space2, msh, coeff)
   A = spalloc (space2.ndof, space1.ndof, 3*space1.ndof);
 
   if (msh.ndim == 2)
-    for iel = 1:msh.nel_dir(1)
-      msh_col = msh_evaluate_col (msh, iel);
-      sp1_col = sp_evaluate_col (space1, msh_col, 'value', false, 'curl', true);
-      sp2_col = sp_evaluate_col (space2, msh_col, 'value', false, 'curl', true);
-
-      if (nargin == 4)
-        for idim = 1:msh.rdim
-          x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
-        end
-        coeffs = coeff (x{:});
-      else
-        coeffs = ones (msh_col.nqn, msh_col.nel);
-      end
-
-      A = A + op_curlu_curlv_2d (sp1_col, sp2_col, msh_col, coeffs);
-    end
+    operator = @op_curlu_curlv_2d;
   elseif (msh.ndim == 3)
-    for iel = 1:msh.nel_dir(1)
-      msh_col = msh_evaluate_col (msh, iel);
-      sp1_col = sp_evaluate_col (space1, msh_col, 'value', false, 'curl', true);
-      sp2_col = sp_evaluate_col (space2, msh_col, 'value', false, 'curl', true);
+    operator = @op_curlu_curlv_3d;
+  end
 
+  for iel = 1:msh.nel_dir(1)
+    msh_col = msh_evaluate_col (msh, iel);
+    sp1_col = sp_evaluate_col (space1, msh_col, 'value', false, 'curl', true);
+    sp2_col = sp_evaluate_col (space2, msh_col, 'value', false, 'curl', true);
+  
       if (nargin == 4)
         for idim = 1:msh.rdim
           x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
@@ -69,9 +57,8 @@ function varargout = op_curlu_curlv_tp (space1, space2, msh, coeff)
       else
         coeffs = ones (msh_col.nqn, msh_col.nel);
       end
-
-      A = A + op_curlu_curlv_3d (sp1_col, sp2_col, msh_col, coeffs);
-    end
+      
+    A = A + operator (sp1_col, sp2_col, msh_col, coeffs);
   end
 
   if (nargout == 1)

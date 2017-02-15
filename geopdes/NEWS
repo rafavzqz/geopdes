@@ -1,14 +1,6 @@
-Summary of important changes for geopdes-3.0.3:
------------------------------------------------------------------------------
-* Added the examples for Bernoulli-Euler beam
-* Computation of the error in H^2 norm
-
-Summary of important changes for geopdes-3.0.2:
------------------------------------------------------------------------------
-* Different version of the connectivity functions, with less memory consumption
-
 Summary of important changes for geopdes-3.0.1:
 -----------------------------------------------------------------------------
+* Added functions sp_plot_solution
 * Computation of the hessian for vector fields, with grad preserving transform
 
 Summary of important changes for geopdes-3.0.0:

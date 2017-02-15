@@ -18,7 +18,7 @@
 %   rhs: assembled right-hand side for stabilization 
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011, 2014 Rafael Vazquez
+% Copyright (C) 2011, 2014, 2017 Rafael Vazquez
 % Copyright (C) 2013, Anna Tagliabue
 %
 %    This program is free software: you can redistribute it and/or modify
@@ -38,19 +38,20 @@ function rhs = op_rhs_stab_SUPG (space, msh, coeff_mu, vel, coeff)
 
   rhs = zeros (space.ndof, 1);
 
-  coeff = reshape (coeff, space.ncomp, msh.nqn, msh.nel);
-  coeff_mu = reshape (coeff_mu, 1, msh.nqn, msh.nel);
-
   gradv = reshape (space.shape_function_gradients, space.ncomp, [], ...
 		   msh.nqn, space.nsh_max, msh.nel);
 
   ndir = size (gradv, 2);
 
+  coeff = reshape (coeff, space.ncomp, msh.nqn, msh.nel);
+  coeff_mu = reshape (coeff_mu, 1, msh.nqn, msh.nel);
   p = max (space.degree(:));
+
+  jacdet_weights = msh.jacdet .* msh.quad_weights;
 
   for iel = 1:msh.nel  
     if (all (msh.jacdet(:, iel)))
-      vel_iel = reshape (vel(:, :, iel), [], msh.nqn);
+      vel_iel = reshape (vel(:, :, iel), ndir, msh.nqn);
 
 % compute parameters relative to the stabilization coefficient
       h_iel = msh.element_size(iel);
@@ -63,21 +64,19 @@ function rhs = op_rhs_stab_SUPG (space, msh, coeff_mu, vel, coeff)
       tau = h_iel / (2. * max_vel) * min (1., Pe / ( 3. * p * p ));
       
       %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      gradv_iel = permute (gradv(:, :, :, 1:space.nsh(iel), iel), [1 2 4 3]);
-      gradv_iel = reshape (gradv_iel, space.ncomp * ndir, space.nsh(iel), msh.nqn);
-      gradv_iel = permute (gradv_iel, [1 3 2]);
+      jacdet_weights_tau = reshape (tau * jacdet_weights(:,iel), [1, msh.nqn, 1]);
+      coeff_times_jw = bsxfun (@times, jacdet_weights_tau, coeff(:,:,iel));
+      jacdet_weights_vel = reshape (bsxfun (@times, coeff_times_jw, vel_iel), [ndir, msh.nqn, 1]);
+
+      gradv_iel = reshape (gradv(:,:,:,1:space.nsh(iel),iel), space.ncomp*ndir, msh.nqn, space.nsh(iel));
 
       %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      jacdet_weights = reshape (msh.jacdet(:, iel) .* msh.quad_weights(:, iel) * tau, 1, msh.nqn);
-      coeff_times_jw = bsxfun (@times, jacdet_weights, coeff(:,:,iel));
-      jacdet_weights_vel = bsxfun (@times, coeff_times_jw, vel_iel);
-
       aux_val = bsxfun (@times, jacdet_weights_vel, gradv_iel);
 
       rhs_loc = sum (sum (aux_val, 1), 2);
       rhs(space.connectivity(1:space.nsh(iel), iel)) = rhs(space.connectivity(1:space.nsh(iel), iel)) + rhs_loc(:); 
     else
-      warning ('geopdes:jacdet_zero_at_quad_node', 'op_f_v: singular map in element number %d', iel)
+      warning ('geopdes:jacdet_zero_at_quad_node', 'op_rhs_stab_SUPG: singular map in element number %d', iel)
     end
   end
 

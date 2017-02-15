@@ -44,6 +44,9 @@ vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20), linspace(0, 1, 20)};
 fprintf ('The result is saved in the file %s \n \n', output_file);
 sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 
+figure
+sp_plot_solution (u, space, geometry, [20 20 20], [2 2 2]);
+
 % 4.2) COMPARISON WITH THE EXACT SOLUTION
 
 [error_h1, error_l2] = ...
@@ -73,5 +76,5 @@ sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 %! [error_h1, error_l2] = sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex);
 %! assert (msh.nel, 24)
 %! assert (space.ndof, 210)
-%! assert (error_h1, 9.59413176469865e-04, 1e-16)
-%! assert (error_l2, 5.76863535414844e-05, 1e-16)
+%! assert (error_h1, 9.59413176469865e-04, 1e-15)
+%! assert (error_l2, 5.76863535414844e-05, 1e-15)

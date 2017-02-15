@@ -18,7 +18,7 @@
 %   values: values of the nonzero entries
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011, 2017 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -44,45 +44,48 @@ function varargout = op_su_ev (spu, spv, msh, lambda, mu)
   cols = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
   values = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
 
+  jacdet_weights = msh.jacdet .* msh.quad_weights;
+  jacdet_weights_mu = jacdet_weights .* mu;
+  jacdet_weights_lambda = jacdet_weights .* lambda;
+  
   ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:, iel)))
-      jacdet_weights = msh.jacdet(:, iel) .* msh.quad_weights(:, iel);
-      jacdet_weights_mu = reshape (jacdet_weights .* mu(:, iel), 1, msh.nqn);
-      jacdet_weights_lambda = reshape (jacdet_weights .* lambda(:, iel), msh.nqn, 1);
-      
-      gradu_iel = permute (gradu(:, :, :, 1:spu.nsh(iel), iel), [1 2 4 3]);
+      gradu_iel = reshape (gradu(:,:,:,1:spu.nsh(iel),iel), spu.ncomp, ndir, msh.nqn, spu.nsh(iel));
       epsu_iel = (gradu_iel + permute (gradu_iel, [2 1 3 4]))/2;
-      epsu_iel = reshape (epsu_iel, spu.ncomp * ndir, spu.nsh(iel), msh.nqn);
-      epsu_iel = permute (epsu_iel, [1 3 2]);
-
-      gradv_iel = permute (gradv(:, :, :, 1:spv.nsh(iel), iel), [1 2 4 3]);
+      epsu_iel = reshape (epsu_iel, [spu.ncomp*ndir, msh.nqn, 1, spu.nsh(iel)]);
+%       epsu_iel = repmat (epsu_iel, [1,1,spv.nsh(iel),1]);
+      
+      gradv_iel = reshape (gradv(:,:,:,1:spv.nsh(iel),iel), spv.ncomp, ndir, msh.nqn, spv.nsh(iel));
       epsv_iel = (gradv_iel + permute (gradv_iel, [2 1 3 4]))/2;
-      epsv_iel = reshape (epsv_iel, spv.ncomp * ndir, spv.nsh(iel), msh.nqn);
-      epsv_iel = permute (epsv_iel, [1 3 2]);
+      epsv_iel = reshape (epsv_iel, [spv.ncomp*ndir, msh.nqn, spv.nsh(iel), 1]);
+%       epsv_iel = repmat (epsv_iel, [1,1,1,spu.nsh(iel)]);
 
-      divv_iel = spv.shape_function_divs(:,1:spv.nsh(iel),iel);
-      divu_iel = spu.shape_function_divs(:,1:spu.nsh(iel),iel);
+      divu_iel = reshape (spu.shape_function_divs(:,1:spu.nsh(iel),iel), [msh.nqn, 1, spu.nsh(iel)]);
+      divu_iel = repmat (divu_iel, [1, spv.nsh(iel), 1]);
+      divv_iel = reshape (spv.shape_function_divs(:,1:spv.nsh(iel),iel), [msh.nqn, spv.nsh(iel), 1]);
+      divv_iel = repmat (divv_iel, [1, 1, spu.nsh(iel)]);
 
-      epsv_times_jw = bsxfun (@times, jacdet_weights_mu, epsv_iel);
-      divv_times_jw = bsxfun (@times, jacdet_weights_lambda, divv_iel);
-      for idof = 1:spv.nsh(iel)
-        rows(ncounter+(1:spu.nsh(iel))) = spv.connectivity(idof, iel);
-        cols(ncounter+(1:spu.nsh(iel))) = spu.connectivity(1:spu.nsh(iel), iel);
+      jacdet_mu_iel = reshape (jacdet_weights_mu(:,iel), [1,msh.nqn,1,1]);
+      jacdet_lambda_iel = reshape (jacdet_weights_lambda(:,iel), [msh.nqn,1,1]);
 
-        aux_val1 = bsxfun (@times, epsv_times_jw(:,:,idof), epsu_iel);
-        aux_val2 = bsxfun (@times, divv_times_jw(:,idof), divu_iel);
-        values(ncounter+(1:spu.nsh(iel))) = 2 * sum (sum (aux_val1, 2), 1);
-        values(ncounter+(1:spu.nsh(iel))) = values(ncounter+(1:spu.nsh(iel))) + sum (aux_val2, 1).';
+      jacdet_epsu = bsxfun (@times, jacdet_mu_iel, epsu_iel);
+      aux_val1 = 2 * sum (bsxfun (@times, jacdet_epsu, epsv_iel), 1);
+      aux_val2 = bsxfun (@times, jacdet_lambda_iel, divu_iel .* divv_iel);
 
-        ncounter = ncounter + spu.nsh(iel);
-      end
+      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = reshape (sum (aux_val1, 2), spv.nsh(iel), spu.nsh(iel)) + ...
+          reshape (sum(aux_val2, 1), spv.nsh(iel), spu.nsh(iel));
+
+      [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
+      rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc;
+      cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc;
+      ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_su_ev: singular map in element number %d', iel)
     end
   end
 
-  if (nargout == 1)
+  if (nargout == 1 || nargout == 0)
     varargout{1} = sparse (rows(1:ncounter), cols(1:ncounter), ...
                            values(1:ncounter), spv.ndof, spu.ndof);
   elseif (nargout == 3)

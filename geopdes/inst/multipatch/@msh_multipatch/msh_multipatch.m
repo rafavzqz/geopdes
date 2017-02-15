@@ -63,7 +63,7 @@ function msh = msh_multipatch (meshes, boundaries)
   msh.side_numbers  = [];
   msh.boundary = [];
   
-  if (nargin == 2)
+  if (nargin == 2 && ~isempty (boundaries))
     msh.boundaries = boundaries;
     if (~isempty (meshes{1}.boundary))
 

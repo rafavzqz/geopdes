@@ -18,7 +18,7 @@
 %   values: values of the nonzero entries
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011, 2017 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -40,26 +40,28 @@ function varargout = op_curlu_curlv_3d (spu, spv, msh, coeff)
   cols = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
   values = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
 
+  jacdet_weights = msh.jacdet .* msh.quad_weights .* coeff;
+  
   ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:,iel)))
-      jacdet_weights = reshape (msh.jacdet(:, iel) .* ...
-                       msh.quad_weights(:, iel) .* coeff(:, iel), 1, msh.nqn);
-
-      curlv_iel = reshape (spv.shape_function_curls(:, :, 1:spv.nsh(iel), iel), ...
-                            3, msh.nqn, spv.nsh(iel));
       curlu_iel = reshape (spu.shape_function_curls(:, :, 1:spu.nsh(iel), iel), ...
-                            3, msh.nqn, spu.nsh(iel));
+                           3, msh.nqn, 1, spu.nsh(iel));
+%       curlu_iel = repmat (curlu_iel, [1,1,spv.nsh(iel),1]);
+      curlv_iel = reshape (spv.shape_function_curls(:, :, 1:spv.nsh(iel), iel), ...
+                           3, msh.nqn, spv.nsh(iel), 1);
+%       curlv_iel = repmat (curlv_iel, [1,1,1,spu.nsh(iel)]);
 
-      curlv_times_jw = bsxfun (@times, jacdet_weights, curlv_iel);
-      for idof = 1:spv.nsh(iel)
-        rows(ncounter+(1:spu.nsh(iel))) = spv.connectivity(idof, iel);
-        cols(ncounter+(1:spu.nsh(iel))) = spu.connectivity(1:spu.nsh(iel), iel);
+      jacdet_iel = reshape (jacdet_weights(:,iel), [1,msh.nqn,1,1]);
 
-        aux_val = bsxfun (@times, curlv_times_jw(:,:,idof), curlu_iel);
-        values(ncounter+(1:spu.nsh(iel))) = sum (sum (aux_val, 2), 1);
-        ncounter = ncounter + spu.nsh(iel);
-      end
+      jacdet_curlu = bsxfun (@times, jacdet_iel, curlu_iel);
+      tmp1 = sum (bsxfun (@times, jacdet_curlu, curlv_iel), 1);
+      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = reshape (sum (tmp1, 2), spv.nsh(iel), spu.nsh(iel));
+
+      [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
+      rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc;
+      cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc;
+      ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_curlu_curlv_3d: singular map in element number %d', iel)
     end
@@ -68,7 +70,7 @@ function varargout = op_curlu_curlv_3d (spu, spv, msh, coeff)
   if (nargout == 1)
     varargout{1} = sparse (rows(1:ncounter), cols(1:ncounter), ...
                            values(1:ncounter), spv.ndof, spu.ndof);
-  elseif (nargout == 3)
+  elseif (nargout == 3 || nargout == 0)
     varargout{1} = rows(1:ncounter);
     varargout{2} = cols(1:ncounter);
     varargout{3} = values(1:ncounter);

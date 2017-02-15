@@ -1,10 +1,15 @@
 % MP_GEO_LOAD: create a multipatch geometry structure and the interfaces structure from a file.
 %
-% [geometry, boundaries, interfaces] = mp_geo_load (input)
+% [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = mp_geo_load (input)
 %
 % INPUT :
 %
-%   input: a string variable with the name of the file to be read
+%   The input variable may be either
+%   - a string variable with the name of the file to be read
+%   - an array of NURBS structures representing a nurbs geometry, as in the NURBS toolbox
+%
+%   In the second case, the information is automatically generated with the function
+%    nrbmultipatch. It is recommended to check that all the information is correct.
 %
 % OUTPUT:
 %
@@ -188,6 +193,8 @@ function [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = m
       else
         boundary_interfaces = [];
       end
+    else
+      boundary_interfaces = [];
     end
     
   else

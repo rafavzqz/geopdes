@@ -31,11 +31,9 @@ method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
 fprintf ('First computed eigenvalues: \n')
 disp (eigv(1:5))
 
-vtk_pts = {linspace(0,1,30) linspace(0,1,30)};
+nzeros = numel (find (eigv < 1e-10));
 figure
-[eu, F] = sp_eval (eigf(:,perm(8)), space, geometry, vtk_pts);
-quiver (squeeze(F(1,:,:)), squeeze(F(2,:,:)), ...
-        squeeze(eu(1,:,:)), squeeze(eu(2,:,:)))
+sp_plot_solution (eigf(1:space.ndof,perm(nzeros+8)), space, geometry, [30 30]);
 title ('8^{th} eigenfunction')
 
 %!demo

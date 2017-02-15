@@ -120,7 +120,8 @@ int_dofs = setdiff (1:space.ndof, drchlt_dofs);
 eigf = zeros (space.ndof, numel(int_dofs));
 [eigf(int_dofs, :), eigv] = ...
     eig (full (stiff_mat(int_dofs, int_dofs)), full (mass_mat(int_dofs, int_dofs)));
-eigv = sort (diag (eigv));
+[eigv, perm] = sort (diag (eigv));
+eigf = eigf(:, perm);
 
 end
 

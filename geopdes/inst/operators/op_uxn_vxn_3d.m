@@ -18,7 +18,7 @@
 %  values: values of the nonzero entries
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco, Rafael Vazquez
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011, 2017 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -39,44 +39,35 @@ function varargout = op_uxn_vxn_3d (spu, spv, msh, coeff)
   cols = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
   values = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
 
+  jacdet_weights = msh.jacdet .* msh.quad_weights .* coeff;
+
   ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:, iel)))
-      jacdet_weights = msh.jacdet(:, iel) .* ...
-              msh.quad_weights(:, iel) .* coeff(:, iel);
+      shpu_iel = reshape (spu.shape_functions(:, :, 1:spu.nsh(iel), iel), spu.ncomp, msh.nqn, 1, spu.nsh(iel));
+      shpv_iel = reshape (spv.shape_functions(:, :, 1:spv.nsh(iel), iel), spv.ncomp, msh.nqn, spv.nsh(iel), 1);
 
-      for idof = 1:spv.nsh(iel)
-        ishp = squeeze (spv.shape_functions(:, :, idof, iel));
-        ishp_x_n = [ishp(2, :) .* msh.normal(3, :, iel) - ...
-                       ishp(3, :) .* msh.normal(2, :, iel); ...
-                    ishp(3, :) .* msh.normal(1, :, iel) - ...
-                       ishp(1, :) .* msh.normal(3, :, iel); ...
-                    ishp(1, :) .* msh.normal(2, :, iel) - ...
-                       ishp(2, :) .* msh.normal(1, :, iel)];
+      normal_iel = reshape (msh.normal(:,:,iel), 3, msh.nqn);
 
-        rows(ncounter+(1:spu.nsh(iel))) = spv.connectivity(idof, iel);
-        cols(ncounter+(1:spu.nsh(iel))) = spu.connectivity(1:spu.nsh(iel), iel);
+      shpu_x_n = bsxfun (@cross, shpu_iel, normal_iel);
+      shpv_x_n = bsxfun (@cross, shpv_iel, normal_iel);
+      
+      jacdet_iel = reshape (jacdet_weights(:,iel), [1, msh.nqn, 1]);
+      jacdet_shpu = bsxfun (@times, jacdet_iel, shpu_x_n);
+      tmp1 = sum (bsxfun (@times, jacdet_shpu, shpv_x_n), 1);
+      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = reshape (sum (tmp1, 2), spv.nsh(iel), spu.nsh(iel));
+      
+      [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
+      rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc;
+      cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc;
+      ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);
 
-        for jdof = 1:spu.nsh(iel)
-          jshp = squeeze (spu.shape_functions(:, :, jdof, iel));
-          jshp_x_n = [jshp(2, :) .* msh.normal(3, :, iel) - ...
-                         jshp(3, :) .* msh.normal(2, :, iel); ...
-                      jshp(3, :) .* msh.normal(1, :, iel) - ...
-                         jshp(1, :) .* msh.normal(3, :, iel); ...
-                      jshp(1, :) .* msh.normal(2, :, iel) - ...
-                         jshp(2, :) .* msh.normal(1, :, iel)];
-
-          values(ncounter+jdof) = ...
-                 sum (jacdet_weights .* sum(ishp_x_n .* jshp_x_n, 1)');
-        end
-        ncounter = ncounter + spu.nsh(iel);
-      end
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_uxn_vxn_3d: singular map in element number %d', iel)
     end
   end
 
-  if (nargout == 1)
+  if (nargout == 1 || nargout == 0)
     varargout{1} = sparse (rows(1:ncounter), cols(1:ncounter), ...
                            values(1:ncounter), spv.ndof, spu.ndof);
   elseif (nargout == 3)

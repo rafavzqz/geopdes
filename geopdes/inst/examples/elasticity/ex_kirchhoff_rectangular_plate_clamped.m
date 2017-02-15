@@ -51,13 +51,12 @@ sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 % nrbkntplot (geometry.nurbs)
 
 % % Plot of the computed solution
-% figure
-[eu, F] = sp_eval (u, space, geometry, vtk_pts);
-[X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
-surf (X, Y, eu)
+figure
+sp_plot_solution (u, space, geometry, vtk_pts)
 title ('Numerical solution')
 axis equal
 
 % Max Deflection (in the same points used for plotting)
+eu = sp_eval(u, space, geometry, vtk_pts);
 max_displacement = min (eu(:));
 fprintf ('Computed solution, max. displacement = %e \n', max_displacement);

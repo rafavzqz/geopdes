@@ -1,7 +1,7 @@
-% OP_GRADVN_U: assemble the matrix A = [a(i,j)], a(i,j) = (epsilon (grad v n)_j, u_i), with n the normal vector.
+% OP_GRADV_N_U: assemble the matrix A = [a(i,j)], a(i,j) = (epsilon (grad v n)_j, u_i), with n the normal vector.
 %
-%   mat = op_gradvn_u (spu, spv, msh, epsilon);
-%   [rows, cols, values] = op_gradu_gradv (spu, spv, msh, epsilon);
+%   mat = op_gradv_n_u (spu, spv, msh, epsilon);
+%   [rows, cols, values] = op_gradv_n_u (spu, spv, msh, epsilon);
 %
 % INPUT:
 %
@@ -18,7 +18,8 @@
 %   cols:   column indices of the nonzero entries
 %   values: values of the nonzero entries
 % 
-% Copyright (C) 2014 Adriano Cortes, Rafael Vazquez
+% Copyright (C) 2014 Adriano Cortes
+% Copyright (C) 2014, 2017 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -46,40 +47,35 @@ function varargout = op_gradv_n_u (spu, spv, msh, coeff)
   cols = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
   values = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
 
+  jacdet_weights = msh.jacdet .* msh.quad_weights .* coeff;
+  
   ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:,iel)))
+      gradv_iel = gradv(:,:,:,1:spv.nsh(iel),iel);
+      normal_iel = reshape (msh.normal(:,:,iel), [1, ndim, msh.nqn]);
 
-      jacdet_weights = reshape (msh.jacdet(:, iel) .* ...
-                       msh.quad_weights(:, iel) .* coeff(:, iel), 1, msh.nqn);
+      gradv_n = reshape (sum (bsxfun (@times, gradv_iel, normal_iel), 2), spv.ncomp, msh.nqn, spv.nsh(iel), 1);
+      shpu_iel = reshape (shpu(:, :, 1:spu.nsh(iel), iel), spu.ncomp, msh.nqn, 1, spu.nsh(iel));
 
-      gradv_iel = gradv(:, :, :, 1:spv.nsh(iel), iel);
+      jacdet_iel = reshape (jacdet_weights(:,iel), [1,msh.nqn,1,1]);
 
-      normal_iel = reshape(msh.normal(:,:,iel), [1 ndim msh.nqn]);
-
-      shpu_iel = reshape (shpu(:, :, 1:spu.nsh(iel), iel), spu.ncomp, msh.nqn, spu.nsh(iel));
-
-      gradv_n = reshape (sum (bsxfun(@times, gradv_iel, normal_iel), 2), ...
-                        [spv.ncomp, msh.nqn, spv.nsh(iel)]);
-
-      gradv_n_times_jw = bsxfun (@times, jacdet_weights, gradv_n);
+      gradv_n_times_jw = bsxfun (@times, jacdet_iel, gradv_n);
+      tmp1 = sum (bsxfun (@times, gradv_n_times_jw, shpu_iel), 1);
+      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = reshape (sum (tmp1, 2), spv.nsh(iel), spu.nsh(iel));
       
-      for idof = 1:spv.nsh(iel)
-        rows(ncounter+(1:spu.nsh(iel))) = spv.connectivity(idof, iel);
-        cols(ncounter+(1:spu.nsh(iel))) = spu.connectivity(1:spu.nsh(iel), iel);
-
-        aux_val = bsxfun (@times, gradv_n_times_jw(:,:,idof), shpu_iel);
-        values(ncounter+(1:spu.nsh(iel))) = sum (sum (aux_val, 2), 1);
-        ncounter = ncounter + spu.nsh(iel);
-      end
-
+      [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
+      rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc;
+      cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc;
+      ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);
+      
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_gradv_n_u: singular map in element number %d', iel)
     end
   end
   
 
-  if (nargout == 1)
+  if (nargout == 1 || nargout == 0)
     varargout{1} = sparse (rows, cols, values, spv.ndof, spu.ndof);
   elseif (nargout == 3)
     varargout{1} = rows;

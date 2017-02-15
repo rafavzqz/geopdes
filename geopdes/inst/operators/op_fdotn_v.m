@@ -51,7 +51,7 @@ function rhs = op_fdotn_v (spv, msh, coeff)
      rhs_loc = sum (sum (aux_val, 1), 2);
      rhs(spv.connectivity(1:spv.nsh(iel), iel)) = rhs(spv.connectivity(1:spv.nsh(iel), iel)) + rhs_loc(:); 
     else
-      warning ('geopdes:jacdet_zero_at_quad_node', 'op_fdotn_vdotn: singular map in element number %d', iel)
+      warning ('geopdes:jacdet_zero_at_quad_node', 'op_fdotn_v: singular map in element number %d', iel)
     end
   end
 

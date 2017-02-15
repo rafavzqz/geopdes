@@ -36,13 +36,10 @@ else
   [lambda, perm] = sort (real (lambda));
 end
 
-up = linspace(0,1,31);
-vp = linspace(0,1,31);
-
 % Plot of the 11th eigenfunction
+figure
 subplot(1,2,1)
-[eu, F] = sp_eval (u(:, perm(11)), space, geometry, {up vp});
-surf (squeeze(F(1,:,:)), squeeze(F(2,:,:)), eu)
+sp_plot_solution (u(:,perm(11)), space, geometry, [31 31]);
 title ('Plot of the 11^{th} eigenfunction')
 
 % Comparison with the exact eigenvalues
