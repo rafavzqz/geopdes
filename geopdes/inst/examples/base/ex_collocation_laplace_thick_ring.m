@@ -26,7 +26,7 @@ problem_data.graduex = @(x,y,z) cat (1,  reshape (problem_data.dx_uex(x,y,z), [1
 % Discretization parameters (p and h)
 method_data.degree     = [4 4 4]; % Degree of the splines in each direction
 method_data.regularity = [3 3 3]; % Regularity of the splines, should be at least C^1.
-method_data.nsub       = [8 8 8]; % Divide each subinterval of the original knot span in nsub subintervals
+method_data.nsub       = [5 5 5]; % Divide each subinterval of the original knot span in nsub subintervals
 method_data.pts_case   = 2;       % Collocation points. 1: uniform, 2: Greville abscissae
 % method_data.ncoll_pts  = [20 20 20]; % Number of collocation points in each direction. Only used for pts_case = 1.
 
