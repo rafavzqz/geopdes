@@ -29,6 +29,7 @@ method_data.nsub       = [8 8]; % Divide each subinterval of the original knot s
 method_data.pts_case   = 2;     % Collocation points. 1: uniform, 2: Greville abscissae
 % method_data.ncoll_pts  = [40 40]; % Number of collocation points in each direction. Only used for pts_case = 1.
 
+% Solve with collocation method
 [geometry, msh_coll, space_coll, u_coll] = solve_laplace_collocation (problem_data, method_data);
 
 % Solve with Galerkin, for comparison
