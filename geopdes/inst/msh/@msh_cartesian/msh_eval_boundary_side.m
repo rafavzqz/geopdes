@@ -91,10 +91,18 @@ if (msh.ndim > 1)
   qn = msh.qn; qw = msh.qw; nel_dir = msh.nel_dir;
   if (mod (iside, 2) == 0)
     qn{ind2} = qn{ind2}(:,end);
-    qw = qw{ind2}(:,end);
+    if (~isempty(msh.qw))
+      qw = qw{ind2}(:,end);
+    else
+      qw = [];
+    end
   else
     qn{ind2} = qn{ind2}(:,1);
-    qw = qw{ind2}(:,1);
+    if (~isempty(msh.qw))
+      qw = qw{ind2}(:,1);
+    else
+      qw = [];
+    end
   end
   nel_dir(ind2) = 1;
   
