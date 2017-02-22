@@ -5,28 +5,28 @@ problem_data.geo_name = 'geo_thick_ring.txt';
 
 % Type of boundary conditions for each side of the domain
 problem_data.nmnn_sides   = [];
-problem_data.drchlt_sides = [ 1 2 3 4 5 6];
+problem_data.drchlt_sides = [1 2 3 4 5 6];
 
 % Physical parameters
-problem_data.c_diff  = @(x, y, z) ones(size(x));
+problem_data.c_diff  = @(x, y, z) ones(size(x)); % Only used in Galerkin, not in collocation
 
 % Source and boundary terms
-problem_data.f = @(x,y,z) (20*x.^3.*y.^2-30*x.*y.^2+12*x.*y.^4+2*x.^5+30*x.*y.^4-10*x.^3-60*x.*y.^2+24*x.^3.*y.^2+8*x).*sin(pi*z) - pi^2*(x.^2+y.^2-1).*(x.^2+y.^2-4).*x.*y.^2.*sin(pi*z);
-problem_data.g = @(x, y, z, ind) zeros(size(x));
-problem_data.h = @(x, y, z, ind) zeros(size(x));
+problem_data.f = ...
+     @(x, y, z) exp(x).*cos(z).*(-2*cos(x.*y).*y + sin(x.*y).*(y.^2 + x.^2));
+problem_data.g = @test_thick_ring_g_nmnn;
+problem_data.h = @(x, y, z, ind) exp (x) .* sin (x.*y) .* cos (z);
         
-problem_data.uex = @(x,y,z) -(x.^2+y.^2-1).*(x.^2+y.^2-4).*x.*y.^2.*sin(pi*z);
-problem_data.dx_uex = @(x,y,z) -(4*x.^3-10*x+4*x.*y.^2).*x.*y.^2.*sin(pi*z) - (x.^4+y.^4-5*x.^2-5*y.^2+2*x.^2.*y.^2+4).*y.^2.*sin(pi*z);
-problem_data.dy_uex = @(x,y,z) -(4*y.^3-10*y+4*y.*x.^2).*x.*y.^2.*sin(pi*z) - (x.^4+y.^4-5*x.^2-5*y.^2+2*x.^2.*y.^2+4).*(2*y).*x.*sin(pi*z);
-problem_data.dz_uex = @(x,y,z) -(x.^2+y.^2-1).*(x.^2+y.^2-4).*x.*y.^2.*pi.*cos(pi*z);
-problem_data.graduex = @(x,y,z) cat (1,  reshape (problem_data.dx_uex(x,y,z), [1, size(x)]), ...
-  reshape (problem_data.dy_uex(x,y,z), [1, size(x)]),...
-  reshape (problem_data.dz_uex(x,y,z), [1, size(x)]));
+% Exact solution (optional)
+problem_data.uex     = @(x, y, z) exp (x) .* sin (x.*y) .* cos (z);
+problem_data.graduex = @(x, y, z) cat (1, ...
+             reshape (exp (x) .* cos (z) .* (sin (x.*y) + y .* cos (x.*y)), [1, size(x)]), ...
+             reshape (exp (x) .* x .* cos (x.*y) .* cos(z), [1, size(x)]), ...
+             reshape (-exp (x) .* sin (x.*y) .* sin (z), [1, size(x)]));
 
 % Discretization parameters (p and h)
 method_data.degree     = [4 4 4]; % Degree of the splines in each direction
 method_data.regularity = [3 3 3]; % Regularity of the splines, should be at least C^1.
-method_data.nsub       = [5 5 5]; % Divide each subinterval of the original knot span in nsub subintervals
+method_data.nsub       = [4 4 4]; % Divide each subinterval of the original knot span in nsub subintervals
 method_data.pts_case   = 2;       % Collocation points. 1: uniform, 2: Greville abscissae
 % method_data.ncoll_pts  = [20 20 20]; % Number of collocation points in each direction. Only used for pts_case = 1.
 

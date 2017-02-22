@@ -231,7 +231,7 @@ switch (number)
  case 23
   filename = 'ex_collocation_laplace_square.m';  
  case 24
-  filename = 'ex_collocation_laplace_ring.m';
+  filename = 'ex_collocation_laplace_ring_mixed_bc.m';
  case 25
   filename = 'ex_collocation_laplace_thick_ring.m';  
 end

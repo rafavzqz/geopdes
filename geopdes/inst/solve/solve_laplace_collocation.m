@@ -101,7 +101,7 @@ switch pts_case
       ncoll_pts = ncoll_pts * ones (ndim, 1);
     end
     for idim = 1:ndim
-      coll_pts{idim} = linspace (0,1,ncoll_pts);
+      coll_pts{idim} = linspace (knots{idim}(1), knots{idim}(end), ncoll_pts(idim));
     end
   case 2    % Greville abscissae
     for idim = 1:ndim
@@ -141,14 +141,35 @@ coll_mesh_eval = msh_precompute (msh_coll);
 sp_evals  = sp_precompute (space, coll_mesh_eval, 'gradient', true, 'laplacian', true);
 
 % SEPARATE BOUNDARY AND INTERNAL COLLOCATION POINTS
-boundary_col_pts = [];
-for iside = 1:2*msh_coll.ndim
-  boundary_col_pts_side{iside} = sp_evals.boundary(iside).dofs;
-  boundary_col_pts = union (boundary_col_pts, sp_evals.boundary(iside).dofs);
+%  For Greville and CSP points we use dofs, since there are as many points as functions
+boundary_col_pts_side = cell (2*msh_coll.ndim, 1);
+switch pts_case
+  case {2,3}
+    for iside = 1:2*msh_coll.ndim
+      boundary_col_pts_side{iside} = sp_evals.boundary(iside).dofs;
+    end
+  case 1
+    for iside = 1:2*msh_coll.ndim
+      ind2 = ceil (iside/2);
+      ind = setdiff (1:msh_coll.ndim, ind2);
+
+      ncoll_pts_dir = ncoll_pts(ind);
+      bnd_npts = prod (ncoll_pts_dir);
+      [ind_univ{ind}] = ind2sub (ncoll_pts_dir, 1:bnd_npts);
+      if (rem (iside, 2) == 0)
+        ind_univ{ind2} = ncoll_pts(ind2) * ones (1, bnd_npts);
+      else
+        ind_univ{ind2} = ones (1, bnd_npts);
+      end
+      boundary_col_pts_side{iside} = sub2ind (ncoll_pts, ind_univ{:});
+    end
 end
 
-internal_pts = setdiff (1:msh_coll.nel, boundary_col_pts(:)');
- 
+boundary_col_pts = [];
+for iside = union (drchlt_sides, nmnn_sides)
+  boundary_col_pts = union (boundary_col_pts, sp_evals.boundary(iside).dofs);
+end
+internal_pts = setdiff (1:msh_coll.nel, boundary_col_pts(:)'); 
 A = sparse (tot_nb_coll_pts, space.ndof);
 rhs = zeros (space.ndof, 1);
 
@@ -157,7 +178,6 @@ x = cell (1,msh_coll.rdim);
 for idim = 1:msh_coll.rdim
   x{idim} = reshape (coll_mesh_eval.geo_map(idim,:,:), msh_coll.nel, 1);
 end
-
 
 % Assemble the matrix of collocation, and the source term in the right-hand side
 for iel = internal_pts
@@ -170,26 +190,30 @@ rhs(internal_pts)  = f(coords{:});
 
 % Apply Neumann boundary condition
 for iside = nmnn_sides
-  dofs = sp_evals.boundary(iside).dofs;
+  side_pts = boundary_col_pts_side{iside};
   msh_side = msh_eval_boundary_side (msh_coll, iside);
-  for jj = 1:numel(dofs)
-    jel = dofs(jj);
+  for jj = 1:numel(side_pts)
+    jel = side_pts(jj);
     list_fun = sp_evals.connectivity(:,jel);
     A(jel,list_fun) = msh_side.normal(:,jj)' * reshape (sp_evals.shape_function_gradients(:,1,:,jel), msh_coll.rdim, sp_evals.nsh_max); 
   end
-  coords = cellfun(@(x) x(dofs), x, 'UniformOutput', false);
-  rhs(dofs) = g(coords{:}, iside);
+  coords = cellfun(@(x) x(side_pts), x, 'UniformOutput', false);
+  rhs(side_pts) = g(coords{:}, iside);
+end
+
+if (numel ([boundary_col_pts_side{nmnn_sides}]) ~= numel (unique([boundary_col_pts_side{nmnn_sides}])))
+  warning ('There are adjacent Neumann sides. Accuracy may be lost in those regions, as we are not doing any average.')
 end
 
 % Apply Dirichlet boundary condition. Dirichlet condition overrides the Neumann one
 for iside = drchlt_sides
-  dofs = sp_evals.boundary(iside).dofs;
-  for jel = dofs
+  side_pts = boundary_col_pts_side{iside};
+  for jel = side_pts
     list_fun = sp_evals.connectivity(:,jel);
     A(jel,list_fun) = sp_evals.shape_functions(1,:,jel);
   end
-  coords = cellfun(@(x) x(dofs), x, 'UniformOutput', false);
-  rhs(dofs) = h(coords{:}, iside);
+  coords = cellfun(@(x) x(side_pts), x, 'UniformOutput', false);
+  rhs(side_pts) = h(coords{:}, iside);
 end
 
 % If the matrix is not square, solve with least squares for now A'*A
