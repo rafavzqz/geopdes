@@ -108,7 +108,7 @@ switch pts_case
          ((numel (unique (knots{idim})) - 1) ~= (nurbs.number(idim) - nurbs.order(idim) + 1)))
          error ('To use the clustered superconvergent points, the regularity must be p-1 everywhere')
        end
-       aux = csp (knots{idim}, nurbs.order(idim)-1);
+       aux = collocation_csp (knots{idim}, nurbs.order(idim)-1);
        coll_pts{idim} = [knots{idim}(1), aux{1}, knots{idim}(end)]; 
     end
   otherwise

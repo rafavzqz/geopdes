@@ -1,8 +1,8 @@
-% CSP: Function that creates the Clustered Superconvergent Points from a given knot vector
+% COLLOCATION_CSP: create the collocation Clustered Superconvergent Points from a given knot vector
 %
 % USAGE:
 %
-%  col_pts = csp (knots, degree)
+%  col_pts = collocation_csp (knots, degree)
 %
 % INPUT:
 %
@@ -34,7 +34,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function col_pts = csp (knots, p)
+function col_pts = collocation_csp (knots, p)
 
 if (p<3 || p>7)
      error ('The degree must be between 3 and 7')  
@@ -120,3 +120,4 @@ jj3 = 1/sqrt(3);
     end
   end
        
+end
