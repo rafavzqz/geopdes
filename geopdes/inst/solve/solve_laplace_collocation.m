@@ -8,7 +8,7 @@
 %
 % USAGE:
 %
-%  [geometry, msh, space, u] = solve_laplace_collocation_BC (problem_data, method_data)
+%  [geometry, msh, space, u] = solve_laplace_collocation (problem_data, method_data)
 %
 % INPUT:
 %
@@ -26,7 +26,7 @@
 %    - nsub:       number of subelements with respect to the geometry mesh 
 %                   (nsub=1 leaves the mesh unchanged)
 %    - nquad:      number of points for Gaussian quadrature rule
-%    - pts_case:   the choice of collocation points, 1:uniform, 2:Greville, 3:C-CSP                   
+%    - pts_case:   the choice of collocation points, 1:Greville, 2:Clustered superconvergent points                   
 %    - ncoll_pts:  number of collocation points in each direction, for the choice pts_case=1
 %
 % OUTPUT:
@@ -36,16 +36,17 @@
 %  space:    space object that defines the discrete space (see sp_scalar)
 %  u:        the computed degrees of freedom
 %
-% If the number of collocation points does not coincide with the number of
-%  unknowns, i.e., if the matrix is not square, the system is solved using
-%  a least squares method.
-%
 % Since GeoPDEs is based on a mesh structure, we generate an auxiliary
 %  "mesh" with only one collocation point per element, using the 
 %  midpoints between collocation points as the mesh lines.
 % Although this is not the most efficient way to implement collocation, it
 %  allows us to use all the functionality in GeoPDEs, in particular the
 %  evaluation of basis functions, without further changes.
+%
+% For the clustered superconvergent points, see:
+%  M. Montardini, G. Sangalli, L. Tamellini, 
+%  Optimal-order isogeometric collocation at Galerkin superconvergent points
+%  Comput. Methods Appl. Mech. Engrg., 2016.
 %
 % Copyright (C) 2016, 2017 Monica Montardini, Lorenzo Tamellini, Rafael Vazquez
 %
@@ -96,19 +97,18 @@ geometry = geo_load (nurbs);
 % Compute the collocation points
 coll_pts = cell (1,ndim);
 switch pts_case
-  case 1    % Uniform distribution
-    if (numel (ncoll_pts) == 1)
-      ncoll_pts = ncoll_pts * ones (ndim, 1);
-    end
-    for idim = 1:ndim
-      coll_pts{idim} = linspace (knots{idim}(1), knots{idim}(end), ncoll_pts(idim));
-    end
-  case 2    % Greville abscissae
+  case 1    % Greville abscissae
     for idim = 1:ndim
       coll_pts{idim} = aveknt (knots{idim}, nurbs.order(idim)); 
     end
-  case 3    % C-CSP points
+  case 2    % Clustered superconvergent points
      for idim = 1:ndim
+       % Check that the regularity is the maximum everywhere
+       if ((nurbs.order(idim)-2 ~= regularity(idim)) || ...
+         ((numel (unique (knots{idim})) - 1) ~= (nurbs.number(idim) - nurbs.order(idim) + 1)))
+         error ('To use the clustered superconvergent points, the regularity must be p-1 everywhere')
+       end
+         
        aux = csp (knots{idim}, nurbs.order(idim)-1);
        coll_pts{idim} = [0, aux{1}, 1]; 
     end
@@ -143,26 +143,8 @@ sp_evals  = sp_precompute (space, coll_mesh_eval, 'gradient', true, 'laplacian',
 % SEPARATE BOUNDARY AND INTERNAL COLLOCATION POINTS
 %  For Greville and CSP points we use dofs, since there are as many points as functions
 boundary_col_pts_side = cell (2*msh_coll.ndim, 1);
-switch pts_case
-  case {2,3}
-    for iside = 1:2*msh_coll.ndim
-      boundary_col_pts_side{iside} = sp_evals.boundary(iside).dofs;
-    end
-  case 1
-    for iside = 1:2*msh_coll.ndim
-      ind2 = ceil (iside/2);
-      ind = setdiff (1:msh_coll.ndim, ind2);
-
-      ncoll_pts_dir = ncoll_pts(ind);
-      bnd_npts = prod (ncoll_pts_dir);
-      [ind_univ{ind}] = ind2sub (ncoll_pts_dir, 1:bnd_npts);
-      if (rem (iside, 2) == 0)
-        ind_univ{ind2} = ncoll_pts(ind2) * ones (1, bnd_npts);
-      else
-        ind_univ{ind2} = ones (1, bnd_npts);
-      end
-      boundary_col_pts_side{iside} = sub2ind (ncoll_pts, ind_univ{:});
-    end
+for iside = 1:2*msh_coll.ndim
+  boundary_col_pts_side{iside} = sp_evals.boundary(iside).dofs;
 end
 
 boundary_col_pts = [];
@@ -216,13 +198,6 @@ for iside = drchlt_sides
   rhs(side_pts) = h(coords{:}, iside);
 end
 
-% If the matrix is not square, solve with least squares for now A'*A
-if (size (A,1) ~= size (A,2))
-  rhs = A' * rhs;
-  A   = A' * A;
-end
-
-u = zeros (space.ndof,1);
 u = A\rhs;
 
 end

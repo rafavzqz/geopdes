@@ -1,4 +1,4 @@
-% CSP: Function that creates the CSP Dirichlet collocation points from a given knot vector
+% CSP: Function that creates the Clustered Superconvergent Points from a given knot vector
 %
 % USAGE:
 %
@@ -13,6 +13,11 @@
 %
 %   col_pts: CSP collocation points for degree p in each parametric
 %                   direction and continuity C^(p-1)
+%
+%  For the details, see:
+%  M. Montardini, G. Sangalli, L. Tamellini, 
+%  Optimal-order isogeometric collocation at Galerkin superconvergent points
+%  Comput. Methods Appl. Mech. Engrg., 2016.
 %
 % Copyright (C) 2016, 2017 Monica Montardini
 %
@@ -47,7 +52,7 @@ jj3 = 1/sqrt(3);
   end
    ndir = numel (knots);
   for idir = 1:ndir
-    uniqueknots  = unique(knots{idir});
+    uniqueknots  = unique (knots{idir});
     du           = diff (uniqueknots);
     
     nel = length (uniqueknots)-1; %number of elements
@@ -60,22 +65,22 @@ jj3 = 1/sqrt(3);
     seven_col1 = midpoints-du.*jj7./2;
     seven_col2 = midpoints+du.*jj7./2;
     
-    col_pts{idir}=zeros(1,nel+p-2);
+    col_pts{idir} = zeros(1,nel+p-2);
     if rem(nel,2)~=0
-        if p==3
+        if (p==3)
             col_pts{idir}(1:2:end) = three_col1(1:2:end);
             col_pts{idir}(2:2:end) = three_col2(1:2:end);
-        elseif p==4   
-            v=zeros(1,nel);
+        elseif (p==4)   
+            v = zeros(1,nel);
             v(1:2:end) = midpoints(1:2:end);
             v(2:2:end-1) = uniqueknots(2:2:end-2);
             col_pts{idir} = [v(1:2),midpoints(2),v(3:end-1),uniqueknots(end-1),v(end)];
-        elseif p==5
-            v=zeros(1,nel+1);
+        elseif (p==5)
+            v = zeros(1,nel+1);
             v(1:2:end-1) = five_col1(1:2:end);
             v(2:2:end) = five_col2(1:2:end);
             col_pts{idir} = [v(1:2),five_col1(2),v(3:end-2),five_col2(end-1),v(end-1:end)];   
-        elseif p==6
+        elseif (p==6)
             v = zeros(1,nel);
             v(1:2:end) = midpoints(1:2:end);
             v(2:2:end-1) = uniqueknots(2:2:end-2);
@@ -87,27 +92,27 @@ jj3 = 1/sqrt(3);
             col_pts{idir} = [v(1:2),seven_col1(2),seven_col2(2),v(3:end-2),seven_col1(end-1),seven_col2(end-1),v(end-1:end)];
         end
     else
-        if p==3
+        if (p==3)
             col_pts{idir}(1:2:end-2) = three_col1(1:2:end-1);
             col_pts{idir}(2:2:end-1) = three_col2(1:2:end-1);
             col_pts{idir}(end) = three_col2(end);
-        elseif p==4   
-            v=zeros(1,nel);
+        elseif (p==4)   
+            v = zeros(1,nel);
             v(1:2:end) = midpoints(1:2:end-1);
             v(2:2:end) = uniqueknots(2:2:end-1);
             col_pts{idir} = [v(1:2),midpoints(2),v(3:end),midpoints(end)];
-        elseif p==5
+        elseif (p==5)
             v = zeros(1,nel);
             v(1:2:end-1) = five_col1(1:2:end-1);
             v(2:2:end) = five_col2(1:2:end-1);
             col_pts{idir} = [v(1:2),five_col1(2),v(3:end),five_col1(end),five_col2(end)];   
-        elseif p==6
+        elseif (p==6)
             v = zeros(1,nel);
             v(1:2:end) = midpoints(1:2:end-1);
             v(2:2:end) = uniqueknots(2:2:end-1);
             col_pts{idir}=[v(1:2),midpoints(2),uniqueknots(3),v(3:end-2),uniqueknots(end-2),v(end-1:end),midpoints(end)];
         else
-            v=zeros(1,nel);
+            v = zeros(1,nel);
             v(1:2:end-1) = seven_col1(1:2:end-1);
             v(2:2:end) = seven_col2(1:2:end-1);
             col_pts{idir} = [v(1:2),seven_col1(2),seven_col2(2),v(3:end-2),seven_col2(end-2),v(end-1:end),seven_col1(end),seven_col2(end)];
