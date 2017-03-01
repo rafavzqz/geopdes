@@ -147,7 +147,7 @@ for iside = 1:2*msh_coll.ndim
 end
 
 boundary_col_pts = [];
-for iside = union (drchlt_sides, nmnn_sides)
+for iside = union (drchlt_sides(:)', nmnn_sides(:)')
   boundary_col_pts = union (boundary_col_pts, sp_evals.boundary(iside).dofs);
 end
 internal_pts = setdiff (1:msh_coll.nel, boundary_col_pts(:)'); 
