@@ -146,10 +146,14 @@ for iside = 1:2*msh_coll.ndim
   boundary_col_pts_side{iside} = sp_evals.boundary(iside).dofs;
 end
 
-boundary_col_pts = [];
-for iside = union (drchlt_sides(:)', nmnn_sides(:)')
-  boundary_col_pts = union (boundary_col_pts, sp_evals.boundary(iside).dofs);
+nmnn_pts = []; drchlt_pts = [];
+for iside = drchlt_sides
+  drchlt_pts = union (drchlt_pts, sp_evals.boundary(iside).dofs);
 end
+for iside = nmnn_sides
+  nmnn_pts = union (nmnn_pts, sp_evals.boundary(iside).dofs);
+end
+boundary_col_pts = union (drchlt_pts, nmnn_pts);
 internal_pts = setdiff (1:msh_coll.nel, boundary_col_pts(:)'); 
 A = sparse (tot_nb_coll_pts, space.ndof);
 rhs = zeros (space.ndof, 1);
@@ -169,34 +173,39 @@ end
 coords = cellfun(@(x) x(internal_pts), x, 'UniformOutput', false);
 rhs(internal_pts)  = f(coords{:});
 
-% Apply Neumann boundary condition
+% Apply Neumann boundary condition, taking into account the average at the corners/edges of the domain
 for iside = nmnn_sides
   side_pts = boundary_col_pts_side{iside};
   msh_side = msh_eval_boundary_side (msh_coll, iside);
   for jj = 1:numel(side_pts)
     jel = side_pts(jj);
     list_fun = sp_evals.connectivity(:,jel);
-    A(jel,list_fun) = msh_side.normal(:,jj)' * reshape (sp_evals.shape_function_gradients(:,1,:,jel), msh_coll.rdim, sp_evals.nsh_max); 
+    A(jel,list_fun) = A(jel,list_fun) + msh_side.normal(:,jj)' * reshape (sp_evals.shape_function_gradients(:,1,:,jel), msh_coll.rdim, sp_evals.nsh_max); 
   end
   coords = cellfun(@(x) x(side_pts), x, 'UniformOutput', false);
-  rhs(side_pts) = g(coords{:}, iside);
-end
-
-if (numel ([boundary_col_pts_side{nmnn_sides}]) ~= numel (unique([boundary_col_pts_side{nmnn_sides}])))
-  warning ('There are adjacent Neumann sides. Accuracy may be lost in those regions, as we are not doing any average.')
+  rhs(side_pts) = rhs(side_pts) + g(coords{:}, iside);
 end
 
 % Apply Dirichlet boundary condition. Dirichlet condition overrides the Neumann one
+drchlt_dofs = [];
+A_dir  = sparse (size(A));
+rhs_dir = zeros (space.ndof, 1);
 for iside = drchlt_sides
   side_pts = boundary_col_pts_side{iside};
   for jel = side_pts
     list_fun = sp_evals.connectivity(:,jel);
-    A(jel,list_fun) = sp_evals.shape_functions(1,:,jel);
+    A_dir(jel,list_fun) = sp_evals.shape_functions(1,:,jel);
   end
   coords = cellfun(@(x) x(side_pts), x, 'UniformOutput', false);
-  rhs(side_pts) = h(coords{:}, iside);
+  rhs_dir(side_pts) = h(coords{:}, iside);
+  drchlt_dofs = union(drchlt_dofs, space.boundary(iside).dofs );
 end
+u = zeros (space.ndof, 1);
+u(drchlt_dofs) = A_dir(drchlt_pts, drchlt_dofs)\rhs_dir(drchlt_pts);
 
-u = A\rhs;
+int_neu_pts = setdiff (1:msh_coll.nel, drchlt_pts);
+rhs(int_neu_pts) = rhs(int_neu_pts) - A(int_neu_pts, drchlt_dofs)*u(drchlt_dofs);
+
+u(int_neu_pts) = A(int_neu_pts,int_neu_pts)\rhs(int_neu_pts);
 
 end
