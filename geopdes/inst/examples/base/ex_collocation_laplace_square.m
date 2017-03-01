@@ -43,7 +43,7 @@ figure;
 subplot (1,3,1)
 surf (X, Y, eu)
 title ('Collocation solution'), axis tight
-[eu, F] = sp_eval (u_coll, space_coll, geometry, vtk_pts);
+[eu, F] = sp_eval (u_gal, space_gal, geometry, vtk_pts);
 [X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
 subplot (1,3,2)
 surf (X, Y, eu)
