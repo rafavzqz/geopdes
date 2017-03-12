@@ -5,7 +5,7 @@ permalink: /contributors/
 ---
 
 ## Main developer
-[**Rafael Vázquez**](http://www.imati.cnr.it/index.php/rafael-vazquez) from [IMATI-CNR](http://www.imati.cnr.it/) (Pavia, Italy).
+[**Rafael Vázquez**](http://www.imati.cnr.it/index.php/rafael-vazquez) from [IMATI-CNR](http://www.imati.cnr.it/) (Pavia, Italy) and [EPFL](htts://mns.epfl.ch) (Lausanne, Switzerland).
 
 ## List of contributors
 
@@ -17,6 +17,8 @@ permalink: /contributors/
 * **Luca Dedè**, advection-diffusion equation.
 * **Carlo de Falco**, contributions to the design of the code, implementation and maintenance of oct-files, implementation of many low level functions, and constant advice and support.
 * **Sara Frizziero**, contributions to the 3D div-conforming splines.
+* **Monica Montardini**, collocation methods.
 * **Marco Pingaro**, implementation of the bilaplacian and the Kirchhoff-Love plate.
 * **Alessandro Reali**, contributions to the original design of the code.
 * **Anna Tagliabue**, advection-diffusion equation.
+* **Lorenzo Tamellini**, collocation methods.
