@@ -4,7 +4,7 @@ title: Documentation
 permalink: /documentation/
 ---
 
-GeoPDEs has been released along with a [**technical report**](http://bibliograzia.imati.cnr.it/reports/new-design-implementation-isogeometric-analysis) ([article version](http://dx.doi.org/10.1016/j.camwa.2016.05.010)) explaining its design and its main features, to be used as a brief user's guide. The technical report is included among the files to [**download**](../download).
+GeoPDEs has been released along with a [**technical report**](http://bibliograzia.imati.cnr.it/reports/new-design-implementation-isogeometric-analysis) ([article published version](http://dx.doi.org/10.1016/j.camwa.2016.05.010)) explaining its design and its main features, to be used as a brief user's guide. The technical report is included among the files to [**download**](../download).
 
 # <a name="examples"></a>Getting started: running the examples
 
