@@ -8,6 +8,7 @@ Solve: solvers for some simple problems, that you can modify to solve your own p
  solve_laplace
  solve_laplace_iso
  solve_laplace_eig
+ solve_laplace_collocation
  solve_bilaplace_2d_iso
  solve_bilaplace_gradgrad_2d_iso
  solve_adv_diff_2d
