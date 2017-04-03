@@ -25,12 +25,14 @@ Type at the Octave prompt  the three following commands:
 1. pkg install nurbs-_version_.tar.gz
 2. pkg install geopdes-_version_.tar.gz
 3. pkg load geopdes
+4. pkg install geopdes_hierarchical-_version_.tar.gz
+5. pkg load geopdes_hierarchical
 
 **Matlab users**
 
-Uncompress and untar the files containing the NURBS package (nurbs-_version_.tar.gz) and the GeoPDEs package (geopdes-_version_.tar.gz). 
+Uncompress and untar the files containing the NURBS package (nurbs-_version_.tar.gz), the GeoPDEs package (geopdes-_version_.tar.gz) and the GeoPDEs_hierarchical package (geopdes_hierarchical-_version_.tar.gz). 
 
-Add the two folders, with all their subfolders, to the Matlab path.
+Add the three folders, with all their subfolders, to the Matlab path.
 
 More detailed installation instructions are found in the README file.
 
