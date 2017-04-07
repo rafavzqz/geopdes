@@ -38,8 +38,8 @@ CONTENTS:
    - The GeoPDEs package: geopdes-3.1.0.tar.gz
    - The NURBS package: nurbs-1.3.13.tar.gz
    - The GeoPDEs-hierarchical package: geopdes_hierarchical-0.0.1.tar.gz
-   - The technical report of GeoPDEs: GeoPDES_report.pdf
-   - The technical report for hierarchical splines: GeoPDES_report.pdf
+   - The technical report of GeoPDEs: GeoPDES-report.pdf
+   - The technical report for hierarchical splines: GeoPDES-hierarchical-report.pdf
    - This README file.
    - For Matlab users, the mex files of the NURBS toolbox: nurbs_mex_files.tar.gz
 
