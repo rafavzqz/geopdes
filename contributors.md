@@ -5,7 +5,7 @@ permalink: /contributors/
 ---
 
 ## Main developer
-[**Rafael Vázquez**](http://www.imati.cnr.it/index.php/rafael-vazquez) from [IMATI-CNR](http://www.imati.cnr.it/) (Pavia, Italy) and [EPFL](htts://mns.epfl.ch) (Lausanne, Switzerland).
+[**Rafael Vázquez**](http://www.imati.cnr.it/index.php/rafael-vazquez) from [IMATI-CNR](http://www.imati.cnr.it/) (Pavia, Italy) and [EPFL](http://mns.epfl.ch) (Lausanne, Switzerland).
 
 ## List of contributors
 

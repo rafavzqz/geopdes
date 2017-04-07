@@ -4,7 +4,7 @@ title: Documentation
 permalink: /documentation/
 ---
 
-GeoPDEs has been released along with a [**technical report**](http://bibliograzia.imati.cnr.it/reports/new-design-implementation-isogeometric-analysis) ([article published version](http://dx.doi.org/10.1016/j.camwa.2016.05.010)) explaining its design and its main features, to be used as a brief user's guide. The technical report is included among the files to [**download**](../download).
+GeoPDEs has been released along with a [**technical report**](http://bibliograzia.imati.cnr.it/reports/new-design-implementation-isogeometric-analysis) ([article published version](http://dx.doi.org/10.1016/j.camwa.2016.05.010)) explaining its design and its main features, to be used as a brief user's guide. A [**second technical report**](http://bibliograzia.imati.cnr.it/reports/algorithms-implementation-adaptive-isogeometric-methods-using-hierarchical-splines) explains the algorithms for the implementation of hierarchical B-splines. Both reports are included among the files to [**download**](../download).
 
 # <a name="examples"></a>Getting started: running the examples
 
@@ -16,6 +16,8 @@ GeoPDEs contains a set of simple examples, that can be run with the commands:
 * geopdes_maxwell_examples
  
 These will guide you through a set of menus to choose some examples for solving different model problems.
+
+The examples for adaptivity with hierarchical B-splines can be found in the folder _geopdes_hierarchical/inst/examples_.
 
 # Function help
 

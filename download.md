@@ -6,13 +6,14 @@ permalink: /download/
 
 You can download the latest version of GeoPDEs in the following link: 
 
-## [Download GeoPDEs 3.0.1](https://github.com/rafavzqz/geopdes/releases/download/v3.0.1/GeoPDEs-full.zip)
+## [Download GeoPDEs 3.1.0](https://github.com/rafavzqz/geopdes/releases/download/v3.1.0/GeoPDEs-full.zip)
 
 # File contents
 
 * The GeoPDEs package.
+* The GeoPDEs hierarhical package (beta version).
 * The NURBS package.
-* A technical report, explaining the design of GeoPDEs.
+* Two technical reports, explaining the design of GeoPDEs.
 * A README file, with detailed installation instructions.
 * For MATLAB users, the mex files of the NURBS toolbox.
 

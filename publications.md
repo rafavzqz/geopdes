@@ -4,9 +4,9 @@ title: Publications
 permalink: /publications/
 ---
 
-If you write any paper with the help of GeoPDEs to obtain your results, please cite one of the following references:
+If you write any paper with the help of GeoPDEs to obtain your results, please cite one of the following references, according with the version and the features you use:
 
-1. E.M. Garau, R. Vázquez. **Algorithms for the implementation of adaptive isogeometric methods using hierarchical splines**, _IMATI Report Series_, 16-08 (2016). [Technical Report](http://bibliograzia.imati.cnr.it/reports/algorithms-implementation-adaptive-isogeometric-methods-using-hierarchical-splines)
+1. E.M. Garau, R. Vázquez. **Algorithms for the implementation of adaptive isogeometric methods using hierarchical splines**, _IMATI Report Series_, 16-08 (2016). [Technical Report](http://bibliograzia.imati.cnr.it/reports/algorithms-implementation-adaptive-isogeometric-methods-using-hierarchical-splines) <a href="{{ site.github.url }}/bibtex/geopdes_hierarchical.bib" target="_blank">Bibtex</a>
 
 2. R. Vázquez. **A new design for the implementation of isogeometric analysis in Octave and Matlab: GeoPDEs 3.0**, _Comput. Math. Appl._, 72(3):523-554, 2016. [DOI:10.1016/j.camwa.2016.05.010](http://dx.doi.org/10.1016/j.camwa.2016.05.010) [Technical report](http://bibliograzia.imati.cnr.it/reports/new-design-implementation-isogeometric-analysis) <a href="{{ site.github.url }}/bibtex/geopdes_v3.bib" target="_blank">Bibtex</a>
 
