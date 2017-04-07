@@ -136,14 +136,16 @@ while (iopt > 0)
         ['GeoPDEs examples menu: multipatch examples for Poisson problem\n', ...
          '-------------------------------------------------------------- \n', ...
          '\n', ...
+         'Geometry construction and export \n \n', ...
+         '   (1) Define and export a simple geometry with 3 patches, \n \n',...
          '2D examples \n \n', ...
-         '   (1) L-shaped domain, defined with 3 patches. \n \n',...
+         '   (2) L-shaped domain, defined with 3 patches. \n \n',...
          '3D examples \n \n', ...
-         '   (2) Unit cube, defined with 2 patches. \n \n',...
-         '   (3) Thick L-shaped domain, defined with 3 patches. \n \n']);
+         '   (3) Unit cube, defined with 2 patches. \n \n',...
+         '   (4) Thick L-shaped domain, defined with 3 patches. \n \n']);
       
       iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
-      if (~isempty (iopt2) && iopt2 > 0 && iopt2 < 4)
+      if (~isempty (iopt2) && iopt2 > 0 && iopt2 < 5)
         [vexa, filename] = do_example (iopt2+19);
         clc
         fprintf (1, 'You can have a look at the source file: %s \n \n', filename);
@@ -161,14 +163,14 @@ while (iopt > 0)
          '-------------------------------------------------------------- \n', ...
          '\n', ...
          '2D examples \n \n', ...
-         '   (1) Square domain, with homogeneous Dirichlet boundary conditions. \n \n',...
-         '   (2) Quarter of a ring, with homogeneous Dirichlet boundary conditions. \n \n',...
+         '   (1) Square domain, with mixed boundary conditions. \n \n',...
+         '   (2) Quarter of a ring, with mixed boundary conditions. \n \n',...
          '3D examples \n \n', ...
-         '   (3) Thick ring domain, with homogeneous Dirichlet boundary conditions. \n \n']);
+         '   (3) Thick ring domain, with Dirichlet boundary conditions. \n \n']);
       
       iopt2 = input ('Please choose a number from above or press <Enter> to return: ');
       if (~isempty (iopt2) && iopt2 > 0 && iopt2 < 4)
-        [vexa, filename] = do_example (iopt2+22);
+        [vexa, filename] = do_example (iopt2+23);
         clc
         fprintf (1, 'You can have a look at the source file: %s \n \n', filename);
         eval (vexa);
@@ -223,16 +225,18 @@ switch (number)
  case 19
   filename = 'ex_laplace_beltrami.m';  
  case 20
-  filename = 'ex_laplace_Lshaped_mp.m';  
+  filename = 'ex_multipatch_geometry.m';  
  case 21
-  filename = 'ex_laplace_cube_mp.m';
+  filename = 'ex_laplace_Lshaped_mp.m';  
  case 22
-  filename = 'ex_laplace_thick_L_mp.m';  
+  filename = 'ex_laplace_cube_mp.m';
  case 23
-  filename = 'ex_collocation_laplace_square.m';  
+  filename = 'ex_laplace_thick_L_mp.m';  
  case 24
-  filename = 'ex_collocation_laplace_ring_mixed_bc.m';
+  filename = 'ex_collocation_laplace_square.m';  
  case 25
+  filename = 'ex_collocation_laplace_ring_mixed_bc.m';
+ case 26
   filename = 'ex_collocation_laplace_thick_ring.m';  
 end
 

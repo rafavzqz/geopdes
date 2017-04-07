@@ -29,6 +29,7 @@ CONTENTS:
     * Implementation of multipatch domains, with conforming interfaces.
     * Div- and curl-conforming spline spaces, also in multipatch domains.
     * Examples for Poisson, linear elasticity, advection-diffusion, bilaplacian, Stokes and Maxwell equations.
+    * Adaptive methods with hierarchical splines (beta version).
     * Detailed documentation, accessible with the help command.
 
 2. CONTENTS AND INSTALLATION
