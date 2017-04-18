@@ -8,6 +8,7 @@ Solve: solvers for some simple problems, that you can modify to solve your own p
  solve_laplace
  solve_laplace_iso
  solve_laplace_eig
+ solve_laplace_collocation
  solve_bilaplace_2d_iso
  solve_bilaplace_gradgrad_2d_iso
  solve_adv_diff_2d
@@ -141,5 +142,6 @@ Multipatch: functions of different kinds to solve problems in domains defined by
  @sp_multipatch/sp_drchlt_l2_proj_udotn
  @sp_multipatch/sp_weak_drchlt_bc
 Utilities: other functions in the package
+ collocation_csp
  knt_derham
  msh_to_vtk

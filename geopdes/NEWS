@@ -1,6 +1,21 @@
-Summary of important changes for geopdes-3.0.1:
+Summary of important changes for geopdes-3.1.0:
+-----------------------------------------------------------------------------
+* Added collocation solver for Poisson equation
+* New version of the operators in m-files, hopefully clearer
+* msh_precompute: uncommented the computation of element_size
+
+Summary of important changes for geopdes-3.0.3:
 -----------------------------------------------------------------------------
 * Added functions sp_plot_solution
+* Added the examples for Bernoulli-Euler beam
+* Computation of the error in H^2 norm
+
+Summary of important changes for geopdes-3.0.2:
+-----------------------------------------------------------------------------
+* Different version of the connectivity functions, with less memory consumption
+
+Summary of important changes for geopdes-3.0.1:
+-----------------------------------------------------------------------------
 * Computation of the hessian for vector fields, with grad preserving transform
 
 Summary of important changes for geopdes-3.0.0:

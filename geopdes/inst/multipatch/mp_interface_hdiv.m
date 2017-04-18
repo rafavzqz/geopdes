@@ -93,7 +93,7 @@ function [glob_num, glob_ndof, dofs_ornt] = mp_interface_hdiv (interfaces, sp, m
 
 % Compute the Jacobian for both patches (overkilling)
       msh_el1 = msh_evaluate_element_list (msh.msh_patch{iptc}, 1);
-      msh_el2 = msh_evaluate_element_list (msh.msh_patch{iptc2}, 2);
+      msh_el2 = msh_evaluate_element_list (msh.msh_patch{iptc2}, 1);
       jac1_sign = sign (geopdes_det__ (msh_el1.geo_map_jac(:,:,1,1)));
       jac2_sign = sign (geopdes_det__ (msh_el2.geo_map_jac(:,:,1,1)));
 

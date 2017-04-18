@@ -29,15 +29,18 @@ CONTENTS:
     * Implementation of multipatch domains, with conforming interfaces.
     * Div- and curl-conforming spline spaces, also in multipatch domains.
     * Examples for Poisson, linear elasticity, advection-diffusion, bilaplacian, Stokes and Maxwell equations.
+    * Adaptive methods with hierarchical splines (beta version).
     * Detailed documentation, accessible with the help command.
 
 2. CONTENTS AND INSTALLATION
 
   Download and uncompress the file GeoPDEs_full.tar.gz. This file contains 
    all that is necessary to install GeoPDEs:
-   - The GeoPDEs package: geopdes-3.0.1.tar.gz
-   - The NURBS package: nurbs-1.3.12.tar.gz
-   - The technical report: GeoPDES_report.pdf
+   - The GeoPDEs package: geopdes-3.1.0.tar.gz
+   - The NURBS package: nurbs-1.3.13.tar.gz
+   - The GeoPDEs-hierarchical package: geopdes_hierarchical-0.0.1.tar.gz
+   - The technical report of GeoPDEs: GeoPDES-report.pdf
+   - The technical report for hierarchical splines: GeoPDES-hierarchical-report.pdf
    - This README file.
    - For Matlab users, the mex files of the NURBS toolbox: nurbs_mex_files.tar.gz
 
@@ -52,6 +55,10 @@ CONTENTS:
  * Install and load GeoPDEs by typing at the octave prompt
     pkg install geopdes-<version>.tar.gz
     pkg load geopdes
+
+ * Install and load GeoPDEs_hierarchical by typing at the octave prompt
+    pkg install geopdes_hierarchical-<version>.tar.gz
+    pkg load geopdes_hierarchical
 
 2.1.2 - Note for Windows users
 
@@ -76,6 +83,7 @@ CONTENTS:
     You can do this by typing in in the command window:
     addpath (genpath ('nurbs'))
     addpath (genpath ('geopdes'))
+    addpath (genpath ('geopdes_hierarchical'))
 
  * Install the mex-files for the "nurbs" package (OPTIONAL):
    - uncompress and untar the file nurbs_mex_files.tar.gz in the folder 
@@ -118,6 +126,13 @@ CONTENTS:
     In the paper we give an explanation of the architecture, the design and
     the main features of the code. This paper can be seen as brief user's guide.
 
+ * For hierarchical B-splines, we suggest to read the paper
+
+      E.M. Garau and R. Vazquez.
+      Algorithms for the implementation of adaptive isogeometric methods
+      using hierarchical splines,
+      IMATI Report Series, 16-08 (2016).
+
  * All the functions in GeoPDEs contain a detailed description, that can be
     accessed with "help <function_name>". You can see a list of all the 
     functions in the package, typing in the Octave prompt:
@@ -145,6 +160,11 @@ CONTENTS:
       GeoPDES: a research tool for Isogeometric Analysis of PDEs, 
       Advances in Engineering Software, 42 (2011), pp. 1020-1034
       doi:10.1016/j.advengsoft.2011.06.010
+
+      E.M. Garau and R. Vazquez.
+      Algorithms for the implementation of adaptive isogeometric methods
+      using hierarchical splines,
+      IMATI Report Series, 16-08 (2016).
 
     in any paper where GeoPDEs is used to obtain numerical results.
 

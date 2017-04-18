@@ -55,7 +55,7 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options, lambda_lame, mu_l
   end
   nopts = numel (options);
 
-  ndim = numel (npts);
+  ndim = numel (space.scalar_spaces{1}.knots);
 
 % Temporary solution, to be fixed using "isprop" after defining the
 %  classes with classdef
@@ -72,6 +72,9 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options, lambda_lame, mu_l
     pts = npts;
     npts = cellfun (@numel, pts);
   elseif (isvector (npts))
+    if (numel (npts) == 1)
+      npts = npts * ones (1,ndim);
+    end
     for idim = 1:ndim
       pts{idim} = linspace (knt{idim}(1), knt{idim}(end), npts(idim));
     end
