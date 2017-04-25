@@ -1,3 +1,7 @@
+Summary of important changes for geopdes-3.1.1:
+-----------------------------------------------------------------------------
+* The numbering in comp_dofs is now local to the boundary. The old numbering can be recovered with space.boundary(ii).dofs(space.boundary(ii).comp_dofs)
+
 Summary of important changes for geopdes-3.1.0:
 -----------------------------------------------------------------------------
 * Added collocation solver for Poisson equation
