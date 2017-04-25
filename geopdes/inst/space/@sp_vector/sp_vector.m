@@ -136,14 +136,16 @@ function sp = sp_vector (scalar_spaces, msh, transform)
       end
 
       dofs = [];
+      bnd_cumsum_ndof(1) = 0;
+      bnd_cumsum_ndof(2:numel(ind)+1) = cumsum (cellfun (@(x) x.ndof, scalar_bnd(ind)));
       for icomp = 1:numel(ind)
         new_dofs = sp.cumsum_ndof(ind(icomp)) + scalar_bnd{ind(icomp)}.dofs;
         dofs = union (dofs, new_dofs);
-        comp_dofs{icomp} = new_dofs;
+        comp_dofs{icomp} = bnd_cumsum_ndof(icomp) + (1:scalar_bnd{ind(icomp)}.ndof);
       end
       
       sp.boundary(iside).dofs = dofs(:)';
-      if (~strcmpi (transform, 'div-preserving'))
+      if (~strcmpi (transform, 'div-preserving') && isstruct (sp.boundary))
         sp.boundary(iside).comp_dofs = comp_dofs;
       end
       

@@ -54,8 +54,8 @@ function [glob_num, glob_ndof, dofs_ornt] = mp_interface_hcurl (interfaces, sp)
       iside1 = interfaces(intrfc).side1;
       iside2 = interfaces(intrfc).side2;
       for idim = 1:ndim-1
-        ttform{idim,iptc1, intrfc} = sp{iptc1}.boundary(iside1).comp_dofs{idim};
-        nghbr_dofs{idim} = reshape (sp{iptc2}.boundary(iside2).comp_dofs{idim}, ...
+        ttform{idim,iptc1, intrfc} = sp{iptc1}.boundary(iside1).dofs(sp{iptc1}.boundary(iside1).comp_dofs{idim});
+        nghbr_dofs{idim} = reshape (sp{iptc2}.boundary(iside2).dofs(sp{iptc2}.boundary(iside2).comp_dofs{idim}), ...
 				    [sp{iptc2}.boundary(iside2).ndof_dir(idim,:), 1]);
       end
       if (ndim == 2)

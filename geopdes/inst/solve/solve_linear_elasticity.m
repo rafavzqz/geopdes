@@ -136,7 +136,7 @@ for iside = symm_sides
   for ind = 1:msh.rdim
     ind2 = setdiff (1:msh.rdim, ind);
     if (all (all (abs (normal_comp(ind2,:)) < 1e-10)))
-      symm_dofs = union (symm_dofs, sp.boundary(iside).comp_dofs{ind});
+      symm_dofs = union (symm_dofs, sp.boundary(iside).dofs(sp.boundary(iside).comp_dofs{ind}));
       parallel_to_axes = true;
       break
     end

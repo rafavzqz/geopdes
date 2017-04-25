@@ -56,18 +56,16 @@ function [glob_num, glob_ndof] = mp_interface_vector (interfaces, sp)
           ttform{iptc2, intrfc} = sp{iptc2}.boundary(iside2).dofs;
         else
           for icomp = 1:sp{iptc2}.ncomp_param
-            nghbr_dofs_comp = fliplr (sp{iptc2}.boundary(iside2).comp_dofs{icomp});
+            nghbr_dofs_comp = fliplr (sp{iptc2}.boundary(iside2).dofs(sp{iptc2}.boundary(iside2).comp_dofs{icomp}));
             ttform{iptc2, intrfc} = [ttform{iptc2,intrfc}, nghbr_dofs_comp];
-%             nghbr_dofs_comp1 = fliplr (sp{iptc2}.boundary(iside2).comp_dofs{1});
-%             nghbr_dofs_comp2 = fliplr (sp{iptc2}.boundary(iside2).comp_dofs{2});
           end
         end
       elseif (ndim == 3)
-        nghbr_dofs_comp1 = reshape (sp{iptc2}.boundary(iside2).comp_dofs{1}, ...
+        nghbr_dofs_comp1 = reshape (sp{iptc2}.boundary(iside2).dofs(sp{iptc2}.boundary(iside2).comp_dofs{1}), ...
                       sp{iptc2}.boundary(iside2).ndof_dir(1,:));
-        nghbr_dofs_comp2 = reshape (sp{iptc2}.boundary(iside2).comp_dofs{2}, ...
+        nghbr_dofs_comp2 = reshape (sp{iptc2}.boundary(iside2).dofs(sp{iptc2}.boundary(iside2).comp_dofs{2}), ...
                       sp{iptc2}.boundary(iside2).ndof_dir(2,:));
-        nghbr_dofs_comp3 = reshape (sp{iptc2}.boundary(iside2).comp_dofs{3}, ...
+        nghbr_dofs_comp3 = reshape (sp{iptc2}.boundary(iside2).dofs(sp{iptc2}.boundary(iside2).comp_dofs{3}), ...
                       sp{iptc2}.boundary(iside2).ndof_dir(3,:));
         if (interfaces(intrfc).flag == -1)
           nghbr_dofs_comp1 = nghbr_dofs_comp1';
