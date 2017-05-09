@@ -64,7 +64,7 @@ function sp = sp_evaluate_element_list (space, msh, varargin)
   else
     fields = {'nsh', 'connectivity', 'shape_functions', 'shape_function_gradients', 'shape_function_hessians', ...
       'shape_function_laplacians', 'shape_function_divs', 'shape_function_curls'};
-    if (msh.ndim == 2)
+    if (msh.ndim == 2 || msh.ndim == 1)
       cat_position = [2, 2, 4, 5, 6, 4, 3, 3];
     elseif (msh.ndim == 3)
       cat_position = [2, 2, 4, 5, 6, 4, 3, 4];
