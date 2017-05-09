@@ -185,6 +185,8 @@ function [eu, F] = sp_eval_msh (u, space, msh, options, lambda_lame, mu_lame)
           eu{iopt} = reshape (eu{iopt}, msh.nqn, msh.nel);
         case {'gradient'}
           eu{iopt} = reshape (eu{iopt}, msh.rdim, msh.nqn, msh.nel);
+        case {'hessian'}
+          eu{iopt} = reshape (eu{iopt}, msh.rdim, msh.rdim, msh.nqn, msh.nel);
       end
     end
   end
