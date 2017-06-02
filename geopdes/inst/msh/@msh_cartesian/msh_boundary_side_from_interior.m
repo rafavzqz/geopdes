@@ -35,10 +35,11 @@ function msh_side_from_interior = msh_boundary_side_from_interior (msh, iside)
   if (mod (iside, 2) == 1)
     brk_bnd{ind2} = brk_bnd{ind2}(1:2);
     qn_bnd{ind2} = brk_bnd{ind2}(1);
-    qw_bnd{ind2} = 1;
   else
     brk_bnd{ind2} = brk_bnd{ind2}(end-1:end);
     qn_bnd{ind2} = brk_bnd{ind2}(end);
+  end
+  if (~isempty (qw_bnd))
     qw_bnd{ind2} = 1;
   end
   

@@ -160,7 +160,8 @@ function msh = msh_precompute (msh, varargin)
     msh.normal = bsxfun (@rdivide, normals, norms);
   end
 
-  if (any (ismember(fieldnames(msh), 'quad_weights')) && any (ismember(fieldnames(msh), 'jacdet')))
+  if (any (ismember(fieldnames(msh), 'quad_weights')) && any (ismember(fieldnames(msh), 'jacdet')) ...
+      && ~isempty (msh.quad_weights))
     msh.element_size = (sum (msh.quad_weights .* ...
                              abs (msh.jacdet), 1)).^(1/msh.ndim);
   end
