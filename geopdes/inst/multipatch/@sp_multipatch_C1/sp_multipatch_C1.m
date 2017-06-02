@@ -190,7 +190,6 @@ function compute_coefficients (space, msh, geometry, interfaces)
     side(2) = interfaces(iref).side2;
 
 % Compute the Greville points, and the auxiliary mesh and space objects
-    msh_side_int = [];
     for ii = 1:2 % The two patches
       brk = cell (1,msh.ndim);
       knots = space.sp_patch{patch(ii)}.knots;
