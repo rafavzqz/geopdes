@@ -66,7 +66,6 @@
 
 function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_interfaces)
 
-  sp_class = class (spaces{1});
   if (~all (cellfun (@(x) isa (x, 'sp_scalar'), spaces)))
     error ('All the spaces in the array should be of the same class')
   end
@@ -123,6 +122,8 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_inte
 % Computation of the coefficients for basis change
 % The matrix Cpatch{iptc} is a matrix of size ndof_per_patch(iptc) x ndof
 % Here we should call the function compute_coefficients below
+
+
   Cpatch = cell (sp.npatch, 1);
   numel_interior_dofs = cellfun (@numel, sp.interior_dofs_per_patch);
   for iptc = 1:sp.npatch
@@ -133,6 +134,13 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_inte
 
     global_indices = (sp.ndof_interior+1):sp.ndof;
     Cpatch{iptc}(:,global_indices) = []; % The coefficients computed by Mario
+
+disp ('We should fill Cpatch using the coefficients, computed as in Section 7')
+disp('Mario, use F11 (step In) or F10 (Step) to see where we are')
+keyboard
+
+    compute_coefficients (sp, msh, geometry, interfaces)
+
   end  
 
   sp.interfaces = interfaces;
@@ -211,7 +219,7 @@ function compute_coefficients (space, msh, geometry, interfaces)
       msh_side_int{ii} = msh_boundary_side_from_interior (msh_grev, side(ii));
       sp_aux = space.sp_patch{patch(ii)}.constructor (msh_side_int{ii});
       msh_side_int{ii} = msh_precompute (msh_side_int{ii});
-      sp_grev(ii) = struct (sp_precompute (sp_aux, msh_side_int{ii}, 'value', true, 'gradient', true));
+      sp_grev(ii) = struct (sp_precompute_param (sp_aux, msh_side_int{ii}, 'value', true, 'gradient', true));
     end
 % For now I assume that the orientation is as in the paper, and we do not need any reordering
 %XXXX    [sp_bnd(2), msh_side(2)] = reorder_elements_and_quad_points (sp_bnd(2), msh_side(2), interfaces(iref), ndim);
@@ -229,5 +237,6 @@ function compute_coefficients (space, msh, geometry, interfaces)
 % (.shape_functions) at the Greville points. The last index indicates the Greville point.
 % The previous one indicates the basis functions that are non-null on the
 % element. This also includes functions from the interior.
+% The number of the non-vanishing basis functions is in connectivity
 
 end
