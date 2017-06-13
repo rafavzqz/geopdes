@@ -11,7 +11,7 @@
 %    cell_indices: indices of the cells within the support of the basis functions.
 %    indices_per_function: indices of the cells within the support of each basis function.
 %
-% Copyright (C) 2015, 2016 Rafael Vazquez
+% Copyright (C) 2015, 2016, 2017 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -39,9 +39,9 @@ subindices = cell (msh.ndim, 1);
 [subindices{:}] = ind2sub ([space.ndof_dir, 1], fun_indices); % The extra one makes it work in any dimension
 
 indices_per_function = cell (numel (fun_indices), 1);
+cells = cell (msh.ndim, 1);
+cells_1d = cell (msh.ndim, 1);
 for ifun = 1:numel (fun_indices)
-  cells = cell (msh.ndim, 1);
-  cells_1d = cell (msh.ndim, 1);
   for idim = 1:msh.ndim
     cells_1d{idim} = space.sp_univ(idim).supp{subindices{idim}(ifun)};
   end

@@ -10,7 +10,7 @@
 % OUTPUT:
 %    neighbors_indices: indices of the functions that interact with the given ones.
 %
-% Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2015, 2017 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -38,9 +38,9 @@ indices_per_function = cell (numel (fun_indices), 1);
 subindices = cell (msh.ndim, 1);
 [subindices{:}] = ind2sub ([space.ndof_dir, 1], fun_indices); % The extra one makes it work in any dimension
 
+funs = cell (msh.ndim, 1);
+fun_1d = cell (msh.ndim, 1);
 for ifun = 1:numel(fun_indices)
-  funs = cell (msh.ndim, 1);
-  fun_1d = cell (msh.ndim, 1);
   for idim = 1:msh.ndim
     [~,elem_1d] = find (space.sp_univ(idim).connectivity == subindices{idim}(ifun));
     elem_1d = unique (elem_1d);

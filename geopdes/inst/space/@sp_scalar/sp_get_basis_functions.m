@@ -10,7 +10,7 @@
 % OUTPUT:
 %    fun_indices: indices of the basis functions acting on the cells.
 %
-% Copyright (C) 2015, 2016 Rafael Vazquez
+% Copyright (C) 2015, 2016, 2017 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
