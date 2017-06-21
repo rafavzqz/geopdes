@@ -25,7 +25,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function function_indices = sp_get_basis_functions (space, msh, cell_indices)
+function [function_indices, indices_per_cell] = sp_get_basis_functions (space, msh, cell_indices)
 
 % space = sp_precompute_param (space, msh, 'value', false);
 % function_indices = space.connectivity (:,cell_indices);
@@ -39,7 +39,7 @@ sp_univ = space.sp_univ;
 subindices = cell (ndim, 1);
 [subindices{:}] = ind2sub ([msh.nel_dir, 1], cell_indices); % The extra one makes it work in any dimension
 
-indices = cell (numel (cell_indices), 1);
+indices_per_cell = cell (numel (cell_indices), 1);
 conn = cell (ndim, 1);
 conn_1d = cell (ndim, 1);
 for iel = 1:numel (cell_indices)
@@ -48,9 +48,13 @@ for iel = 1:numel (cell_indices)
   end
   [conn{:}] = ndgrid (conn_1d{:});
 
-  indices{iel} = sub2ind ([ndof_dir, 1], conn{:}); % The extra 1 makes things work in any dimension
+  indices_per_cell{iel} = sub2ind ([ndof_dir, 1], conn{:}); % The extra 1 makes things work in any dimension
 end
-function_indices = [indices{:}];
+function_indices = [indices_per_cell{:}];
 function_indices = unique (function_indices(:));
+
+if (nargout == 2)
+  indices_per_cell = cellfun (@(x) x(:), indices_per_cell, 'UniformOutput', false);
+end
 
 end
