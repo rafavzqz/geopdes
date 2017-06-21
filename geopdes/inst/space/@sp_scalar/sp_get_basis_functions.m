@@ -33,7 +33,10 @@ function function_indices = sp_get_basis_functions (space, msh, cell_indices)
 
 % Old version, to be used in case of unexpected memory problems
 ndim = msh.ndim;
-subindices = cell (msh.ndim, 1);
+ndof_dir = space.ndof_dir;
+sp_univ = space.sp_univ;
+
+subindices = cell (ndim, 1);
 [subindices{:}] = ind2sub ([msh.nel_dir, 1], cell_indices); % The extra one makes it work in any dimension
 
 indices = cell (numel (cell_indices), 1);
@@ -41,11 +44,11 @@ conn = cell (ndim, 1);
 conn_1d = cell (ndim, 1);
 for iel = 1:numel (cell_indices)
   for idim = 1:ndim
-    conn_1d{idim} = space.sp_univ(idim).connectivity(:,subindices{idim}(iel));
+    conn_1d{idim} = sp_univ(idim).connectivity(:,subindices{idim}(iel));
   end
   [conn{:}] = ndgrid (conn_1d{:});
 
-  indices{iel} = sub2ind ([space.ndof_dir, 1], conn{:}); % The extra 1 makes things work in any dimension
+  indices{iel} = sub2ind ([ndof_dir, 1], conn{:}); % The extra 1 makes things work in any dimension
 end
 function_indices = [indices{:}];
 function_indices = unique (function_indices(:));
