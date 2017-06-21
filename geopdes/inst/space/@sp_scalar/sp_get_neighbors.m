@@ -34,14 +34,15 @@ function neighbors_indices = sp_get_neighbors (space, msh, fun_indices)
 % 
 % neighbors_indices = unique (space.connectivity (:,cell_indices));
 
+ndim = msh.ndim;
 indices_per_function = cell (numel (fun_indices), 1);
-subindices = cell (msh.ndim, 1);
+subindices = cell (ndim, 1);
 [subindices{:}] = ind2sub ([space.ndof_dir, 1], fun_indices); % The extra one makes it work in any dimension
 
-funs = cell (msh.ndim, 1);
-fun_1d = cell (msh.ndim, 1);
+funs = cell (ndim, 1);
+fun_1d = cell (ndim, 1);
 for ifun = 1:numel(fun_indices)
-  for idim = 1:msh.ndim
+  for idim = 1:ndim
     [~,elem_1d] = find (space.sp_univ(idim).connectivity == subindices{idim}(ifun));
     elem_1d = unique (elem_1d);
     fun_1d{idim} = unique (space.sp_univ(idim).connectivity(:,elem_1d));

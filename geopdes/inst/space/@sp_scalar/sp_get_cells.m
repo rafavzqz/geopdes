@@ -35,14 +35,15 @@ function [cell_indices, indices_per_function] = sp_get_cells (space, msh, fun_in
 % cell_indices = unique (vertcat (indices_per_function{:}));
 
 % Old version, to be used in case of unexpected memory problems
-subindices = cell (msh.ndim, 1);
+ndim = msh.ndim;
+subindices = cell (ndim, 1);
 [subindices{:}] = ind2sub ([space.ndof_dir, 1], fun_indices); % The extra one makes it work in any dimension
 
 indices_per_function = cell (numel (fun_indices), 1);
-cells = cell (msh.ndim, 1);
-cells_1d = cell (msh.ndim, 1);
+cells = cell (ndim, 1);
+cells_1d = cell (ndim, 1);
 for ifun = 1:numel (fun_indices)
-  for idim = 1:msh.ndim
+  for idim = 1:ndim
     cells_1d{idim} = space.sp_univ(idim).supp{subindices{idim}(ifun)};
   end
   [cells{:}] = ndgrid (cells_1d{:});
