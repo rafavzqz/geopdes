@@ -138,7 +138,7 @@ elseif (nargin == 3)
     return
   end
 
-  msh_side = struct (msh_evaluate_element_list (msh.boundary, element_list));
+  msh_side = struct (msh_evaluate_element_list (msh.boundary(iside), element_list));
   msh_side.side_number = iside;
 
   if (msh.ndim > 1)
