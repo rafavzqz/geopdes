@@ -138,7 +138,7 @@ elseif (nargin == 3)
     return
   end
 
-  msh_side = struct (msh_evaluate_element_list (msh.boundary(iside), element_list));
+  msh_side = msh_evaluate_element_list (msh.boundary(iside), element_list);
   msh_side.side_number = iside;
 
   if (msh.ndim > 1)
@@ -150,22 +150,24 @@ elseif (nargin == 3)
 
     % Compute the normal vector. This requires the derivative also in the
     % normal direction (the boundary manifold is not enough).
-    element_list = element_list(:)';  
-    indices = cell (msh.ndim, 1);
-    [indices{:}] = ind2sub (msh.nel_dir, element_list);
+    element_list = element_list(:)';
+    indices = cell (msh_side.ndim, 1);
+    [indices{:}] = ind2sub (msh_side.nel_dir, element_list);
     indices = cell2mat (indices);
     
-    qn_elems = arrayfun(@(ii) {msh.qn{ii}(:,indices(ii,:))}, 1:msh.ndim);
+    qn_elems = arrayfun(@(ii) {msh.boundary(iside).qn{ii}(:,indices(ii,:))}, 1:msh_side.ndim);
     qqn = cell (1,msh_side.nel);
     for iel = 1:numel(element_list)
-      qqn{iel}{ind} = qn_elems{ind}(:,iel)';
+      for idim = 1:numel(ind)
+        qqn{iel}{ind(idim)} = qn_elems{idim}(:,iel)';
+      end
       if (mod (iside, 2) == 0)
         qqn{iel}{ind2} = msh.breaks{ind2}(end);
       else
         qqn{iel}{ind2} = msh.breaks{ind2}(1);
       end
-    end
-
+    end    
+    
     jac = cellfun (@(x) feval (msh.map_der, x), qqn, 'UniformOutput', false);
     geo_map_jac  = zeros (msh.rdim, msh.ndim, msh_side.nqn, msh_side.nel);
     for iel = 1:numel(element_list)
