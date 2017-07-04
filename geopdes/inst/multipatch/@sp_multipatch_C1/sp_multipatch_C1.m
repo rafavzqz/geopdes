@@ -197,6 +197,26 @@ function compute_coefficients (space, msh, geometry, interfaces)
     side(1) = interfaces(iref).side1;
     side(2) = interfaces(iref).side2;
 
+% The knot vectors for the N0 and N1 basis functions, as in Mario's notation
+% I assume that the regularity is degree-2, otherwise things become more complicated
+% Only univariate knot vectors are computed
+    if (side(1) < 3)
+      knots = space.sp_patch{patch(1)}.knots{2};
+      degree = space.sp_patch{patch(1)}.degree(2);
+      nel_univ = msh.msh_patch{patch(1)}.nel_dir(2);
+    else
+      knots = space.sp_patch{patch(1)}.knots{1};
+      degree = space.sp_patch{patch(1)}.degree(1);
+      nel_univ = msh.msh_patch{patch(1)}.nel_dir(1);
+    end
+    regularity = degree - 2;
+    
+    nel_geo = numel (unique (geometry(patch(1)).boundary(side(1)).nurbs.knots)) - 1;
+    nsub = nel_univ / nel_geo;
+    
+    knots0 = kntrefine (geometry(patch(1)).boundary(side(1)).nurbs.knots, nsub-1, degree, regularity+1);
+    knots1 = kntrefine (geometry(patch(1)).boundary(side(1)).nurbs.knots, nsub-1, degree-1, regularity);
+
 % Compute the Greville points, and the auxiliary mesh and space objects
     for ii = 1:2 % The two patches
       brk = cell (1,msh.ndim);
@@ -220,6 +240,12 @@ function compute_coefficients (space, msh, geometry, interfaces)
       sp_aux = space.sp_patch{patch(ii)}.constructor (msh_side_int{ii});
       msh_side_int{ii} = msh_precompute (msh_side_int{ii});
       sp_grev(ii) = struct (sp_precompute_param (sp_aux, msh_side_int{ii}, 'value', true, 'gradient', true));
+      
+% The univariate spaces for the N0 and N1 basis functions      
+      sp0 = sp_bspline (knots0, degree, msh_grev.boundary(side(ii)));
+      sp1 = sp_bspline (knots1, degree-1, msh_grev.boundary(side(ii)));
+      sp0_struct = sp_precompute (sp0, msh_grev.boundary(side(ii)));
+      sp1_struct = sp_precompute (sp1, msh_grev.boundary(side(ii)));
     end
 % For now I assume that the orientation is as in the paper, and we do not need any reordering
 %XXXX    [sp_bnd(2), msh_side(2)] = reorder_elements_and_quad_points (sp_bnd(2), msh_side(2), interfaces(iref), ndim);
