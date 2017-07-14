@@ -110,12 +110,20 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_inte
 
 % Compute the local indices of the functions in V^1
 %  and sum them up to get the whole space V^1
+% XXX FOR NOW ONLY FOR TWO PATCHES, AND WITH THE ORDERING IN THE PAPER
   sp.ndof_interior = 0;
   for iptc = 1:sp.npatch
-    sp.interior_dofs_per_patch{iptc} = []; % An array with the indices
-    sp.ndof_interior = sp.ndof_interior + numel (sp.interior_dofs_per_patch{iptc});
+    ndof_dir = sp.sp_patch{iptc}.ndof_dir;
+    xx = 3:ndof_dir(1); yy = 1:ndof_dir(2);
+    [XX, YY] = ndgrid (xx, yy);
+    interior_dofs = sub2ind (ndof_dir, XX, YY);
+    sp.interior_dofs_per_patch{iptc} = interior_dofs; % An array with the indices
+    sp.ndof_interior = sp.ndof_interior + numel (interior_dofs);
   end
-  sp.ndof_interface = 0; % The number of functions in V^2
+  
+  [ndof, CC] = compute_coefficients (sp, msh, geometry, interfaces);
+  
+  sp.ndof_interface = ndof; % The number of functions in V^2
   sp.ndof = sp.ndof_interior + sp.ndof_interface;
 
 
@@ -133,17 +141,11 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_inte
       speye (numel (sp.interior_dofs_per_patch{iptc}));
 
     global_indices = (sp.ndof_interior+1):sp.ndof;
-    Cpatch{iptc}(:,global_indices) = []; % The coefficients computed by Mario
-
-disp ('We should fill Cpatch using the coefficients, computed as in Section 7')
-disp('Mario, use F11 (step In) or F10 (Step) to see where we are')
-keyboard
-
-    compute_coefficients (sp, msh, geometry, interfaces)
-
+    Cpatch{iptc}(:,global_indices) = CC{iptc}; % The coefficients computed by Mario
   end  
 
   sp.interfaces = interfaces;
+  sp.Cpatch = Cpatch;
 
 % XXXX No boundary for now
 % % Boundary construction
@@ -189,7 +191,7 @@ keyboard
 end
 
 
-function compute_coefficients (space, msh, geometry, interfaces)
+function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
 
   for iref = 1:numel(interfaces)
     patch(1) = interfaces(iref).patch1;
@@ -197,6 +199,7 @@ function compute_coefficients (space, msh, geometry, interfaces)
     side(1) = interfaces(iref).side1;
     side(2) = interfaces(iref).side2;
 
+    
 % The knot vectors for the N0 and N1 basis functions, as in Mario's notation
 % I assume that the regularity is degree-2, otherwise things become more complicated
 % Only univariate knot vectors are computed
@@ -204,10 +207,16 @@ function compute_coefficients (space, msh, geometry, interfaces)
       knots = space.sp_patch{patch(1)}.knots{2};
       degree = space.sp_patch{patch(1)}.degree(2);
       nel_univ = msh.msh_patch{patch(1)}.nel_dir(2);
+      degu = space.sp_patch{patch(1)}.degree(1);
+      knt = unique (space.sp_patch{patch(1)}.knots{1});
+      tau1 = knt(2) - knt(1);
     else
       knots = space.sp_patch{patch(1)}.knots{1};
       degree = space.sp_patch{patch(1)}.degree(1);
       nel_univ = msh.msh_patch{patch(1)}.nel_dir(1);
+      degu = space.sp_patch{patch(1)}.degree(2);
+      knt = unique (space.sp_patch{patch(1)}.knots{2});
+      tau1 = knt(2) - knt(1);
     end
     regularity = degree - 2;
     
@@ -232,6 +241,8 @@ function compute_coefficients (space, msh, geometry, interfaces)
       end
       msh_grev = msh_cartesian (brk, grev_pts, [], geometry(patch(ii)), 'boundary', true, 'der2',false);
 
+% For now I assume that the orientation is as in the paper, and we do not need any reordering
+%XXXX    [sp_bnd(2), msh_side(2)] = reorder_elements_and_quad_points (sp_bnd(2), msh_side(2), interfaces(iref), ndim);
 % msh_side contains only the univariate parametrization of the boundary (dependence on u)
 % msh_side_int contains information for the bivariate parametrization (dependence on u and v)
 % sp_grev contains the value and derivatives of the basis functions, at the Greville points
@@ -240,7 +251,7 @@ function compute_coefficients (space, msh, geometry, interfaces)
       sp_aux = space.sp_patch{patch(ii)}.constructor (msh_side_int{ii});
       msh_side_int{ii} = msh_precompute (msh_side_int{ii});
       sp_grev(ii) = struct (sp_precompute_param (sp_aux, msh_side_int{ii}, 'value', true, 'gradient', true));
-      
+
 % The univariate spaces for the N0 and N1 basis functions      
       sp0 = sp_bspline (knots0, degree, msh_grev.boundary(side(ii)));
       sp1 = sp_bspline (knots1, degree-1, msh_grev.boundary(side(ii)));
@@ -250,23 +261,62 @@ function compute_coefficients (space, msh, geometry, interfaces)
       knotsn = sp_aux.knots{ind(side(ii))};
       spn = sp_bspline (knotsn, degree, msh_grev.boundary(side(ii)));
       spn_struct = sp_precompute_param (spn, msh_grev.boundary(side(ii)), 'value', true, 'gradient', true);
+% Matrix for the linear systems, (14)-(16) in Mario's notes
       A = sparse (msh_side(ii).nel, msh_side(ii).nel);
       for jj = 1:msh_side(ii).nel
         A(jj,spn_struct.connectivity(:,jj)) = squeeze (spn_struct.shape_functions(:,:,jj));
       end
-      
+
       alpha{ii} = geopdes_det__ (msh_side_int{ii}.geo_map_jac);
       numerator = reshape (sum (msh_side_int{ii}.geo_map_jac(:,1,:,:) .* msh_side_int{ii}.geo_map_jac(:,2,:,:), 1), msh_side(ii).nel, 1);
       denominator = reshape (sum (msh_side_int{ii}.geo_map_jac(:,2,:,:) .* msh_side_int{ii}.geo_map_jac(:,2,:,:), 1), msh_side(ii).nel, 1);
       beta{ii} = numerator ./ denominator;
 
+% RHS for the first linear system, (14) in Mario's notes
       rhss = sparse (msh_side(ii).nel, sp0_struct.ndof);
       for jj = 1:msh_side(ii).nel
         rhss(jj,sp0_struct.connectivity(:,jj)) = squeeze (sp0_struct.shape_functions(:,:,jj));
       end
+      coeff0{ii} = A \ rhss;
+      coeff0{ii}(abs(coeff0{ii}) < 1e-12) = 0; % Make more sparse
+
+% RHS for the second linear system, (15) in Mario's notes
+      rhsb = sparse (msh_side(ii).nel, sp0_struct.ndof);
+      val = squeeze (spn_struct.shape_function_gradients(:,:,2,1)); % XXX THIS IS ONLY VALID FOR THE ORDERING USED IN THE PAPER
+      val = val * (tau1 / degu)^2;
+      for jj = 1:msh_side(ii).nel
+        val_aux = val * beta{ii}(jj);
+        rhsb(jj,sp0_struct.connectivity(:,jj)) = squeeze (sp0_struct.shape_function_gradients(:,:,:,jj)) * val_aux;
+      end
+      rhsb = rhsb + rhss;
+      coeff1{ii} = A \ rhsb;
+      coeff1{ii}(abs(coeff1{ii}) < 1e-12) = 0; % Make more sparse
+      
+% RHS for the third linear system, (16) in Mario's notes
+      rhsc = sparse (msh_side(ii).nel, sp1_struct.ndof);
+      val = squeeze (spn_struct.shape_function_gradients(:,:,2,1)); % XXX THIS IS ONLY VALID FOR THE ORDERING USED IN THE PAPER
+      val = val * (tau1 / degu)^2;
+      for jj = 1:msh_side(ii).nel
+        val_aux = val * alpha{ii}(jj);
+        rhsc(jj,sp1_struct.connectivity(:,jj)) = squeeze (sp1_struct.shape_functions(:,:,jj)) * val_aux;
+      end
+      coeff2{ii} = A \ rhsc;
+      coeff2{ii}(abs(coeff2{ii}) < 1e-12) = 0; % Make more sparse
+      
+% Pass the coefficients to the tensor product basis
+% The numbering (ndof) only works for the two patch case, for now
+      ndof = sp0_struct.ndof + sp1_struct.ndof;
+      CC{ii} = sparse (space.ndof_per_patch(patch(ii)), ndof);
+      
+      ind0 = sub2ind (space.sp_patch{patch(ii)}.ndof_dir, ones(1,spn.ndof), 1:spn.ndof);
+      ind1 = sub2ind (space.sp_patch{patch(ii)}.ndof_dir, 2*ones(1,spn.ndof), 1:spn.ndof);
+%       ind2 = sub2ind (space.sp_patch{patch(ii)}.ndof_dir, 2*ones(1,spn.ndof), 1:spn.ndof);
+
+      CC{ii}(ind0,1:sp0_struct.ndof) = coeff0{ii};
+      CC{ii}(ind1,1:sp0_struct.ndof) = coeff1{ii};
+      CC{ii}(ind1,sp0_struct.ndof+1:ndof) = coeff2{ii};
     end
-% For now I assume that the orientation is as in the paper, and we do not need any reordering
-%XXXX    [sp_bnd(2), msh_side(2)] = reorder_elements_and_quad_points (sp_bnd(2), msh_side(2), interfaces(iref), ndim);
+
 
   end
   

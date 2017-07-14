@@ -6,7 +6,7 @@ clear problem_data
 %nrb(1) = nrb4surf ([0 0], [-1 0], [0 1], [-1 1]);
 %nrb(2) = nrb4surf ([0 0], [1 0], [0 1], [1 1]);
 nrb(1) = nrb4surf ([0 0], [-4 -1/2], [0 3], [-10/3 16/5]);
-nrb(2) = nrb4surf ([0 0], [8/3 -2/5], [0 3], [10/3 22/7]);
+nrb(2) = nrb4surf ([0 0], [8/3 -2/5], [0 3], [10/3 23/7]);
 
 problem_data.geo_name = nrb;
 
