@@ -3,8 +3,10 @@
 % 1) PHYSICAL DATA OF THE PROBLEM
 clear problem_data  
 % Physical domain, defined as NURBS map given in a text file
-nrb(1) = nrb4surf ([0 0], [-1 0], [0 1], [-1 1]);
-nrb(2) = nrb4surf ([0 0], [1 0], [0 1], [1 1]);
+%nrb(1) = nrb4surf ([0 0], [-1 0], [0 1], [-1 1]);
+%nrb(2) = nrb4surf ([0 0], [1 0], [0 1], [1 1]);
+nrb(1) = nrb4surf ([0 0], [-4 -1/2], [0 3], [-10/3 16/5]);
+nrb(2) = nrb4surf ([0 0], [8/3 -2/5], [0 3], [10/3 22/7]);
 
 problem_data.geo_name = nrb;
 
@@ -28,8 +30,8 @@ problem_data.graduex = @(x, y) cat (1, ...
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
-method_data.degree     = [4 4];       % Degree of the splines
-method_data.regularity = [2 2];       % Regularity of the splines
+method_data.degree     = [3 3];       % Degree of the splines
+method_data.regularity = [1 1];       % Regularity of the splines
 method_data.nsub       = [4 4];       % Number of subdivisions
 method_data.nquad      = [4 4];       % Points for the Gaussian quadrature rule
 

@@ -218,7 +218,7 @@ function compute_coefficients (space, msh, geometry, interfaces)
     knots1 = kntrefine (geometry(patch(1)).boundary(side(1)).nurbs.knots, nsub-1, degree-1, regularity);
 
 % Compute the Greville points, and the auxiliary mesh and space objects
-    for ii = 1:2 % The two patches
+    for ii = 1:2 % The two patches (L-R)
       brk = cell (1,msh.ndim);
       knots = space.sp_patch{patch(ii)}.knots;
       for idim = 1:msh.ndim
@@ -244,8 +244,26 @@ function compute_coefficients (space, msh, geometry, interfaces)
 % The univariate spaces for the N0 and N1 basis functions      
       sp0 = sp_bspline (knots0, degree, msh_grev.boundary(side(ii)));
       sp1 = sp_bspline (knots1, degree-1, msh_grev.boundary(side(ii)));
-      sp0_struct = sp_precompute (sp0, msh_grev.boundary(side(ii)));
-      sp1_struct = sp_precompute (sp1, msh_grev.boundary(side(ii)));
+      sp0_struct = sp_precompute_param (sp0, msh_grev.boundary(side(ii)), 'value', true, 'gradient', true);
+      sp1_struct = sp_precompute_param (sp1, msh_grev.boundary(side(ii)), 'value', true, 'gradient', true);
+      ind = [2 2 1 1];
+      knotsn = sp_aux.knots{ind(side(ii))};
+      spn = sp_bspline (knotsn, degree, msh_grev.boundary(side(ii)));
+      spn_struct = sp_precompute_param (spn, msh_grev.boundary(side(ii)), 'value', true, 'gradient', true);
+      A = sparse (msh_side(ii).nel, msh_side(ii).nel);
+      for jj = 1:msh_side(ii).nel
+        A(jj,spn_struct.connectivity(:,jj)) = squeeze (spn_struct.shape_functions(:,:,jj));
+      end
+      
+      alpha{ii} = geopdes_det__ (msh_side_int{ii}.geo_map_jac);
+      numerator = reshape (sum (msh_side_int{ii}.geo_map_jac(:,1,:,:) .* msh_side_int{ii}.geo_map_jac(:,2,:,:), 1), msh_side(ii).nel, 1);
+      denominator = reshape (sum (msh_side_int{ii}.geo_map_jac(:,2,:,:) .* msh_side_int{ii}.geo_map_jac(:,2,:,:), 1), msh_side(ii).nel, 1);
+      beta{ii} = numerator ./ denominator;
+
+      rhss = sparse (msh_side(ii).nel, sp0_struct.ndof);
+      for jj = 1:msh_side(ii).nel
+        rhss(jj,sp0_struct.connectivity(:,jj)) = squeeze (sp0_struct.shape_functions(:,:,jj));
+      end
     end
 % For now I assume that the orientation is as in the paper, and we do not need any reordering
 %XXXX    [sp_bnd(2), msh_side(2)] = reorder_elements_and_quad_points (sp_bnd(2), msh_side(2), interfaces(iref), ndim);
