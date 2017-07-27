@@ -29,6 +29,7 @@ Mesh: functions to generate and compute quadrature points in the NURBS geometry
  msh_set_quad_nodes
  msh_set_breaks
  msh_cartesian
+ msh_restrict_to_cells
  @msh_cartesian/msh_eval_boundary_side
  @msh_cartesian/msh_evaluate_col
  @msh_cartesian/msh_evaluate_element_list
