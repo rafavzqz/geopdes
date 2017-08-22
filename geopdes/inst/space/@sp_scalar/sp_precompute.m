@@ -57,20 +57,16 @@
 
 function sp_out = sp_precompute (sp, msh, varargin)
 
-  if (isempty (varargin))
-    value = true;
-    gradient = false;
-    hessian = false;
-    laplacian = false;
-  else
+  value = true;
+  gradient = false;
+  hessian = false;
+  laplacian = false;
+  
+  if (~isempty (varargin))
     if (~rem (length (varargin), 2) == 0)
       error ('sp_precompute: options must be passed in the [option, value] format');
     end
 
-    value = true;
-    gradient = false;
-    hessian = false;
-    laplacian = false;
     for ii=1:2:length(varargin)-1
       if (strcmpi (varargin{ii}, 'value'))
         value = varargin{ii+1};

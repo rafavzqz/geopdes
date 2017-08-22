@@ -57,15 +57,13 @@
 
 function sp_out = sp_precompute (sp, msh, varargin)
 
+value = true;
 gradient = false;
 divergence = false;
 curl = false;
 hessian = false;
 
-if (isempty (varargin))
-  value = true;
-else
-  value = false;
+if (~isempty (varargin))
   if (~rem (length (varargin), 2) == 0)
     error ('sp_precompute: options must be passed in the [option, value] format');
   end
