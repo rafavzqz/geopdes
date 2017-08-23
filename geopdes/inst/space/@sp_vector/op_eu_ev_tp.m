@@ -1,14 +1,14 @@
-% OP_EU_EV_TP: assemble the matrix A = [a(i,j)], a(i,j) = 1/2 (epsilon (u_j), epsilon (v_i)), exploiting the tensor product structure.
+% OP_EU_EV_TP: assemble the matrix A = [a(i,j)], a(i,j) = 2*mu (epsilon (u_j), epsilon (v_i)), exploiting the tensor product structure.
 %
-%   mat = op_eu_ev_tp (spu, spv, msh, lambda, mu);
-%   [rows, cols, values] = op_eu_ev_tp (spu, spv, msh, lambda, mu);
+%   mat = op_eu_ev_tp (spu, spv, msh, mu);
+%   [rows, cols, values] = op_eu_ev_tp (spu, spv, msh, mu);
 %
 % INPUT:
 %    
 %   spu:     object representing the space of trial functions (see sp_vector)
 %   spv:     object representing the space of test functions (see sp_vector)
 %   msh:     object that defines the domain partition and the quadrature rule (see msh_cartesian)
-%   lambda, mu: function handles to compute the Lame' coefficients
+%   mu:      function handle to compute the Lame' coefficient
 %
 % OUTPUT:
 %
@@ -32,7 +32,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function varargout = op_eu_ev_tp (space1, space2, msh, lambda, mu)
+function varargout = op_eu_ev_tp (space1, space2, msh, mu)
 
   A = spalloc (space2.ndof, space1.ndof, 5*space1.ndof);
 
@@ -45,7 +45,7 @@ function varargout = op_eu_ev_tp (space1, space2, msh, lambda, mu)
       x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
     end
 
-    A = A + op_eu_ev (sp1_col, sp2_col, msh_col, lambda (x{:}), mu (x{:}));
+    A = A + op_eu_ev (sp1_col, sp2_col, msh_col, mu (x{:}));
   end
 
   if (nargout == 1)

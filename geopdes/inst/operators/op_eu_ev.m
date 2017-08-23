@@ -1,14 +1,14 @@
-% OP_EU_EV: assemble the matrix A = [a(i,j)], a(i,j) = 1/2 (epsilon (u_j), epsilon (v_i)).
+% OP_EU_EV: assemble the matrix A = [a(i,j)], a(i,j) = 2*mu (epsilon (u_j), epsilon (v_i)).
 %
-%   mat = op_eu_ev (spu, spv, msh, lambda, mu);
-%   [rows, cols, values] = op_eu_ev (spu, spv, msh, lambda, mu);
+%   mat = op_eu_ev (spu, spv, msh, mu);
+%   [rows, cols, values] = op_eu_ev (spu, spv, msh, mu);
 %
 % INPUT:
 %    
 %   spu:   structure representing the space of trial functions (see sp_vector/sp_evaluate_col)
 %   spv:   structure representing the space of test functions (see sp_vector/sp_evaluate_col)
 %   msh:   structure containing the domain partition and the quadrature rule (see msh_cartesian/msh_evaluate_col)
-%   lambda, mu: Lame' coefficients evaluated at the quadrature points
+%   mu:    Lame' coefficient evaluated at the quadrature points
 %
 % OUTPUT:
 %
@@ -33,7 +33,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function varargout = op_eu_ev (spu, spv, msh, lambda, mu)
+function varargout = op_eu_ev (spu, spv, msh, mu)
 
   gradu = reshape (spu.shape_function_gradients, spu.ncomp, [], msh.nqn, spu.nsh_max, msh.nel);
   gradv = reshape (spv.shape_function_gradients, spv.ncomp, [], msh.nqn, spv.nsh_max, msh.nel);
@@ -46,7 +46,6 @@ function varargout = op_eu_ev (spu, spv, msh, lambda, mu)
 
   jacdet_weights = msh.jacdet .* msh.quad_weights;
   jacdet_weights_mu = jacdet_weights .* mu;
-  jacdet_weights_lambda = jacdet_weights .* lambda;
   
   ncounter = 0;
   for iel = 1:msh.nel
