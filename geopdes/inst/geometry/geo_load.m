@@ -5,11 +5,11 @@
 % INPUT :
 %
 %   The input variable may be either
+%   - a structure representing a NURBS surface or volume, as in the NURBS toolbox
 %   - a string variable with the name of the file to be read (see doc/geo_specs_v21.txt)
 %   - a cell-array of function handles, to evaluate the function, the first order
 %       derivatives, and eventually the second order derivatives
 %   - a 4x4 matrix representing an affine transformation
-%   - a structure representing a NURBS surface or volume, as in the NURBS toolbox
 %
 % OUTPUT:
 %

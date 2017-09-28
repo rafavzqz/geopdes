@@ -5,8 +5,8 @@
 % INPUT :
 %
 %   The input variable may be either
-%   - a string variable with the name of the file to be read (see doc/geo_specs_mp_v21.txt)
 %   - an array of NURBS structures representing a nurbs geometry, as in the NURBS toolbox
+%   - a string variable with the name of the file to be read (see doc/geo_specs_mp_v21.txt)
 %
 %   In the second case, the information is automatically generated with the function
 %    nrbmultipatch. It is recommended to check that all the information is correct.
