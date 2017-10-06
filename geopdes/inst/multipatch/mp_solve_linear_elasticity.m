@@ -47,7 +47,7 @@
 %  u:        the computed degrees of freedom
 %
 % Copyright (C) 2010, 2011 Carlo de Falco
-% Copyright (C) 2010, 2011, 2015 Rafael Vazquez
+% Copyright (C) 2010, 2011, 2015, 2017 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -119,6 +119,27 @@ for iref = nmnn_sides
   gref = @(varargin) g(varargin{:},iref);
   rhs_nmnn = op_f_v_mp (space.boundary, msh.boundary, gref, iref_patch_list);
   rhs(space.boundary.dofs) = rhs(space.boundary.dofs) + rhs_nmnn;
+end
+
+if (exist ('press_sides', 'var'))
+for iref = press_sides
+  rhs_press = zeros (space.boundary.ndof, 1);
+  for iside = 1:numel(boundaries(iref).nsides)
+    patch = boundaries(iref).patches(iside);
+    side = boundaries(iref).faces(iside);
+    msh_side = msh_eval_boundary_side (msh.msh_patch{patch}, side);
+    sp_side  = sp_eval_boundary_side (space.sp_patch{patch}, msh_side);
+
+    x = cell (msh_side.rdim, 1);
+    for idim = 1:msh_side.rdim
+      x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
+    end
+    pval = reshape (p (x{:}, iside), msh_side.nqn, msh_side.nel);
+
+    rhs_press(space.boundary.gnum{patch}) = rhs_press(space.boundary.gnum{patch}) + op_pn_v (sp_side, msh_side, pval);
+  end
+  rhs(space.boundary.dofs) = rhs(space.boundary.dofs) - rhs_press;
+end
 end
 
 % Apply Dirichlet boundary conditions

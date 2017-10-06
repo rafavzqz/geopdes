@@ -116,7 +116,7 @@ for iside = press_sides
 
   x = cell (msh_side.rdim, 1);
   for idim = 1:msh_side.rdim
-    x{idim} = squeeze (msh_side.geo_map(idim,:,:));
+    x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
   end
   pval = reshape (p (x{:}, iside), msh_side.nqn, msh_side.nel);
 

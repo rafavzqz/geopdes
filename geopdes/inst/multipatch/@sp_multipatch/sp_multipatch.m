@@ -1,7 +1,6 @@
 % SP_MULTIPATCH: Constructor of the class for multipatch spaces.
 %
-%     sp = sp_multipatch (spaces, msh, interfaces)
-%     sp = sp_multipatch (spaces, msh, interfaces, boundary_interfaces)
+%     sp = sp_multipatch (spaces, msh, interfaces, [boundary_interfaces], [gluing])
 %
 % INPUTS:
 %
@@ -9,6 +8,7 @@
 %    msh:        mesh object that defines the multipatch mesh (see msh_multipatch)
 %    interfaces: information of connectivity between patches (see mp_geo_load)
 %    boundary_interfaces: information of connectivity between boundary patches (see mp_geo_load)
+%    gluing:     decide whether to glue functions at the interface or not. To use with care.
 %
 % OUTPUT:
 %
@@ -44,7 +44,7 @@
 %         sp_get_cells:           compute the cells on which a list of functions do not vanish
 %         sp_get_neighbors:       compute the neighbors, functions that share at least one element with a given one
 %
-% Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2015, 2017 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -59,7 +59,11 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp = sp_multipatch (spaces, msh, interfaces, boundary_interfaces)
+function sp = sp_multipatch (spaces, msh, interfaces, boundary_interfaces, gluing)
+
+  if (nargin < 5)
+    gluing = true;
+  end
 
   sp_class = class (spaces{1});
   if (~all (cellfun (@(x) isa (x, sp_class), spaces)))
@@ -90,9 +94,9 @@ function sp = sp_multipatch (spaces, msh, interfaces, boundary_interfaces)
   sp.sp_patch = spaces;
 
   if (strcmpi (sp_class, 'sp_scalar'))
-    if (strcmpi (sp.transform, 'grad-preserving'))
+    if (strcmpi (sp.transform, 'grad-preserving') && gluing)
       [sp.gnum, sp.ndof] = mp_interface (interfaces, spaces);
-    elseif (strcmpi (sp.transform, 'integral-preserving'))
+    elseif (strcmpi (sp.transform, 'integral-preserving') || ~gluing)
       sp.ndof = sum (sp.ndof_per_patch);
       Nf = cumsum ([0 sp.ndof_per_patch]);
       for iptc = 1:sp.npatch
@@ -104,15 +108,20 @@ function sp = sp_multipatch (spaces, msh, interfaces, boundary_interfaces)
     sp.dofs_ornt = [];
 
   elseif (strcmpi (sp_class, 'sp_vector'))
-    if (strcmpi (sp.transform, 'grad-preserving'))
+    if (strcmpi (sp.transform, 'grad-preserving') && gluing)
       [sp.gnum, sp.ndof] = mp_interface_vector (interfaces, spaces);
       sp.dofs_ornt = [];
-    elseif (strcmpi (sp.transform, 'curl-preserving'))
+    elseif (strcmpi (sp.transform, 'curl-preserving') && gluing)
       [sp.gnum, sp.ndof, sp.dofs_ornt] = mp_interface_hcurl (interfaces, spaces);
-    elseif (strcmpi (sp.transform, 'div-preserving'))
+    elseif (strcmpi (sp.transform, 'div-preserving') && gluing)
       [sp.gnum, sp.ndof, sp.dofs_ornt] = mp_interface_hdiv (interfaces, spaces, msh);
     else
-      error ('sp_multipatch: Unknown transformation')
+      sp.ndof = sum (sp.ndof_per_patch);
+      Nf = cumsum ([0 sp.ndof_per_patch]);
+      for iptc = 1:sp.npatch
+        sp.gnum{iptc} = Nf(iptc)+1:Nf(iptc+1);
+        sp.dofs_ornt = ones (1, spaces{iptc}.ndof);
+      end
     end
   else
     error ('sp_multipatch: Unknown space class')
@@ -121,7 +130,7 @@ function sp = sp_multipatch (spaces, msh, interfaces, boundary_interfaces)
   sp.interfaces = interfaces;
   
 % Boundary construction
-  if (nargin == 4 && ~isempty (msh.boundary) && ~isempty (spaces{1}.boundary))
+  if (nargin >= 4 && ~isempty (msh.boundary) && ~isempty (spaces{1}.boundary) && ~isempty (boundary_interfaces))
     sp_bnd = cell (msh.boundary.npatch, 1);
     for iptc = 1:msh.boundary.npatch
       patch_number = msh.boundary.patch_numbers(iptc);
