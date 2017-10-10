@@ -18,35 +18,29 @@
 %
 %        FIELD_NAME      (SIZE)                       DESCRIPTION
 %        npatch          (scalar)                      number of patches
-%XXXX ncomp = 1        ncomp           (scalar)                      number of components of the functions of the space (equal to msh.rdim)
+%        ncomp           (scalar)                      number of components of the functions of the space (always equal to one)
 %        ndof            (scalar)                      total number of degrees of freedom after gluing patches together
 %        ndof_per_patch  (1 x npatch array)            number of degrees of freedom per patch, without gluing
 % interior_dofs_per_patch
 % ndof_interior
 % ndof_interface
 %        sp_patch        (1 x npatch cell-array)       the input spaces, one space object for each patch (see sp_scalar and sp_vector)
-%XXXX        transform       (string)                      one of 'grad-preserving', 'curl-preserving' and 'div-preserving'
 %        gnum            (1 x npatch cell-array)       global numbering of the degress of freedom (see mp_interface)
-%XXXX        dofs_ornt       (1 x npatch cell-array)       global orientation of the degrees for freedom, for curl-conforming and div-conforming spaces
-%XXXX        boundary        (1 x 1 object)                a (ndim-1) dimensional "sp_multipatch" object for the whole boundary 
-%XXXX        dofs            (1 x ndof vector)             only for boundary spaces, degrees of freedom that do not vanish on the boundary
-%XXXX        orientation     (1 x ndof vector)             only for boundary spaces with 'curl-preserving' transform, global orientation
-%XXXX                                                       of the boundary dofs with respect to the volumetric one.
 %        constructor     function handle               function handle to construct the same discrete space in a different msh
 %
-% % % %       METHODS
-% % % %       Methods that give a structure with all the functions computed in a certain subset of the mesh
+%       METHODS
+%       Methods that give a structure with all the functions computed in a certain subset of the mesh
 % % % %         sp_evaluate_element_list: compute basis functions (and derivatives) in a given list of elements
-% % % %
-% % % %       Methods for post-processing, that require a computed vector of degrees of freedom
-% % % %         sp_h1_error:    compute the error in H1 norm
-% % % %         sp_l2_error:    compute the error in L2 norm
-% % % %         sp_hcurl_error: compute the error in H(curl) norm
-% % % %         sp_to_vtk:      export the computed solution to a pvd file, using a Cartesian grid of points on each patch
-% % % %
-% % % %       Methods for basic connectivity operations
-% % % %         sp_get_basis_functions: compute the functions that do not vanish in a given list of elements
-% % % %         sp_get_cells:           compute the cells on which a list of functions do not vanish
+%
+%       Methods for post-processing, that require a computed vector of degrees of freedom
+%         sp_l2_error:    compute the error in L2 norm
+%         sp_h1_error:    compute the error in H1 norm
+%         sp_h2_error:    compute the error in H2 norm
+%         sp_to_vtk:      export the computed solution to a pvd file, using a Cartesian grid of points on each patch
+%
+%       Methods for basic connectivity operations
+%         sp_get_basis_functions: compute the functions that do not vanish in a given list of elements
+%         sp_get_cells:           compute the cells on which a list of functions do not vanish
 % % % %         sp_get_neighbors:       compute the neighbors, functions that share at least one element with a given one
 %
 % Copyright (C) 2015, 2017 Rafael Vazquez
@@ -66,6 +60,8 @@
 
 function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_interfaces)
 
+% XXX SHOULD ADD A CHECK ABOUT DEGREE AND REGULARITY
+
   if (~all (cellfun (@(x) isa (x, 'sp_scalar'), spaces)))
     error ('All the spaces in the array should be of the same class')
   end
@@ -76,7 +72,7 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_inte
     error ('The list of spaces does not correspond to the mesh')
   end
 
-% XXXX FIX THIS, TO COMPUTE ALSO THE BOUNDARY
+% XXX FIX THIS, TO COMPUTE ALSO THE BOUNDARY
   if (msh.ndim ~= 2 || msh.rdim ~= 2)
     error ('Only implemented for planar surfaces')
   end
@@ -110,7 +106,8 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_inte
 
 % Compute the local indices of the functions in V^1
 %  and sum them up to get the whole space V^1
-% XXX FOR NOW ONLY FOR TWO PATCHES, AND WITH THE ORDERING IN THE PAPER
+% XXX FOR NOW ONLY FOR TWO PATCHES, AND WITH THE ORDERING AS IN THE PAPER
+% XXX THE TWO PATCHES ARE ALSO ORIENTED AS IN THE PAPER
   sp.ndof_interior = 0;
   for iptc = 1:sp.npatch
     ndof_dir = sp.sp_patch{iptc}.ndof_dir;
@@ -129,8 +126,7 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_inte
 
 % Computation of the coefficients for basis change
 % The matrix Cpatch{iptc} is a matrix of size ndof_per_patch(iptc) x ndof
-% Here we should call the function compute_coefficients below
-
+% The coefficients for basis change have been stored in CC
 
   Cpatch = cell (sp.npatch, 1);
   numel_interior_dofs = cellfun (@numel, sp.interior_dofs_per_patch);
@@ -141,7 +137,7 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_inte
       speye (numel (sp.interior_dofs_per_patch{iptc}));
 
     global_indices = (sp.ndof_interior+1):sp.ndof;
-    Cpatch{iptc}(:,global_indices) = CC{iptc}; % The coefficients computed by Mario
+    Cpatch{iptc}(:,global_indices) = CC{iptc};
   end  
 
   sp.interfaces = interfaces;
