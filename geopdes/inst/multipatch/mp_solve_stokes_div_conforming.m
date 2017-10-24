@@ -120,19 +120,20 @@ press = zeros (space_p.ndof, 1);
 A = A + mp_dg_penalty (space_v, msh, interfaces, viscosity, Cpen);
 
 % Apply Dirichlet boundary conditions
-[N_mat, N_rhs] = sp_weak_drchlt_bc (space_v, msh, drchlt_sides, h, viscosity, Cpen);
+[N_mat, N_rhs] = sp_weak_drchlt_bc_stokes (space_v, msh, drchlt_sides, h, viscosity, Cpen);
+A = A - N_mat; F = F + N_rhs;
 [vel_drchlt, drchlt_dofs] = sp_drchlt_l2_proj_udotn (space_v, msh, drchlt_sides, h);
 vel(drchlt_dofs) = vel_drchlt;
 
 int_dofs = setdiff (1:space_v.ndof, drchlt_dofs);
 nintdofs = numel (int_dofs);
-rhs_dir  = -A(int_dofs, drchlt_dofs)*vel(drchlt_dofs) + N_mat(int_dofs,drchlt_dofs)*vel(drchlt_dofs);
+rhs_dir  = -A(int_dofs, drchlt_dofs)*vel(drchlt_dofs);
 
 % Solve the linear system
-mat = [A(int_dofs, int_dofs) - N_mat(int_dofs, int_dofs), -B(:,int_dofs).', sparse(nintdofs, 1);
-       -B(:,int_dofs), sparse(space_p.ndof, space_p.ndof), E.';
-       sparse(1, nintdofs), E, 0];
-rhs = [F(int_dofs) + N_rhs(int_dofs) + rhs_dir; 
+mat = [A(int_dofs, int_dofs), -B(:,int_dofs).', sparse(nintdofs, 1);
+       -B(:,int_dofs),        sparse(space_p.ndof, space_p.ndof), E.';
+       sparse(1, nintdofs),   E, 0];
+rhs = [F(int_dofs) + rhs_dir; 
        B(:, drchlt_dofs)*vel(drchlt_dofs); 
        0];
 

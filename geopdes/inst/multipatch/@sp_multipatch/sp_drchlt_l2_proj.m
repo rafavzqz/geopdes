@@ -49,7 +49,7 @@ function [u, dofs] = sp_drchlt_l2_proj (space, msh, h, refs, varargin)
     bnd_dofs = union (bnd_dofs, [boundary_gnum{iref_patch_list}]);
   end
   
-  u = M(bnd_dofs,bnd_dofs) \ rhs(bnd_dofs);
+  u = M(bnd_dofs,bnd_dofs) \ rhs(bnd_dofs, 1);
   dofs = space.boundary.dofs(bnd_dofs);
   
   if (~isempty (space.boundary.boundary_orientation))

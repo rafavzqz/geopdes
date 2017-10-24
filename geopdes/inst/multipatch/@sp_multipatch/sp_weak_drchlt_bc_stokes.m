@@ -1,10 +1,10 @@
-% SP_WEAK_DRCHLT_BC: compute the matrix and right hand-side to impose
+% SP_WEAK_DRCHLT_BC_STOKES: compute the matrix and right hand-side to impose
 %  the Dirichlet boundary conditions in weak form for the tangential
 %  component. To be used with the 'RT' and 'NDL' spaces (div-preserving).
 %
 % The code computes the following terms in the left hand-side
 % 
-%  - \int_{Gamma_D} mu*{(\grad u)n \cdot v - (\grad v)n \cdot n + (Cpen /  he) * (u cdot v)}
+%  - \int_{Gamma_D} mu*{(\grad u)n \cdot v - (\grad v)n \cdot u + (Cpen /  he) * (u cdot v)}
 %
 % and in the right hand-side
 %
@@ -14,7 +14,7 @@
 %  and g the boundary condition to be imposed.
 %
 %
-%   [N_mat, N_rhs] = sp_weak_drchlt_bc  (space, msh, refs, bnd_func, coeff, Cpen)
+%   [N_mat, N_rhs] = sp_weak_drchlt_bc_stokes  (space, msh, refs, bnd_func, coeff, Cpen)
 %
 % INPUTS:
 %
@@ -46,7 +46,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [A, rhs] = sp_weak_drchlt_bc (space, msh, refs, bnd_func, coeff, Cpen, varargin)
+function [A, rhs] = sp_weak_drchlt_bc_stokes (space, msh, refs, bnd_func, coeff, Cpen, varargin)
 
   A = spalloc (space.ndof, space.ndof, 3*space.ndof);
   rhs = zeros (space.ndof, 1);
