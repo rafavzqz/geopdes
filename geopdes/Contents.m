@@ -70,6 +70,7 @@
 %   @sp_scalar/sp_eval
 %   @sp_scalar/sp_to_vtk
 %   @sp_scalar/sp_drchlt_l2_proj
+%   @sp_scalar/sp_weak_drchlt_bc_laplace
 %   @sp_scalar/sp_get_basis_functions
 %   @sp_scalar/sp_get_cells
 %   @sp_scalar/sp_get_neighbors
@@ -87,7 +88,7 @@
 %   @sp_vector/sp_precompute_param
 %   @sp_vector/sp_to_vtk
 %   @sp_vector/sp_drchlt_l2_proj
-%   @sp_vector/sp_weak_drchlt_bc
+%   @sp_vector/sp_weak_drchlt_bc_stokes
 %   @sp_vector/sp_get_basis_functions
 %   @sp_vector/sp_get_cells
 %   @sp_vector/sp_get_neighbors
@@ -103,7 +104,9 @@
 %   op_curlu_curlv_2d
 %   op_curlu_curlv_3d
 %   op_curlv_p
+%   op_divu_divv
 %   op_div_v_q
+%   op_eu_ev
 %   op_fdotn_vdotn
 %   op_fdotn_v
 %   op_f_vxn_2d

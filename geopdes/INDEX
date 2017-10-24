@@ -65,6 +65,7 @@ Space: functions to generate and compute discrete spline and NURBS spaces
  @sp_scalar/sp_eval
  @sp_scalar/sp_to_vtk
  @sp_scalar/sp_drchlt_l2_proj
+ @sp_scalar/sp_weak_drchlt_bc_laplace
  @sp_scalar/sp_get_basis_functions
  @sp_scalar/sp_get_cells
  @sp_scalar/sp_get_neighbors
@@ -83,7 +84,7 @@ Space: functions to generate and compute discrete spline and NURBS spaces
  @sp_vector/sp_plot_solution
  @sp_vector/sp_to_vtk
  @sp_vector/sp_drchlt_l2_proj
- @sp_vector/sp_weak_drchlt_bc
+ @sp_vector/sp_weak_drchlt_bc_stokes
  @sp_vector/sp_get_basis_functions
  @sp_vector/sp_get_cells
  @sp_vector/sp_get_neighbors
@@ -99,6 +100,8 @@ Operators: functions to assemble different matrices and vector
  op_curlu_curlv_3d
  op_curlv_p
  op_div_v_q
+ op_divu_divv
+ op_eu_ev
  op_fdotn_vdotn
  op_fdotn_v
  op_f_vxn_2d

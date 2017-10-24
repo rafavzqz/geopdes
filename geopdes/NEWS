@@ -1,3 +1,12 @@
+Summary of important changes for geopdes-3.1.2:
+-----------------------------------------------------------------------------
+* Added weak imposition of Dirichlet conditions for Laplace/Poisson problem.
+* Renamed functions for weak imposition of Dirichlet conditions in Stokes.
+* Possibility to build multipatch spaces without gluing.
+* Added the function msh_restrict_to_cells.
+* Added operators for the mixed formulation of linear elasticity.
+* Added operators for div-div terms
+
 Summary of important changes for geopdes-3.1.1:
 -----------------------------------------------------------------------------
 * The numbering in comp_dofs is now local to the boundary. The old numbering can be recovered with space.boundary(ii).dofs(space.boundary(ii).comp_dofs)
