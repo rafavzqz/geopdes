@@ -39,7 +39,7 @@
 %  u:        the computed degrees of freedom
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2010, 2011, 2013, 2015 Rafael Vazquez
+% Copyright (C) 2010, 2011, 2013, 2015, 2017 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -89,8 +89,8 @@ for iptc = 1:npatch
 end
 
 msh = msh_multipatch (msh, boundaries);
-space = sp_multipatch (sp, msh, interfaces, boundary_interfaces);
-space_C1 = sp_multipatch_C1 (sp, msh, geometry, interfaces, boundary_interfaces);
+% space = sp_multipatch (sp, msh, interfaces, boundary_interfaces);
+space = sp_multipatch_C1 (sp, msh, geometry, interfaces, boundary_interfaces);
 clear sp
 
 % Compute and assemble the matrices 
@@ -98,24 +98,28 @@ stiff_mat = op_gradu_gradv_mp (space, space, msh, c_diff);
 rhs = op_f_v_mp (space, msh, f);
 
 % Apply Neumann boundary conditions
-Nbnd = cumsum ([0, boundaries.nsides]);
 for iref = nmnn_sides
-  iref_patch_list = Nbnd(iref)+1:Nbnd(iref+1);
-  gref = @(varargin) g(varargin{:},iref);
-  rhs_nmnn = op_f_v_mp (space.boundary, msh.boundary, gref, iref_patch_list);
-  rhs(space.boundary.dofs) = rhs(space.boundary.dofs) + rhs_nmnn;
+  gref = @(varargin) g(varargin{:}, iref);
+  for bnd_side = 1:msh.boundaries(iref).nsides
+    iptc = msh.boundaries(iref).patches(bnd_side);
+    iside = msh.boundaries(iref).faces(bnd_side);
+
+    msh_side = msh.msh_patch{iptc}.boundary(iside);
+    sp_side = space.sp_patch{iptc}.boundary(iside);
+    rhs_nmnn = op_f_v_tp (sp_side, msh_side, gref);
+    rhs = rhs + space.Cpatch{iptc}(sp_side.dofs,:).' * rhs_nmnn;
+  end
 end
 
-% Apply Dirichlet boundary conditions
-u = zeros (space.ndof, 1);
-[u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space, msh, h, drchlt_sides);
-u(drchlt_dofs) = u_drchlt;
-
-int_dofs = setdiff (1:space.ndof, drchlt_dofs);
-rhs(int_dofs) = rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt;
+% Apply Dirichlet boundary conditions in weak form, by Nitsche's method
+if (exist ('weak_drchlt_sides', 'var'))
+  [N_mat, N_rhs] = sp_weak_drchlt_bc_laplace (space, msh, weak_drchlt_sides, h, c_diff, Cpen);
+  stiff_mat = stiff_mat - N_mat;
+  rhs = rhs + N_rhs;
+end
 
 % Solve the linear system
-u(int_dofs) = stiff_mat(int_dofs, int_dofs) \ rhs(int_dofs);
+u = stiff_mat \ rhs;
 
 end
 
