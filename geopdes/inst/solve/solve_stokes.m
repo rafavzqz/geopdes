@@ -137,25 +137,24 @@ end
 if (strcmpi (element_name, 'RT') || strcmpi (element_name, 'NDL'))
   [N_mat, N_rhs] = ...
     sp_weak_drchlt_bc (space_v, msh, drchlt_sides, h, viscosity, Cpen);
+  A = A - N_mat; F = F + N_rhs;
   [vel_drchlt, drchlt_dofs] = sp_drchlt_l2_proj_udotn (space_v, msh, drchlt_sides, h);
 else
   [vel_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space_v, msh, h, drchlt_sides);
-  N_mat = sparse (space_v.ndof, space_v.ndof, 1);
-  N_rhs = zeros (space_v.ndof, 1);
 end
 
 vel(drchlt_dofs) = vel_drchlt;
 int_dofs = setdiff (1:space_v.ndof, drchlt_dofs);
 nintdofs = numel (int_dofs);
-rhs_dir  = -A(int_dofs, drchlt_dofs)*vel(drchlt_dofs) + N_mat(int_dofs,drchlt_dofs)*vel(drchlt_dofs);
+rhs_dir  = -A(int_dofs, drchlt_dofs)*vel(drchlt_dofs);
 
 % Solve the linear system
 if (isempty (nmnn_sides))
 % If all the sides are Dirichlet, the pressure is zero averaged.
-  mat = [ A(int_dofs, int_dofs) - N_mat(int_dofs, int_dofs), -B(:,int_dofs).',              sparse(nintdofs, 1);
-         -B(:,int_dofs),                                     sparse(size (B,1), size(B,1)), E.';
-          sparse(1, nintdofs),                               E,                             0];
-  rhs = [F(int_dofs) + N_rhs(int_dofs) + rhs_dir; 
+  mat = [ A(int_dofs, int_dofs), -B(:,int_dofs).',              sparse(nintdofs, 1);
+         -B(:,int_dofs),         sparse(size (B,1), size(B,1)), E.';
+          sparse(1, nintdofs),   E,                             0];
+  rhs = [F(int_dofs) + rhs_dir; 
          B(:, drchlt_dofs)*vel(drchlt_dofs);
          0];
 
@@ -164,9 +163,9 @@ if (isempty (nmnn_sides))
   press = sol(1+nintdofs:end-1);
 else
 % With natural boundary condition, the constraint on the pressure is not needed.
-  mat = [ A(int_dofs, int_dofs) - N_mat(int_dofs, int_dofs), -B(:,int_dofs).';
-         -B(:,int_dofs),                                     sparse(size (B,1), size (B,1))];
-  rhs = [F(int_dofs) + N_rhs(int_dofs) + rhs_dir + rhs_nmnn(int_dofs);
+  mat = [ A(int_dofs, int_dofs), -B(:,int_dofs).';
+         -B(:,int_dofs),         sparse(size (B,1), size (B,1))];
+  rhs = [F(int_dofs) + rhs_dir + rhs_nmnn(int_dofs);
          B(:, drchlt_dofs)*vel(drchlt_dofs)];
 
   sol = mat \ rhs;
