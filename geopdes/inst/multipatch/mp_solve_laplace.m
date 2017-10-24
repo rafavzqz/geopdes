@@ -39,7 +39,7 @@
 %  u:        the computed degrees of freedom
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2010, 2011, 2013, 2015 Rafael Vazquez
+% Copyright (C) 2010, 2011, 2013, 2015, 2017 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -109,6 +109,13 @@ end
 u = zeros (space.ndof, 1);
 [u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space, msh, h, drchlt_sides);
 u(drchlt_dofs) = u_drchlt;
+
+% Apply Dirichlet boundary conditions in weak form, by Nitsche's method
+if (exist ('weak_drchlt_sides', 'var'))
+  [N_mat, N_rhs] = sp_weak_drchlt_bc_laplace (space, msh, weak_drchlt_sides, h, c_diff, Cpen);
+  stiff_mat = stiff_mat - N_mat;
+  rhs = rhs + N_rhs;
+end
 
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
 rhs(int_dofs) = rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt;
