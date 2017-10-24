@@ -136,7 +136,7 @@ end
 %  component is imposed strongly, and the tangential one is imposed weakly.
 if (strcmpi (element_name, 'RT') || strcmpi (element_name, 'NDL'))
   [N_mat, N_rhs] = ...
-    sp_weak_drchlt_bc (space_v, msh, drchlt_sides, h, viscosity, Cpen);
+    sp_weak_drchlt_bc_stokes (space_v, msh, drchlt_sides, h, viscosity, Cpen);
   A = A - N_mat; F = F + N_rhs;
   [vel_drchlt, drchlt_dofs] = sp_drchlt_l2_proj_udotn (space_v, msh, drchlt_sides, h);
 else
