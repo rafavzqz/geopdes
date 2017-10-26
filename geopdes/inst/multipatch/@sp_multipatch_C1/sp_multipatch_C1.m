@@ -60,8 +60,6 @@
 
 function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_interfaces)
 
-% XXX SHOULD ADD A CHECK ABOUT DEGREE AND REGULARITY
-
   if (~all (cellfun (@(x) isa (x, 'sp_scalar'), spaces)))
     error ('All the spaces in the array should be of the same class')
   end
@@ -72,21 +70,35 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_inte
     error ('The list of spaces does not correspond to the mesh')
   end
 
-% XXX FIX THIS, TO COMPUTE ALSO THE BOUNDARY
   if (msh.ndim ~= 2 || msh.rdim ~= 2)
     error ('Only implemented for planar surfaces')
   end
 
+  for iptc = 1:numel(geometry)
+    if (any (geometry(iptc).nurbs.order > 2))
+      error ('For now, only bilinear patches are implemented')
+    end
+    knots = spaces{iptc}.knots;
+    breaks = cellfun (@unique, knots, 'UniformOutput', false);
+    mult = cellfun (@histc, knots, breaks, 'UniformOutput', false);
+    if (any ([mult{:}] < 2))
+      error ('The regularity should be at most degree minus two')
+    end
+    for idim = 1:2
+      if (any (mult{idim}(2:end-1) > spaces{iptc}.degree(idim) - 1))
+        error ('The regularity should not be lower than one')
+      end
+    end
+  end
+  
 
   sp.ncomp = spaces{1}.ncomp;
   sp.transform = spaces{1}.transform;
   
-%   if (~all ([aux.ncomp] == sp.ncomp))
   if (~all ([aux.ncomp] == 1))
     error ('The number of components should be the same for all the spaces, and equal to one')  
   end
   for iptc = 1:sp.npatch
-%     if (~strcmpi (spaces{iptc}.transform, sp.transform))
     if (~strcmpi (spaces{iptc}.transform, 'grad-preserving'))
       error ('The transform to the physical domain should be the same for all the spaces, and the grad-preserving one')
     end
@@ -100,8 +112,8 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_inte
   sp.sp_patch = spaces;
 
 % Computation of the number of degrees of freedom
-% I need to give a global numbering to the C^1 basis functions
-% I start numbering those away from the interface (V^1) patch by patch
+% We need to give a global numbering to the C^1 basis functions
+% We start numbering those away from the interface (V^1) patch by patch
 % And then generate the numbering for the functions close to the interface (V^2)
 
 % Compute the local indices of the functions in V^1
@@ -195,33 +207,29 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
     side(1) = interfaces(iref).side1;
     side(2) = interfaces(iref).side2;
 
-    
 % The knot vectors for the N0 and N1 basis functions, as in Mario's notation
-% I assume that the regularity is degree-2, otherwise things become more complicated
 % Only univariate knot vectors are computed
     if (side(1) < 3)
       knots = space.sp_patch{patch(1)}.knots{2};
       degree = space.sp_patch{patch(1)}.degree(2);
-      nel_univ = msh.msh_patch{patch(1)}.nel_dir(2);
       degu = space.sp_patch{patch(1)}.degree(1);
       knt = unique (space.sp_patch{patch(1)}.knots{1});
       tau1 = knt(2) - knt(1);
     else
       knots = space.sp_patch{patch(1)}.knots{1};
       degree = space.sp_patch{patch(1)}.degree(1);
-      nel_univ = msh.msh_patch{patch(1)}.nel_dir(1);
       degu = space.sp_patch{patch(1)}.degree(2);
       knt = unique (space.sp_patch{patch(1)}.knots{2});
       tau1 = knt(2) - knt(1);
     end
-    regularity = degree - 2;
     
-    nel_geo = numel (unique (geometry(patch(1)).boundary(side(1)).nurbs.knots)) - 1;
-    nsub = nel_univ / nel_geo;
+    breaks = unique (knots);
+    mult = histc (knots, breaks);
+    mult0 = mult; mult0(2:end-1) = mult(2:end-1) - 1;
+    mult1 = mult - 1;
+    knots0 = kntbrkdegmult (breaks, degree, mult0); % Same degree, regularity + 1
+    knots1 = kntbrkdegmult (breaks, degree-1, mult1); % Degree - 1, same regularity
     
-    knots0 = kntrefine (geometry(patch(1)).boundary(side(1)).nurbs.knots, nsub-1, degree, regularity+1);
-    knots1 = kntrefine (geometry(patch(1)).boundary(side(1)).nurbs.knots, nsub-1, degree-1, regularity);
-
 % Compute the Greville points, and the auxiliary mesh and space objects
     for ii = 1:2 % The two patches (L-R)
       brk = cell (1,msh.ndim);
