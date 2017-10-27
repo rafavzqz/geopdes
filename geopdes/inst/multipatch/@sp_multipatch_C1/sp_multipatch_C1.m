@@ -120,12 +120,16 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_inte
 %  and sum them up to get the whole space V^1
 % XXX FOR NOW ONLY FOR TWO PATCHES, AND WITH THE ORDERING AS IN THE PAPER
 % XXX THE TWO PATCHES ARE ALSO ORIENTED AS IN THE PAPER
+
+if (numel (interfaces) > 1 || msh.npatch > 2)
+  error ('For now, the implementation only works for two patches')
+end
   sp.ndof_interior = 0;
+  sides = [interfaces(1).side1, interfaces(1).side2];
   for iptc = 1:sp.npatch
-    ndof_dir = sp.sp_patch{iptc}.ndof_dir;
-    xx = 3:ndof_dir(1); yy = 1:ndof_dir(2);
-    [XX, YY] = ndgrid (xx, yy);
-    interior_dofs = sub2ind (ndof_dir, XX, YY);
+% This should be a loop on the interfaces to which the patch belongs
+    sp_bnd = spaces{iptc}.boundary(sides(iptc));
+    interior_dofs = setdiff (1:spaces{iptc}.ndof, [sp_bnd.dofs, sp_bnd.adjacent_dofs]);
     sp.interior_dofs_per_patch{iptc} = interior_dofs; % An array with the indices
     sp.ndof_interior = sp.ndof_interior + numel (interior_dofs);
   end
@@ -199,6 +203,11 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_inte
 end
 
 
+% There are some issues related to the orientation.
+% I am taking the absolute value of alpha
+% And for val_grad, I have to change the sign for coeff2, but not for coeff1
+% But everything seems to work!!!
+
 function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
 
   for iref = 1:numel(interfaces)
@@ -209,27 +218,19 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
 
 % The knot vectors for the N0 and N1 basis functions, as in Mario's notation
 % Only univariate knot vectors are computed
-    if (side(1) < 3)
-      knots = space.sp_patch{patch(1)}.knots{2};
-      degree = space.sp_patch{patch(1)}.degree(2);
-      degu = space.sp_patch{patch(1)}.degree(1);
-      knt = unique (space.sp_patch{patch(1)}.knots{1});
-      tau1 = knt(2) - knt(1);
-    else
-      knots = space.sp_patch{patch(1)}.knots{1};
-      degree = space.sp_patch{patch(1)}.degree(1);
-      degu = space.sp_patch{patch(1)}.degree(2);
-      knt = unique (space.sp_patch{patch(1)}.knots{2});
-      tau1 = knt(2) - knt(1);
-    end
-    
-    breaks = unique (knots);
-    mult = histc (knots, breaks);
+%%    %ind1  = [2 2 1 1]; ind2 = [1 1 2 2]
+    ind2 = ceil (side(1)/2);
+    ind1 = setdiff (1:msh.ndim, ind2);
+    knots_int = space.sp_patch{patch(1)}.knots{ind1};
+    degree = space.sp_patch{patch(1)}.degree(ind1);
+
+    breaks = unique (knots_int);
+    mult = histc (knots_int, breaks);
     mult0 = mult; mult0(2:end-1) = mult(2:end-1) - 1;
     mult1 = mult - 1;
     knots0 = kntbrkdegmult (breaks, degree, mult0); % Same degree, regularity + 1
     knots1 = kntbrkdegmult (breaks, degree-1, mult1); % Degree - 1, same regularity
-    
+
 % Compute the Greville points, and the auxiliary mesh and space objects
     for ii = 1:2 % The two patches (L-R)
       brk = cell (1,msh.ndim);
@@ -245,6 +246,21 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
       end
       msh_grev = msh_cartesian (brk, grev_pts, [], geometry(patch(ii)), 'boundary', true, 'der2',false);
 
+% Degree and first length in the direction normal to the interface
+      ind2 = ceil (side(ii)/2);
+      degu = space.sp_patch{patch(ii)}.degree(ind2);
+      knt = unique (space.sp_patch{patch(ii)}.knots{ind2});
+      if (mod (side(ii), 2) == 1)
+        tau1 = knt(2) - knt(1);
+      else
+        tau1 = knt(end) - knt(end-1);
+      end
+
+      if (ii == 2 && interfaces(iref).ornt == -1)
+        knots0 = fliplr (1 - knots0);
+        knots1 = fliplr (1 - knots1);
+      end
+      
 % For now I assume that the orientation is as in the paper, and we do not need any reordering
 %XXXX    [sp_bnd(2), msh_side(2)] = reorder_elements_and_quad_points (sp_bnd(2), msh_side(2), interfaces(iref), ndim);
 % msh_side contains only the univariate parametrization of the boundary (dependence on u)
@@ -254,55 +270,85 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
       msh_side_int{ii} = msh_boundary_side_from_interior (msh_grev, side(ii));
       sp_aux = space.sp_patch{patch(ii)}.constructor (msh_side_int{ii});
       msh_side_int{ii} = msh_precompute (msh_side_int{ii});
-      sp_grev(ii) = struct (sp_precompute_param (sp_aux, msh_side_int{ii}, 'value', true, 'gradient', true));
+%       sp_grev = sp_precompute_param (sp_aux, msh_side_int{ii}, 'value', true, 'gradient', true); % This could be done in just one element
 
-% The univariate spaces for the N0 and N1 basis functions      
+% The univariate spaces for the basis functions N^{p,r+1} (knots0) and N^{p-1,r} (knots1)
       sp0 = sp_bspline (knots0, degree, msh_grev.boundary(side(ii)));
       sp1 = sp_bspline (knots1, degree-1, msh_grev.boundary(side(ii)));
       sp0_struct = sp_precompute_param (sp0, msh_grev.boundary(side(ii)), 'value', true, 'gradient', true);
       sp1_struct = sp_precompute_param (sp1, msh_grev.boundary(side(ii)), 'value', true, 'gradient', true);
+
+% The univariate space for the basis functions N^{p,r} on the interface
+%       spn = space.sp_patch{patch(ii)}.boundary(side(ii)).constructor(msh_grev.boundary(side(ii)))
       ind = [2 2 1 1];
-      knotsn = sp_aux.knots{ind(side(ii))};
+      knotsn = knots{ind(side(ii))};
       spn = sp_bspline (knotsn, degree, msh_grev.boundary(side(ii)));
       spn_struct = sp_precompute_param (spn, msh_grev.boundary(side(ii)), 'value', true, 'gradient', true);
+
 % Matrix for the linear systems, (14)-(16) in Mario's notes
       A = sparse (msh_side(ii).nel, msh_side(ii).nel);
       for jj = 1:msh_side(ii).nel
-        A(jj,spn_struct.connectivity(:,jj)) = squeeze (spn_struct.shape_functions(:,:,jj));
+        A(jj,spn_struct.connectivity(:,jj)) = spn_struct.shape_functions(:,:,jj);
+%         A(jj,spn_struct.connectivity(:,jj)) = squeeze (spn_struct.shape_functions(:,:,jj));
       end
 
-      alpha{ii} = geopdes_det__ (msh_side_int{ii}.geo_map_jac);
-      numerator = reshape (sum (msh_side_int{ii}.geo_map_jac(:,1,:,:) .* msh_side_int{ii}.geo_map_jac(:,2,:,:), 1), msh_side(ii).nel, 1);
-      denominator = reshape (sum (msh_side_int{ii}.geo_map_jac(:,2,:,:) .* msh_side_int{ii}.geo_map_jac(:,2,:,:), 1), msh_side(ii).nel, 1);
+% XXX This is only valid for the orientation as in the paper
+      geo_map_jac = msh_side_int{ii}.geo_map_jac;
+      alpha{ii} = geopdes_det__ (geo_map_jac);
+      if (side(ii) == 1 || side(ii) == 2)
+        numerator = reshape (sum (geo_map_jac(:,1,:,:) .* geo_map_jac(:,2,:,:), 1), msh_side(ii).nel, 1);
+        denominator = reshape (sum (geo_map_jac(:,2,:,:) .* geo_map_jac(:,2,:,:), 1), msh_side(ii).nel, 1);
+      else
+%         alpha{ii} = geopdes_det__ (permute (geo_map_jac, [2 1 3 4]));
+        numerator = reshape (sum (geo_map_jac(:,1,:,:) .* geo_map_jac(:,2,:,:), 1), msh_side(ii).nel, 1);
+        denominator = reshape (sum (geo_map_jac(:,1,:,:) .* geo_map_jac(:,1,:,:), 1), msh_side(ii).nel, 1);
+      end
       beta{ii} = numerator ./ denominator;
 
 % RHS for the first linear system, (14) in Mario's notes
       rhss = sparse (msh_side(ii).nel, sp0_struct.ndof);
       for jj = 1:msh_side(ii).nel
-        rhss(jj,sp0_struct.connectivity(:,jj)) = squeeze (sp0_struct.shape_functions(:,:,jj));
+        rhss(jj,sp0_struct.connectivity(:,jj)) = sp0_struct.shape_functions(:,:,jj);
       end
       coeff0{ii} = A \ rhss;
       coeff0{ii}(abs(coeff0{ii}) < 1e-12) = 0; % Make more sparse
 
 % RHS for the second linear system, (15) in Mario's notes
       rhsb = sparse (msh_side(ii).nel, sp0_struct.ndof);
-      val = squeeze (spn_struct.shape_function_gradients(:,:,2,1)); % XXX THIS IS ONLY VALID FOR THE ORDERING USED IN THE PAPER
-      val = val * (tau1 / degu)^2;
+%       val_grad = spn_struct.shape_function_gradients(1,1,2,1); % XXX THIS IS ONLY VALID FOR THE ORDERING USED IN THE PAPER
+%       val_grad = sp_grev.shape_function_gradients(1,1,2,1); % XXX THIS IS ONLY VALID FOR THE ORDERING USED IN THE PAPER
+      if (side(ii) == 1)
+        val_grad = sp_aux.sp_univ(1).shape_function_gradients(2);
+      elseif (side(ii) == 2)
+        val_grad = sp_aux.sp_univ(1).shape_function_gradients(end-1);
+      elseif (side(ii) == 3)
+        val_grad = sp_aux.sp_univ(2).shape_function_gradients(2);
+      elseif (side(ii) == 4)
+        val_grad = sp_aux.sp_univ(2).shape_function_gradients(end-1);
+      end
+      val = val_grad * (tau1 / degu)^2;
       for jj = 1:msh_side(ii).nel
         val_aux = val * beta{ii}(jj);
-        rhsb(jj,sp0_struct.connectivity(:,jj)) = squeeze (sp0_struct.shape_function_gradients(:,:,:,jj)) * val_aux;
+        rhsb(jj,sp0_struct.connectivity(:,jj)) = sp0_struct.shape_function_gradients(:,:,:,jj) * val_aux;
+%         rhsb(jj,sp0_struct.connectivity(:,jj)) = squeeze (sp0_struct.shape_function_gradients(:,:,:,jj)) * val_aux;
       end
       rhsb = rhsb + rhss;
       coeff1{ii} = A \ rhsb;
       coeff1{ii}(abs(coeff1{ii}) < 1e-12) = 0; % Make more sparse
       
 % RHS for the third linear system, (16) in Mario's notes
+% I need this change of sign to make it work for general orientation. I don't understand why I
+%  didn't need it in the previous computation. Weird...
+      val_grad = val_grad * (-1)^(side(ii)+1);
+
       rhsc = sparse (msh_side(ii).nel, sp1_struct.ndof);
-      val = squeeze (spn_struct.shape_function_gradients(:,:,2,1)); % XXX THIS IS ONLY VALID FOR THE ORDERING USED IN THE PAPER
-      val = val * (tau1 / degu)^2;
+%       val = squeeze (spn_struct.shape_function_gradients(:,:,2,1)); % XXX THIS IS ONLY VALID FOR THE ORDERING USED IN THE PAPER
+%       val = sp_grev.shape_function_gradients(1,1,2,1); % XXX THIS IS ONLY VALID FOR THE ORDERING USED IN THE PAPER
+      val = val_grad * (tau1 / degu)^2;
       for jj = 1:msh_side(ii).nel
-        val_aux = val * alpha{ii}(jj);
-        rhsc(jj,sp1_struct.connectivity(:,jj)) = squeeze (sp1_struct.shape_functions(:,:,jj)) * val_aux;
+        val_aux = val * abs (alpha{ii}(jj));
+        rhsc(jj,sp1_struct.connectivity(:,jj)) = sp1_struct.shape_functions(:,:,jj) * val_aux;
+%         rhsc(jj,sp1_struct.connectivity(:,jj)) = squeeze (sp1_struct.shape_functions(:,:,jj)) * val_aux;
       end
       coeff2{ii} = A \ rhsc;
       coeff2{ii}(abs(coeff2{ii}) < 1e-12) = 0; % Make more sparse
@@ -312,13 +358,34 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
       ndof = sp0_struct.ndof + sp1_struct.ndof;
       CC{ii} = sparse (space.ndof_per_patch(patch(ii)), ndof);
       
-      ind0 = sub2ind (space.sp_patch{patch(ii)}.ndof_dir, ones(1,spn.ndof), 1:spn.ndof);
-      ind1 = sub2ind (space.sp_patch{patch(ii)}.ndof_dir, 2*ones(1,spn.ndof), 1:spn.ndof);
+      ndof_dir = space.sp_patch{patch(ii)}.ndof_dir;
+      if (side(ii) == 1)
+        ind0 = sub2ind (ndof_dir, ones(1,spn.ndof), 1:spn.ndof);
+        ind1 = sub2ind (ndof_dir, 2*ones(1,spn.ndof), 1:spn.ndof);
+      elseif (side(ii) == 2)
+        ind0 = sub2ind (ndof_dir, ndof_dir(1) * ones(1,spn.ndof), 1:spn.ndof);
+        ind1 = sub2ind (ndof_dir, (ndof_dir(1)-1) * ones(1,spn.ndof), 1:spn.ndof);
+      elseif (side(ii) == 3)
+        ind0 = sub2ind (ndof_dir, 1:spn.ndof, ones(1,spn.ndof));
+        ind1 = sub2ind (ndof_dir, 1:spn.ndof, 2*ones(1,spn.ndof));
+      elseif (side(ii) == 4)
+        ind0 = sub2ind (ndof_dir, 1:spn.ndof, ndof_dir(2) * ones(1,spn.ndof));
+        ind1 = sub2ind (ndof_dir, 1:spn.ndof, (ndof_dir(2)-1) * ones(1,spn.ndof));
+      end
 %       ind2 = sub2ind (space.sp_patch{patch(ii)}.ndof_dir, 2*ones(1,spn.ndof), 1:spn.ndof);
+
+      if (ii == 2 && interfaces(iref).ornt == -1)
+        ind0 = fliplr (ind0);
+        ind1 = fliplr (ind1);
+        coeff0{2} = flipud (fliplr (coeff0{2}));
+        coeff1{2} = flipud (fliplr (coeff1{2}));
+        coeff2{2} = flipud (fliplr (coeff2{2}));
+      end
+
 
       CC{ii}(ind0,1:sp0_struct.ndof) = coeff0{ii};
       CC{ii}(ind1,1:sp0_struct.ndof) = coeff1{ii};
-      CC{ii}(ind1,sp0_struct.ndof+1:ndof) = coeff2{ii};
+      CC{ii}(ind1,sp0_struct.ndof+1:ndof) = coeff2{ii} * (-1)^(ii+1);
     end
 
 
