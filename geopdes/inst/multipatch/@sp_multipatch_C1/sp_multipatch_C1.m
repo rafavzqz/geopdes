@@ -292,14 +292,13 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
 %         A(jj,spn_struct.connectivity(:,jj)) = squeeze (spn_struct.shape_functions(:,:,jj));
       end
 
-% XXX This is only valid for the orientation as in the paper
+% Absolute value of the determinant, to make it work for arbitrary orientation
       geo_map_jac = msh_side_int{ii}.geo_map_jac;
-      alpha{ii} = geopdes_det__ (geo_map_jac);
+      alpha{ii} = abs (geopdes_det__ (geo_map_jac));
       if (side(ii) == 1 || side(ii) == 2)
         numerator = reshape (sum (geo_map_jac(:,1,:,:) .* geo_map_jac(:,2,:,:), 1), msh_side(ii).nel, 1);
         denominator = reshape (sum (geo_map_jac(:,2,:,:) .* geo_map_jac(:,2,:,:), 1), msh_side(ii).nel, 1);
       else
-%         alpha{ii} = geopdes_det__ (permute (geo_map_jac, [2 1 3 4]));
         numerator = reshape (sum (geo_map_jac(:,1,:,:) .* geo_map_jac(:,2,:,:), 1), msh_side(ii).nel, 1);
         denominator = reshape (sum (geo_map_jac(:,1,:,:) .* geo_map_jac(:,1,:,:), 1), msh_side(ii).nel, 1);
       end
@@ -315,8 +314,6 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
 
 % RHS for the second linear system, (15) in Mario's notes
       rhsb = sparse (msh_side(ii).nel, sp0_struct.ndof);
-%       val_grad = spn_struct.shape_function_gradients(1,1,2,1); % XXX THIS IS ONLY VALID FOR THE ORDERING USED IN THE PAPER
-%       val_grad = sp_grev.shape_function_gradients(1,1,2,1); % XXX THIS IS ONLY VALID FOR THE ORDERING USED IN THE PAPER
       if (side(ii) == 1)
         val_grad = sp_aux.sp_univ(1).shape_function_gradients(2);
       elseif (side(ii) == 2)
@@ -337,18 +334,15 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
       coeff1{ii}(abs(coeff1{ii}) < 1e-12) = 0; % Make more sparse
       
 % RHS for the third linear system, (16) in Mario's notes
-% I need this change of sign to make it work for general orientation. I don't understand why I
-%  didn't need it in the previous computation. Weird...
+% We need this change of sign to make it work for general orientation.
+% I don't understand why we don't need it in the previous system.
       val_grad = val_grad * (-1)^(side(ii)+1);
 
       rhsc = sparse (msh_side(ii).nel, sp1_struct.ndof);
-%       val = squeeze (spn_struct.shape_function_gradients(:,:,2,1)); % XXX THIS IS ONLY VALID FOR THE ORDERING USED IN THE PAPER
-%       val = sp_grev.shape_function_gradients(1,1,2,1); % XXX THIS IS ONLY VALID FOR THE ORDERING USED IN THE PAPER
       val = val_grad * (tau1 / degu)^2;
       for jj = 1:msh_side(ii).nel
-        val_aux = val * abs (alpha{ii}(jj));
+        val_aux = val * alpha{ii}(jj);
         rhsc(jj,sp1_struct.connectivity(:,jj)) = sp1_struct.shape_functions(:,:,jj) * val_aux;
-%         rhsc(jj,sp1_struct.connectivity(:,jj)) = squeeze (sp1_struct.shape_functions(:,:,jj)) * val_aux;
       end
       coeff2{ii} = A \ rhsc;
       coeff2{ii}(abs(coeff2{ii}) < 1e-12) = 0; % Make more sparse
@@ -372,7 +366,6 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
         ind0 = sub2ind (ndof_dir, 1:spn.ndof, ndof_dir(2) * ones(1,spn.ndof));
         ind1 = sub2ind (ndof_dir, 1:spn.ndof, (ndof_dir(2)-1) * ones(1,spn.ndof));
       end
-%       ind2 = sub2ind (space.sp_patch{patch(ii)}.ndof_dir, 2*ones(1,spn.ndof), 1:spn.ndof);
 
       if (ii == 2 && interfaces(iref).ornt == -1)
         ind0 = fliplr (ind0);
@@ -381,7 +374,6 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
         coeff1{2} = flipud (fliplr (coeff1{2}));
         coeff2{2} = flipud (fliplr (coeff2{2}));
       end
-
 
       CC{ii}(ind0,1:sp0_struct.ndof) = coeff0{ii};
       CC{ii}(ind1,1:sp0_struct.ndof) = coeff1{ii};
