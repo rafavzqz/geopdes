@@ -61,7 +61,7 @@ function varargout = op_v_gradp (spv, spp, msh, coeff)
       tmp1 = sum (bsxfun (@times, jacdet_shpv, gradp_iel), 1);
       values(ncounter+(1:spv.nsh(iel)*spp.nsh(iel))) = reshape (sum (tmp1, 2), spp.nsh(iel), spv.nsh(iel));
 
-      [rows_loc, cols_loc] = ndgrid (spp.connectivity(:,iel), spv.connectivity(:,iel));
+      [rows_loc, cols_loc] = ndgrid (spp.connectivity(1:spp.nsh(iel),iel), spv.connectivity(1:spv.nsh(iel),iel));
       rows(ncounter+(1:spv.nsh(iel)*spp.nsh(iel))) = rows_loc;
       cols(ncounter+(1:spv.nsh(iel)*spp.nsh(iel))) = cols_loc;
       ncounter = ncounter + spv.nsh(iel)*spp.nsh(iel);
