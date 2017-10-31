@@ -76,7 +76,7 @@ function varargout = op_su_ev (spu, spv, msh, lambda, mu)
       values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = reshape (sum (aux_val1, 2), spv.nsh(iel), spu.nsh(iel)) + ...
           reshape (sum(aux_val2, 1), spv.nsh(iel), spu.nsh(iel));
 
-      [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
+      [rows_loc, cols_loc] = ndgrid (spv.connectivity(1:spv.nsh(iel),iel), spu.connectivity(1:spu.nsh(iel),iel));
       rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc;
       cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc;
       ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);

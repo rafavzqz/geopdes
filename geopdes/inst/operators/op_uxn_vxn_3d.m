@@ -57,7 +57,7 @@ function varargout = op_uxn_vxn_3d (spu, spv, msh, coeff)
       tmp1 = sum (bsxfun (@times, jacdet_shpu, shpv_x_n), 1);
       values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = reshape (sum (tmp1, 2), spv.nsh(iel), spu.nsh(iel));
       
-      [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
+      [rows_loc, cols_loc] = ndgrid (spv.connectivity(1:spv.nsh(iel),iel), spu.connectivity(1:spu.nsh(iel),iel));
       rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc;
       cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc;
       ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);

@@ -55,7 +55,7 @@ function varargout = op_div_v_q (spv, spq, msh)
       tmp1 = bsxfun (@times, jacdet_divv, shpq_iel);
       values(ncounter+(1:spv.nsh(iel)*spq.nsh(iel))) = reshape (sum (tmp1, 1), spq.nsh(iel), spv.nsh(iel));
 
-      [rows_loc, cols_loc] = ndgrid (spq.connectivity(:,iel), spv.connectivity(:,iel));
+      [rows_loc, cols_loc] = ndgrid (spq.connectivity(1:spq.nsh(iel),iel), spv.connectivity(1:spv.nsh(iel),iel));
       rows(ncounter+(1:spv.nsh(iel)*spq.nsh(iel))) = rows_loc;
       cols(ncounter+(1:spv.nsh(iel)*spq.nsh(iel))) = cols_loc;
       ncounter = ncounter + spv.nsh(iel)*spq.nsh(iel);
