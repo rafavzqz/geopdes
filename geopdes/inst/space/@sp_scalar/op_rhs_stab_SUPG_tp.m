@@ -16,8 +16,8 @@
 %   rhs_auxiliar: assembled right-hand side relative to the stabilization terms to be added to rhs
 % 
 % Copyright (C) 2011, Carlo de Falco
-% Copyright (C) 2011, 2014 Rafael Vazquez
 % Copyright (C) 2013, Anna Tagliabue
+% Copyright (C) 2011, 2014, 2017, Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -34,6 +34,13 @@
 
 function rhs_auxiliar = op_rhs_stab_SUPG_tp (space, msh, coeff_mu, vel, f)
 
+  for idim = 1:msh.ndim
+    size1 = size (space.sp_univ(idim).connectivity);
+    if (size1(2) ~= msh.nel_dir(idim))
+      error ('The discrete space is not associated to the mesh')
+    end
+  end
+  
   rhs_auxiliar = zeros (space.ndof, 1);
 
   for iel = 1:msh.nel_dir(1)

@@ -36,6 +36,14 @@
 
 function varargout = op_laplaceu_laplacev_tp (space1, space2, msh, coeff)
 
+  for idim = 1:msh.ndim
+    size1 = size (space1.sp_univ(idim).connectivity);
+    size2 = size (space2.sp_univ(idim).connectivity);
+    if (size1(2) ~= size2(2) || size1(2) ~= msh.nel_dir(idim))
+      error ('One of the discrete spaces is not associated to the mesh')
+    end
+  end
+  
   A = spalloc (space2.ndof, space1.ndof, 3*space1.ndof);
 
   for iel = 1:msh.nel_dir(1)

@@ -12,7 +12,7 @@
 %
 %   rhs: assembled right-hand side
 % 
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011, 2017 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -29,6 +29,13 @@
 
 function rhs = op_f_v_tp (space, msh, coeff)
 
+  for idim = 1:msh.ndim
+    size1 = size (space.sp_univ(idim).connectivity);
+    if (size1(2) ~= msh.nel_dir(idim))
+      error ('The discrete space is not associated to the mesh')
+    end
+  end
+  
   rhs = zeros (space.ndof, 1);
 
   for iel = 1:msh.nel_dir(1)
