@@ -17,7 +17,7 @@
 %   cols:   column indices of the nonzero entries
 %   values: values of the nonzero entries
 % 
-% Copyright (C) 2011, 2016 Rafael Vazquez
+% Copyright (C) 2011, 2016, 2017 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -33,6 +33,16 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function varargout = op_curlv_p_tp (spv, spp, msh, coeff)
+
+  for idim = 1:msh.ndim
+    size2 = size (spp.sp_univ(idim).connectivity);
+    for icomp = 1:spv.ncomp_param
+      size1 = size (spv.scalar_spaces{icomp}.sp_univ(idim).connectivity);
+      if (size1(2) ~= size2(2) || size1(2) ~= msh.nel_dir(idim))
+        error ('One of the discrete spaces is not associated to the mesh')
+      end
+    end
+  end
 
   A = spalloc (spp.ndof, spv.ndof, 3*spv.ndof);
 

@@ -18,7 +18,7 @@
 %  values: values of the nonzero entries
 % 
 % Copyright (C) 2011, Carlo de Falco, Rafael Vazquez
-% Copyright (C) 2016, Rafael Vazquez
+% Copyright (C) 2016, 2017 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -34,6 +34,16 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function varargout = op_u_v_tp (space1, space2, msh, coeff)
+
+  for icomp = 1:space1.ncomp_param
+    for idim = 1:msh.ndim
+      size1 = size (space1.scalar_spaces{icomp}.sp_univ(idim).connectivity);
+      size2 = size (space2.scalar_spaces{icomp}.sp_univ(idim).connectivity);
+      if (size1(2) ~= size2(2) || size1(2) ~= msh.nel_dir(idim))
+        error ('One of the discrete spaces is not associated to the mesh')
+      end
+    end
+  end
 
   A = spalloc (space2.ndof, space1.ndof, 3*space1.ndof);
 
