@@ -45,20 +45,20 @@ function varargout = op_divu_divv (spu, spv, msh, coeff)
   ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:,iel)))
-      divu_iel = reshape (spu.shape_function_divs(:, 1:spu.nsh(iel), iel), ...
-                           msh.nqn, 1, spu.nsh(iel));
-      divv_iel = reshape (spv.shape_function_divs(:, 1:spv.nsh(iel), iel), ...
-                           msh.nqn, spv.nsh(iel), 1);
+      divu_iel = reshape (spu.shape_function_divs(:, :, iel), msh.nqn, 1, spu.nsh_max);
+      divv_iel = reshape (spv.shape_function_divs(:, :, iel), msh.nqn, spv.nsh_max, 1);
 
       jacdet_iel = reshape (jacdet_weights(:,iel), [msh.nqn,1,1]);
 
       jacdet_divu = bsxfun (@times, jacdet_iel, divu_iel);
       tmp1 = bsxfun (@times, jacdet_divu, divv_iel);
-      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = reshape (sum (tmp1, 1), spv.nsh(iel), spu.nsh(iel));
+      elementary_values = reshape (sum (tmp1, 1), spv.nsh_max, spu.nsh_max);
 
-      [rows_loc, cols_loc] = ndgrid (spv.connectivity(1:spv.nsh(iel),iel), spu.connectivity(1:spu.nsh(iel),iel));
-      rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc;
-      cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc;
+      [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
+      indices = rows_loc & cols_loc;
+      rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc(indices);
+      cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc(indices);
+      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = elementary_values(indices);
       ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_divu_divv: singular map in element number %d', iel)

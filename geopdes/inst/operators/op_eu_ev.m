@@ -50,26 +50,25 @@ function varargout = op_eu_ev (spu, spv, msh, mu)
   ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:, iel)))
-      gradu_iel = reshape (gradu(:,:,:,1:spu.nsh(iel),iel), spu.ncomp, ndir, msh.nqn, spu.nsh(iel));
+      gradu_iel = reshape (gradu(:,:,:,:,iel), spu.ncomp, ndir, msh.nqn, spu.nsh_max);
       epsu_iel = (gradu_iel + permute (gradu_iel, [2 1 3 4]))/2;
-      epsu_iel = reshape (epsu_iel, [spu.ncomp*ndir, msh.nqn, 1, spu.nsh(iel)]);
-%       epsu_iel = repmat (epsu_iel, [1,1,spv.nsh(iel),1]);
+      epsu_iel = reshape (epsu_iel, [spu.ncomp*ndir, msh.nqn, 1, spu.nsh_max]);
       
-      gradv_iel = reshape (gradv(:,:,:,1:spv.nsh(iel),iel), spv.ncomp, ndir, msh.nqn, spv.nsh(iel));
+      gradv_iel = reshape (gradv(:,:,:,:,iel), spv.ncomp, ndir, msh.nqn, spv.nsh_max);
       epsv_iel = (gradv_iel + permute (gradv_iel, [2 1 3 4]))/2;
-      epsv_iel = reshape (epsv_iel, [spv.ncomp*ndir, msh.nqn, spv.nsh(iel), 1]);
-%       epsv_iel = repmat (epsv_iel, [1,1,1,spu.nsh(iel)]);
+      epsv_iel = reshape (epsv_iel, [spv.ncomp*ndir, msh.nqn, spv.nsh_max, 1]);
 
       jacdet_mu_iel = reshape (jacdet_weights_mu(:,iel), [1,msh.nqn,1,1]);
 
       jacdet_epsu = bsxfun (@times, jacdet_mu_iel, epsu_iel);
       aux_val1 = 2 * sum (bsxfun (@times, jacdet_epsu, epsv_iel), 1);
-
-      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = reshape (sum (aux_val1, 2), spv.nsh(iel), spu.nsh(iel));
-
-      [rows_loc, cols_loc] = ndgrid (spv.connectivity(1:spv.nsh(iel),iel), spu.connectivity(1:spu.nsh(iel),iel));
-      rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc;
-      cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc;
+      elementary_values = reshape (sum (aux_val1, 2), spv.nsh_max, spu.nsh_max);
+      
+      [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
+      indices = rows_loc & cols_loc;
+      rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc(indices);
+      cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc(indices);
+      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = elementary_values(indices);
       ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_eu_ev: singular map in element number %d', iel)

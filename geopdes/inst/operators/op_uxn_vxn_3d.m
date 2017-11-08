@@ -44,8 +44,8 @@ function varargout = op_uxn_vxn_3d (spu, spv, msh, coeff)
   ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:, iel)))
-      shpu_iel = reshape (spu.shape_functions(:, :, 1:spu.nsh(iel), iel), spu.ncomp, msh.nqn, 1, spu.nsh(iel));
-      shpv_iel = reshape (spv.shape_functions(:, :, 1:spv.nsh(iel), iel), spv.ncomp, msh.nqn, spv.nsh(iel), 1);
+      shpu_iel = reshape (spu.shape_functions(:, :, :, iel), spu.ncomp, msh.nqn, 1, spu.nsh_max);
+      shpv_iel = reshape (spv.shape_functions(:, :, :, iel), spv.ncomp, msh.nqn, spv.nsh_max, 1);
 
       normal_iel = reshape (msh.normal(:,:,iel), 3, msh.nqn);
 
@@ -55,11 +55,13 @@ function varargout = op_uxn_vxn_3d (spu, spv, msh, coeff)
       jacdet_iel = reshape (jacdet_weights(:,iel), [1, msh.nqn, 1]);
       jacdet_shpu = bsxfun (@times, jacdet_iel, shpu_x_n);
       tmp1 = sum (bsxfun (@times, jacdet_shpu, shpv_x_n), 1);
-      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = reshape (sum (tmp1, 2), spv.nsh(iel), spu.nsh(iel));
+      elementary_values = reshape (sum (tmp1, 2), spv.nsh_max, spu.nsh_max);
       
-      [rows_loc, cols_loc] = ndgrid (spv.connectivity(1:spv.nsh(iel),iel), spu.connectivity(1:spu.nsh(iel),iel));
-      rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc;
-      cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc;
+      [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
+      indices = rows_loc & cols_loc;
+      rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc(indices);
+      cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc(indices);
+      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = elementary_values(indices);
       ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);
 
     else
