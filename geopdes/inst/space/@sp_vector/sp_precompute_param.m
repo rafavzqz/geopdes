@@ -106,7 +106,9 @@ for icomp = 1:sp.ncomp_param
   ndof_dir(icomp,:) = sp_scalar(icomp).ndof_dir;
   nsh = nsh + sp_scalar(icomp).nsh(:)';
   
-  connectivity = [connectivity; sp_scalar(icomp).connectivity+aux];
+  inds = find (sp_scalar(icomp).connectivity);
+  sp_scalar(icomp).connectivity(inds) = sp_scalar(icomp).connectivity(inds) + aux;
+  connectivity = [connectivity; sp_scalar(icomp).connectivity];
   aux = aux + ndof_scalar(icomp);
 end
 
