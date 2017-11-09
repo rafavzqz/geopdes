@@ -66,6 +66,7 @@ function varargout = op_vel_dot_gradu_v (spu, spv, msh, coeff)
       elementary_values = reshape (sum (sum (tmp1, 1), 2), spv.nsh_max, spu.nsh_max);
 
       [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
+      indices = rows_loc & cols_loc;
       rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc(indices);
       cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc(indices);
       values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = elementary_values(indices);

@@ -98,6 +98,7 @@ function varargout = op_mat_stab_SUPG (spu, spv, msh, coeff_mu, grad_coeff, vel)
       elementary_values = reshape (sum (sum (aux_val, 2), 1), spv.nsh_max, spu.nsh_max);
       
       [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
+      indices = rows_loc & cols_loc;
       rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc(indices);
       cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc(indices);
       values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = elementary_values(indices);

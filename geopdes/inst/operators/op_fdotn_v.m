@@ -14,7 +14,7 @@
 %   rhs: assembled right-hand side
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco, Rafael Vazquez
-% Copyright (C) 2011, 2014 Rafael Vazquez
+% Copyright (C) 2011, 2014, 2017 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -41,19 +41,20 @@ function rhs = op_fdotn_v (spv, msh, coeff)
     if (all (msh.jacdet(:,iel)))
      jacdet_weights = reshape (msh.jacdet(:, iel) .* msh.quad_weights(:, iel), 1, msh.nqn);
 
-     shpv_iel = reshape (shpv(:, :, 1:spv.nsh(iel), iel), spv.ncomp, msh.nqn, spv.nsh(iel));
-%      shpv_dot_n  = sum (bsxfun (@times, shpv_iel, msh.normal(:,:,iel)), 1);
+     shpv_iel = reshape (shpv(:, :, :, iel), spv.ncomp, msh.nqn, spv.nsh_max);
      coeff_dot_n = sum (bsxfun (@times, coeff(:,:,iel), msh.normal(:,:,iel)), 1);
 
      coeff_times_jw = bsxfun (@times, jacdet_weights, coeff_dot_n);
 
      aux_val = bsxfun (@times, coeff_times_jw, shpv_iel);
      rhs_loc = sum (sum (aux_val, 1), 2);
-     rhs(spv.connectivity(1:spv.nsh(iel), iel)) = rhs(spv.connectivity(1:spv.nsh(iel), iel)) + rhs_loc(:); 
+
+     indices = find (spv.connectivity(:,iel));
+     rhs_loc = rhs_loc(indices); conn_iel = spv.connectivity(indices,iel);
+     rhs(conn_iel) = rhs(conn_iel) + rhs_loc(:); 
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_fdotn_v: singular map in element number %d', iel)
     end
   end
 
 end
-
