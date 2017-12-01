@@ -84,6 +84,10 @@ function sp = sp_scalar (knots, degree, weights, msh, transform)
   if (~iscell (knots))
     knots = {knots};
   end
+  
+  if (numel (knots) ~= msh.ndim)
+    error ('The dimension of the mesh and the space do not correspond to each other')
+  end
 
   sp.knots = knots;
   sp.degree = degree;

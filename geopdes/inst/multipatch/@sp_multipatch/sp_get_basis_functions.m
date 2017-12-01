@@ -36,7 +36,6 @@ for iptc = 1:space.npatch
   if (~isempty (local_cell_indices))
     if (nargout == 1)
       aux_indices = sp_get_basis_functions (space.sp_patch{iptc}, msh.msh_patch{iptc}, local_cell_indices);
-      function_indices = union (function_indices, space.gnum{iptc}(aux_indices));
     elseif (nargout == 2)
       [aux_indices, aux_per_cell] = sp_get_basis_functions (space.sp_patch{iptc}, msh.msh_patch{iptc}, local_cell_indices);
       [indices_per_cell(cells_in_patch)] = cellfun (@(x) space.gnum{iptc}(x), aux_per_cell, 'UniformOutput', false);

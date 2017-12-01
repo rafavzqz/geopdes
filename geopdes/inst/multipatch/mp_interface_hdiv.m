@@ -30,13 +30,15 @@
 
 function [glob_num, glob_ndof, dofs_ornt] = mp_interface_hdiv (interfaces, sp, msh)
 
+  npatch = numel (sp);
+
   ndim = msh.ndim;
 
   if (~isempty (interfaces))
-    glob_num   = cell (numel (sp), 1);
-    ttform     = cell (numel (sp), numel (interfaces));
-    dofs_ornt  = cell (numel (sp), 1);
-    for iptc = 1:numel(sp)
+    glob_num   = cell (npatch, 1);
+    ttform     = cell (npatch, numel (interfaces));
+    dofs_ornt  = cell (npatch, 1);
+    for iptc = 1:npatch
       glob_num{iptc} = zeros (1, sp{iptc}.ndof);
       dofs_ornt{iptc} = ones (1, sp{iptc}.ndof);
     end
@@ -75,7 +77,7 @@ function [glob_num, glob_ndof, dofs_ornt] = mp_interface_hdiv (interfaces, sp, m
 
     glob_ndof = 0;
 % We start with the dofs that do not belong to any interface
-    for iptc = 1:numel (sp)
+    for iptc = 1:npatch
       non_intrfc_dofs = setdiff(1:sp{iptc}.ndof, [ttform{iptc,:}]);
       glob_num{iptc}(non_intrfc_dofs) = glob_ndof + (1:numel(non_intrfc_dofs));
       glob_ndof = glob_ndof + numel (non_intrfc_dofs);
@@ -112,9 +114,9 @@ function [glob_num, glob_ndof, dofs_ornt] = mp_interface_hdiv (interfaces, sp, m
 
   else
     glob_ndof = 0;
-    glob_num = cell (numel (sp), 1);
-    dofs_ornt  = cell (numel (sp), 1);
-    for iptc = 1:numel(sp)
+    glob_num = cell (npatch, 1);
+    dofs_ornt  = cell (npatch, 1);
+    for iptc = 1:npatch
       glob_num{iptc} = glob_ndof + (1:sp{iptc}.ndof);
       glob_ndof = glob_ndof + sp{iptc}.ndof;
       dofs_ornt{iptc} = ones (1, sp{iptc}.ndof);
