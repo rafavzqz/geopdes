@@ -30,7 +30,7 @@
 %
 %       METHODS
 %       Methods that give a structure with all the functions computed in a certain subset of the mesh
-% % % %         sp_evaluate_element_list: compute basis functions (and derivatives) in a given list of elements
+%         sp_evaluate_element_list: compute basis functions (and derivatives) in a given list of elements
 %
 %       Methods for post-processing, that require a computed vector of degrees of freedom
 %         sp_l2_error:    compute the error in L2 norm
@@ -41,7 +41,7 @@
 %       Methods for basic connectivity operations
 %         sp_get_basis_functions: compute the functions that do not vanish in a given list of elements
 %         sp_get_cells:           compute the cells on which a list of functions do not vanish
-% % % %         sp_get_neighbors:       compute the neighbors, functions that share at least one element with a given one
+%         sp_get_neighbors:       compute the neighbors, functions that share at least one element with a given one
 %
 % Copyright (C) 2015, 2017 Rafael Vazquez
 %
@@ -110,6 +110,25 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_inte
   sp.ndof = 0;
   sp.ndof_per_patch = [aux.ndof];
   sp.sp_patch = spaces;
+  
+% Assuming that the starting knot space has degree p and regularity r, 
+% r <= p-2, we compute the knot vectors of the auxiliary spaces:
+%  knots0: degree p, regularity r+1.
+%  knots1: degree p-1, regularity r.
+
+  for iptc = 1:sp.npatch
+    knots = spaces{iptc}.knots;
+    breaks = cellfun (@unique, knots, 'UniformOutput', false);
+    for idim = 1:msh.ndim
+      mult = histc (knots{idim}, breaks{idim});
+      mult0{idim} = mult; mult0{idim}(2:end-1) = mult(2:end-1) - 1;
+      mult1{idim} = mult - 1;
+    end
+    knots0{iptc} = kntbrkdegmult (breaks, spaces{iptc}.degree, mult0);
+    knots1{iptc} = kntbrkdegmult (breaks, spaces{iptc}.degree-1, mult1);
+  end
+  sp.knots0_patches = knots0;
+  sp.knots1_patches = knots1;
 
 % Computation of the number of degrees of freedom
 % We need to give a global numbering to the C^1 basis functions
@@ -221,16 +240,21 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
 %%    %ind1  = [2 2 1 1]; ind2 = [1 1 2 2]
     ind2 = ceil (side(1)/2);
     ind1 = setdiff (1:msh.ndim, ind2);
-    knots_int = space.sp_patch{patch(1)}.knots{ind1};
+%     knots_int = space.sp_patch{patch(1)}.knots{ind1};
+%     degree = space.sp_patch{patch(1)}.degree(ind1);
+
+%     breaks = unique (knots_int);
+%     mult = histc (knots_int, breaks);
+%     mult0 = mult; mult0(2:end-1) = mult(2:end-1) - 1;
+%     mult1 = mult - 1;
+%     knots0 = kntbrkdegmult (breaks, degree, mult0); % Same degree, regularity + 1
+%     knots1 = kntbrkdegmult (breaks, degree-1, mult1); % Degree - 1, same regularity
+
+
     degree = space.sp_patch{patch(1)}.degree(ind1);
-
-    breaks = unique (knots_int);
-    mult = histc (knots_int, breaks);
-    mult0 = mult; mult0(2:end-1) = mult(2:end-1) - 1;
-    mult1 = mult - 1;
-    knots0 = kntbrkdegmult (breaks, degree, mult0); % Same degree, regularity + 1
-    knots1 = kntbrkdegmult (breaks, degree-1, mult1); % Degree - 1, same regularity
-
+    knots0 = space.knots0_patches{patch(1)}{ind1};
+    knots1 = space.knots1_patches{patch(1)}{ind1};
+    
 % Compute the Greville points, and the auxiliary mesh and space objects
     for ii = 1:2 % The two patches (L-R)
       brk = cell (1,msh.ndim);
