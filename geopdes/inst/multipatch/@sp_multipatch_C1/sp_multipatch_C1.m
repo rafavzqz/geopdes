@@ -111,11 +111,12 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_inte
   sp.ndof_per_patch = [aux.ndof];
   sp.sp_patch = spaces;
   
-% Assuming that the starting knot space has degree p and regularity r, 
+% Assuming that the starting space has degree p and regularity r, 
 % r <= p-2, we compute the knot vectors of the auxiliary spaces:
 %  knots0: degree p, regularity r+1.
 %  knots1: degree p-1, regularity r.
 
+  knots0 = cell (sp.npatch, 1); knots1 = knots0;
   for iptc = 1:sp.npatch
     knots = spaces{iptc}.knots;
     breaks = cellfun (@unique, knots, 'UniformOutput', false);
@@ -137,13 +138,14 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_inte
 
 % Compute the local indices of the functions in V^1
 %  and sum them up to get the whole space V^1
-% XXX FOR NOW ONLY FOR TWO PATCHES, AND WITH THE ORDERING AS IN THE PAPER
-% XXX THE TWO PATCHES ARE ALSO ORIENTED AS IN THE PAPER
+% XXX FOR NOW ONLY FOR TWO PATCHES
 
 if (numel (interfaces) > 1 || msh.npatch > 2)
   error ('For now, the implementation only works for two patches')
 end
+
   sp.ndof_interior = 0;
+% Assuming that interfaces(1).patch1 = 1, interfaces(1).patch2 = 2
   sides = [interfaces(1).side1, interfaces(1).side2];
   for iptc = 1:sp.npatch
 % This should be a loop on the interfaces to which the patch belongs
@@ -234,31 +236,21 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
     patch(2) = interfaces(iref).patch2;
     side(1) = interfaces(iref).side1;
     side(2) = interfaces(iref).side2;
-
-% The knot vectors for the N0 and N1 basis functions, as in Mario's notation
-% Only univariate knot vectors are computed
-%%    %ind1  = [2 2 1 1]; ind2 = [1 1 2 2]
-    ind2 = ceil (side(1)/2);
-    ind1 = setdiff (1:msh.ndim, ind2);
-%     knots_int = space.sp_patch{patch(1)}.knots{ind1};
-%     degree = space.sp_patch{patch(1)}.degree(ind1);
-
-%     breaks = unique (knots_int);
-%     mult = histc (knots_int, breaks);
-%     mult0 = mult; mult0(2:end-1) = mult(2:end-1) - 1;
-%     mult1 = mult - 1;
-%     knots0 = kntbrkdegmult (breaks, degree, mult0); % Same degree, regularity + 1
-%     knots1 = kntbrkdegmult (breaks, degree-1, mult1); % Degree - 1, same regularity
-
-
-    degree = space.sp_patch{patch(1)}.degree(ind1);
-    knots0 = space.knots0_patches{patch(1)}{ind1};
-    knots1 = space.knots1_patches{patch(1)}{ind1};
     
 % Compute the Greville points, and the auxiliary mesh and space objects
     for ii = 1:2 % The two patches (L-R)
       brk = cell (1,msh.ndim);
       knots = space.sp_patch{patch(ii)}.knots;
+      
+% The knot vectors for the N0 and N1 basis functions, as in Mario's notation
+% Only univariate knot vectors are computed
+%%    %ind1  = [2 2 1 1]; ind2 = [1 1 2 2]
+      ind2 = ceil (side(ii)/2);
+      ind1 = setdiff (1:msh.ndim, ind2);
+
+      degree = space.sp_patch{patch(1)}.degree(ind1);
+      knots0 = space.knots0_patches{patch(ii)}{ind1};
+      knots1 = space.knots1_patches{patch(ii)}{ind1};
       for idim = 1:msh.ndim
         grev_pts{idim} = aveknt (knots{idim}, space.sp_patch{patch(ii)}.degree(idim)+1); 
         grev_pts{idim} = grev_pts{idim}(:)';
@@ -280,11 +272,6 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
         tau1 = knt(end) - knt(end-1);
       end
 
-      if (ii == 2 && interfaces(iref).ornt == -1)
-        knots0 = fliplr (1 - knots0);
-        knots1 = fliplr (1 - knots1);
-      end
-      
 % For now I assume that the orientation is as in the paper, and we do not need any reordering
 %XXXX    [sp_bnd(2), msh_side(2)] = reorder_elements_and_quad_points (sp_bnd(2), msh_side(2), interfaces(iref), ndim);
 % msh_side contains only the univariate parametrization of the boundary (dependence on u)
@@ -313,7 +300,6 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
       A = sparse (msh_side(ii).nel, msh_side(ii).nel);
       for jj = 1:msh_side(ii).nel
         A(jj,spn_struct.connectivity(:,jj)) = spn_struct.shape_functions(:,:,jj);
-%         A(jj,spn_struct.connectivity(:,jj)) = squeeze (spn_struct.shape_functions(:,:,jj));
       end
 
 % Absolute value of the determinant, to make it work for arbitrary orientation
@@ -351,7 +337,6 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
       for jj = 1:msh_side(ii).nel
         val_aux = val * beta{ii}(jj);
         rhsb(jj,sp0_struct.connectivity(:,jj)) = sp0_struct.shape_function_gradients(:,:,:,jj) * val_aux;
-%         rhsb(jj,sp0_struct.connectivity(:,jj)) = squeeze (sp0_struct.shape_function_gradients(:,:,:,jj)) * val_aux;
       end
       rhsb = rhsb + rhss;
       coeff1{ii} = A \ rhsb;
