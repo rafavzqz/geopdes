@@ -179,6 +179,7 @@ end
 
   sp.interfaces = interfaces;
   sp.Cpatch = Cpatch;
+  sp.geometry = geometry; % I store this for simplicity
 
 % XXXX No boundary for now
 % % Boundary construction
