@@ -44,7 +44,7 @@ problem_data.graduex = @(x, y) cat (1, ...
 clear method_data
 method_data.degree     = [3 3];       % Degree of the splines
 method_data.regularity = [1 1];       % Regularity of the splines
-method_data.nsub       = [2 2];       % Number of subdivisions
+method_data.nsub       = [8 8];       % Number of subdivisions
 method_data.nquad      = method_data.degree+1;       % Points for the Gaussian quadrature rule
 method_data.Cpen = 10 * (min(method_data.degree) + 1);
 
@@ -55,7 +55,7 @@ method_data.Cpen = 10 * (min(method_data.degree) + 1);
 % % EXPORT TO PARAVIEW
 % output_file = 'Lshaped_mp_BSP_Deg3_Reg2_Sub9';
 % 
-vtk_pts = {linspace(0, 1, 120), linspace(0, 1, 120)};
+vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20)};
 % fprintf ('The result is saved in the file %s.pvd \n \n', output_file);
 % sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 % 
