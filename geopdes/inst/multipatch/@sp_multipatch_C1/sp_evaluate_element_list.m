@@ -119,11 +119,13 @@ function sp = sp_evaluate_element_list (space, msh, varargin)
     end
 
     sp.nsh = cat (2, sp.nsh, nsh);
-    sp.connectivity = cat (2, sp.connectivity, connectivity);
-    if (isfield (sp_patch, 'shape_functions')); sp.shape_functions = cat (3, sp.shape_functions, shape_funs); end
-    if (isfield (sp_patch, 'shape_function_gradients')); sp.shape_function_gradients = cat (4, sp.shape_function_gradients, shape_fun_grads); end
-    if (isfield (sp_patch, 'shape_function_hessians')); sp.shape_function_hessians = cat (5, sp.shape_function_hessians, shape_fun_hess); end
-    if (isfield (sp_patch, 'shape_function_laplacians')); sp.shape_function_laplacians = cat (3, sp.shape_function_laplacians, shape_fun_lapl); end
+    if (msh_patch.nel > 0)
+      sp.connectivity = cat (2, sp.connectivity, connectivity);
+      if (isfield (sp_patch, 'shape_functions')); sp.shape_functions = cat (3, sp.shape_functions, shape_funs); end
+      if (isfield (sp_patch, 'shape_function_gradients')); sp.shape_function_gradients = cat (4, sp.shape_function_gradients, shape_fun_grads); end
+      if (isfield (sp_patch, 'shape_function_hessians')); sp.shape_function_hessians = cat (5, sp.shape_function_hessians, shape_fun_hess); end
+      if (isfield (sp_patch, 'shape_function_laplacians')); sp.shape_function_laplacians = cat (3, sp.shape_function_laplacians, shape_fun_lapl); end
+    end
     
 %     for ii = 1:numel(fields)
 %       if (isfield (sp_patch, fields{ii}))
