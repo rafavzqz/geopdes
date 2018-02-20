@@ -20,7 +20,7 @@
 %                A cell-array of size 1 x npatch, each entry containing the
 %                coefficients for the patch (either for scalar or vector-valued spaces).
 %
-% Copyright (C) 2015, 2016 Rafael Vazquez
+% Copyright (C) 2015, 2016, 2018 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -37,6 +37,12 @@
 
 function [sp_fine, Proj] = sp_refine (space, msh, nsub, varargin)
 
+  if (space.ndof == sum (space.ndof_per_patch))
+    gluing = false;
+  else
+    gluing = true;
+  end
+
   sp_fine = cell (1, space.npatch);
   Proj = cell (1, space.npatch);
   for iptc = 1:space.npatch
@@ -47,9 +53,9 @@ function [sp_fine, Proj] = sp_refine (space, msh, nsub, varargin)
     end
   end
   if (~isempty (space.boundary))
-    sp_fine = sp_multipatch (sp_fine, msh, space.interfaces, space.boundary.interfaces);
+    sp_fine = sp_multipatch (sp_fine, msh, space.interfaces, space.boundary.interfaces, gluing);
   else
-    sp_fine = sp_multipatch (sp_fine, msh, space.interfaces);
+    sp_fine = sp_multipatch (sp_fine, msh, space.interfaces, [], gluing);
   end 
 
 end
