@@ -13,7 +13,7 @@
 %   rhs: assembled right-hand side
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011, 2017 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -41,11 +41,14 @@ function rhs = op_f_v (spv, msh, coeff)
 
      coeff_times_jw = bsxfun (@times, jacdet_weights, coeff(:,:,iel));
 
-     shpv_iel = reshape (shpv(:, :, 1:spv.nsh(iel), iel), spv.ncomp, msh.nqn, spv.nsh(iel));
+     shpv_iel = reshape (shpv(:, :, :, iel), spv.ncomp, msh.nqn, spv.nsh_max);
 
      aux_val = bsxfun (@times, coeff_times_jw, shpv_iel);
      rhs_loc = sum (sum (aux_val, 1), 2);
-     rhs(spv.connectivity(1:spv.nsh(iel), iel)) = rhs(spv.connectivity(1:spv.nsh(iel), iel)) + rhs_loc(:); 
+
+     indices = find (spv.connectivity(:,iel));
+     rhs_loc = rhs_loc(indices); conn_iel = spv.connectivity(indices,iel);
+     rhs(conn_iel) = rhs(conn_iel) + rhs_loc(:); 
    else
      warning ('geopdes:jacdet_zero_at_quad_node', 'op_f_v: singular map in element number %d', iel)
    end

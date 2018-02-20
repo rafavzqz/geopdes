@@ -50,20 +50,20 @@ function varargout = op_v_gradp (spv, spp, msh, coeff)
   ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:, iel)))
-      shpv_iel = reshape (spv.shape_functions(:, :, 1:spv.nsh(iel), iel), spv.ncomp, msh.nqn, 1, spv.nsh(iel));
-%       shpv_iel = repmat (shpv_iel, [1,1,spp.nsh(iel),1]);
-      gradp_iel = reshape (spp.shape_function_gradients(:, :, 1:spp.nsh(iel), iel), ndir, msh.nqn, spp.nsh(iel), 1);
-%       gradp_iel = repmat (gradp_iel, [1,1,1,spv.nsh(iel),1]);
+      shpv_iel = reshape (spv.shape_functions(:, :, :, iel), spv.ncomp, msh.nqn, 1, spv.nsh_max);
+      gradp_iel = reshape (spp.shape_function_gradients(:, :, :, iel), ndir, msh.nqn, spp.nsh_max, 1);
 
       jacdet_iel = reshape (jacdet_weights(:,iel), [1,msh.nqn,1,1]);
       
       jacdet_shpv = bsxfun (@times, jacdet_iel, shpv_iel);
       tmp1 = sum (bsxfun (@times, jacdet_shpv, gradp_iel), 1);
-      values(ncounter+(1:spv.nsh(iel)*spp.nsh(iel))) = reshape (sum (tmp1, 2), spp.nsh(iel), spv.nsh(iel));
+      elementary_values = reshape (sum (tmp1, 2), spp.nsh_max, spv.nsh_max);
 
-      [rows_loc, cols_loc] = ndgrid (spp.connectivity(1:spp.nsh(iel),iel), spv.connectivity(1:spv.nsh(iel),iel));
-      rows(ncounter+(1:spv.nsh(iel)*spp.nsh(iel))) = rows_loc;
-      cols(ncounter+(1:spv.nsh(iel)*spp.nsh(iel))) = cols_loc;
+      [rows_loc, cols_loc] = ndgrid (spp.connectivity(:,iel), spv.connectivity(:,iel));
+      indices = rows_loc & cols_loc;
+      rows(ncounter+(1:spv.nsh(iel)*spp.nsh(iel))) = rows_loc(indices);
+      cols(ncounter+(1:spv.nsh(iel)*spp.nsh(iel))) = cols_loc(indices);
+      values(ncounter+(1:spv.nsh(iel)*spp.nsh(iel))) = elementary_values(indices);
       ncounter = ncounter + spv.nsh(iel)*spp.nsh(iel);
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_v_gradp: singular map in element number %d', iel)

@@ -45,19 +45,20 @@ function rhs = op_gradv_n_f (spv, msh, coeff)
   
   for iel = 1:msh.nel
     if (all (msh.jacdet(:,iel)))
-      gradv_iel = gradv(:,:,:,1:spv.nsh(iel),iel);
+      gradv_iel = gradv(:,:,:,:,iel);
       normal_iel = reshape (msh.normal(:,:,iel), [1, ndim, msh.nqn]);
 
-      gradv_n = reshape (sum (bsxfun (@times, gradv_iel, normal_iel), 2), spv.ncomp, msh.nqn, spv.nsh(iel));
-      
+      gradv_n = reshape (sum (bsxfun (@times, gradv_iel, normal_iel), 2), spv.ncomp, msh.nqn, spv.nsh_max);
+
       aux_val = bsxfun (@times, coeff_times_jw(:,:,iel), gradv_n);
       rhs_loc = sum (sum (aux_val, 1), 2);
-      rhs(spv.connectivity(1:spv.nsh(iel), iel)) = rhs(spv.connectivity(1:spv.nsh(iel), iel)) + rhs_loc(:); 
 
+      indices = find (spv.connectivity(:,iel));
+      rhs_loc = rhs_loc(indices); conn_iel = spv.connectivity(indices,iel);
+      rhs(conn_iel) = rhs(conn_iel) + rhs_loc(:);
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_gradv_n_f: singular map in element number %d', iel)
     end
   end
   
 end
-

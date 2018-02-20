@@ -47,8 +47,8 @@ function varargout = op_udotn_vdotn (spu, spv, msh, coeff)
   ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:, iel)))
-      shpu_iel = reshape (shpu(:, :, 1:spu.nsh(iel), iel), spu.ncomp, msh.nqn, 1, spu.nsh(iel));
-      shpv_iel = reshape (shpv(:, :, 1:spv.nsh(iel), iel), spv.ncomp, msh.nqn, spv.nsh(iel), 1);
+      shpu_iel = reshape (shpu(:, :, :, iel), spu.ncomp, msh.nqn, 1, spu.nsh_max);
+      shpv_iel = reshape (shpv(:, :, :, iel), spv.ncomp, msh.nqn, spv.nsh_max, 1);
 
       shpu_dot_n = sum (bsxfun (@times, shpu_iel, msh.normal(:,:,iel)), 1);
       shpv_dot_n = sum (bsxfun (@times, shpv_iel, msh.normal(:,:,iel)), 1);
@@ -56,11 +56,13 @@ function varargout = op_udotn_vdotn (spu, spv, msh, coeff)
       jacdet_iel = reshape (jacdet_weights(:,iel), [1, msh.nqn]);
       shpu_times_jw = bsxfun (@times, jacdet_iel, shpu_dot_n);
       tmp1 = bsxfun (@times, shpu_times_jw, shpv_dot_n);
-      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = reshape (sum (tmp1, 2), spv.nsh(iel), spu.nsh(iel));
+      elementary_values = reshape (sum (tmp1, 2), spv.nsh_max, spu.nsh_max);
 
-      [rows_loc, cols_loc] = ndgrid (spv.connectivity(1:spv.nsh(iel),iel), spu.connectivity(1:spu.nsh(iel),iel));
-      rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc;
-      cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc;
+      [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
+      indices = rows_loc & cols_loc;
+      rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc(indices);
+      cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc(indices);
+      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = elementary_values(indices);
       ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);
       
     else
