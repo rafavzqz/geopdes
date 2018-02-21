@@ -42,11 +42,11 @@ for iptc = 1:space.npatch
 
     cell_indices = union (cell_indices, Nelem(iptc)+aux_cell_indices);
 
-%     if (nargout == 2)
-%       local_funs = local_funs(:).';
-%       for ifun = 1:numel(patch_indices)
-%         indices_per_function{local_funs(ifun)} = union (indices_per_function{local_funs(ifun)}, Nelem(iptc)+ind_per_fun{ifun});
-%       end
-%     end
+    if (nargout == 2)
+      local_funs = local_funs(:).';
+      for ifun = 1:numel(patch_indices)
+        indices_per_function{local_funs(ifun)} = union (indices_per_function{local_funs(ifun)}, Nelem(iptc)+ind_per_fun{ifun});
+      end
+    end
   end
 end
