@@ -135,6 +135,7 @@ elseif (nargin == 3)
     msh_side.geo_map_der2 = [];
     msh_side.jacdet = [];
     msh_side.element_size = [];
+    msh_side.normal = [];
     return
   end
 
