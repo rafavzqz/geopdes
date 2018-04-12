@@ -83,10 +83,10 @@ function sp = sp_evaluate_element_list (space, msh, varargin)
     
     nsh = zeros (1, msh_patch.nel);
     connectivity = zeros (sp_patch.nsh_max, msh_patch.nel);
-    shape_funs = zeros (msh_patch.nqn, 1, msh_patch.nel);
-    shape_fun_grads = zeros (msh.rdim, msh_patch.nqn, 1, msh_patch.nel);
-    shape_fun_hess = zeros (msh.rdim, msh.rdim, msh_patch.nqn, 1, msh_patch.nel);
-    shape_fun_lapl = zeros (msh_patch.nqn, 1, msh_patch.nel);
+    shape_funs = zeros (msh_patch.nqn, sp_patch.nsh_max, msh_patch.nel);
+    shape_fun_grads = zeros (msh.rdim, msh_patch.nqn, sp_patch.nsh_max, msh_patch.nel);
+    shape_fun_hess = zeros (msh.rdim, msh.rdim, msh_patch.nqn, sp_patch.nsh_max, msh_patch.nel);
+    shape_fun_lapl = zeros (msh_patch.nqn, sp_patch.nsh_max, msh_patch.nel);
     
     for iel = 1:msh_patch.nel
       conn_iel = sp_patch.connectivity(:,iel);
@@ -138,6 +138,11 @@ function sp = sp_evaluate_element_list (space, msh, varargin)
   for ii = 1:numel(fields)
     if (isempty (sp.(fields{ii})))
       sp = rmfield (sp, fields{ii});
+    elseif (ii > 1)
+      field_size = size (sp.(fields{ii}));
+      inds = repmat ({':'}, 1, numel(field_size));
+      inds{cat_position(ii)-1} = 1:sp.nsh_max;
+      sp.(fields{ii}) = sp.(fields{ii})(inds{:});
     end
   end
   
