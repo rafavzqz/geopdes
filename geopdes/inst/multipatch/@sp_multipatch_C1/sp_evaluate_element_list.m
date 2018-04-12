@@ -82,7 +82,7 @@ function sp = sp_evaluate_element_list (space, msh, varargin)
     Cpatch = space.Cpatch{iptc};
     
     nsh = zeros (1, msh_patch.nel);
-    connectivity = zeros (1, msh_patch.nel);
+    connectivity = zeros (sp_patch.nsh_max, msh_patch.nel);
     shape_funs = zeros (msh_patch.nqn, 1, msh_patch.nel);
     shape_fun_grads = zeros (msh.rdim, msh_patch.nqn, 1, msh_patch.nel);
     shape_fun_hess = zeros (msh.rdim, msh.rdim, msh_patch.nqn, 1, msh_patch.nel);
