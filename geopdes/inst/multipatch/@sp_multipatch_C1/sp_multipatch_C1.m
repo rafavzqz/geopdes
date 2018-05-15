@@ -27,6 +27,7 @@
 %        sp_patch        (1 x npatch cell-array)       the input spaces, one space object for each patch (see sp_scalar and sp_vector)
 %        gnum            (1 x npatch cell-array)       global numbering of the degress of freedom (see mp_interface)
 %        constructor     function handle               function handle to construct the same discrete space in a different msh
+%        Cpatch          (1 x npatch cell-array)       write C^1 basis functions as lin. comb. of B-splines on the patch
 %
 %       METHODS
 %       Methods that give a structure with all the functions computed in a certain subset of the mesh
