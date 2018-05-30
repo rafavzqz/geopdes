@@ -11,7 +11,7 @@ You can download the latest version of GeoPDEs in the following link:
 # File contents
 
 * The GeoPDEs package.
-* The GeoPDEs hierarhical package (beta version).
+* The GeoPDEs hierarchical package (beta version).
 * The NURBS package.
 * Two technical reports, explaining the design of GeoPDEs.
 * A README file, with detailed installation instructions.
