@@ -10,6 +10,7 @@
 %   - a cell-array of function handles, to evaluate the function, the first order
 %       derivatives, and eventually the second order derivatives
 %   - a 4x4 matrix representing an affine transformation
+%   - a gsTHBSpline object coming from G+smo
 %
 % OUTPUT:
 %
@@ -71,6 +72,20 @@ function geometry = geo_load (in)
     geometry.map = @(ps) affine_map  (ps, in);
     geometry.map_der = @(ps) affine_map_der  (ps, in);
     geometry.map_der2 = @affine_map_der2;
+    
+%% geometry is given as a gsTHBSpline from G+smo
+  elseif (isa (in, 'gsTHBSpline'))
+    geometry.map = @(ps) gismo_map(ps,in,0); 
+    geometry.map_der = @(ps) gismo_map(ps,in,1); 
+    geometry.map_der2 = @(ps) gismo_map(ps,in,2);
+
+    thsb = in.basis();
+    for lev = 1:thsb.maxLevel()
+        for dir = 1:in.dim()
+            geometry.knots{lev}{dir} = thsb.knots(lev,dir);
+        end
+    end
+    
   else
     error ('geo_load: wrong input type');
   end
@@ -110,6 +125,13 @@ function geometry = geo_load (in)
       end
     end
     warning ('on', 'nrbderiv:SecondDerivative')
+        
+  elseif (isa (in, 'gsTHBSpline'))
+    for ibnd = 1:2*in.dim()
+      geometry.boundary(ibnd).map     = @(PTS) boundary_map (geometry.map, ibnd, PTS);
+      geometry.boundary(ibnd).map_der = @(PTS) boundary_map_der (geometry.map, geometry.map_der, ibnd, PTS);
+    end
+    
   else
     for ibnd = 1:6 % This loop should be until 2*ndim, but ndim is not known
       geometry.boundary(ibnd).map     = @(PTS) boundary_map (geometry.map, ibnd, PTS);

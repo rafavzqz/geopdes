@@ -36,7 +36,7 @@ function msh_fine = msh_refine (msh, nsub)
   auxiliary_geometry.rdim = msh.rdim;
   auxiliary_geometry.map = msh.map;
   auxiliary_geometry.map_der = msh.map_der;
-  if (isfield (struct (msh), 'map_der2'))
+  if (msh.der2) %(isfield (struct (msh), 'map_der2'))
     auxiliary_geometry.map_der2 = msh.map_der2;
   end
 
