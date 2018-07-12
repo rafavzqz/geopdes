@@ -81,7 +81,7 @@ function geometry = geo_load (in)
 
     thsb = in.basis();
     for lev = 1:thsb.maxLevel()
-        for dir = 1:in.dim()
+        for dir = 1:in.parDim()
             geometry.knots{lev}{dir} = thsb.knots(lev,dir);
         end
     end
@@ -127,7 +127,7 @@ function geometry = geo_load (in)
     warning ('on', 'nrbderiv:SecondDerivative')
         
   elseif (isa (in, 'gsTHBSpline'))
-    for ibnd = 1:2*in.dim()
+    for ibnd = 1:2*in.parDim()
       geometry.boundary(ibnd).map     = @(PTS) boundary_map (geometry.map, ibnd, PTS);
       geometry.boundary(ibnd).map_der = @(PTS) boundary_map_der (geometry.map, geometry.map_der, ibnd, PTS);
     end
