@@ -4,10 +4,10 @@
 %
 % The function solve the advection-diffusion problem
 %
-%    - div (mu(x) grad (u)) + div ( vel * u ) = f  in Omega
-%                                 mu(x) du/dn = g  on Gamma_N
-%                                           u = h  on Gamma_D
-%	
+%    - div (mu(x) grad (u)) + vel * grad (u) = f  in Omega
+%                                mu(x) du/dn = g  on Gamma_N
+%                                          u = h  on Gamma_D
+%
 % USAGE:
 %
 %  [geometry, msh, space, u] = solve_adv_diff_2d (problem_data, method_data)
@@ -22,6 +22,7 @@
 %  - f:            source term
 %  - g:            function for Neumann condition (if nmnn_sides is not empty)
 %  - h:            function for Dirichlet boundary condition
+%  - vel:          the velocity vector
 %
 %  method_data : a structure with discretization data. Its fields are:
 %  - degree:     degree of the spline functions.

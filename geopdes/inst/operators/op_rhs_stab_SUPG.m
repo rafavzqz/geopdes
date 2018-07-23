@@ -68,13 +68,16 @@ function rhs = op_rhs_stab_SUPG (space, msh, coeff_mu, vel, coeff)
       coeff_times_jw = bsxfun (@times, jacdet_weights_tau, coeff(:,:,iel));
       jacdet_weights_vel = reshape (bsxfun (@times, coeff_times_jw, vel_iel), [ndir, msh.nqn, 1]);
 
-      gradv_iel = reshape (gradv(:,:,:,1:space.nsh(iel),iel), space.ncomp*ndir, msh.nqn, space.nsh(iel));
+      gradv_iel = reshape (gradv(:,:,:,:,iel), space.ncomp*ndir, msh.nqn, space.nsh_max);
 
       %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       aux_val = bsxfun (@times, jacdet_weights_vel, gradv_iel);
 
       rhs_loc = sum (sum (aux_val, 1), 2);
-      rhs(space.connectivity(1:space.nsh(iel), iel)) = rhs(space.connectivity(1:space.nsh(iel), iel)) + rhs_loc(:); 
+      
+      indices = find (space.connectivity(:,iel));
+      rhs_loc = rhs_loc(indices); conn_iel = space.connectivity(indices,iel);
+      rhs(conn_iel) = rhs(conn_iel) + rhs_loc(:);
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_rhs_stab_SUPG: singular map in element number %d', iel)
     end

@@ -13,7 +13,7 @@
 %   rhs: assembled right-hand side
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco, Rafael Vazquez
-% Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2011, 2017 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -37,8 +37,8 @@ function rhs = op_f_vxn_3d (spv, msh, coeff)
     if (all (msh.jacdet(:,iel)))
       jacdet_weights = msh.jacdet(:, iel) .* msh.quad_weights(:, iel);
 
-      rhs_loc = zeros (spv.nsh(iel), 1);
-      for idof = 1:spv.nsh(iel)
+      rhs_loc = zeros (spv.nsh_max, 1);
+      for idof = 1:spv.nsh_max
         ishp = squeeze(spv.shape_functions(:,:,idof,iel));
         ishp_x_n = [ishp(2,:) .* msh.normal(3,:,iel) - ...
                        ishp(3,:) .* msh.normal(2,:,iel); ...
@@ -51,11 +51,12 @@ function rhs = op_f_vxn_3d (spv, msh, coeff)
             sum (jacdet_weights .* sum(ishp_x_n .* coeff(:, :, iel), 1).');
       end
 
-      rhs(spv.connectivity(1:spv.nsh(iel), iel)) = rhs(spv.connectivity(1:spv.nsh(iel), iel)) + rhs_loc;
+      indices = find (spv.connectivity(:,iel));
+      rhs_loc = rhs_loc(indices); conn_iel = spv.connectivity(indices,iel);
+      rhs(conn_iel) = rhs(conn_iel) + rhs_loc(:);
     else
       warning ('geopdes:jacdet_zero_at_quad_node', 'op_f_vxn_3d: singular map in element number %d', iel)
     end
   end
 
 end
-

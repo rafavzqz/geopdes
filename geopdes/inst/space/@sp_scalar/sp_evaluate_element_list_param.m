@@ -147,7 +147,7 @@ if (gradient)
                                 msh.ndim, msh.nqn, sp.nsh_max, msh.nel);
 end
 
-if (hessian && isfield (msh, 'geo_map_der2'))
+if (hessian && (isfield (msh, 'geo_map_der2') || msh.nel == 0))
   for idim = 1:msh.ndim
     shape_fun_hess = shh{idim};
     for jdim = setdiff (1:msh.ndim, idim)

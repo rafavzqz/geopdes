@@ -80,9 +80,9 @@ function varargout = op_mat_stab_SUPG (spu, spv, msh, coeff_mu, grad_coeff, vel)
       jacdet_weights_vel = reshape (bsxfun (@times, jacdet_weights_tau, vel_iel), [ndir, msh.nqn, 1, 1]);
 
       %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      gradu_iel = reshape (gradu(:,:,:,1:spu.nsh(iel),iel), spu.ncomp*ndir, msh.nqn, 1, spu.nsh(iel));
-      laplu_iel = reshape (laplu(:,:,1:spu.nsh(iel),iel), spu.ncomp, msh.nqn, 1, spu.nsh(iel));
-      gradv_iel = reshape (gradv(:,:,:,1:spv.nsh(iel),iel), spv.ncomp*ndir, msh.nqn, spv.nsh(iel), 1);
+      gradu_iel = reshape (gradu(:,:,:,:,iel), spu.ncomp*ndir, msh.nqn, 1, spu.nsh_max);
+      laplu_iel = reshape (laplu(:,:,:,iel), spu.ncomp, msh.nqn, 1, spu.nsh_max);
+      gradv_iel = reshape (gradv(:,:,:,:,iel), spv.ncomp*ndir, msh.nqn, spv.nsh_max, 1);
 
       %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       gradv_dot_vel_times_jw = sum (bsxfun (@times, jacdet_weights_vel, gradv_iel), 1);
@@ -95,11 +95,13 @@ function varargout = op_mat_stab_SUPG (spu, spv, msh, coeff_mu, grad_coeff, vel)
       aux_sum = laplu_times_mu + gradu_dot_gradmu + gradu_dot_vel;
       aux_val = bsxfun (@times, gradv_dot_vel_times_jw, aux_sum);
 
-      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = reshape (sum (sum (aux_val, 2), 1), spv.nsh(iel), spu.nsh(iel));
+      elementary_values = reshape (sum (sum (aux_val, 2), 1), spv.nsh_max, spu.nsh_max);
       
-      [rows_loc, cols_loc] = ndgrid (spv.connectivity(1:spv.nsh(iel),iel), spu.connectivity(1:spu.nsh(iel),iel));
-      rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc;
-      cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc;
+      [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
+      indices = rows_loc & cols_loc;
+      rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc(indices);
+      cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc(indices);
+      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = elementary_values(indices);
       ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);
 
     else
