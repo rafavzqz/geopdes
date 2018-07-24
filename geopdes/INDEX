@@ -112,6 +112,7 @@ Operators: functions to assemble different matrices and vector
  op_gradu_v_otimes_n
  op_gradv_n_f
  op_gradv_n_u
+ op_gradu_n_gradv_n
  op_pn_v
  op_su_ev
  op_udotn_vdotn
