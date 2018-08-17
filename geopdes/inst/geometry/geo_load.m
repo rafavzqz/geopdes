@@ -75,9 +75,11 @@ function geometry = geo_load (in)
     
 %% geometry is given as a gsTHBSpline from G+smo
   elseif (isa (in, 'gsTHBSpline'))
+    geometry.gismo = in;
     geometry.map = @(ps) gismo_map(ps,in,0); 
     geometry.map_der = @(ps) gismo_map(ps,in,1); 
     geometry.map_der2 = @(ps) gismo_map(ps,in,2);
+    geometry.rdim = in.geoDim;
 
     thsb = in.basis();
     for lev = 1:thsb.maxLevel()

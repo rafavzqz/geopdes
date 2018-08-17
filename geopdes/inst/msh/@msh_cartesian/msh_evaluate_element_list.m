@@ -67,6 +67,7 @@ function msh_col = msh_evaluate_element_list (msh, elem_list, varargin)
 
   if (isempty (elem_list))
     msh_col.quad_weights = [];
+    msh_col.quad_nodes = [];
     msh_col.geo_map = [];
     msh_col.geo_map_jac = [];
     msh_col.geo_map_der2 = [];
@@ -87,7 +88,7 @@ function msh_col = msh_evaluate_element_list (msh, elem_list, varargin)
     xx = cell (msh.ndim, 1);
     [xx{:}] = ndgrid (qqn{iel}{:});
     for idim = 1:msh.ndim
-      quad_nodes(idim,:,iel) = xx{idim}(:)';
+      msh_col.quad_nodes(idim,:,iel) = xx{idim}(:)'; 
     end
 
     if (~isempty (msh.qw))
