@@ -142,12 +142,45 @@ for iref = press_sides
 end
 end
 
+symm_dofs = [];
+if (exist ('symm_sides', 'var'))
+for iref = symm_sides
+  if (~strcmpi (space.transform, 'grad-preserving'))
+    error ('The symmetry condition is only implemented for spaces with grad-preserving transform')
+  end
+  for iside = 1:numel(boundaries(iref).nsides)
+    patch = boundaries(iref).patches(iside);
+    side = boundaries(iref).faces(iside);
+    msh_side = msh_eval_boundary_side (msh.msh_patch{patch}, side);
+    normal_comp = zeros (msh_side.rdim, msh_side.nqn * msh_side.nel);
+    for idim = 1:msh_side.rdim
+      normal_comp(idim,:) = reshape (msh_side.normal(idim,:,:), 1, msh_side.nqn*msh_side.nel);
+    end
+    
+    parallel_to_axes = false;
+    for ind = 1:msh_side.rdim
+      ind2 = setdiff (1:msh_side.rdim, ind);
+      if (all (all (abs (normal_comp(ind2,:)) < 1e-10)))
+        bnd_side = space.sp_patch{iptc}.boundary(side);
+        dofs = bnd_side.dofs(bnd_side.comp_dofs{ind});
+        symm_dofs = union (symm_dofs, space.gnum{iptc}(dofs));
+        parallel_to_axes = true;
+        break
+      end
+    end
+    if (~parallel_to_axes)
+      error ('mp_solve_linear_elasticity: We have only implemented the symmetry condition for boundaries parallel to the axes')
+    end
+  end
+end
+end
+
 % Apply Dirichlet boundary conditions
 u = zeros (space.ndof, 1);
 [u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space, msh, h, drchlt_sides);
 u(drchlt_dofs) = u_drchlt;
 
-int_dofs = setdiff (1:space.ndof, drchlt_dofs);
+int_dofs = setdiff (1:space.ndof, union (drchlt_dofs, symm_dofs));
 rhs(int_dofs) = rhs(int_dofs) - mat(int_dofs, drchlt_dofs) * u_drchlt;
 
 % Solve the linear system
