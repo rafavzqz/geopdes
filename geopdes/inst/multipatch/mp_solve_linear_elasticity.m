@@ -148,7 +148,7 @@ for iref = symm_sides
   if (~strcmpi (space.transform, 'grad-preserving'))
     error ('The symmetry condition is only implemented for spaces with grad-preserving transform')
   end
-  for iside = 1:numel(boundaries(iref).nsides)
+  for iside = 1:boundaries(iref).nsides
     patch = boundaries(iref).patches(iside);
     side = boundaries(iref).faces(iside);
     msh_side = msh_eval_boundary_side (msh.msh_patch{patch}, side);
@@ -161,9 +161,9 @@ for iref = symm_sides
     for ind = 1:msh_side.rdim
       ind2 = setdiff (1:msh_side.rdim, ind);
       if (all (all (abs (normal_comp(ind2,:)) < 1e-10)))
-        bnd_side = space.sp_patch{iptc}.boundary(side);
+        bnd_side = space.sp_patch{patch}.boundary(side);
         dofs = bnd_side.dofs(bnd_side.comp_dofs{ind});
-        symm_dofs = union (symm_dofs, space.gnum{iptc}(dofs));
+        symm_dofs = union (symm_dofs, space.gnum{patch}(dofs));
         parallel_to_axes = true;
         break
       end
