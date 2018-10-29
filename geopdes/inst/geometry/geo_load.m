@@ -24,6 +24,7 @@
 % Copyright (C) 2013 Rafael Vazquez
 % Copyright (C) 2014 Elena Bulgarello, Carlo de Falco, Sara Frizziero
 % Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2018 Ondine Chanon
 % 
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -78,12 +79,22 @@ function geometry = geo_load (in)
     geometry.gismo = in;
     geometry.map = @(ps) gismo_map(ps,in,0); 
     geometry.map_der = @(ps) gismo_map(ps,in,1); 
-    geometry.map_der2 = @(ps) gismo_map(ps,in,2);
+    geometry.map_der2 = @(ps) gismo_map(ps,in,2); % TODO
     geometry.rdim = in.geoDim;
-
+    geometry.order = zeros(1,in.parDim);
+    geometry.regularity = zeros(1,in.parDim);
+    
     thsb = in.basis();
-    for lev = 1:thsb.maxLevel()
-        for dir = 1:in.parDim()
+    for dir = 1:in.parDim
+        orderDir = thsb.degree(dir)+1;
+        geometry.order(dir) = orderDir; 
+        
+        knots1dir = thsb.knots(1,dir);
+        geometry.regularity(dir) = orderDir - 1 - ...
+            max(histc(knots1dir(orderDir+1:end-orderDir), unique(knots1dir(orderDir+1:end-orderDir))));
+        
+        geometry.knots{1}{dir} = knots1dir;
+        for lev = 2:thsb.maxLevel
             geometry.knots{lev}{dir} = thsb.knots(lev,dir);
         end
     end
@@ -224,7 +235,15 @@ function F = boundary_map (map, iside, pts)
       pts_aux{ind2} = 1;
     end
   else
-    error ('For the boundary, a cell array should be passed as the argument')
+      ndim = size(pts,1)+1;
+      ind = setdiff(1:ndim, ind2);
+      
+      pts_aux(ind,:) = pts;
+      if (mod(iside,2)==0)
+          pts_aux(ind2,:) = ones(1,size(pts,2));
+      else
+          pts_aux(ind2,:) = zeros(1,size(pts,2));
+      end
   end
 
   F = map (pts_aux);
@@ -248,7 +267,15 @@ function varargout = boundary_map_der (map, map_der, iside, pts)
       pts_aux{ind2} = 1;
     end
   else
-    error ('For the boundary, a cell array should be passed as the argument')
+      ndim = size(pts,1)+1;
+      ind = setdiff(1:ndim, ind2);
+      
+      pts_aux(ind,:) = pts;
+      if (mod(iside,2)==0)
+          pts_aux(ind2,:) = ones(1,size(pts,2));
+      else
+          pts_aux(ind2,:) = zeros(1,size(pts,2));
+      end
   end
 
   DF = map_der (pts_aux);
