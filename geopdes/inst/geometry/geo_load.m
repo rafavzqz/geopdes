@@ -11,6 +11,7 @@
 %       derivatives, and eventually the second order derivatives
 %   - a 4x4 matrix representing an affine transformation
 %   - a gsTHBSpline object coming from G+smo
+%   - a gsTensorBSpline object coming from G+smo
 %
 % OUTPUT:
 %
@@ -82,7 +83,7 @@ function geometry = geo_load (in)
     geometry.map_der2 = @(ps) gismo_map(ps,in,2); % TODO
     geometry.rdim = in.geoDim;
     geometry.order = zeros(1,in.parDim);
-    geometry.regularity = zeros(1,in.parDim);
+    % geometry.regularity = zeros(1,in.parDim); % TODO
     
     thsb = in.basis();
     for dir = 1:in.parDim
@@ -90,13 +91,34 @@ function geometry = geo_load (in)
         geometry.order(dir) = orderDir; 
         
         knots1dir = thsb.knots(1,dir);
-        geometry.regularity(dir) = orderDir - 1 - ...
-            max(histc(knots1dir(orderDir+1:end-orderDir), unique(knots1dir(orderDir+1:end-orderDir))));
+        % geometry.regularity(dir) = orderDir - 1 - ...
+        %     max(histc(knots1dir(orderDir+1:end-orderDir), unique(knots1dir(orderDir+1:end-orderDir))));
         
         geometry.knots{1}{dir} = knots1dir;
         for lev = 2:thsb.maxLevel
             geometry.knots{lev}{dir} = thsb.knots(lev,dir);
         end
+    end
+    
+%% geometry is given as a gsTensorBSpline from G+smo
+  elseif (isa (in, 'gsTensorBSpline'))
+    geometry.gismo = in;
+    geometry.map = @(ps) gismo_map(ps,in,0); 
+    geometry.map_der = @(ps) gismo_map(ps,in,1); 
+    geometry.map_der2 = @(ps) gismo_map(ps,in,2); % TODO
+    geometry.rdim = in.geoDim;
+    geometry.order = zeros(1,in.parDim);
+    % geometry.regularity = zeros(1,in.parDim); % TODO
+    
+    thsb = in.basis();
+    for dir = 1:in.parDim
+        orderDir = thsb.degree(dir)+1;
+        geometry.order(dir) = orderDir; 
+        
+        knotsDir = thsb.knots(dir);
+        geometry.knots{dir} = knotsDir;
+        % geometry.regularity(dir) = orderDir - 1 - ...
+        %     max(histc(knotsDir(orderDir+1:end-orderDir), unique(knotsDir(orderDir+1:end-orderDir))));
     end
     
   else
@@ -139,7 +161,7 @@ function geometry = geo_load (in)
     end
     warning ('on', 'nrbderiv:SecondDerivative')
         
-  elseif (isa (in, 'gsTHBSpline'))
+  elseif (isa (in, 'gsTHBSpline') || isa (in, 'gsTensorBSpline'))
     for ibnd = 1:2*in.parDim()
       geometry.boundary(ibnd).map     = @(PTS) boundary_map (geometry.map, ibnd, PTS);
       geometry.boundary(ibnd).map_der = @(PTS) boundary_map_der (geometry.map, geometry.map_der, ibnd, PTS);
