@@ -120,7 +120,7 @@ function sp = sp_multipatch (spaces, msh, interfaces, boundary_interfaces, gluin
       Nf = cumsum ([0 sp.ndof_per_patch]);
       for iptc = 1:sp.npatch
         sp.gnum{iptc} = Nf(iptc)+1:Nf(iptc+1);
-        sp.dofs_ornt = ones (1, spaces{iptc}.ndof);
+        sp.dofs_ornt{iptc} = ones (1, spaces{iptc}.ndof);
       end
     end
   else

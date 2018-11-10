@@ -49,10 +49,13 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options)
   nopts = numel (options);
 
   ndim = numel (space.knots);
-
+  
   endpoints = zeros (2, ndim);
   if (isfield (geometry, 'nurbs'))
     nurbs = geometry.nurbs;
+    if (ndim == 1)
+      nurbs.knots = {nurbs.knots};
+    end
     for idim=1:ndim
       endpoints(:,idim) = nurbs.knots{idim}([nurbs.order(idim), end-nurbs.order(idim)+1]);
     end
