@@ -1,3 +1,4 @@
+
 % geopdes_inv: the inverse matrix or, for codimension > 0 (rdim > ndim)
 % the Moore-Penrose pseudo-inverse.
 %
@@ -6,7 +7,7 @@
 %   J = (DF^t * DF)^{-1} * DF^t
 %   det = sqrt ( det(DF^t * DF)^{-1} )
 %
-%  [JinvT, det] = geopdes_invT__ (geo_map_jac)
+%  [JinvT, det] = geopdes_inv__ (geo_map_jac)
 %
 % OUTPUT:
 %   Jinv: the computed matrix evaluated at every point. Size (ndim x rdim x nqn x nel)

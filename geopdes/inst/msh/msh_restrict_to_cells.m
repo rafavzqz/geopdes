@@ -59,7 +59,9 @@ function msh_col = msh_restrict_to_cells (msh, elems)
   msh_col.quad_weights = msh.quad_weights(:,global_elem_list);
   msh_col.geo_map      = msh.geo_map(:,:,global_elem_list);
   msh_col.geo_map_jac  = msh.geo_map_jac(:,:,:,global_elem_list);
-  msh_col.geo_map_der2 = msh.geo_map_der2(:,:,:,:,global_elem_list);
+  if isfield(msh_col, 'geo_map_der2')
+    msh_col.geo_map_der2 = msh.geo_map_der2(:,:,:,:,global_elem_list);
+  end
   msh_col.jacdet       = msh.jacdet(:,global_elem_list);
   msh_col.element_size = msh.element_size(:,global_elem_list);
   

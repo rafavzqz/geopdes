@@ -41,7 +41,11 @@
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
 
-function geometry = geo_load (in)
+function geometry = geo_load (in, embedInR3)
+
+  if nargin < 2
+    embedInR3 = false;
+  end
 
   if (isstruct (in) && isfield (in, 'form') && strcmpi (in.form, 'B-NURBS')) 
 %% geometry is given as a NURBS struct
@@ -128,12 +132,16 @@ function geometry = geo_load (in)
 % In case the geometry is a NURBS structure, we use the NURBS toolbox
 % This allows to use a rectangular parametric domain, instead of [0,1]^n.
   if (isfield (geometry, 'nurbs'))
-    if (any (abs(geometry.nurbs.coefs(3,:)) > 1e-12))
-      rdim = 3;
-    elseif (any (abs(geometry.nurbs.coefs(2,:)) > 1e-12))
-      rdim = 2;
+    if ~embedInR3
+      if (any (abs(geometry.nurbs.coefs(3,:)) > 1e-12))
+        rdim = 3;
+      elseif (any (abs(geometry.nurbs.coefs(2,:)) > 1e-12))
+        rdim = 2;
+      else
+        rdim = 1;
+      end
     else
-      rdim = 1;
+      rdim = 3;
     end
     geometry.rdim = rdim;
 
