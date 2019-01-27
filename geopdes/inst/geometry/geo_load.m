@@ -1,10 +1,10 @@
 % GEO_LOAD: create a geometry structure from a file or a cell-array of functions.
 %
-% geometry = geo_load (input)
+% geometry = geo_load (in [, embedInR3])
 %
 % INPUT :
 %
-%   The input variable may be either
+%   The input variable in may be either
 %   - a structure representing a NURBS surface or volume, as in the NURBS toolbox
 %   - a string variable with the name of the file to be read (see doc/geo_specs_v21.txt)
 %   - a cell-array of function handles, to evaluate the function, the first order
@@ -12,6 +12,9 @@
 %   - a 4x4 matrix representing an affine transformation
 %   - a gsTHBSpline object coming from G+smo
 %   - a gsTensorBSpline object coming from G+smo
+%   
+%   embedInR3: boolean (default: false), true if the input geometry has to
+%     be considered in R^3 in any case.
 %
 % OUTPUT:
 %
@@ -82,47 +85,57 @@ function geometry = geo_load (in, embedInR3)
 %% geometry is given as a gsTHBSpline from G+smo
   elseif (isa (in, 'gsTHBSpline'))
     geometry.gismo = in;
-    geometry.map = @(ps) gismo_map(ps,in,0); 
-    geometry.map_der = @(ps) gismo_map(ps,in,1); 
-    geometry.map_der2 = @(ps) gismo_map(ps,in,2); % TODO
+    thsb = in.basis;
+	geometry.map = @(ps) gismo_map (ps, in, 0); 
+    geometry.map_der = @(ps) gismo_map (ps, in, 1); 
+    geometry.map_der2 = @(ps) gismo_map (ps, in, 2);
     geometry.rdim = in.geoDim;
-    geometry.order = zeros(1,in.parDim);
-    % geometry.regularity = zeros(1,in.parDim); % TODO
+    geometry.order = zeros (1, in.parDim);
+    geometry.regularity = zeros (thsb.maxLevel, in.parDim);
     
-    thsb = in.basis();
     for dir = 1:in.parDim
-      orderDir = thsb.degree(dir)+1;
+      orderDir = thsb.degree(dir) + 1;
       geometry.order(dir) = orderDir; 
       
-      knots1dir = thsb.knots(1,dir);
-      % geometry.regularity(dir) = orderDir - 1 - ...
-      %     max(histc(knots1dir(orderDir+1:end-orderDir), unique(knots1dir(orderDir+1:end-orderDir))));
-      
-      geometry.knots{1}{dir} = knots1dir;
-      for lev = 2:thsb.maxLevel
-          geometry.knots{lev}{dir} = thsb.knots(lev,dir);
+      for lev = 1:thsb.maxLevel
+        knotsLevDir = thsb.knots(lev, dir);
+        geometry.knots{lev}{dir} = knotsLevDir;
+        
+        midknots = knotsLevDir(orderDir+1:end-orderDir);
+        if isempty(midknots)
+          geometry.regularity(lev, dir) = orderDir - 2;
+        else
+          geometry.regularity(lev, dir) = orderDir-1 - max (histc (midknots, ...
+                                                       unique (midknots)));
+        end
       end
     end
     
 %% geometry is given as a gsTensorBSpline from G+smo
   elseif (isa (in, 'gsTensorBSpline'))
     geometry.gismo = in;
-    geometry.map = @(ps) gismo_map(ps,in,0); 
-    geometry.map_der = @(ps) gismo_map(ps,in,1); 
-    geometry.map_der2 = @(ps) gismo_map(ps,in,2); % TODO
+    geometry.map = @(ps) gismo_map (ps, in, 0); 
+    geometry.map_der = @(ps) gismo_map (ps, in, 1); 
+    geometry.map_der2 = @(ps) gismo_map (ps, in, 2);
     geometry.rdim = in.geoDim;
-    geometry.order = zeros(1,in.parDim);
-    % geometry.regularity = zeros(1,in.parDim); % TODO
+    geometry.order = zeros (1, in.parDim);
+    geometry.regularity = zeros (1, in.parDim);
     
-    thsb = in.basis();
+    thsb = in.basis;
     for dir = 1:in.parDim
-      orderDir = thsb.degree(dir)+1;
+      orderDir = thsb.degree(dir) + 1;
       geometry.order(dir) = orderDir; 
       
       knotsDir = thsb.knots(dir);
       geometry.knots{dir} = knotsDir;
-      % geometry.regularity(dir) = orderDir - 1 - ...
-      %     max(histc(knotsDir(orderDir+1:end-orderDir), unique(knotsDir(orderDir+1:end-orderDir))));
+      
+      midknots = knotsDir(orderDir+1:end-orderDir);
+	  if isempty(midknots)
+		geometry.regularity(dir) = orderDir - 2;
+	  else
+		geometry.regularity(dir) = orderDir-1 - max (histc (midknots, ...
+												     unique (midknots)));
+	  end
     end
     
   else
@@ -168,11 +181,15 @@ function geometry = geo_load (in, embedInR3)
       end
     end
     warning ('on', 'nrbderiv:SecondDerivative')
-        
+    
   elseif (isa (in, 'gsTHBSpline') || isa (in, 'gsTensorBSpline'))
-    for ibnd = 1:2*in.parDim()
-      geometry.boundary(ibnd).map     = @(PTS) boundary_map (geometry.map, ibnd, PTS);
-      geometry.boundary(ibnd).map_der = @(PTS) boundary_map_der (geometry.map, geometry.map_der, ibnd, PTS);
+    if in.parDim > 1
+      for ibnd = 1:2*in.parDim
+        geometry.boundary(ibnd).map     = @(PTS) boundary_map (geometry.map, ibnd, PTS);
+        geometry.boundary(ibnd).map_der = @(PTS) boundary_map_der (geometry.map, geometry.map_der, ibnd, PTS);
+      end
+    else
+      warning('Load of boundary map, map_der of G+smo geometry of ndim = 1 not implemented yet.')
     end
     
   else
@@ -265,14 +282,14 @@ function F = boundary_map (map, iside, pts)
       pts_aux{ind2} = 1;
     end
   else
-    ndim = size(pts,1)+1;
-    ind = setdiff(1:ndim, ind2);
+    ndim = size (pts,1) + 1;
+    ind = setdiff (1:ndim, ind2);
     
     pts_aux(ind,:) = pts;
-    if (mod(iside,2)==0)
-      pts_aux(ind2,:) = ones(1,size(pts,2));
+    if (mod (iside,2) == 0)
+      pts_aux(ind2,:) = ones (1, size(pts,2));
     else
-      pts_aux(ind2,:) = zeros(1,size(pts,2));
+      pts_aux(ind2,:) = zeros (1, size(pts,2));
     end
   end
 
@@ -297,14 +314,14 @@ function varargout = boundary_map_der (map, map_der, iside, pts)
       pts_aux{ind2} = 1;
     end
   else
-      ndim = size(pts,1)+1;
-      ind = setdiff(1:ndim, ind2);
+      ndim = size (pts, 1) + 1;
+      ind = setdiff (1:ndim, ind2);
       
       pts_aux(ind,:) = pts;
-      if (mod(iside,2)==0)
-          pts_aux(ind2,:) = ones(1,size(pts,2));
+      if (mod (iside,2) == 0)
+          pts_aux(ind2,:) = ones (1, size(pts,2));
       else
-          pts_aux(ind2,:) = zeros(1,size(pts,2));
+          pts_aux(ind2,:) = zeros (1, size(pts,2));
       end
   end
 
@@ -321,13 +338,13 @@ function varargout = boundary_map_der (map, map_der, iside, pts)
 end
 
 % These two functions are used to compute mappings from G+smo geometries
-function varargout = gismo_map(pts, in, der)
-  if ( iscell(pts) ) 
-      ndim = length(pts);
-      npts = prod(cellfun(@length,pts));
-      pts = cartesian_product_from_cell(pts);
+function varargout = gismo_map (pts, in, der)
+  if ( iscell (pts) ) 
+      ndim = length (pts);
+      npts = prod (cellfun (@length,pts));
+      pts = cartesian_product_from_cell (pts);
   else
-      [ndim, npts] = size(pts);
+      [ndim, npts] = size (pts);
   end
   
   if (der == 0 || nargout > 1)
@@ -335,8 +352,9 @@ function varargout = gismo_map(pts, in, der)
     varargout{1} = F;
   end
   if (der == 1 || nargout > 2)
-    % g+smo dim: rdim x (ndim x npts) ; geopdes dim: rdim x ndim x npts
-    jac = reshape(in.jacobian(pts),[],ndim,npts); 
+    % g+smo dim: rdim x (ndim x npts)
+    % geopdes dim: rdim x ndim x npts
+    jac = reshape (in.jacobian(pts), [], ndim, npts); 
     if nargout == 1
         varargout{1} = jac;
     else
@@ -345,11 +363,12 @@ function varargout = gismo_map(pts, in, der)
   end
   if (der == 2)
     rdim = in.geoDim;
-    % g+smo dim: rdim, (ndim x ndim) x npts ; geopdes dim rdim x ndim x ndim x npts
-    hess = zeros(rdim,ndim,ndim,npts);
-%     for dir = 1:rdim %% TODO uncomment and check!!!!
-%       hess(dir,:,:,:) = reshape(in.hess(pts,dir),ndim,ndim,npts) and check!
-%     end
+    % g+smo dim: rdim, (ndim x ndim) x npts
+    % geopdes dim rdim x ndim x ndim x npts
+    hess = zeros (rdim, ndim, ndim, npts);
+    for dir = 1:rdim
+      hess(dir,:,:,:) = reshape (in.hess(pts, dir), ndim, ndim, npts);
+    end
     if nargout == 1
       varargout{1} = hess;
     elseif nargout == 3
@@ -358,18 +377,18 @@ function varargout = gismo_map(pts, in, der)
   end
 end
 
-function pts_aux = cartesian_product_from_cell(pts)
+function pts_aux = cartesian_product_from_cell (pts)
   % create cartesian product points from cell information
-  s = cellfun(@length,pts);
-  s_cell = cell(length(s),1);
+  s = cellfun (@length, pts);
+  s_cell = cell (length(s), 1);
   for ii = 1:length(s)
       s_cell{ii} = 1:s(ii);
   end
-  x = cell(1,numel(s_cell));
-  [x{:}] = ndgrid(s_cell{:});
+  x = cell (1, numel (s_cell));
+  [x{:}] = ndgrid (s_cell{:});
   pts_aux = [];
-  for ii=1:length(s)
-      pts_aux = [pts_aux; reshape(pts{ii}(x{ii}),1,[])];
+  for ii = 1:length(s)
+      pts_aux = [pts_aux ; reshape( pts{ii}(x{ii}), 1, [] )];
   end
 end
 
