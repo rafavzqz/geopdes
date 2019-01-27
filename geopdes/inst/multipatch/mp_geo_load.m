@@ -7,7 +7,7 @@
 %   The input variable may be either
 %   - an array of NURBS structures representing a nurbs geometry, as in the NURBS toolbox
 %   - a string variable with the name of the file to be read (see doc/geo_specs_mp_v21.txt)
-%   - an (array of) gsTHBSpline objects coming from G+smo --> multipatches
+%   - an (array of) gsTHBSpline or gsTensorBSpline objects coming from G+smo --> multipatches
 %     is not supported yet in this case.
 %
 %   In the second case, the information is automatically generated with the function
@@ -142,7 +142,7 @@ function [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = m
     subdomains(1).name = 'SUBDOMAIN 1';
     subdomains(1).patches = 1:numel(in);
     
-  elseif isa(in(1), 'gsTHBSpline') %TODO multipatch G+smo
+  elseif (isa (in(1), 'gsTHBSpline') || isa (in(1), 'gsTensorBSpline')) % TODO 
     warning('Multipatches is not implemented for G+smo geometries, only the first patch is considered.')
     geometry = geo_load(in(1));
     boundaries = []; interfaces = []; subdomains = []; boundary_interfaces = [];
@@ -205,7 +205,7 @@ function [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = m
       boundary_interfaces = [];
     end
     
-  elseif (~isa(in, 'gsTHBSpline')) %TODO multipatch G+smo
+  elseif (~isa (in(1), 'gsTHBSpline') && ~isa (in(1), 'gsTensorBSpline')) % TODO
     error('Multiple patches are only implemented for NURBS geometries')
   end
   
