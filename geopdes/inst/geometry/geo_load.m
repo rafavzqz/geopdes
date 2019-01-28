@@ -92,6 +92,9 @@ function geometry = geo_load (in, embedInR3)
     geometry.rdim = in.geoDim;
     geometry.order = zeros (1, in.parDim);
     geometry.regularity = zeros (thsb.maxLevel, in.parDim);
+    if thsb.maxLevel > 1
+        geometry.nsub_refine = 2 * ones (1, in.parDim); % TODO: generalize, read this information from G+smo
+    end
     
     for dir = 1:in.parDim
       orderDir = thsb.degree(dir) + 1;
