@@ -27,7 +27,6 @@
 %        sp_patch        (1 x npatch cell-array)       the input spaces, one space object for each patch (see sp_scalar and sp_vector)
 %        gnum            (1 x npatch cell-array)       global numbering of the degress of freedom (see mp_interface)
 %        constructor     function handle               function handle to construct the same discrete space in a different msh
-%        Cpatch          (1 x npatch cell-array)       write C^1 basis functions as lin. comb. of B-splines on the patch
 %
 %       METHODS
 %       Methods that give a structure with all the functions computed in a certain subset of the mesh
@@ -74,11 +73,12 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_inte
   if (msh.ndim ~= 2 || msh.rdim ~= 2)
     error ('Only implemented for planar surfaces')
   end
+  
 
-  for iptc = 1:numel(geometry)
-    if (any (geometry(iptc).nurbs.order > 2))
-      error ('For now, only bilinear patches are implemented')
-    end
+   for iptc = 1:numel(geometry)
+%     if (any (geometry(iptc).nurbs.order > 2))
+%       error ('For now, only bilinear patches are implemented')
+%     end
     knots = spaces{iptc}.knots;
     breaks = cellfun (@unique, knots, 'UniformOutput', false);
     mult = cellfun (@histc, knots, breaks, 'UniformOutput', false);
@@ -231,13 +231,146 @@ end
 % And for val_grad, I have to change the sign for coeff2, but not for coeff1
 % But everything seems to work!!!
 
-function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
+function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces) %based on first Mario's notes (not refinement mask)
+
 
   for iref = 1:numel(interfaces)
     patch(1) = interfaces(iref).patch1;
     patch(2) = interfaces(iref).patch2;
     side(1) = interfaces(iref).side1;
     side(2) = interfaces(iref).side2;
+  
+  %STEP 2 - Stuff necessary to evaluate the geo_mapping and its derivatives
+  for ii = 1:2 % The two patches (L-R)
+    brk = cell (1,msh.ndim);
+    knots = space.sp_patch{patch(ii)}.knots;
+    for idim = 1:msh.ndim
+        %Greville points for G^1 conditions system
+        geo_knot_v1=geometry(patch(ii)).nurbs.knots{1};
+        p1=geometry(patch(ii)).nurbs.order(1);
+        aug_geo_knot1=[geo_knot_v1(1)*ones(1,p1+1)  repelem(geo_knot_v1(p1+1:end-p1-1),3)  geo_knot_v1(end)*ones(1,p1+1)];
+        geo_knot_v2=geometry(patch(ii)).nurbs.knots{2};
+        p2=geometry(patch(ii)).nurbs.order(2);
+        aug_geo_knot2=[geo_knot_v2(1)*ones(1,p2+1)  repelem(geo_knot_v2(p2+1:end-p2-1),3)  geo_knot_v2(end)*ones(1,p2+1)];
+        grev_pts{1}=aveknt(aug_geo_knot1,p1+1);
+        grev_pts{2}=aveknt(aug_geo_knot2,p2+1);
+        if (numel(grev_pts{idim}) > 1)
+            brk{idim} = [knots{idim}(1), grev_pts{idim}(1:end-1) + diff(grev_pts{idim})/2, knots{idim}(end)];
+        else
+            brk{idim} = [knots{idim}(1) knots{idim}(end)];
+        end
+    end  
+    msh_grev = msh_cartesian (brk, grev_pts, [], geometry(patch(ii)), 'boundary', true, 'der2',false);
+    msh_side_int{ii} = msh_boundary_side_from_interior (msh_grev, side(ii));
+    msh_side_int{ii} = msh_precompute (msh_side_int{ii});      
+    geo_map_jac{ii} = msh_side_int{ii}.geo_map_jac; %rdim x ndim x 1 x n_grev_pts (rdim->physical space, ndim->parametric space)
+  end
+  
+  %STEP 3 - Assembling and solving G^1 conditions system  %this must depend on orientation!
+  DuFL_x=squeeze(geo_map_jac{1}(1,1,:,:)); %column vector
+  DuFL_y=squeeze(geo_map_jac{1}(2,1,:,:)); %column vector
+  DuFR_x=squeeze(geo_map_jac{2}(1,1,:,:)); %column vector
+  DuFR_y=squeeze(geo_map_jac{2}(2,1,:,:)); %column vector
+  DvFL_x=squeeze(geo_map_jac{1}(1,2,:,:)); %column vector
+  DvFL_y=squeeze(geo_map_jac{1}(2,2,:,:)); %column vector
+  if side(2)==1 || side(2)==2
+      v=grev_pts{2}';
+  else
+      v=grev_pts{1}';
+  end
+  A_full=[(1-v).*DuFL_x v.*DuFL_x -(1-v).*DuFR_x -v.*DuFR_x (1-v).^2.*DvFL_x 2*(1-v).*v.*DvFL_x v.^2.*DvFL_x;...
+     (1-v).*DuFL_y v.*DuFL_y -(1-v).*DuFR_y -v.*DuFR_y (1-v).^2.*DvFL_y 2*(1-v).*v.*DvFL_y v.^2.*DvFL_y];
+ if rank(A_full)==6
+     A=A_full(:,2:end);
+     b=-A_full(:,1);
+     sols=A\b;
+     alpha0_n(2)=1; %R
+     alpha1_n(2)=sols(1); %R
+     alpha0_n(1)=sols(2); %L
+     alpha1_n(1)=sols(3); %L
+     beta0_n=sols(4);
+     beta1_n=sols(5);
+     beta2_n=sols(6);
+ else
+     A=A_full(:,3:end);
+     b=-sum(A_full(:,1:2),2);
+     sols=A\b;
+     alpha0_n(2)=1; %R
+     alpha1_n(2)=1; %R
+     alpha0_n(1)=sols(1); %L
+     alpha1_n(1)=sols(2); %L
+     beta0_n=sols(3);
+     beta1_n=sols(4);
+     beta2_n=sols(5);     
+ end
+ 
+ %STEP 4 - Normalizing the alphas
+ C1=((alpha1_n(1)-alpha0_n(1))^2)/3+((alpha1_n(2)-alpha0_n(2))^2)/3 + (alpha1_n(1)-alpha0_n(1))*alpha0_n(1)+(alpha1_n(2)-alpha0_n(2))*alpha0_n(2)...
+    +alpha0_n(1)^2+alpha0_n(2)^2;
+ C2=(alpha1_n(1)-alpha0_n(1))-(alpha1_n(2)-alpha0_n(2))+2*alpha0_n(1)-2*alpha0_n(2);
+ gamma=-C2/(2*C1);
+ alpha0(2)=alpha0_n(2)*gamma; %R
+ alpha1(2)=alpha1_n(2)*gamma; %R
+ alpha0(1)=alpha0_n(1)*gamma; %L
+ alpha1(1)=alpha1_n(1)*gamma; %L
+ bbeta0=beta0_n*gamma;
+ bbeta1=beta1_n*gamma;
+ bbeta2=beta2_n*gamma;
+ 
+
+ %STEP 5 - Computing the betas
+ %alphas and beta evaluated at 0,1,1/2
+ alpha_L_0=alpha0(1); %alpha_L(0)
+ alpha_L_1=alpha1(1); %alpha_L(1)
+ alpha_L_12=(alpha0(1)+alpha1(1))/2; %alpha_L(1/2)
+ alpha_R_0=alpha0(2); %alpha_L(0)
+ alpha_R_1=alpha1(2); %alpha_L(1)
+ alpha_R_12=(alpha0(2)+alpha1(2))/2; %alpha_L(1/2)  
+ beta_0=bbeta0; %beta(0)
+ beta_1=bbeta2; %beta(1)
+ beta_12=(bbeta0+bbeta2)/4+bbeta1/2; %beta(1/2)
+ 
+  %Computing the matrix of the system considering the relationship between beta^L, beta^R and beta
+ M=[alpha_L_0 0 -alpha_R_0 0; 0 alpha_L_1 0 -alpha_R_1; alpha_L_12/2 alpha_L_12/2 -alpha_R_12/2 -alpha_R_12/2];
+ 
+ if rank(M)==3
+     
+ %Computing beta1_L, beta0_R, beta1_R in terms of beta0_L
+ quant1=(alpha_R_12/2-(alpha_R_0*alpha_L_12)/(2*alpha_L_0))/((alpha_R_1*alpha_L_12)/(2*alpha_L_1)-alpha_R_12/2);
+ quant2=(beta_12-(beta_0*alpha_L_12)/(2*alpha_L_0)-(beta_1*alpha_L_12)/(2*alpha_L_1))/((alpha_R_1*alpha_L_12)/(2*alpha_L_1)-alpha_R_12/2); 
+ 
+ %beta1_L=a+b*beta0_L,  beta0_R=c+d*beta0_L,  beta1_R=e+f*beta0_L, where
+ a=quant2; b=quant1;
+ c=beta_0/alpha_L_0; d=alpha_R_0/alpha_L_0;
+ e=(beta_1+alpha_R_1*quant2)/alpha_L_1; f=alpha_R_1*quant1/alpha_L_1;
+ 
+ %We determine beta0_L by minimizing the sum of the norms of beta_L and beta_R
+ C1=((b-1)^2)/3+(b-1)+((f-d)^2)/3+(f-d)*d+d^2+1;
+ C2=2*a*(b-1)/3+a+2*(e-c)*(f-d)/3+(e-c)*d+(f-d)*c+2*c*d;
+ beta0(1)=-C2/(2*C1); %L
+ beta1(1)=a+b*beta0(1); %L
+ beta0(2)=c+d*beta0(1); %R
+ beta1(2)=e+f*beta0(1); %R
+ 
+ else
+     
+ %Computing beta0_R in terms of beta0_L and beta1_R in terms of beta1_L: 
+ %beta0_R=a+b*beta0_L,  beta1_R=c+d*beta1_L, where
+ a=beta_0/alpha_L_0; b=alpha_R_0/alpha_L_0;
+ c=beta_1/alpha_L_1; d=alpha_R_1/alpha_L_1;
+ 
+ %We determine beta0_L and beta_1_L by minimizing the sum of the norms of beta_L and beta_R
+ %The resuting system is
+ M2=[2*(1+b^2) 1+b*d; 1+b*d 2*(1+d^2)];
+ M2b=[-b*c-2*a*b; -a*d-2*c*d];
+ sol=M2\M2b;
+ beta0(1)= sol(1); %L
+ beta1(1)= sol(2); %L
+ beta0(2)= a+b*beta0(1); %R
+ beta1(2)= c+d*beta1(1); %R
+ 
+ end 
+    
     
 % Compute the Greville points, and the auxiliary mesh and space objects
     for ii = 1:2 % The two patches (L-R)
@@ -304,17 +437,9 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
         A(jj,spn_struct.connectivity(:,jj)) = spn_struct.shape_functions(:,:,jj);
       end
 
-% Absolute value of the determinant, to make it work for arbitrary orientation
-      geo_map_jac = msh_side_int{ii}.geo_map_jac;
-      alpha{ii} = abs (geopdes_det__ (geo_map_jac));
-      if (side(ii) == 1 || side(ii) == 2)
-        numerator = reshape (sum (geo_map_jac(:,1,:,:) .* geo_map_jac(:,2,:,:), 1), msh_side(ii).nel, 1);
-        denominator = reshape (sum (geo_map_jac(:,2,:,:) .* geo_map_jac(:,2,:,:), 1), msh_side(ii).nel, 1);
-      else
-        numerator = reshape (sum (geo_map_jac(:,1,:,:) .* geo_map_jac(:,2,:,:), 1), msh_side(ii).nel, 1);
-        denominator = reshape (sum (geo_map_jac(:,1,:,:) .* geo_map_jac(:,1,:,:), 1), msh_side(ii).nel, 1);
-      end
-      beta{ii} = numerator ./ denominator;
+%alphas and betas
+        alpha{ii}=abs(alpha0(ii)*(1-grev_pts{2}')+alpha1(ii)*grev_pts{2}'); %we have to take the absolute value to make it work for any orientation
+        beta{ii}=beta0(ii)*(1-grev_pts{2}')+beta1(ii)*grev_pts{2}';       
 
 % RHS for the first linear system, (14) in Mario's notes
       rhss = sparse (msh_side(ii).nel, sp0_struct.ndof);
@@ -326,7 +451,7 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
 
 % RHS for the second linear system, (15) in Mario's notes
       rhsb = sparse (msh_side(ii).nel, sp0_struct.ndof);
-      if (side(ii) == 1)
+      if (side(ii) == 1) %paper case
         val_grad = sp_aux.sp_univ(1).shape_function_gradients(2);
       elseif (side(ii) == 2)
         val_grad = sp_aux.sp_univ(1).shape_function_gradients(end-1);
@@ -336,7 +461,7 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
         val_grad = sp_aux.sp_univ(2).shape_function_gradients(end-1);
       end
       val = val_grad * (tau1 / degu)^2;
-      for jj = 1:msh_side(ii).nel
+      for jj = 1:msh_side(ii).nel  %paper case - check beta
         val_aux = val * beta{ii}(jj);
         rhsb(jj,sp0_struct.connectivity(:,jj)) = sp0_struct.shape_function_gradients(:,:,:,jj) * val_aux;
       end
@@ -350,7 +475,7 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
       val_grad = val_grad * (-1)^(side(ii)+1);
 
       rhsc = sparse (msh_side(ii).nel, sp1_struct.ndof);
-      val = val_grad * (tau1 / degu)^2;
+      val = val_grad* (tau1 / degu)^2;  %WARNING: WE DIVIDED BY tau1/degu, which REQUIRES A SMALL MODIFICATION IN THE REF MASK (ADD MULT. BY 1/2) 
       for jj = 1:msh_side(ii).nel
         val_aux = val * alpha{ii}(jj);
         rhsc(jj,sp1_struct.connectivity(:,jj)) = sp1_struct.shape_functions(:,:,jj) * val_aux;
@@ -390,7 +515,64 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces)
       CC{ii}(ind1,1:sp0_struct.ndof) = coeff1{ii};
       CC{ii}(ind1,sp0_struct.ndof+1:ndof) = coeff2{ii} * (-1)^(ii+1);
     end
-
+    
+%CHECKING G^1 condition  
+% bbeta=alpha{1}.*beta{2}-alpha{2}.*beta{1};
+% geo_map_jac{1} = msh_side_int{1}.geo_map_jac; %rdim x ndim x 1 x n_grev_pts (rdim->physical space, ndim->parametric space)
+% geo_map_jac{2} = msh_side_int{2}.geo_map_jac; %rdim x ndim x 1 x n_grev_pts (rdim->physical space, ndim->parametric space)
+%   for ii = 1:2 % The two patches (L-R)
+%     brk = cell (1,msh.ndim);
+%     knots = space.sp_patch{patch(ii)}.knots;
+%     for idim = 1:msh.ndim
+%         %Greville points for G^1 conditions system
+%         geo_knot_v1=geometry(patch(ii)).nurbs.knots{1};
+%         p1=geometry(patch(ii)).nurbs.order(1);
+%         aug_geo_knot1=[geo_knot_v1(1)*ones(1,p1+1)  repelem(geo_knot_v1(p1+1:end-p1-1),3)  geo_knot_v1(end)*ones(1,p1+1)];
+%         geo_knot_v2=geometry(patch(ii)).nurbs.knots{2};
+%         p2=geometry(patch(ii)).nurbs.order(2);
+%         aug_geo_knot2=[geo_knot_v2(1)*ones(1,p2+1)  repelem(geo_knot_v2(p2+1:end-p2-1),3)  geo_knot_v2(end)*ones(1,p2+1)];
+%         grev_pts{1}=aveknt(aug_geo_knot1,p1+1);
+%         grev_pts{2}=aveknt(aug_geo_knot2,p2+1);
+%         if (numel(grev_pts{idim}) > 1)
+%             brk{idim} = [knots{idim}(1), grev_pts{idim}(1:end-1) + diff(grev_pts{idim})/2, knots{idim}(end)];
+%         else
+%             brk{idim} = [knots{idim}(1) knots{idim}(end)];
+%         end
+%     end  
+%   
+%     msh_grev = msh_cartesian (brk, grev_pts, [], geometry(patch(ii)), 'boundary', true, 'der2',false);
+%     msh_side_int{ii} = msh_boundary_side_from_interior (msh_grev, side(ii));
+%     msh_side_int{ii} = msh_precompute (msh_side_int{ii});      
+%     geo_map_jac{ii} = msh_side_int{ii}.geo_map_jac; %rdim x ndim x 1 x n_grev_pts (rdim->physical space, ndim->parametric space) 
+%   end
+% alpha{1}=(alpha0(1)*(1-grev_pts{2}')+alpha1(1)*grev_pts{2}'); %we have to take the absolute value to make it work for any orientation
+% beta{1}=beta0(1)*(1-grev_pts{2}')+beta1(1)*grev_pts{2}';
+% alpha{2}=(alpha0(2)*(1-grev_pts{2}')+alpha1(2)*grev_pts{2}'); %we have to take the absolute value to make it work for any orientation
+% beta{2}=beta0(2)*(1-grev_pts{2}')+beta1(2)*grev_pts{2}';  
+% bbeta=alpha{1}.*beta{2}-alpha{2}.*beta{1};
+% DuFL_x=squeeze(geo_map_jac{1}(1,1,:,:)); %column vector
+% DuFL_y=squeeze(geo_map_jac{1}(2,1,:,:)); %column vector
+% DuFR_x=squeeze(geo_map_jac{2}(1,1,:,:)); %column vector
+% DuFR_y=squeeze(geo_map_jac{2}(2,1,:,:)); %column vector
+% DvFL_x=squeeze(geo_map_jac{1}(1,2,:,:)); %column vector
+% DvFL_y=squeeze(geo_map_jac{1}(2,2,:,:)); %column vector
+%alpha{1}.*beta{2}-alpha{2}.*beta{1}-bbeta
+% alpha{2}.*DuFL_x-alpha{1}.*DuFR_x+bbeta.*DvFL_x
+% alpha{2}.*DuFL_y-alpha{1}.*DuFR_y+bbeta.*DvFL_y
+%   A_full=[(1-v).*DuFL_x v.*DuFL_x -(1-v).*DuFR_x -v.*DuFR_x (1-v).^2.*DvFL_x 2*(1-v).*v.*DvFL_x v.^2.*DvFL_x;...
+%      (1-v).*DuFL_y v.*DuFL_y -(1-v).*DuFR_y -v.*DuFR_y (1-v).^2.*DvFL_y 2*(1-v).*v.*DvFL_y v.^2.*DvFL_y];
+% alpha{1}
+% alpha{2}
+% beta{1}
+% beta{2}
+% bbeta
+% alpha0
+% alpha1
+% beta0
+% beta1
+%pause
+% grev_pts{1}
+% grev_pts{2}
 
   end
   
