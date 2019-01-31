@@ -1,6 +1,6 @@
 % MP_GEO_LOAD: create a multipatch geometry structure and the interfaces structure from a file.
 %
-% [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = mp_geo_load (input)
+% [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = mp_geo_load (input, [embedInR3=false])
 %
 % INPUT :
 %
@@ -9,9 +9,12 @@
 %   - a string variable with the name of the file to be read (see doc/geo_specs_mp_v21.txt)
 %   - an (array of) gsTHBSpline or gsTensorBSpline objects coming from G+smo --> multipatches
 %     is not supported yet in this case.
-%
 %   In the second case, the information is automatically generated with the function
 %    nrbmultipatch. It is recommended to check that all the information is correct.
+%   
+%   embedInR3: boolean (default: false), true if the input geometry has to
+%     be considered in R^3 in any case.
+%
 %
 % OUTPUT:
 %
@@ -67,7 +70,11 @@
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
 
-function [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = mp_geo_load (in)
+function [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = mp_geo_load (in, embedInR3)
+
+  if nargin < 2
+    embedInR3 = false;
+  end
   
   if (ischar (in))
     if (strcmpi (in(end-3:end), '.mat'))
@@ -154,14 +161,18 @@ function [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = m
   
   if (isfield (geometry, 'nurbs'))
     rdim = 0;
-    for iptc = 1:numel (geometry)
-      if (any (abs(geometry(iptc).nurbs.coefs(3,:)) > 1e-12))
-        rdim = 3;
-      elseif (any (abs(geometry(iptc).nurbs.coefs(2,:)) > 1e-12))
-        rdim = max (rdim, 2);
-      else
-        rdim = max (rdim, 1);
+    if ~embedInR3
+      for iptc = 1:numel (geometry)
+        if (any (abs(geometry(iptc).nurbs.coefs(3,:)) > 1e-12))
+          rdim = 3;
+        elseif (any (abs(geometry(iptc).nurbs.coefs(2,:)) > 1e-12))
+          rdim = max (rdim, 2);
+        else
+          rdim = max (rdim, 1);
+        end
       end
+    else
+        rdim = 3;
     end
     
     for iptc = 1:numel (geometry)
