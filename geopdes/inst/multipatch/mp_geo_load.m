@@ -178,6 +178,7 @@ function [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = m
     for iptc = 1:numel (geometry)
       geometry(iptc).rdim = rdim;
       
+      warning ('off', 'nrbderiv:SecondDerivative')
       [deriv, deriv2] = nrbderiv (geometry(iptc).nurbs);
       geometry(iptc).dnurbs = deriv;
       geometry(iptc).dnurbs2 = deriv2;
@@ -200,6 +201,7 @@ function [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = m
         end
       end
     end
+    warning ('off', 'nrbderiv:SecondDerivative')
     
     if (~isempty (boundaries))
       patch_numbers = vertcat (boundaries.patches);
