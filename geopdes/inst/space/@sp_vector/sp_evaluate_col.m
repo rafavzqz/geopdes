@@ -39,7 +39,7 @@
 %         3D:  (3 x msh_col.nqn x nsh_max x msh_col.nel)        
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
-% Copyright (C) 2011, 2015 Rafael Vazquez
+% Copyright (C) 2011, 2015, 2019 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ if (~isempty (varargin))
     elseif (strcmpi (varargin {ii}, 'hessian'))
       hessian = varargin {ii+1};
     else
-      error ('sp_evaluate_col: unknown option %s', varargin {ii});
+      warning ('Ignoring unknown option %s', varargin {ii});
     end
   end
 end
