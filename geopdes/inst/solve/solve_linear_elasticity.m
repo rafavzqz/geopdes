@@ -126,7 +126,7 @@ end
 % Apply symmetry conditions
 symm_dofs = [];
 for iside = symm_sides
-  if (~strcmpi (space.transform, 'grad-preserving'))
+  if (~strcmpi (sp.transform, 'grad-preserving'))
     error ('The symmetry condition is only implemented for spaces with grad-preserving transform')
   end
   msh_side = msh_eval_boundary_side (msh, iside);
