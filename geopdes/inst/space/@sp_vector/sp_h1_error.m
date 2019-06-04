@@ -35,6 +35,10 @@
 
 function [errh1, errl2, errh1s] = sp_h1_error (space, msh, u, uex, graduex)
 
+  if (numel(u) ~= space.ndof)
+    error ('Wrong size of the vector of degrees of freedom')
+  end
+
   errl2 = 0; errh1s = 0;
   for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);

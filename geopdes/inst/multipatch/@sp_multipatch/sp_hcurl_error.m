@@ -38,6 +38,10 @@ function [errhcurl, errl2, errcurl] = sp_hcurl_error (space, msh, u, uex, curlue
     error ('The number of patches does not coincide') 
   end
 
+  if (numel(u) ~= space.ndof)
+    error ('Wrong size of the vector of degrees of freedom')
+  end
+
   for iptc = 1:msh.npatch
     if (isempty (space.dofs_ornt))
       u_ptc = u(space.gnum{iptc});

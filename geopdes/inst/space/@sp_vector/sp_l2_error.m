@@ -32,6 +32,10 @@
 
 function errl2 = sp_l2_error (space, msh, u, uex)
 
+  if (numel(u) ~= space.ndof)
+    error ('Wrong size of the vector of degrees of freedom')
+  end
+
   errl2 = 0;
   
   for iel = 1:msh.nel_dir(1)

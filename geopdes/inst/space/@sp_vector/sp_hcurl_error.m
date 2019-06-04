@@ -35,6 +35,10 @@
 
 function [errhcurl, errl2, errcurl] = sp_hcurl_error (space, msh, u, uex, curluex)
 
+  if (numel(u) ~= space.ndof)
+    error ('Wrong size of the vector of degrees of freedom')
+  end
+
   errl2 = 0;
   errcurl = 0;
 

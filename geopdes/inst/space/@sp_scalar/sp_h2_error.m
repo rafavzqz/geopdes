@@ -39,6 +39,10 @@
 
 function [errh2, errh1, errl2, errh2s, errh1s] = sp_h2_error (sp, msh, u, uex, graduex, hessuex)
 
+  if (numel(u) ~= sp.ndof)
+    error ('Wrong size of the vector of degrees of freedom')
+  end
+
   errl2 = 0;
   errh1s = 0;
   errh2s = 0;

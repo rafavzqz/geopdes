@@ -38,6 +38,10 @@ function [errh1, errl2, errh1s] = sp_h1_error (space, msh, u, uex, graduex)
     error ('The number of patches does not coincide') 
   end
 
+  if (numel(u) ~= space.ndof)
+    error ('Wrong size of the vector of degrees of freedom')
+  end
+
   for iptc = 1:msh.npatch
     if (isempty (space.dofs_ornt))
       u_ptc = u(space.gnum{iptc});
