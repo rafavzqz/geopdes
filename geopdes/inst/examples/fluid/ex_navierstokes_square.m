@@ -1,12 +1,8 @@
-% TEST_CONVERGENCE: test convergence of Navier-Stokes solver with an
+% EX_NAVIERSTOKES_SQUARE: test convergence of Navier-Stokes solver with an
 % analytical solution defined on a square geometry.
-clc
-clear all
-close all
-
 clear problem_data
-nurb = nrbsquare([0 0],1,1);
-problem_data.geo_name = nurb;
+nrb = nrbsquare([0 0],1,1);
+problem_data.geo_name = nrb;
 
 % boundary conditions
 problem_data.drchlt_sides = [1 2];
@@ -51,19 +47,19 @@ problem_data.velex = @(x, y) cat(1, ...
     reshape (u1ex (x,y), [1, size(x)]), ...
     reshape (u2ex (x,y), [1, size(x)]));
 
-problem_data.gradvelex = @test_navier_stokes_convergence_graduex;
+problem_data.gradvelex = @test_navierstokes_square_graduex;
 
 problem_data.pressex = @(x, y) sin(pi*y);
 
 deg = 2;
 
-for i = 1:4
-    fprintf('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Refinement iteration %d %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n', i);
+for ii = 1:4
+    fprintf('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Refinement iteration %d %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n', ii);
     clear method_data
     method_data.element_name = 'rt';     % Element type for discretization
     method_data.degree       = [deg deg];  % Degree of the splines (pressure space)
     method_data.regularity   = [deg-1 deg-1];  % Regularity of the splines (pressure space)
-    method_data.nsub         = [3*2^i  3*2^i];  % Number of subdivisions
+    method_data.nsub         = [3*2^ii  3*2^ii];  % Number of subdivisions
     method_data.nquad        = [deg+1 deg+1];  % Points for the Gaussian quadrature rule
     
     % Penalization parameter for Nitsche's method
@@ -77,16 +73,16 @@ for i = 1:4
     [geometry, msh, space_v, vel, space_p, press] = ...
         solve_navier_stokes (problem_data, method_data,solver_data);
     
-    error_l2_p(i) = sp_l2_error (space_p, msh, press, problem_data.pressex);
-    [error_h1_v(i), error_l2_v(i)] = ...
+    error_l2_p(ii) = sp_l2_error (space_p, msh, press, problem_data.pressex);
+    [error_h1_v(ii), error_l2_v(ii)] = ...
         sp_h1_error (space_v, msh, vel, problem_data.velex, problem_data.gradvelex);
     
     msh_prc = msh_precompute(msh);
-    h(i) = max(msh_prc.element_size);
+    h(ii) = max(msh_prc.element_size);
 end
 
 
-if(strcmp(method_data.element_name,'rt'))
+if(strcmpi(method_data.element_name,'rt'))
     figure
     loglog(h,error_h1_v,'.-','Markersize',10,'Linewidth',1);
     title('H1-error on velocity Raviart-Thomas element');
@@ -108,7 +104,8 @@ if(strcmp(method_data.element_name,'rt'))
     ylabel('error');
     slope = strcat('h^', num2str(deg+1));
     legend('error',slope);
-elseif(strcmp(method_data.element_name,'th'))
+
+elseif(strcmpi(method_data.element_name,'th'))
     figure
     loglog(h,error_h1_v,'.-','Markersize',10,'Linewidth',1);
     title('H1-error on velocity Taylor-Hood element');
@@ -131,7 +128,7 @@ elseif(strcmp(method_data.element_name,'th'))
     slope = strcat('h^', num2str(deg+1));
     legend('error',slope);
 
-elseif(strcmp(method_data.element_name,'NDL'))
+elseif(strcmpi(method_data.element_name,'NDL'))
     figure
     loglog(h,error_h1_v,'.-','Markersize',10,'Linewidth',1);
     title('H1-error on velocity Nedelec element');
@@ -153,7 +150,8 @@ elseif(strcmp(method_data.element_name,'NDL'))
     ylabel('error');
     slope = strcat('h^', num2str(deg+1));
     legend('error',slope);
-elseif(strcmp(method_data.element_name,'SG'))
+
+elseif(strcmpi(method_data.element_name,'SG'))
     figure
     loglog(h,error_h1_v,'.-','Markersize',10,'Linewidth',1);
     title('H1-error on velocity Sub-grid element');
@@ -178,19 +176,4 @@ elseif(strcmp(method_data.element_name,'SG'))
    
 else
     error('Unknown element type')
-end
-
-
-function gu = test_navier_stokes_convergence_graduex (x, y)
-  uxx = @(x, y) 0*x;
-  uxy = @(x, y) -pi*sin(y*pi);
-  uyx = @(x, y) 2*x - x.^0;
-  uyy = @(x, y) 0*x;
-  
-  
-  gu = zeros (2, 2, size(x,1), size(x,2));
-  gu(1, 1, :, :) = reshape (uxx (x,y), [1, 1, size(x)]);
-  gu(2, 1, :, :) = reshape (uyx (x,y), [1, 1, size(x)]);
-  gu(1, 2, :, :) = reshape (uxy (x,y), [1, 1, size(x)]);
-  gu(2, 2, :, :) = reshape (uyy (x,y), [1, 1, size(x)]);
 end
