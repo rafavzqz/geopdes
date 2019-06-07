@@ -1,3 +1,7 @@
+Summary of important changes for geopdes-3.2:
+-----------------------------------------------------------------------------
+* Added operators, solver and example for Navier-Stokes
+
 Summary of important changes for geopdes-3.1.2:
 -----------------------------------------------------------------------------
 * Added weak imposition of Dirichlet conditions for Laplace/Poisson problem.
