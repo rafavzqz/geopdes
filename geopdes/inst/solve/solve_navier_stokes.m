@@ -90,6 +90,8 @@ switch (upper(element_name))
         [~, zeta] = kntrefine (geometry.nurbs.knots, nsub-1, degree, regularity);
     case {'SG'}
         [~, zeta] = kntrefine (geometry.nurbs.knots, 2*nsub-1, degree, regularity);
+    otherwise
+        error ('Unknown element type: %s', element_name)
 end
 rule       = msh_gauss_nodes (nquad);
 [qn, qw]   = msh_set_quad_nodes (zeta, rule);
