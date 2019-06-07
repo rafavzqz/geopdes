@@ -59,7 +59,7 @@ for ii = 1:4
     method_data.element_name = 'RT';     % Element type for discretization
     method_data.degree       = [deg deg];  % Degree of the splines (pressure space)
     method_data.regularity   = [deg-1 deg-1];  % Regularity of the splines (pressure space)
-    method_data.nsub         = [3*2^ii  3*2^ii];  % Number of subdivisions
+    method_data.nsub         = [2^ii  2^ii];  % Number of subdivisions
     method_data.nquad        = [deg+1 deg+1];  % Points for the Gaussian quadrature rule
     
     % Penalization parameter for Nitsche's method
