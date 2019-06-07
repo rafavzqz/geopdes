@@ -104,6 +104,7 @@ Operators: functions to assemble different matrices and vector
  op_eu_ev
  op_fdotn_vdotn
  op_fdotn_v
+ op_f_gradv
  op_f_vxn_2d
  op_f_vxn_3d
  op_uxn_vxn_2d
