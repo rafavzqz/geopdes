@@ -8,19 +8,14 @@
 % INPUT:
 %
 %  f: function handler of the non-linear system
-%  
 %  x0: starting vector
-%
 %  jac: function handler of the Jacobian of the non-linear system
-%
 %  tol: tolerance of the method
 %
 % OUTPUT:
 %
 %  x: solution such that f(x) = 0
-%
 %  err: residual of the last iteration
-%
 %  it: number of iterations
 %
 % Copyright (C) 2018 Luca Pegolotti

@@ -1,24 +1,24 @@
-% OP_UGRADU_TP: assemble the convective matrix C = [c(i,j)], c(i,j) = ((grad u)u_j, grad v_i), 
-% exploiting the tensor product structure.
+% OP_UGRADU_JAV_V_TP: assemble a part the Jacobian matrix of the convective
+%   term, exploiting the tensor product structure
 %
-%   mat = op_ugradu_v_tp (spu, spv, msh, [epsilon]);
-%   [rows, cols, values] = op_ugradu_v_tp (spu, spv, msh, [epsilon]);
+%   mat = op_ugradu_v_jac_tp (spu, spv, msh, [epsilon]);
+%   [rows, cols, values] = op_ugradu_jac_v_tp (spu, spv, msh, [epsilon]);
 %
 % INPUT:
 %
 %   spu:     object representing the space of trial functions (see sp_vector)
 %   spv:     object representing the space of test functions (see sp_vector)
 %   msh:     object defining the domain partition and the quadrature rule (see msh_cartesian)
-%   u:       velocity evaluated at the degrees of freedom
+%   u:       dofs of the solution, to be used in the non linear-term
 %
 % OUTPUT:
 %
-%   mat:    assembled convective matrix
+%   mat:    assembled jacobian matrix
 %   rows:   row indices of the nonzero entries
 %   cols:   column indices of the nonzero entries
 %   values: values of the nonzero entries
 % 
-% Copyright (C) 2018 Luca Coradello, Luca Pegolotti
+% Copyright (C) 2018, Luca Coradello, Luca Pegolotti
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -33,25 +33,26 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function varargout = op_ugradu_v_tp (space1, space2, msh, u)
+function varargout = op_ugradu_jac_v_tp (space1, space2, msh, u)
 
+  C = op_ugradu_v_tp(space1,space2,msh,u);
   A = spalloc (space2.ndof, space1.ndof, 3*space1.ndof);
 
   for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
-    sp1_col = sp_evaluate_col (space1, msh_col, 'value', false, 'gradient', true);
+    sp1_col = sp_evaluate_col (space1, msh_col, 'value', true, 'gradient', true);
     sp2_col = sp_evaluate_col (space2, msh_col, 'value', true, 'gradient', false);
     
-    u_dofs = reshape(u(sp2_col.connectivity),1,1,sp2_col.nsh_max,msh_col.nel); 
-        
-    us = sum(bsxfun( @times, u_dofs, sp2_col.shape_functions),3); 
+    u_dofs = reshape(u(sp1_col.connectivity),1,1,1,sp1_col.nsh_max,msh_col.nel); 
     
-    us = reshape(us,sp1_col.ncomp,msh_col.nqn,1,msh_col.nel);
-        
-    A = A + op_ugradu_v (sp1_col, sp2_col, msh_col, us);
+    us_der = sum(bsxfun( @times, u_dofs, sp1_col.shape_function_gradients),4);
+    us_der = reshape(us_der,sp1_col.ncomp,msh_col.rdim,msh_col.nqn,1,msh_col.nel); 
+
+    A = A + op_ugradu_jac_v (sp1_col, sp2_col, msh_col, us_der);
   end
   
-  
+  % adding the two contributions to the Jacobian
+  A = A + C;
 
   if (nargout == 1)
     varargout{1} = A;

@@ -96,11 +96,7 @@ msh        = msh_cartesian (zeta, qn, qw, geometry);
                 geometry.nurbs.knots, nsub, degree, regularity, msh);
 
 % Assemble the matrices
-if (msh.rdim == 2)
-  fun_one = @(x, y) ones (size(x));
-elseif (msh.rdim == 3)
-  fun_one = @(x, y, z) ones (size(x));
-end
+fun_one = @(varargin) ones(size(varargin{1}));
 A = op_gradu_gradv_tp (space_v, space_v, msh, viscosity); 
 B = op_div_v_q_tp (space_v, space_p, msh);
 E = op_f_v_tp (space_p, msh, fun_one).';

@@ -1,4 +1,4 @@
-% OP_UGRADU_JAC_V: assemble the second term of the jacobian of the
+% OP_UGRADU_JAC_V: assemble the second term of the Jacobian of the
 % convective term (see solve_navier_stokes for usage)
 %
 %   mat = op_ugradu_jac_v (spu, spv, msh, coeff);
@@ -9,8 +9,7 @@
 %  spu:   structure representing the space of trial functions (see sp_scalar/sp_evaluate_col)
 %  spv:   structure representing the space of test functions  (see sp_scalar/sp_evaluate_col)
 %  msh:   structure containing the domain partition and the quadrature rule (see msh_cartesian/msh_evaluate_col)
-%  uder:  derivative of the velocity, evaluated in all the degrees of
-%  freedom
+%  uder:  derivative of the velocity, evaluated in all the degrees of freedom
 %
 % OUTPUT:
 %
@@ -77,7 +76,7 @@ function varargout = op_ugradu_jac_v (spu, spv, msh, uder)
     varargout{2} = cols(1:ncounter);
     varargout{3} = values(1:ncounter);
   else
-    error ('op_u_v: wrong number of output arguments')
+    error ('op_ugradu_jac_v: wrong number of output arguments')
   end
 
 end

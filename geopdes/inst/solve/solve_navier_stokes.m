@@ -40,7 +40,8 @@
 %                Its fields are:
 %   - name: name of the non-linear solver. Currently supported: 'newton';
 %   - tol: tolerance of the non-linear solver (wrt residual f(u))
-%   - nmax: maximum number of iderations
+%   - nmax: maximum number of iterations
+%
 % OUTPUT:
 %
 %  geometry: geometry structure (see geo_load)
@@ -52,7 +53,7 @@
 %
 % See also EX_NAVIERSTOKES_SQUARE for an example.
 %
-% Copyright (C) 2018 Luca Coradello, Luca Pegolotti
+% Copyright (C) 2018, 2019 Luca Coradello, Luca Pegolotti
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -99,11 +100,7 @@ msh        = msh_cartesian (zeta, qn, qw, geometry);
     geometry.nurbs.knots, nsub, degree, regularity, msh);
 
 % Assemble the matrices
-if (msh.rdim == 2)
-    fun_one = @(x, y) ones (size(x));
-elseif (msh.rdim == 3)
-    fun_one = @(x, y, z) ones (size(x));
-end
+fun_one = @(varargin) ones(size(varargin{1}));
 restrict = @(A,dim1,dim2) A(dim1,dim2);
 extend = @(vel,sol_int,int_dofs) extend_solution(vel,sol_int,int_dofs);
 A = op_gradu_gradv_tp (space_v, space_v, msh, viscosity);
@@ -131,7 +128,7 @@ for iside = nmnn_sides
     
     x = cell (msh_side.rdim, 1);
     for idim = 1:msh_side.rdim
-        x{idim} = squeeze (msh_side.geo_map(idim,:,:));
+        x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
     end
     gval = reshape (g (x{:}, iside), msh.rdim, msh_side.nqn, msh_side.nel);
     
@@ -165,7 +162,7 @@ if (isempty (nmnn_sides))
         B(:, drchlt_dofs)*vel(drchlt_dofs);
         0];
     
-    if (strcmp(solver_data.name,'newton'))
+    if (strcmpi(solver_data.name,'newton'))
         C_jac = @(u) op_ugradu_jac_v_tp (space_v, space_v, msh, u);
         J =@(u) [ A(int_dofs, int_dofs) - N_mat(int_dofs, int_dofs) + restrict(C_jac(extend(vel,u,int_dofs)),int_dofs,int_dofs) -B(:,int_dofs).',sparse(nintdofs, 1);
                   -B(:,int_dofs), sparse(size (B,1), size(B,1)), E.';
@@ -173,6 +170,8 @@ if (isempty (nmnn_sides))
         x0 = zeros(numel(int_dofs) + space_p.ndof + 1,1);
         f_newton = @(u) compute_residual_navier_stokes(u,mat,rhs,C(extend(vel,u,int_dofs)));
         sol = newtons_method(f_newton,x0,J,solver_data.tol,solver_data.nmax);
+    else
+        error ('The selected nonlinear solver is not implemented')
     end
     vel(int_dofs) = sol(1:nintdofs);
     press = sol(1+nintdofs:end-1);
@@ -183,13 +182,15 @@ else
     rhs = @(u,Cu) [F(int_dofs) + N_rhs(int_dofs) + rhs_dir(u,Cu) + rhs_nmnn(int_dofs);
                 B(:, drchlt_dofs)*vel(drchlt_dofs)];
     
-    if (strcmp(solver_data.name,'newton'))
+    if (strcmpi(solver_data.name,'newton'))
         C_jac = @(u) op_ugradu_jac_v_tp (space_v, space_v, msh, u);
         J =@(u) [ A(int_dofs, int_dofs) - N_mat(int_dofs, int_dofs) + restrict(C_jac(extend(vel,u,int_dofs)),int_dofs,int_dofs), -B(:,int_dofs).';
                  -B(:,int_dofs), sparse(size (B,1), size (B,1))];
         x0 = zeros(numel(int_dofs) + space_p.ndof,1);
         f_newton = @(u) compute_residual_navier_stokes(u,mat,rhs,C(extend(vel,u,int_dofs)));
         sol = newtons_method(f_newton,x0,J,solver_data.tol,solver_data.nmax);
+    else
+        error ('The selected nonlinear solver is not implemented')
     end
     vel(int_dofs) = sol(1:nintdofs);
     press = sol(1+nintdofs:end);
