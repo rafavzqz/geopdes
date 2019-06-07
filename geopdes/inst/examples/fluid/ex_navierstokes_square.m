@@ -81,19 +81,6 @@ for ii = 1:4
     h(ii) = max(msh_prc.element_size);
 end
 
-if (strcmpi(method_data.element_name,'RT'))
-  slope = strcat('h^', num2str(deg+1));
-  slope_v = strcat('h^', num2str(deg));
-elseif (strcmpi(method_data.element_name,'TH'))
-  slope = strcat('h^', num2str(deg+1));
-elseif (strcmpi(method_data.element_name,'NDL'))
-  slope = strcat('h^', num2str(deg+1));
-elseif (strcmpi(method_data.element_name,'SG'))
-  slope = strcat('h^', num2str(deg+1));
-else
-  error('Unknown element type')
-end
-
 figure
 loglog(h, error_h1_v, 'b-o', 'Markersize', 8, 'Linewidth', 2);
 hold on
@@ -102,8 +89,10 @@ loglog(h, error_l2_p, 'r-x', 'Markersize', 8, 'Linewidth', 2);
 loglog(h, 0.5*h.^(deg+1), '-k', 'LineWidth', 2);
 xlabel('Mesh size');
 ylabel('Error');
+slope = strcat('h^', num2str(deg+1));
 if (strcmpi(method_data.element_name,'RT'))
   loglog(h, h.^deg, '--k', 'LineWidth', 2);
+  slope_v = strcat('h^', num2str(deg));
   legend('Velocity, H1 error', 'Pressure, L2 error', slope, slope_v);
 else
   legend('Velocity, H1 error', 'Pressure, L2 error', slope);
