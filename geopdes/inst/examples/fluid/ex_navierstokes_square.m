@@ -56,7 +56,7 @@ deg = 2;
 for ii = 1:4
     fprintf('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Refinement iteration %d %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n', ii);
     clear method_data
-    method_data.element_name = 'rt';     % Element type for discretization
+    method_data.element_name = 'RT';     % Element type for discretization
     method_data.degree       = [deg deg];  % Degree of the splines (pressure space)
     method_data.regularity   = [deg-1 deg-1];  % Regularity of the splines (pressure space)
     method_data.nsub         = [3*2^ii  3*2^ii];  % Number of subdivisions
@@ -81,99 +81,30 @@ for ii = 1:4
     h(ii) = max(msh_prc.element_size);
 end
 
-
-if(strcmpi(method_data.element_name,'rt'))
-    figure
-    loglog(h,error_h1_v,'.-','Markersize',10,'Linewidth',1);
-    title('H1-error on velocity Raviart-Thomas element');
-    hold on
-    loglog(h,h.^deg,'--k');
-    grid on
-    xlabel('h');
-    ylabel('error');
-    slope = strcat('h^', num2str(deg));
-    legend('error',slope);
-
-    figure
-    loglog(h,error_l2_p,'.-','Markersize',10,'Linewidth',1);
-    title('L2-error on pressure Raviart-Thomas element');
-    hold on
-    loglog(h,h.^(deg+1)*1e-2,'--k');
-    grid on
-    xlabel('h');
-    ylabel('error');
-    slope = strcat('h^', num2str(deg+1));
-    legend('error',slope);
-
-elseif(strcmpi(method_data.element_name,'th'))
-    figure
-    loglog(h,error_h1_v,'.-','Markersize',10,'Linewidth',1);
-    title('H1-error on velocity Taylor-Hood element');
-    hold on
-    loglog(h,h.^(deg+1),'--k');
-    grid on
-    xlabel('h');
-    ylabel('error');
-    slope = strcat('h^', num2str(deg));
-    legend('error',slope);
-
-    figure
-    loglog(h,error_l2_p,'.-','Markersize',10,'Linewidth',1);
-    title('L2-error on pressure Taylor-Hood element');
-    hold on
-    loglog(h,h.^(deg+1)*1e-2,'--k');
-    grid on
-    xlabel('h');
-    ylabel('error');
-    slope = strcat('h^', num2str(deg+1));
-    legend('error',slope);
-
-elseif(strcmpi(method_data.element_name,'NDL'))
-    figure
-    loglog(h,error_h1_v,'.-','Markersize',10,'Linewidth',1);
-    title('H1-error on velocity Nedelec element');
-    hold on
-    loglog(h,h.^(deg+1),'--k');
-    grid on
-    xlabel('h');
-    ylabel('error');
-    slope = strcat('h^', num2str(deg));
-    legend('error',slope);
-
-    figure
-    loglog(h,error_l2_p,'.-','Markersize',10,'Linewidth',1);
-    title('L2-error on pressure Nedelec element');
-    hold on
-    loglog(h,h.^(deg+1)*1e-2,'--k');
-    grid on
-    xlabel('h');
-    ylabel('error');
-    slope = strcat('h^', num2str(deg+1));
-    legend('error',slope);
-
-elseif(strcmpi(method_data.element_name,'SG'))
-    figure
-    loglog(h,error_h1_v,'.-','Markersize',10,'Linewidth',1);
-    title('H1-error on velocity Sub-grid element');
-    hold on
-    loglog(h,h.^(deg+1)*6e-1,'--k');
-    grid on
-    xlabel('h');
-    ylabel('error');
-    slope = strcat('h^', num2str(deg));
-    legend('error',slope);
-
-    figure
-    loglog(h,error_l2_p,'.-','Markersize',10,'Linewidth',1);
-    title('L2-error on pressure Sub-grid element');
-    hold on
-    loglog(h,h.^(deg+1)*3e-1,'--k');
-    grid on
-    xlabel('h');
-    ylabel('error');
-    slope = strcat('h^', num2str(deg+1));
-    legend('error',slope);
-   
+if (strcmpi(method_data.element_name,'RT'))
+  slope = strcat('h^', num2str(deg+1));
+  slope_v = strcat('h^', num2str(deg));
+elseif (strcmpi(method_data.element_name,'TH'))
+  slope = strcat('h^', num2str(deg+1));
+elseif (strcmpi(method_data.element_name,'NDL'))
+  slope = strcat('h^', num2str(deg+1));
+elseif (strcmpi(method_data.element_name,'SG'))
+  slope = strcat('h^', num2str(deg+1));
 else
-    error('Unknown element type')
+  error('Unknown element type')
+end
+
+figure
+loglog(h, error_h1_v, 'b-o', 'Markersize', 8, 'Linewidth', 2);
+hold on
+grid on
+loglog(h, error_l2_p, 'r-x', 'Markersize', 8, 'Linewidth', 2);
+loglog(h, 0.5*h.^(deg+1), '-k', 'LineWidth', 2);
+xlabel('Mesh size');
+ylabel('Error');
+if (strcmpi(method_data.element_name,'RT'))
+  loglog(h, h.^deg, '--k', 'LineWidth', 2);
+  legend('Velocity, H1 error', 'Pressure, L2 error', slope, slope_v);
+else
+  legend('Velocity, H1 error', 'Pressure, L2 error', slope);
 end
