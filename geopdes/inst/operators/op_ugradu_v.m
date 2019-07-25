@@ -1,7 +1,7 @@
 % OP_UGRADU_V: assemble the convective matrix C = [c(i,j)], c(i,j) = ((u grad)u_j, v_i).
 %
 %   mat = op_ugradu_v (spu, spv, msh, u);
-%   [rows, cols, values] = op_gradu_gradv (spu, spv, msh, epsilon);
+%   [rows, cols, values] = op_ugradu_v (spu, spv, msh, u);
 %
 % INPUT:
 %
