@@ -77,8 +77,8 @@ DEFUN_DLD(op_su_ev, args, nargout,"\n\
       double shgu[nsh_u][nqn][ncomp][ncomp];
       double shdivv[nsh_v][nqn];
       double shdivu[nsh_u][nqn];
-      int conn_v[nsh_v];
-      int conn_u[nsh_u];
+      octave_idx_type conn_v[nsh_v];
+      octave_idx_type conn_u[nsh_u];
 
       dim_vector dims (nel * nsh_v * nsh_u, 1);
 

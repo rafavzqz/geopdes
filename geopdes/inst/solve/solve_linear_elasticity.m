@@ -124,9 +124,11 @@ for iside = press_sides
 end
 
 % Apply symmetry conditions
-u = zeros (sp.ndof, 1);
 symm_dofs = [];
 for iside = symm_sides
+  if (~strcmpi (sp.transform, 'grad-preserving'))
+    error ('The symmetry condition is only implemented for spaces with grad-preserving transform')
+  end
   msh_side = msh_eval_boundary_side (msh, iside);
   for idim = 1:msh.rdim
     normal_comp(idim,:) = reshape (msh_side.normal(idim,:,:), 1, msh_side.nqn*msh_side.nel);

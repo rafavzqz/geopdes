@@ -42,7 +42,8 @@ function [u, dofs] = mp_sp_drchlt_l2_proj (sp, msh, h, gnum, boundaries, refs)
   end
 
   dofs = [];
-  ndof = max ([gnum{:}]);
+  aux = [gnum{:}];
+  ndof = max (aux(:));
   M    = spalloc (ndof, ndof, ndof);
   rhs  = spalloc (ndof, 1, ndof);
 

@@ -34,7 +34,7 @@ indices_per_cell = cell (numel (cell_indices), 1);
 for iptc = 1:space.npatch
   [~,local_cell_indices,cells_in_patch] = intersect ((Nelem(iptc)+1):Nelem(iptc+1), cell_indices);
   if (~isempty (local_cell_indices))
-    if (nargout == 1)
+    if (nargout < 2)
       aux_indices = sp_get_basis_functions (space.sp_patch{iptc}, msh.msh_patch{iptc}, local_cell_indices);
     elseif (nargout == 2)
       [aux_indices, aux_per_cell] = sp_get_basis_functions (space.sp_patch{iptc}, msh.msh_patch{iptc}, local_cell_indices);

@@ -76,6 +76,8 @@ function sp_out = sp_precompute (sp, msh, varargin)
         hessian = varargin{ii+1};
       elseif (strcmpi (varargin{ii}, 'laplacian'))
         laplacian = varargin{ii+1};
+      else
+        warning ('Ignoring unknown option %s', varargin {ii});
       end
     end    
   end

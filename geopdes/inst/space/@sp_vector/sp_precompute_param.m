@@ -42,7 +42,7 @@
 %         3D:  (3 x msh.nqn x nsh_max x msh.nel)        
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2015, 2019 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -82,7 +82,7 @@ else
     elseif (strcmpi (varargin {ii}, 'hessian'))
       hessian = varargin {ii+1};
     else
-      error ('sp_precompute: unknown option %s', varargin {ii});
+      warning ('Ignoring unknown option %s', varargin {ii});
     end
   end
 end
