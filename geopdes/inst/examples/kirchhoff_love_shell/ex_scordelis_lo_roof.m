@@ -109,10 +109,7 @@ for iter = 1:num_max_iter
     % Solve the linear system
     u(int_dofs) = K(int_dofs, int_dofs) \ rhs(int_dofs);
     fprintf('Number of elements: %d. Total DOFs: %d \n', msh.nel, space.ndof);
-    
-    energy_norm(iter) = u'*K*u;
-    fprintf('Energy norm: %d. \n', energy_norm(iter));
-    
+        
     % To solve to VTK
     if(plot_flag)
         output_file = strcat('scordelisLo_p',num2str(deg),'_GR',num2str(iter));
