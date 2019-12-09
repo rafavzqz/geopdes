@@ -5,12 +5,12 @@
 %
 % INPUT:
 %
-%  spu:   object representing the space of trial functions (see sp_scalar)
-%  spv:   object representing the space of test functions (see sp_scalar)
+%  spu:   object representing the space of trial functions (see sp_vector)
+%  spv:   object representing the space of test functions (see sp_vector)
 %  msh:   object defining the domain partition and the quadrature rule (see msh_cartesian)
-%  E_coeff: function handle to compute the Young's modulus
+%  E_coeff:  function handle to compute the Young's modulus
 %  nu_coeff: function handle to compute the Poisson's ratio
-%  t_coeff: function handle to compute the thickness of the shell
+%  t_coeff:  thickness of the shell, scalar value
 
 % OUTPUT:
 %
@@ -49,12 +49,11 @@ function varargout = op_KL_shells_tp (space_u, space_v, msh, E_coeff, nu_coeff, 
       end
       E_coeffs = E_coeff (x{:});
       nu_coeffs = nu_coeff (x{:});
-      t_coeffs = t_coeff (x{:});
     else
       error ('geopdes:op_KL_shells_tp: invalid input')
     end
 
-    A = A + op_KL_shells (sp_col_u, sp_col_v, msh_col, E_coeffs, nu_coeffs, t_coeffs);
+    A = A + op_KL_shells (sp_col_u, sp_col_v, msh_col, E_coeffs, nu_coeffs, t_coeff);
   end
 
   if (nargout == 1)

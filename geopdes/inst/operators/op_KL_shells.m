@@ -1,15 +1,15 @@
 % OP_KL_SHELLS: assemble the Kirchhoff-Love stiffness matrix K.
 %
-%   mat = op_kl_shells (spu, spv, msh, E_coeff, nu_coeff, t_coeff);
+%   mat = op_KL_shells (spu, spv, msh, E_coeff, nu_coeff, t_coeff);
 %
 % INPUT:
 %
-%  spu:   structure representing the space of trial functions (see sp_scalar/sp_evaluate_col)
-%  spv:   structure representing the space of test functions  (see sp_scalar/sp_evaluate_col)
+%  spu:   structure representing the space of trial functions (see sp_vector/sp_evaluate_col)
+%  spv:   structure representing the space of test functions  (see sp_vector/sp_evaluate_col)
 %  msh:   structure containing the domain partition and the quadrature rule (see msh_cartesian/msh_evaluate_col)
-%  E_coeff: coefficients for the Young's modulus
+%  E_coeff:  coefficients for the Young's modulus
 %  nu_coeff: coefficients for the Poisson's ratio
-%  t_coeff: coefficients for the thickness of the shell
+%  t_coeff:  thickness of the shell
 %
 % OUTPUT:
 %
