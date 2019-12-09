@@ -92,7 +92,12 @@ u = zeros (space.ndof, 1);
 drchlt_dofs = [];
 for iside = 1:numel(drchlt_sides)
   side = drchlt_sides(iside);
-  for icomp = drchlt_components{iside}
+  if (~exist('drchlt_components','var'))
+    components = 1:3;
+  else
+    components = drchlt_components{iside};
+  end
+  for icomp = components
     drchlt_dofs = union (drchlt_dofs, space.boundary(side).dofs(space.boundary(side).comp_dofs{icomp}));
   end
 end
