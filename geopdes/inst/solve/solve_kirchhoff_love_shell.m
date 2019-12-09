@@ -9,6 +9,7 @@
 %  problem_data: a structure with data of the problem. It contains the fields:
 %    - geo_name:     name of the file containing the geometry
 %    - drchlt_sides: sides with Dirichlet boundary condition
+%    - drchlt_components: cell-array, the components that are set to zero for each drchlt_side
 %    - E_coeff:      function handle for Young's modulus
 %    - nu_coeff:     function handle for Poisson's ratio
 %    - thickness:    scalar value, thickness of the shell
@@ -27,6 +28,8 @@
 %  msh:      mesh object that defines the quadrature rule (see msh_cartesian)
 %  space:    space object that defines the discrete basis functions (see sp_vector)
 %  u:        the computed degrees of freedom
+%
+% NOTE: only homogeneous Dirichlet conditions implemented so far
 %
 % See also EX_KL_SHELL_SCORDELIS_LO_ROOF for an example.
 %
