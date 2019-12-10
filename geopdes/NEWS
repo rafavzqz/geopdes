@@ -1,6 +1,7 @@
 Summary of important changes for geopdes-3.2:
 -----------------------------------------------------------------------------
 * Added operators, solver and example for Navier-Stokes
+* Added operators, solver and example for Kirchhoff-Love shells
 
 Summary of important changes for geopdes-3.1.2:
 -----------------------------------------------------------------------------

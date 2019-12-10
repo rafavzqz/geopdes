@@ -37,6 +37,7 @@ Mesh: functions to generate and compute quadrature points in the NURBS geometry
  @msh_cartesian/msh_precompute
  @msh_cartesian/msh_boundary_side_from_interior
 Space: functions to generate and compute discrete spline and NURBS spaces
+ sp_h2_error
  sp_h1_error
  sp_l2_error
  sp_hcurl_error
@@ -58,6 +59,7 @@ Space: functions to generate and compute discrete spline and NURBS spaces
  @sp_scalar/sp_evaluate_col_param
  @sp_scalar/sp_evaluate_element_list
  @sp_scalar/sp_evaluate_element_list_param
+ @sp_scalar/sp_h2_error
  @sp_scalar/sp_h1_error
  @sp_scalar/sp_l2_error
  @sp_scalar/sp_precompute
@@ -77,6 +79,7 @@ Space: functions to generate and compute discrete spline and NURBS spaces
  @sp_vector/sp_evaluate_col_param
  @sp_vector/sp_evaluate_element_list
  @sp_vector/sp_evaluate_element_list_param
+ @sp_vector/sp_h2_error
  @sp_vector/sp_h1_error
  @sp_vector/sp_l2_error
  @sp_vector/sp_hcurl_error
@@ -122,6 +125,9 @@ Operators: functions to assemble different matrices and vector
  op_ugradu_jac_v
  op_u_otimes_n_v_otimes_n
  op_v_gradp
+ op_KL_shells
+ op_KL_bending_stress
+ op_KL_membrane_stress
 Multipatch: functions of different kinds to solve problems in domains defined by multiple NURBS patches
  mp_geo_load
  mp_geo_read_nurbs
