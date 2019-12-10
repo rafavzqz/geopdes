@@ -1,5 +1,5 @@
 % GeoPDEs: An Octave/Matlab research tool for IsoGeometric Analysis of PDEs
-%  Version 3.0.0  13-Nov-2015
+%  Version 3.2.0  17-Dec-2019
 %
 % To run the first examples, use the following scripts
 %   geopdes_base_examples
@@ -13,6 +13,7 @@
 %   solve_laplace
 %   solve_laplace_iso
 %   solve_laplace_eig
+%   solve_laplace_collocation
 %   solve_bilaplace_2d_iso
 %   solve_bilaplace_gradgrad_2d_iso
 %   solve_adv_diff_2d
@@ -21,7 +22,9 @@
 %   solve_maxwell_eig_mixed1
 %   solve_maxwell_eig_mixed2_2d
 %   solve_maxwell_src
+%   solve_navier_stokes
 %   solve_stokes
+%   solve_kirchhoff_love_shell
 %
 % Geometry: read geometry files, that can be created with the NURBS package 
 %   geo_nurbs
@@ -35,6 +38,7 @@
 %   msh_set_quad_nodes
 %   msh_set_breaks
 %   msh_cartesian
+%   msh_restrict_to_cells
 %   @msh_cartesian/msh_eval_boundary_side
 %   @msh_cartesian/msh_evaluate_col
 %   @msh_cartesian/msh_evaluate_element_list
@@ -44,6 +48,7 @@
 % Space: functions to generate and compute discrete spline and NURBS spaces
 %   sp_bspline
 %   sp_nurbs
+%   sp_h2_error
 %   sp_h1_error
 %   sp_l2_error
 %   sp_hcurl_error
@@ -63,6 +68,7 @@
 %   @sp_scalar/sp_evaluate_col_param
 %   @sp_scalar/sp_evaluate_element_list
 %   @sp_scalar/sp_evaluate_element_list_param
+%   @sp_scalar/sp_h2_error
 %   @sp_scalar/sp_h1_error
 %   @sp_scalar/sp_l2_error
 %   @sp_scalar/sp_precompute
@@ -81,6 +87,7 @@
 %   @sp_vector/sp_evaluate_col_param
 %   @sp_vector/sp_evaluate_element_list
 %   @sp_vector/sp_evaluate_element_list_param
+%   @sp_vector/sp_h2_error
 %   @sp_vector/sp_h1_error
 %   @sp_vector/sp_l2_error
 %   @sp_vector/sp_hcurl_error
@@ -104,8 +111,8 @@
 %   op_curlu_curlv_2d
 %   op_curlu_curlv_3d
 %   op_curlv_p
-%   op_divu_divv
 %   op_div_v_q
+%   op_divu_divv
 %   op_eu_ev
 %   op_fdotn_vdotn
 %   op_fdotn_v
@@ -117,11 +124,17 @@
 %   op_gradu_v_otimes_n
 %   op_gradv_n_f
 %   op_gradv_n_u
+%   op_gradu_n_gradv_n
 %   op_pn_v
 %   op_su_ev
 %   op_udotn_vdotn
+%   op_ugradu_v
+%   op_ugradu_jac_v
 %   op_u_otimes_n_v_otimes_n
 %   op_v_gradp
+%   op_KL_shells
+%   op_KL_bending_stress
+%   op_KL_membrane_stress
 %
 % Multipatch: functions of different kinds to solve problems in domains defined by multiple NURBS patches
 %   mp_geo_load
@@ -147,11 +160,14 @@
 %   @sp_multipatch/sp_get_cells
 %   @sp_multipatch/sp_get_basis_functions
 %   @sp_multipatch/sp_get_neighbors
-%   @sp_multipatch/mp_sp_drchlt_l2_proj
-%   @sp_multipatch/mp_sp_drchlt_l2_proj_udotn
-%   @sp_multipatch/mp_sp_weak_drchlt_bc
+%   @sp_multipatch/sp_drchlt_l2_proj
+%   @sp_multipatch/sp_drchlt_l2_proj_udotn
+%   @sp_multipatch/sp_weak_drchlt_bc_laplace
+%   @sp_multipatch/sp_weak_drchlt_bc_stokes
 %
 % Utilities: other functions in the package
+%   collocation_csp
 %   knt_derham
 %   msh_to_vtk
+%   newtons_method
 %

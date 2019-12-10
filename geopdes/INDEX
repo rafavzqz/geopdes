@@ -19,6 +19,7 @@ Solve: solvers for some simple problems, that you can modify to solve your own p
  solve_maxwell_src
  solve_navier_stokes
  solve_stokes
+ solve_kirchhoff_love_shell
 Geometry: read geometry files, that can be created with the NURBS package
  geo_nurbs
  geo_load
