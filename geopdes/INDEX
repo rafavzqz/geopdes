@@ -17,6 +17,7 @@ Solve: solvers for some simple problems, that you can modify to solve your own p
  solve_maxwell_eig_mixed1
  solve_maxwell_eig_mixed2_2d
  solve_maxwell_src
+ solve_navier_stokes
  solve_stokes
 Geometry: read geometry files, that can be created with the NURBS package
  geo_nurbs
@@ -117,6 +118,8 @@ Operators: functions to assemble different matrices and vector
  op_pn_v
  op_su_ev
  op_udotn_vdotn
+ op_ugradu_v
+ op_ugradu_jac_v
  op_u_otimes_n_v_otimes_n
  op_v_gradp
 Multipatch: functions of different kinds to solve problems in domains defined by multiple NURBS patches
@@ -152,3 +155,4 @@ Utilities: other functions in the package
  collocation_csp
  knt_derham
  msh_to_vtk
+ newtons_method
