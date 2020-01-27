@@ -1,3 +1,5 @@
+% TEST_NAVIERSTOKES_SQUARE_GRADUEX: gradient of the exact solution.
+
 function gu = test_navierstokes_square_graduex (x, y)
 
   uxx = @(x, y) 0*x;
