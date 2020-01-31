@@ -107,7 +107,8 @@ OUTPUT:\n\
             }
           else
             {
-              {warning_with_id ("geopdes:zero_measure_element", "op_f_vxn_3d: element %d has 0 area", iel);}
+              {warning_with_id ("geopdes:zero_measure_element", "op_f_vxn_3d: element %lld has 0 area", 
+            static_cast<long long int> (iel));}
             } // end for iel, if area > 0
       } // end of parallel section
       retval(0) = octave_value (mat);

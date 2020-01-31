@@ -85,7 +85,9 @@ OUTPUT:\n\
           }  // end for iel, if area > 0 
         else 
           {
-            warning_with_id ("geopdes:zero_measure_element", "op_f_v: element %d has 0 area (or volume)", iel);
+            warning_with_id ("geopdes:zero_measure_element", "op_f_v: element %lld has 0 area (or volume)", 
+            static_cast<long long int> (iel));
+
           }
       
       retval(0) = octave_value (mat);

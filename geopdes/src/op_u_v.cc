@@ -112,7 +112,8 @@ OUTPUT: \n\
                 } // end for idof, for jdof
           } else {
           warning_with_id ("geopdes:zero_measure_element", 
-                           "op_u_v: element %d has 0 area (or volume)", iel);
+                           "op_u_v: element %lld has 0 area (or volume)", 
+                           static_cast<long long int> (iel));
         }  // end for iel, if area > 0
 
       if (nargout == 1) 

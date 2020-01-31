@@ -113,7 +113,8 @@ OUTPUT: \n\
           } 
         else
           {
-            warning_with_id ("geopdes:zero_measure_element", "op_curlu_curlv_3d: element %d has 0 volume", iel);
+            warning_with_id ("geopdes:zero_measure_element", "op_curlu_curlv_3d: element %lld has 0 volume", 
+            static_cast<long long int> (iel));
           }  // end for iel, if area > 0
 
       if (nargout == 1) 
