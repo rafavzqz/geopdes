@@ -28,17 +28,17 @@ CONTENTS:
     * Dimension independent implementation: the same code is valid for curves, surfaces and volumes.
     * Implementation of multipatch domains, with conforming interfaces.
     * Div- and curl-conforming spline spaces, also in multipatch domains.
-    * Examples for Poisson, linear elasticity, advection-diffusion, bilaplacian, Stokes and Maxwell equations.
-    * Adaptive methods with hierarchical splines (beta version).
+    * Examples for Poisson, linear elasticity, advection-diffusion, bilaplacian, Stokes, Navier-Stokes, Maxwell and Kirchhoff-Love shells.
+    * Adaptive methods with hierarchical splines.
     * Detailed documentation, accessible with the help command.
 
 2. CONTENTS AND INSTALLATION
 
   Download and uncompress the file GeoPDEs_full.tar.gz. This file contains 
    all that is necessary to install GeoPDEs:
-   - The GeoPDEs package: geopdes-3.1.0.tar.gz
-   - The NURBS package: nurbs-1.3.13.tar.gz
-   - The GeoPDEs-hierarchical package: geopdes_hierarchical-0.0.1.tar.gz
+   - The GeoPDEs package: geopdes-3.2.0.tar.gz
+   - The NURBS package: nurbs-1.4.1.tar.gz
+   - The GeoPDEs-hierarchical package: geopdes_hierarchical-3.2.0.tar.gz
    - The technical report of GeoPDEs: GeoPDES-report.pdf
    - The technical report for hierarchical splines: GeoPDES-hierarchical-report.pdf
    - This README file.
