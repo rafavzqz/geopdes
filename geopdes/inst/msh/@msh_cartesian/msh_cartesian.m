@@ -49,6 +49,7 @@
 %     msh_boundary_side_from_interior: create a msh object, with quadrature
 %                       points only on one boundary side. Useful to apply boundary
 %                       conditions in weak form.
+%     msh_refine:       create a msh_cartesian object with a refined mesh.
 %
 % Copyright (C) 2009, 2010, 2014 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez

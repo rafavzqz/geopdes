@@ -37,6 +37,7 @@ Mesh: functions to generate and compute quadrature points in the NURBS geometry
  @msh_cartesian/msh_evaluate_element_list
  @msh_cartesian/msh_precompute
  @msh_cartesian/msh_boundary_side_from_interior
+ @msh_cartesian/msh_refine
 Space: functions to generate and compute discrete spline and NURBS spaces
  sp_h2_error
  sp_h1_error
@@ -73,6 +74,7 @@ Space: functions to generate and compute discrete spline and NURBS spaces
  @sp_scalar/sp_get_basis_functions
  @sp_scalar/sp_get_cells
  @sp_scalar/sp_get_neighbors
+ @sp_scalar/sp_refine
  sp_vector
  @sp_vector/sp_eval_boundary_side
  @sp_vector/sp_eval
@@ -93,6 +95,7 @@ Space: functions to generate and compute discrete spline and NURBS spaces
  @sp_vector/sp_get_basis_functions
  @sp_vector/sp_get_cells
  @sp_vector/sp_get_neighbors
+ @sp_vector/sp_refine
 Operators: functions to assemble different matrices and vector
  op_f_v
  op_u_v
@@ -144,6 +147,7 @@ Multipatch: functions of different kinds to solve problems in domains defined by
  mp_solve_stokes_div_conforming
  msh_multipatch
  @msh_multipatch/msh_evaluate_element_list
+ @msh_multipatch/msh_refine
  sp_multipatch
  @sp_multipatch/sp_l2_error
  @sp_multipatch/sp_h1_error
@@ -158,6 +162,7 @@ Multipatch: functions of different kinds to solve problems in domains defined by
  @sp_multipatch/sp_drchlt_l2_proj_udotn
  @sp_multipatch/sp_weak_drchlt_bc_laplace
  @sp_multipatch/sp_weak_drchlt_bc_stokes
+ @sp_multipatch/sp_refine
 Utilities: other functions in the package
  collocation_csp
  knt_derham

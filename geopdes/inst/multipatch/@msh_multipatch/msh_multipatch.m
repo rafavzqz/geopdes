@@ -30,6 +30,7 @@
 %     METHOD NAME
 %     msh_evaluate_element_list: compute the parameterization (and its derivatives) at
 %                       the quadrature points of a given list of elements.
+%     msh_refine:       create a msh_multipatch object with a refined mesh.
 %
 % Copyright (C) 2015 Rafael Vazquez
 %

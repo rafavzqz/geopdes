@@ -38,11 +38,15 @@
 %         sp_l2_error:    compute the error in L2 norm
 %         sp_hcurl_error: compute the error in H(curl) norm
 %         sp_to_vtk:      export the computed solution to a pvd file, using a Cartesian grid of points on each patch
+%         sp_plot_solution: plot the computed solution, given the degrees of freedom
 %
 %       Methods for basic connectivity operations
 %         sp_get_basis_functions: compute the functions that do not vanish in a given list of elements
 %         sp_get_cells:           compute the cells on which a list of functions do not vanish
 %         sp_get_neighbors:       compute the neighbors, functions that share at least one element with a given one
+%
+%       Other methods
+%         sp_refine: generate a refined space, and subdivision matrices for the univariate spaces
 %
 % Copyright (C) 2015, 2017 Rafael Vazquez
 %
