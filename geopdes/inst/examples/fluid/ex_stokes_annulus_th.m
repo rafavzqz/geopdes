@@ -154,6 +154,6 @@ colorbar
 %! assert (msh.nel, 100)
 %! assert (space_v.ndof, 1058)
 %! assert (space_p.ndof, 169)
-%! assert (error_l2_p, 2.79382942386329e-05, 1e-14)
+%! assert (error_l2_p, 2.79382942386329e-05, 2e-14)
 %! assert (error_h1_v, 0.0145880437598918, 1e-13)
 %! assert (error_l2_v, 2.05350241308034e-04, 1e-14)

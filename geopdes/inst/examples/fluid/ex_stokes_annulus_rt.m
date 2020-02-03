@@ -162,7 +162,7 @@ colorbar
 %! assert (msh.nel, 100)
 %! assert (space_v.ndof, 364)
 %! assert (space_p.ndof, 169)
-%! assert (error_l2_p, 0.00110124845720143, 1e-14)
+%! assert (error_l2_p, 0.00110124845720143, 2e-14)
 %! assert (error_h1_v, 0.201777253655151, 1e-13)
 %! assert (error_l2_v, 0.00283264560398094, 1e-14)
 %! assert (max (abs (div(:))) < 1e-13)
