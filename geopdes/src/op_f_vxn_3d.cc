@@ -1,4 +1,4 @@
-/* Copyright (C) 2010 Carlo de Falco, Rafael Vazquez
+/* Copyright (C) 2010, 2020 Carlo de Falco, Rafael Vazquez
    Copyright (C) 2011 Rafael Vazquez
 
    This program is free software; you can redistribute it and/or modify
@@ -38,81 +38,81 @@ OUTPUT:\n\
   
   octave_value_list retval;
 
+  if (args.length () != 3)
+    print_usage ();
+    
   geopdes_mesh_normal msh (args(1).scalar_map_value ());
   geopdes_space       sp  (args(0).scalar_map_value (), msh);
   dim_vector          idx (sp.ncomp (), msh.nqn (), msh.nel ());
   NDArray             coeff = args(2).array_value ().reshape (idx);
 
-  if (!error_state)
-    {
-      const octave_idx_type nel = msh.nel (), ncomp = sp.ncomp (), nqn = msh.nqn ();
+  const octave_idx_type nel = msh.nel (), ncomp = sp.ncomp (), nqn = msh.nqn ();
 
-      ColumnVector mat (sp.ndof (), 0.0);
+  ColumnVector mat (sp.ndof (), 0.0);
 
-      octave_idx_type iel, inode, idof, icmp;
+  octave_idx_type iel, inode, idof, icmp;
 
-      {
-        double local_contribution;
+  {
+    double local_contribution;
 
-        for (iel=0; iel < nel; iel++) 
-          if (msh.area (iel) > 0)
+    for (iel=0; iel < nel; iel++) 
+      if (msh.area (iel) > 0)
+        {
+          const octave_idx_type nsh = sp.nsh (iel);
+          double jacdet_weights[nqn];
+
+          for (inode = 0; inode < nqn; inode++)
             {
-              const octave_idx_type nsh = sp.nsh (iel);
-              double jacdet_weights[nqn];
+              jacdet_weights[inode] = msh.jacdet (inode, iel) *
+                msh.weights (inode, iel);
+            }
 
-              for (inode = 0; inode < nqn; inode++)
-                {
-                  jacdet_weights[inode] = msh.jacdet (inode, iel) *
-                    msh.weights (inode, iel);
-                }
-
-              double shp_x_n[nsh][nqn][ncomp];
-              octave_idx_type conn[nsh];
+          double shp_x_n[nsh][nqn][ncomp];
+          octave_idx_type conn[nsh];
 
 
-              for (idof = 0; idof < nsh; idof++) 
-                for (inode = 0; inode < nqn; inode++)
-                  {
-                    shp_x_n[idof][inode][0] = 
-                      sp.shape_functions (1, inode, idof, iel)*
-                      msh.normal (2, inode, iel) -
-                      sp.shape_functions (2, inode, idof, iel)*
-                      msh.normal (1, inode, iel);
-                    shp_x_n[idof][inode][1] = 
-                      sp.shape_functions (2, inode, idof, iel)*
-                      msh.normal (0, inode, iel) -
-                      sp.shape_functions (0, inode, idof, iel)*
-                      msh.normal (2, inode, iel);
-                    shp_x_n[idof][inode][2] = 
-                      sp.shape_functions (0, inode, idof, iel)*
-                      msh.normal (1, inode, iel) -
-                      sp.shape_functions (1, inode, idof, iel)*
-                      msh.normal (0, inode, iel);
-                  }
+          for (idof = 0; idof < nsh; idof++) 
+            for (inode = 0; inode < nqn; inode++)
+              {
+                shp_x_n[idof][inode][0] = 
+                  sp.shape_functions (1, inode, idof, iel)*
+                  msh.normal (2, inode, iel) -
+                  sp.shape_functions (2, inode, idof, iel)*
+                  msh.normal (1, inode, iel);
+                shp_x_n[idof][inode][1] = 
+                  sp.shape_functions (2, inode, idof, iel)*
+                  msh.normal (0, inode, iel) -
+                  sp.shape_functions (0, inode, idof, iel)*
+                  msh.normal (2, inode, iel);
+                shp_x_n[idof][inode][2] = 
+                  sp.shape_functions (0, inode, idof, iel)*
+                  msh.normal (1, inode, iel) -
+                  sp.shape_functions (1, inode, idof, iel)*
+                  msh.normal (0, inode, iel);
+              }
 
-              sp.cache_element_connectivity (iel, (octave_idx_type*)conn);
+          sp.cache_element_connectivity (iel, (octave_idx_type*)conn);
             
 
-              for (idof = 0; idof < nsh; idof++) 
-                for (inode = 0; inode < nqn; inode++)
-                  if (msh.weights (inode, iel) > 0.0)
-                    {
-                      double s = 0.0;
-                      for (icmp = 0; icmp < ncomp; icmp++)
-                        s += shp_x_n[idof][inode][icmp] * coeff (icmp, inode, iel);
-                      local_contribution = jacdet_weights[inode] * s;
+          for (idof = 0; idof < nsh; idof++) 
+            for (inode = 0; inode < nqn; inode++)
+              if (msh.weights (inode, iel) > 0.0)
+                {
+                  double s = 0.0;
+                  for (icmp = 0; icmp < ncomp; icmp++)
+                    s += shp_x_n[idof][inode][icmp] * coeff (icmp, inode, iel);
+                  local_contribution = jacdet_weights[inode] * s;
                       
-                      mat(conn[idof]-1) += local_contribution;
-                    } // end for idof, for inode, if   
-            }
-          else
-            {
-              {warning_with_id ("geopdes:zero_measure_element", "op_f_vxn_3d: element %lld has 0 area", 
-            static_cast<long long int> (iel));}
-            } // end for iel, if area > 0
-      } // end of parallel section
-      retval(0) = octave_value (mat);
-    } // end if !error_state
+                  mat(conn[idof]-1) += local_contribution;
+                } // end for idof, for inode, if   
+        }
+      else
+        {
+          {warning_with_id ("geopdes:zero_measure_element", "op_f_vxn_3d: element %lld has 0 area", static_cast<long long int> (iel));}
+        } // end for iel, if area > 0
+  } // end of parallel section
+  retval(0) = octave_value (mat);
+
   return retval;
 }
 

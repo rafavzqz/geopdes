@@ -1,4 +1,4 @@
-/* Copyright (C) 2009, 2010, 2011 Carlo de Falco
+/* Copyright (C) 2009, 2010, 2011, 2020 Carlo de Falco
    Copyright (C) 2011 Rafael Vazquez
 
    This program is free software; you can redistribute it and/or modify
@@ -46,7 +46,7 @@ DEFUN_DLD(op_su_ev, args, nargout,"\n\
 \n\
    mat: assembled matrix\n\
  \n\
- Copyright (C) 2009, 2010, 2011 Carlo de Falco\n\
+ Copyright (C) 2009, 2010, 2011, 2020 Carlo de Falco\n\
  Copyright (C) 2011 Rafael Vazquez\n\
 \n\
     This program is free software: you can redistribute it and/or modify\n\
@@ -58,122 +58,121 @@ DEFUN_DLD(op_su_ev, args, nargout,"\n\
   
   octave_value_list retval;
 
+  if ((nargout != 1 && nargout != 3) || args.length () != 5)
+    print_usage ();
+    
   geopdes_mesh             msh (args(2).scalar_map_value ());
   geopdes_space_elasticity spu (args(0).scalar_map_value (), msh);
   geopdes_space_elasticity spv (args(1).scalar_map_value (), msh);
   Matrix                   lambda = args(3).matrix_value();
   Matrix                   mu     = args(4).matrix_value();
 
-  if (!error_state)
-    {
-      const octave_idx_type nel = msh.nel (), ncomp = spu.ncomp (), 
-        nqn = msh.nqn (), ndof_spu = spu.ndof (), nsh_u = spu.nsh_max (), 
-        ndof_spv = spv.ndof (), nsh_v = spv.nsh_max ();
+  const octave_idx_type nel = msh.nel (), ncomp = spu.ncomp (), 
+    nqn = msh.nqn (), ndof_spu = spu.ndof (), nsh_u = spu.nsh_max (), 
+    ndof_spv = spv.ndof (), nsh_v = spv.nsh_max ();
 
-      double jacdet_weights[nqn];
-      double coeff_mu[nqn];
-      double coeff_lambda[nqn];
-      double shgv[nsh_v][nqn][ncomp][ncomp];
-      double shgu[nsh_u][nqn][ncomp][ncomp];
-      double shdivv[nsh_v][nqn];
-      double shdivu[nsh_u][nqn];
-      octave_idx_type conn_v[nsh_v];
-      octave_idx_type conn_u[nsh_u];
+  double jacdet_weights[nqn];
+  double coeff_mu[nqn];
+  double coeff_lambda[nqn];
+  double shgv[nsh_v][nqn][ncomp][ncomp];
+  double shgu[nsh_u][nqn][ncomp][ncomp];
+  double shdivv[nsh_v][nqn];
+  double shdivu[nsh_u][nqn];
+  octave_idx_type conn_v[nsh_v];
+  octave_idx_type conn_u[nsh_u];
 
-      dim_vector dims (nel * nsh_v * nsh_u, 1);
+  dim_vector dims (nel * nsh_v * nsh_u, 1);
 
-      Array <octave_idx_type> I (dims, 0);
-      octave_idx_type* Iptr = I.fortran_vec ();
+  Array <octave_idx_type> I (dims, 0);
+  octave_idx_type* Iptr = I.fortran_vec ();
 
-      Array <octave_idx_type> J (dims, 0);
-      octave_idx_type* Jptr = J.fortran_vec ();
+  Array <octave_idx_type> J (dims, 0);
+  octave_idx_type* Jptr = J.fortran_vec ();
 
-      Array <double> V (dims, 0.0);
-      double* Vptr = V.fortran_vec ();
+  Array <double> V (dims, 0.0);
+  double* Vptr = V.fortran_vec ();
       
-      SparseMatrix mat;
+  SparseMatrix mat;
 
-      octave_idx_type counter = 0, iel, inode, idof, jdof, icmp, jcmp;
-      for (iel=0; iel < nel; iel++) 
-        if (msh.area (iel) > 0.0)
-          {
+  octave_idx_type counter = 0, iel, inode, idof, jdof, icmp, jcmp;
+  for (iel=0; iel < nel; iel++) 
+    if (msh.area (iel) > 0.0)
+      {
              
-            for (inode = 0; inode < nqn; inode++)
-              {
-                jacdet_weights[inode] = msh.jacdet (inode, iel) *
-                  msh.weights (inode, iel);
-                coeff_mu[inode] = mu (inode, iel);
-                coeff_lambda[inode] = lambda (inode, iel);
-              }
-
-            // Cache element data to speed-up memory access
-            spv.cache_element_shape_function_divs (iel, (double*)shdivv);
-            spu.cache_element_shape_function_divs (iel, (double*)shdivu);
-
-            spu.cache_element_connectivity (iel, (octave_idx_type*)conn_u);
-            spv.cache_element_connectivity (iel, (octave_idx_type*)conn_v);
-
-
-            for (idof = 0; idof < spv.nsh (iel); idof++) 
-              for (inode = 0; inode < nqn; inode++)
-                for (icmp = 0; icmp < ncomp; icmp++)
-                  for (jcmp = 0; jcmp < ncomp; jcmp++)
-                    shgv[idof][inode][icmp][jcmp] = spv.shape_function_strain_tensor (icmp, jcmp, inode, idof, iel);
-            
-
-            for (jdof = 0; jdof < spu.nsh (iel); jdof++) 
-              for (inode = 0; inode < nqn; inode++)
-                for (icmp = 0; icmp < ncomp; icmp++)
-                  for (jcmp = 0; jcmp < ncomp; jcmp++)
-                    shgu[jdof][inode][icmp][jcmp] = spu.shape_function_strain_tensor (icmp, jcmp, inode, jdof, iel);
-            
-
-            for (idof = 0; idof < spv.nsh (iel); idof++) 
-              for (jdof = 0; jdof < spu.nsh (iel); jdof++) 
-                {
-                  counter = jdof + nsh_u * (idof + nsh_v * iel);
-
-                  Iptr[counter] = conn_v[idof] - 1;
-                  Jptr[counter] = conn_u[jdof] - 1;
-                  Vptr[counter] = 0.0;
-                  for (inode = 0; inode < nqn; inode++)
-                    if (msh.weights (inode, iel) > 0.0)
-                      {
-                        double s = 0.0;
-                        for (icmp = 0; icmp < ncomp; icmp++)
-                          for (jcmp = 0; jcmp < ncomp; jcmp++)
-                            s += shgu[jdof][inode][icmp][jcmp] * shgv[idof][inode][icmp][jcmp];
-                                                        
-                        Vptr[counter] += jacdet_weights[inode] * 
-                          (2 * s * coeff_mu[inode] + coeff_lambda[inode] * 
-                           shdivu[jdof][inode] * shdivv[idof][inode]);
-                      }   // end for inode, if
-                } // end for idof, for jdof
-          } 
-        else 
+        for (inode = 0; inode < nqn; inode++)
           {
-            warning_with_id ("geopdes:zero_measure_element", "op_su_ev: element %lld has 0 measure", 
-            static_cast<long long int> (iel));
-          }// end for iel
+            jacdet_weights[inode] = msh.jacdet (inode, iel) *
+              msh.weights (inode, iel);
+            coeff_mu[inode] = mu (inode, iel);
+            coeff_lambda[inode] = lambda (inode, iel);
+          }
 
-      if (nargout == 1) 
-        {
-          mat = SparseMatrix (V, I, J, ndof_spv, ndof_spu, true);
-          retval(0) = octave_value (mat);
-        } 
-      else if (nargout == 3)
-	{
-          for (icmp = 0; icmp <= counter; icmp++) 
+        // Cache element data to speed-up memory access
+        spv.cache_element_shape_function_divs (iel, (double*)shdivv);
+        spu.cache_element_shape_function_divs (iel, (double*)shdivu);
+
+        spu.cache_element_connectivity (iel, (octave_idx_type*)conn_u);
+        spv.cache_element_connectivity (iel, (octave_idx_type*)conn_v);
+
+
+        for (idof = 0; idof < spv.nsh (iel); idof++) 
+          for (inode = 0; inode < nqn; inode++)
+            for (icmp = 0; icmp < ncomp; icmp++)
+              for (jcmp = 0; jcmp < ncomp; jcmp++)
+                shgv[idof][inode][icmp][jcmp] = spv.shape_function_strain_tensor (icmp, jcmp, inode, idof, iel);
+            
+
+        for (jdof = 0; jdof < spu.nsh (iel); jdof++) 
+          for (inode = 0; inode < nqn; inode++)
+            for (icmp = 0; icmp < ncomp; icmp++)
+              for (jcmp = 0; jcmp < ncomp; jcmp++)
+                shgu[jdof][inode][icmp][jcmp] = spu.shape_function_strain_tensor (icmp, jcmp, inode, jdof, iel);
+            
+
+        for (idof = 0; idof < spv.nsh (iel); idof++) 
+          for (jdof = 0; jdof < spu.nsh (iel); jdof++) 
             {
-              Iptr[icmp] += 1;
-              Jptr[icmp] += 1;
-            }
-          retval(0) = octave_value (I);
-          retval(1) = octave_value (J);
-          retval(2) = octave_value (V);
-        }
+              counter = jdof + nsh_u * (idof + nsh_v * iel);
 
-    } // end if !error_state
+              Iptr[counter] = conn_v[idof] - 1;
+              Jptr[counter] = conn_u[jdof] - 1;
+              Vptr[counter] = 0.0;
+              for (inode = 0; inode < nqn; inode++)
+                if (msh.weights (inode, iel) > 0.0)
+                  {
+                    double s = 0.0;
+                    for (icmp = 0; icmp < ncomp; icmp++)
+                      for (jcmp = 0; jcmp < ncomp; jcmp++)
+                        s += shgu[jdof][inode][icmp][jcmp] * shgv[idof][inode][icmp][jcmp];
+                                                        
+                    Vptr[counter] += jacdet_weights[inode] * 
+                      (2 * s * coeff_mu[inode] + coeff_lambda[inode] * 
+                       shdivu[jdof][inode] * shdivv[idof][inode]);
+                  }   // end for inode, if
+            } // end for idof, for jdof
+      } 
+    else 
+      {
+        warning_with_id ("geopdes:zero_measure_element", "op_su_ev: element %lld has 0 measure", static_cast<long long int> (iel));
+      }// end for iel
+
+  if (nargout == 1) 
+    {
+      mat = SparseMatrix (V, I, J, ndof_spv, ndof_spu, true);
+      retval(0) = octave_value (mat);
+    } 
+  else if (nargout == 3)
+    {
+      for (icmp = 0; icmp <= counter; icmp++) 
+        {
+          Iptr[icmp] += 1;
+          Jptr[icmp] += 1;
+        }
+      retval(0) = octave_value (I);
+      retval(1) = octave_value (J);
+      retval(2) = octave_value (V);
+    }
+
   return retval;
 }
 

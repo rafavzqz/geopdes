@@ -1,4 +1,4 @@
-/* Copyright (C) 2010 Carlo de Falco, Rafael Vazquez
+/* Copyright (C) 2010, 2020 Carlo de Falco, Rafael Vazquez
    Copyright (C) 2011 Rafael Vazquez
 
    This program is free software; you can redistribute it and/or modify
@@ -38,58 +38,58 @@ OUTPUT:\n\
   
   octave_value_list retval;
 
+  if (args.length () != 3)
+    print_usage ();
+    
   geopdes_mesh_normal msh (args(1).scalar_map_value ());
   geopdes_space       sp  (args(0).scalar_map_value (), msh);
   NDArray             coeff = args(2).array_value ();
 
-  if (!error_state)
-    {
-      const octave_idx_type nel = msh.nel (), nqn = msh.nqn ();
+  const octave_idx_type nel = msh.nel (), nqn = msh.nqn ();
 
-     ColumnVector mat (sp.ndof (), 0.0);
+  ColumnVector mat (sp.ndof (), 0.0);
 
-      octave_idx_type iel, inode, idof;
-      {
-        double local_contribution;
-        for (iel=0; iel < nel; iel++) 
-          if (msh.area (iel) > 0)
-            {
-              const octave_idx_type nsh = sp.nsh (iel);
-              double jacdet_weights[nqn];
+  octave_idx_type iel, inode, idof;
+  {
+    double local_contribution;
+    for (iel=0; iel < nel; iel++) 
+      if (msh.area (iel) > 0)
+        {
+          const octave_idx_type nsh = sp.nsh (iel);
+          double jacdet_weights[nqn];
 
-            for (inode = 0; inode < nqn; inode++)
-              jacdet_weights[inode] = msh.jacdet (inode, iel) *
-                msh.weights (inode, iel) * coeff (inode, iel);
+          for (inode = 0; inode < nqn; inode++)
+            jacdet_weights[inode] = msh.jacdet (inode, iel) *
+              msh.weights (inode, iel) * coeff (inode, iel);
             
-            double shp_x_n[nsh][nqn];
-            octave_idx_type conn[nsh];
+          double shp_x_n[nsh][nqn];
+          octave_idx_type conn[nsh];
 
-            for (idof = 0; idof < nsh; idof++) 
-              for (inode = 0; inode < nqn; inode++)
-                shp_x_n[idof][inode] = 
-                  sp.shape_functions (0, inode, idof, iel)*
-                  msh.normal (1, inode, iel) -
-                  sp.shape_functions (1, inode, idof, iel)*
-                  msh.normal (0, inode, iel);
+          for (idof = 0; idof < nsh; idof++) 
+            for (inode = 0; inode < nqn; inode++)
+              shp_x_n[idof][inode] = 
+                sp.shape_functions (0, inode, idof, iel)*
+                msh.normal (1, inode, iel) -
+                sp.shape_functions (1, inode, idof, iel)*
+                msh.normal (0, inode, iel);
 
-            sp.cache_element_connectivity (iel, (octave_idx_type*)conn);
+          sp.cache_element_connectivity (iel, (octave_idx_type*)conn);
 
-            for (idof = 0; idof < nsh; idof++) 
-              for (inode = 0; inode < nqn; inode++)
-                if (msh.weights (inode, iel) > 0.0)
-                  {
-                    local_contribution = jacdet_weights[inode] * 
-                      shp_x_n[idof][inode];
-                    mat(conn[idof]-1) += local_contribution;
-                  }  // end for idof, for inode, if  
-            } 
-          else
-            {
-              {warning_with_id ("geopdes:zero_measure_element", "op_f_vxn_2d: element %lld has 0 area", 
-            static_cast<long long int> (iel));}
-            } // end for iel, if area > 0
-      } // end of parallel region
-      retval(0) = octave_value (mat);
-    } // end if !error_state
+          for (idof = 0; idof < nsh; idof++) 
+            for (inode = 0; inode < nqn; inode++)
+              if (msh.weights (inode, iel) > 0.0)
+                {
+                  local_contribution = jacdet_weights[inode] * 
+                    shp_x_n[idof][inode];
+                  mat(conn[idof]-1) += local_contribution;
+                }  // end for idof, for inode, if  
+        } 
+      else
+        {
+          {warning_with_id ("geopdes:zero_measure_element", "op_f_vxn_2d: element %lld has 0 area", static_cast<long long int> (iel));}
+        } // end for iel, if area > 0
+  } // end of parallel region
+  retval(0) = octave_value (mat);
+
   return retval;
 }
