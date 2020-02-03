@@ -38,7 +38,7 @@ OUTPUT:\n\
   
   octave_value_list retval;
 
-  if (args.length () != 3)
+  if (nargout != 1 || args.length () != 3)
     print_usage ();
     
   geopdes_mesh_normal msh (args(1).scalar_map_value ());
