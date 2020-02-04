@@ -82,5 +82,5 @@ title ('Exact solution'), axis tight
 %! [error_h1, error_l2] = sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex);
 %! assert (msh.nel, 81)
 %! assert (space.ndof, 144)
-%! assert (error_h1, 0.00915973154744079, 1e-16)
-%! assert (error_l2, 2.42737509846690e-04, 1e-16)
+%! assert (error_h1, 0.00915973154744079, 5e-16)
+%! assert (error_l2, 2.42737509846690e-04, 5e-16)
