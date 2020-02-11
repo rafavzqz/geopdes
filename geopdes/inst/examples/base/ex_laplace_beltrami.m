@@ -1,4 +1,4 @@
-% EX_LAPLACE_RING: solve the Poisson problem in one quarter of a ring, discretized with B-splines (non-isoparametric approach).
+% EX_LAPLACE_BELTRAMI: solve the Laplace-Beltrami equation on a NURBS surface, discretized with B-splines (non-isoparametric approach).
 
 % 1) PHYSICAL DATA OF THE PROBLEM
 clear problem_data 
