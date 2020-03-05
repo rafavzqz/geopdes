@@ -1,3 +1,7 @@
+Summary of important changes for geopdes-3.2.1:
+-----------------------------------------------------------------------------
+* Added computation of the error in H(div) norm
+
 Summary of important changes for geopdes-3.2:
 -----------------------------------------------------------------------------
 * Added operators, solver and example for Navier-Stokes
