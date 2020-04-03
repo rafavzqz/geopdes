@@ -87,9 +87,9 @@ for iref = 1:numel(interfaces)
       rB = space.gnum{patch(ii)}(rB); cB = space.gnum{patch(jj)}(cB);
       rC = space.gnum{patch(ii)}(rC); cC = space.gnum{patch(jj)}(cC);
 
-      rA = [rA rB rC];
-      cA = [cA cB cC];
-      vA = [vA -2*vB vC];
+      rA = [rA rB cB rC];
+      cA = [cA cB rB cC];
+      vA = [vA -vB -vB vC];
     end
   end
 end
