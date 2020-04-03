@@ -100,6 +100,7 @@ Operators: functions to assemble different matrices and vector
  op_f_v
  op_u_v
  op_gradu_gradv
+ op_gradsymu_gradsymv
  op_laplaceu_laplacev
  op_vel_dot_gradu_v
  op_mat_stab_SUPG
@@ -122,6 +123,9 @@ Operators: functions to assemble different matrices and vector
  op_gradv_n_f
  op_gradv_n_u
  op_gradu_n_gradv_n
+ op_gradsymu_v_otimes_n
+ op_gradsymv_n_f
+ op_gradsymv_n_u
  op_pn_v
  op_su_ev
  op_udotn_vdotn

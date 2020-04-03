@@ -1,5 +1,7 @@
 Summary of important changes for geopdes-3.2.1:
 -----------------------------------------------------------------------------
+* Fixed bug in MP_DG_PENALTY, causing low order of convergence.
+* Operators for symmetric gradient for Stokes
 * Added computation of the error in H(div) norm
 
 Summary of important changes for geopdes-3.2:
