@@ -23,7 +23,7 @@
 %    Isogeometric divergence-conforming B-splines for the Darcy-Stokes-Brinkman equations
 %    Math. Models Meth. Appl. Sci., 2012
 %
-% Copyright (C) 2014, 2015 Rafael Vazquez
+% Copyright (C) 2014, 2015, 2020 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -87,9 +87,9 @@ for iref = 1:numel(interfaces)
       rB = space.gnum{patch(ii)}(rB); cB = space.gnum{patch(jj)}(cB);
       rC = space.gnum{patch(ii)}(rC); cC = space.gnum{patch(jj)}(cC);
 
-      rA = [rA rB cB rC];
-      cA = [cA cB rB cC];
-      vA = [vA -vB -vB vC];
+      rA = [rA rB rC];
+      cA = [cA cB cC];
+      vA = [vA -2*vB vC];
     end
   end
 end
