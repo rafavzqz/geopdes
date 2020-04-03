@@ -50,7 +50,7 @@ function varargout = op_gradsymu_v_otimes_n (spu, spv, msh, coeff)
     if (all (msh.jacdet(:, iel)))
       gradu_iel = reshape (gradu(:,:,:,:,iel), spu.ncomp, ndir, msh.nqn, spu.nsh_max);
       gradu_iel = 0.5 * (gradu_iel + permute(gradu_iel, [2 1 3 4]));
-      gradu_iel = reshape (gradu_iel * 0.5, spu.ncomp*ndir, msh.nqn, 1, spu.nsh_max); % Average value
+      gradu_iel = reshape (gradu_iel, spu.ncomp*ndir, msh.nqn, 1, spu.nsh_max);
       shpv_iel = reshape (shpv(:, :, :, iel), spv.ncomp, msh.nqn, spv.nsh_max);
       
       v_otimes_n_iel = zeros (ncomp, ndir, msh.nqn, spv.nsh_max);

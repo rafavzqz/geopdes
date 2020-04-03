@@ -14,7 +14,7 @@
 %
 %   A: assembled matrix
 % 
-% Copyright (C) 2015, 2017 Rafael Vazquez
+% Copyright (C) 2015, 2017, 2020 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -49,7 +49,6 @@ function varargout = op_gradu_v_otimes_n (spu, spv, msh, coeff)
   for iel = 1:msh.nel
     if (all (msh.jacdet(:, iel)))
       gradu_iel = reshape (gradu(:,:,:,:,iel), spu.ncomp*ndir, msh.nqn, 1, spu.nsh_max);
-      gradu_iel = gradu_iel * 0.5; % Average value
       shpv_iel = reshape (shpv(:, :, :, iel), spv.ncomp, msh.nqn, spv.nsh_max);
       
       v_otimes_n_iel = zeros (ncomp, ndir, msh.nqn, spv.nsh_max);
