@@ -43,7 +43,7 @@
 %  See also EX_STOKES_DRIVEN_CAVITY_3D_MP for an example
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2010, 2011, 2015 Rafael Vazquez
+% Copyright (C) 2010, 2011, 2015, 2020 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -114,24 +114,45 @@ F = op_f_v_mp (space_v, msh, f);
 vel   = zeros (space_v.ndof, 1);
 press = zeros (space_p.ndof, 1);
 
+% Apply Neumann boundary conditions
+rhs_nmnn = zeros(space_v.ndof,1);
+Nbnd = cumsum ([0, boundaries.nsides]);
+for iref = nmnn_sides
+  iref_patch_list = Nbnd(iref)+1:Nbnd(iref+1);
+  gref = @(varargin) g(varargin{:},iref);
+  rhs_nmnn(space_v.boundary.dofs) = rhs_nmnn(space_v.boundary.dofs) + ...
+    op_f_v_mp (space_v.boundary, msh.boundary, gref, iref_patch_list);
+end
+
 % Apply Dirichlet boundary conditions
 [vel_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space_v, msh, h, drchlt_sides);
 vel(drchlt_dofs) = vel_drchlt;
 
 int_dofs = setdiff (1:space_v.ndof, drchlt_dofs);
 nintdofs = numel (int_dofs);
+rhs_dir  = -A(int_dofs, drchlt_dofs)*vel(drchlt_dofs);
 
 % Solve the linear system
-mat = [A(int_dofs, int_dofs), -B(:,int_dofs).', sparse(nintdofs, 1);
-       -B(:,int_dofs), sparse(space_p.ndof, space_p.ndof), E.';
-       sparse(1, nintdofs), E, 0];
-rhs = [F(int_dofs)-A(int_dofs, drchlt_dofs)*vel(drchlt_dofs); 
-       B(:, drchlt_dofs)*vel(drchlt_dofs); 
-       0];
-
-sol = mat \ rhs;
-
-vel(int_dofs) = sol(1:nintdofs);
-press = sol(1+nintdofs:end-1);
+if (isempty (nmnn_sides))
+  mat = [A(int_dofs, int_dofs), -B(:,int_dofs).', sparse(nintdofs, 1);
+         -B(:,int_dofs), sparse(space_p.ndof, space_p.ndof), E.';
+         sparse(1, nintdofs), E, 0];
+  rhs = [F(int_dofs) + rhs_dir; 
+         B(:, drchlt_dofs)*vel(drchlt_dofs); 
+         0];
+  sol = mat \ rhs;
+  vel(int_dofs) = sol(1:nintdofs);
+  press = sol(1+nintdofs:end-1);
+  
+else
+% With natural boundary condition, the constraint on the pressure is not needed.
+  mat = [ A(int_dofs, int_dofs), -B(:,int_dofs).';
+         -B(:,int_dofs),         sparse(size (B,1), size (B,1))];
+  rhs = [F(int_dofs) + rhs_dir + rhs_nmnn(int_dofs); 
+         B(:, drchlt_dofs)*vel(drchlt_dofs)];
+  sol = mat \ rhs;
+  vel(int_dofs) = sol(1:nintdofs);
+  press = sol(1+nintdofs:end);
+end
 
 end

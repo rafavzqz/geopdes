@@ -44,7 +44,7 @@
 %  See also EX_STOKES_BIFURCATION_2D_RT_MP for an example
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2010, 2011, 2015 Rafael Vazquez
+% Copyright (C) 2010, 2011, 2015, 2020 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -119,6 +119,34 @@ press = zeros (space_p.ndof, 1);
 % Apply DG techniques on the interfaces
 A = A + mp_dg_penalty (space_v, msh, interfaces, viscosity, Cpen);
 
+% Apply Neumann boundary conditions
+rhs_nmnn = zeros(space_v.ndof,1);
+Nbnd = cumsum ([0, boundaries.nsides]);
+for iref = nmnn_sides
+  iref_patch_list = Nbnd(iref)+1:Nbnd(iref+1);
+  gref = @(varargin) g(varargin{:},iref);
+  
+  for bnd_side = 1:msh.boundaries(iref).nsides
+    iptc = msh.boundaries(iref).patches(bnd_side);
+    iside = msh.boundaries(iref).faces(bnd_side);
+
+    msh_side = msh_eval_boundary_side (msh.msh_patch{iptc}, iside);
+    msh_side_from_interior = msh_boundary_side_from_interior (msh.msh_patch{iptc}, iside);
+
+    sp_bnd = space_v.sp_patch{iptc}.constructor (msh_side_from_interior);
+    sp_bnd = sp_precompute (sp_bnd, msh_side_from_interior, 'value', true);
+%     sp_bnd.dofs = 1:sp_bnd.ndof;
+
+    x = cell (msh_side.rdim, 1);
+    for idim = 1:msh_side.rdim
+      x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
+    end
+    gval = reshape (gref(x{:}), msh.rdim, msh_side.nqn, msh_side.nel);
+    rhs_nmnn(space_v.gnum{iptc}) = rhs_nmnn(space_v.gnum{iptc}) + ...
+      op_f_v (sp_bnd, msh_side, gval);
+  end
+end
+
 % Apply Dirichlet boundary conditions
 [N_mat, N_rhs] = sp_weak_drchlt_bc_stokes (space_v, msh, drchlt_sides, h, viscosity, Cpen);
 A = A - N_mat; F = F + N_rhs;
@@ -130,16 +158,25 @@ nintdofs = numel (int_dofs);
 rhs_dir  = -A(int_dofs, drchlt_dofs)*vel(drchlt_dofs);
 
 % Solve the linear system
-mat = [A(int_dofs, int_dofs), -B(:,int_dofs).', sparse(nintdofs, 1);
-       -B(:,int_dofs),        sparse(space_p.ndof, space_p.ndof), E.';
-       sparse(1, nintdofs),   E, 0];
-rhs = [F(int_dofs) + rhs_dir; 
-       B(:, drchlt_dofs)*vel(drchlt_dofs); 
-       0];
-
-sol = mat \ rhs;
-
-vel(int_dofs) = sol(1:nintdofs);
-press = sol(1+nintdofs:end-1);
+if (isempty (nmnn_sides))
+  mat = [A(int_dofs, int_dofs), -B(:,int_dofs).', sparse(nintdofs, 1);
+         -B(:,int_dofs),        sparse(space_p.ndof, space_p.ndof), E.';
+         sparse(1, nintdofs),   E, 0];
+  rhs = [F(int_dofs) + rhs_dir; 
+         B(:, drchlt_dofs)*vel(drchlt_dofs); 
+         0];
+  sol = mat \ rhs;
+  vel(int_dofs) = sol(1:nintdofs);
+  press = sol(1+nintdofs:end-1);
+else
+% With natural boundary condition, the constraint on the pressure is not needed.
+  mat = [ A(int_dofs, int_dofs), -B(:,int_dofs).';
+         -B(:,int_dofs),         sparse(size (B,1), size (B,1))];
+  rhs = [F(int_dofs) + rhs_dir + rhs_nmnn(int_dofs); 
+         B(:, drchlt_dofs)*vel(drchlt_dofs)];
+  sol = mat \ rhs;
+  vel(int_dofs) = sol(1:nintdofs);
+  press = sol(1+nintdofs:end);
+end
 
 end
