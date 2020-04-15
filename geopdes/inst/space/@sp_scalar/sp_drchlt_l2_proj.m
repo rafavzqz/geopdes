@@ -42,10 +42,12 @@ function [u, dofs] = sp_drchlt_l2_proj (sp, msh, h, sides)
       iside = sides(ii);
       dofs = union (dofs, sp.boundary(iside).dofs);
       if (iside == 1)
-        u(ii) = h(msh.breaks{1}(1), iside);
+        geo_map = msh.map(msh.breaks{1}(1));
       else
-        u(ii) = h(msh.breaks{1}(end), iside); 
+        geo_map = msh.map(msh.breaks{1}(end));
       end
+      for jj = 1:msh.rdim; xx{jj} = geo_map(jj); end
+      u(ii) = h(xx{:}, iside);
     end
     u = u(:);
     return
