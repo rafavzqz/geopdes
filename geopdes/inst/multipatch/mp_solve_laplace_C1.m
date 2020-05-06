@@ -1,14 +1,17 @@
-% SOLVE_LAPLACE_ISO: Solve a Laplace problem with a NURBS discretization (isoparametric approach). 
+% MP_SOLVE_LAPLACE: solve the Laplacian problem in a multipatch geometry.
 %
-% The function solves the diffusion problem
+% Example to solve the diffusion problem
 %
-%    - div ( epsilon(x) grad (u)) = f    in Omega = F((0,1)^n)
+%    - div ( epsilon(x) grad (u)) = f    in Omega
 %                epsilon(x) du/dn = g    on Gamma_N
 %                               u = h    on Gamma_D
 %
+% where the domain \Omega is formed by several patches of the form F((0,1)^n).
+%
 % USAGE:
 %
-%  [geometry, msh, space, u] = solve_laplace_iso (problem_data, method_data)
+%  [geometry, msh, space, u] = 
+%          mp_solve_laplace (problem_data, method_data)
 %
 % INPUT:
 %
@@ -30,19 +33,17 @@
 %
 % OUTPUT:
 %
-%  geometry: geometry structure (see geo_load)
-%  msh:      mesh object that defines the quadrature rule (see msh_cartesian)
-%  space:    space object that defines the discrete space (see sp_scalar)
+%  geometry: array of geometry structures (see geo_load)
+%  msh:      multipatch mesh, consisting of several Cartesian meshes (see msh_multipatch)
+%  space:    multipatch space, formed by several tensor product spaces plus the connectivity (see sp_multipatch)
 %  u:        the computed degrees of freedom
 %
-% See also EX_LAPLACE_ISO_RING and EX_LAPLACE_ISO_THICK_RING for examples.
-%
-% Copyright (C) 2009, 2010, 2011 Carlo de Falco
-% Copyright (C) 2011, 2015, 2017 Rafael Vazquez
+% Copyright (C) 2009, 2010 Carlo de Falco
+% Copyright (C) 2010, 2011, 2013, 2015, 2017 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
-%    the Free Software Foundation, either version 3 of the License, or
+%    the Free Software Foundation, either version 2 of the License, or
 %    (at your option) any later version.
 
 %    This program is distributed in the hope that it will be useful,
@@ -54,7 +55,7 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function [geometry, msh, space, u] = ...
-              solve_laplace_iso (problem_data, method_data)
+              mp_solve_laplace_C1 (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
 data_names = fieldnames (problem_data);
@@ -66,49 +67,49 @@ for iopt  = 1:numel (data_names)
   eval ([data_names{iopt} '= method_data.(data_names{iopt});']);
 end
 
-% Construct geometry structure
-geometry = geo_load (geo_name);
-degelev  = max (degree - (geometry.nurbs.order-1), 0);
-nurbs    = nrbdegelev (geometry.nurbs, degelev);
-[rknots, zeta, nknots] = kntrefine (nurbs.knots, nsub-1, nurbs.order-1, regularity);
+% Construct geometry structure, and information for interfaces and boundaries
+[geometry, boundaries, interfaces, ~, boundary_interfaces] = mp_geo_load (geo_name);
+npatch = numel (geometry);
 
-nurbs = nrbkntins (nurbs, nknots);
-geometry = geo_load (nurbs);
+msh = cell (1, npatch); 
+sp = cell (1, npatch);
+for iptc = 1:npatch
 
-% Construct msh structure
-rule     = msh_gauss_nodes (nquad);
-[qn, qw] = msh_set_quad_nodes (zeta, rule);
-msh      = msh_cartesian (zeta, qn, qw, geometry);
-  
-% Construct space structure
-space  = sp_nurbs (geometry.nurbs, msh);
-  
-% Assemble the matrices
-stiff_mat = op_gradu_gradv_tp (space, space, msh, c_diff);
-rhs       = op_f_v_tp (space, msh, f);
+% Define the refined mesh, with tensor product structure
+  [knots{iptc}, zeta{iptc}] = ...
+         kntrefine (geometry(iptc).nurbs.knots, nsub-1, degree, regularity);
 
-% Apply Neumann boundary conditions
-for iside = nmnn_sides
-  if (msh.ndim > 1)
-% Restrict the function handle to the specified side, in any dimension, gside = @(x,y) g(x,y,iside)
-    gside = @(varargin) g(varargin{:},iside);
-    dofs = space.boundary(iside).dofs;
-    rhs(dofs) = rhs(dofs) + op_f_v_tp (space.boundary(iside), msh.boundary(iside), gside);
-  else
-    if (iside == 1)
-      x = msh.breaks{1}(1);
-    else
-      x = msh.breaks{1}(end);
-    end
-    sp_side = space.boundary(iside);
-    rhs(sp_side.dofs) = rhs(sp_side.dofs) + g(x,iside);
-  end
+% Compute the quadrature rule
+  rule      = msh_gauss_nodes (nquad);
+  [qn, qw]  = msh_set_quad_nodes (zeta{iptc}, rule);
+  msh{iptc} = msh_cartesian (zeta{iptc}, qn, qw, geometry(iptc));
+
+% Evaluate the discrete space basis functions in the quadrature points
+  sp{iptc} = sp_bspline (knots{iptc}, degree, msh{iptc});
 end
 
-% Apply Dirichlet boundary conditions
-u = zeros (space.ndof, 1);
-[u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space, msh, h, drchlt_sides);
-u(drchlt_dofs) = u_drchlt;
+msh = msh_multipatch (msh, boundaries);
+% space = sp_multipatch (sp, msh, interfaces, boundary_interfaces);
+space = sp_multipatch_C1 (sp, msh, geometry, interfaces, boundary_interfaces);
+clear sp
+
+% Compute and assemble the matrices 
+stiff_mat = op_gradu_gradv_mp (space, space, msh, c_diff);
+rhs = op_f_v_mp (space, msh, f);
+
+% Apply Neumann boundary conditions
+for iref = nmnn_sides
+  gref = @(varargin) g(varargin{:}, iref);
+  for bnd_side = 1:msh.boundaries(iref).nsides
+    iptc = msh.boundaries(iref).patches(bnd_side);
+    iside = msh.boundaries(iref).faces(bnd_side);
+
+    msh_side = msh.msh_patch{iptc}.boundary(iside);
+    sp_side = space.sp_patch{iptc}.boundary(iside);
+    rhs_nmnn = op_f_v_tp (sp_side, msh_side, gref);
+    rhs = rhs + space.Cpatch{iptc}(sp_side.dofs,:).' * rhs_nmnn;
+  end
+end
 
 % Apply Dirichlet boundary conditions in weak form, by Nitsche's method
 if (exist ('weak_drchlt_sides', 'var'))
@@ -117,22 +118,16 @@ if (exist ('weak_drchlt_sides', 'var'))
   rhs = rhs + N_rhs;
 end
 
-int_dofs = setdiff (1:space.ndof, drchlt_dofs);
-rhs(int_dofs) = rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt;
-
 % Solve the linear system
-u(int_dofs) = stiff_mat(int_dofs, int_dofs) \ rhs(int_dofs);
+u = stiff_mat \ rhs;
 
 end
 
 %!demo
-%! ex_laplace_iso_plate
+%! ex_laplace_Lshaped_mp
 
 %!demo
-%! ex_laplace_iso_ring
+%! ex_laplace_cube_mp
 
 %!demo
-%! ex_laplace_iso_ring_mixed_bc
-
-%!demo
-%! ex_laplace_iso_thick_ring
+%! ex_laplace_thick_L_mp
