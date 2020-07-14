@@ -1,15 +1,17 @@
 % SP_SCALAR: Constructor of the class of scalar tensor-product spaces (B-Splines or NURBS).
 %
-%     sp = sp_scalar (knots, degree, weights, msh, [transform])
+%     sp = sp_scalar (knots, degree, weights, msh, [transform, periodic_directions])
 %
 % INPUTS:
 %     
-%     knots:     open knot vector (cell array of size [1, ndim])
-%     degree:    spline polynomial degree (vector of size [1, ndim])
-%     weights:   weights associated to the basis functions. For B-splines it should be empty
-%     msh:       msh object that defines the quadrature rule (see msh_cartesian)
-%     transform: string with the transformation to the physical domain, one of 
-%                 'grad-preserving' (default) and 'integral-preserving', for N-forms.
+%     knots:               open knot vector (cell array of size [1, ndim])
+%     degree:              spline polynomial degree (vector of size [1, ndim])
+%     weights:             weights associated to the basis functions. For B-splines it should be empty
+%     msh:                 msh object that defines the quadrature rule (see msh_cartesian)
+%     transform:           string with the transformation to the physical domain, one of 
+%                          'grad-preserving' (default) and 'integral-preserving', for N-forms
+%     periodic_directions: Cartesian directions in which the space should be made periodic
+%     
 %
 % OUTPUT:
 %
@@ -73,11 +75,8 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_directions,regularity)
+function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_directions)
 
-  if (nargin < 7)
-    regularity = degree-1;
-  end
   if (nargin < 6)
     periodic_directions  = [];
   end
@@ -100,9 +99,9 @@ function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_direct
     error ('The dimension of the mesh and the space do not correspond to each other')
   end
   
-  if numel(periodic_directions) > 0
-    knots = kntunclamp(knots, degree, regularity, periodic_directions);
-  end
+% % %   if (numel(periodic_directions) > 0)
+% % %     knots = kntunclamp(knots, degree, regularity, periodic_directions);
+% % %   end
   
   
   sp.knots = knots;
@@ -112,13 +111,9 @@ function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_direct
   
   nodes = msh.qn;
   for idim = 1:msh.ndim
-    if (regularity(idim) >= degree(idim))
-      regularity(idim) = degree(idim)-1;
-    end
     sp.sp_univ(idim) = sp_bspline_1d_param (knots{idim}, degree(idim), nodes{idim},...
                                             'gradient', true, 'hessian', true,...
-                                            'periodic',ismember(idim,periodic_directions),...
-                                            'regularity',regularity(idim));
+                                            'periodic',ismember(idim,periodic_directions));
 
   end
 
@@ -204,10 +199,9 @@ function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_direct
   sp.transform = transform;
   
   sp.periodic_directions = periodic_directions;
-  sp.regularity = regularity;
   
   sp.constructor = @(MSH) sp_scalar (sp.knots, sp.degree, sp.weights, MSH, sp.transform,...
-                                     sp.periodic_directions,sp.regularity);
+                                     sp.periodic_directions);
   sp = class (sp, 'sp_scalar');
 
 end

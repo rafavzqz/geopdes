@@ -16,6 +16,7 @@
 %           ------------+-----------------+-----------------------------------
 %            gradient   |      true       |  compute shape_function_gradients
 %            hessian    |     false       |  compute shape_function_hessians
+%            periodic   |     false       |  make space connectivity periodic 
 %
 % OUTPUT:
 %
@@ -43,7 +44,6 @@ function sp = sp_bspline_1d_param (knots, degree, nodes, varargin)
 gradient = true; 
 hessian  = false; 
 periodic = false;
-regularity = degree-1;
 
 if (~isempty (varargin))
   if (~rem (length (varargin), 2) == 0)
@@ -56,8 +56,6 @@ if (~isempty (varargin))
       hessian = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'periodic'))
       periodic = varargin{ii+1};
-    elseif (strcmpi (varargin {ii}, 'regularity'))
-      regularity = varargin{ii+1};
     else 
       error ('sp_bspline_1d_param: unknown option %s', varargin {ii});
     end
@@ -113,6 +111,9 @@ shape_functions = reshape (ders(:, 1, :), nqn, nel, []);
 shape_functions = permute (shape_functions, [1, 3, 2]);
 
 if (periodic)
+  
+  uniknots = unique(knots);
+  regularity = degree-nnz(uniknots(degree+1) == knots);
   n_extra_dofs = regularity+1;
 
   ndof = ndof-n_extra_dofs;

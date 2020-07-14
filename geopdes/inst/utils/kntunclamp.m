@@ -79,7 +79,6 @@ function uknt = kntunclamp (knt, deg, k, dim)
       U(m-kk+ii) = U(m-kk+ii-1) + U(p+ii+1+1) - U(p+ii+1);
     end
     
-%     defect = p - kk - 1;
     uknt{idim} = U;
 
   end
