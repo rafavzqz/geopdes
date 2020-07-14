@@ -111,15 +111,13 @@ shape_functions = reshape (ders(:, 1, :), nqn, nel, []);
 shape_functions = permute (shape_functions, [1, 3, 2]);
 
 if (periodic)
-  
-  uniknots = unique(knots);
-  regularity = degree-nnz(uniknots(degree+1) == knots);
-  n_extra_dofs = regularity+1;
+  regularity = degree - nnz(knots == knots(degree+1));
+  n_extra_dofs = regularity + 1;
 
-  ndof = ndof-n_extra_dofs;
+  ndof = ndof - n_extra_dofs;
   nsh  = repmat(nsh_max,1,size(connectivity,2));
 
-  connectivity = mod(connectivity-1,ndof)+1;
+  connectivity = mod(connectivity-1,ndof) + 1;
 
   for k = 1:n_extra_dofs
     supp{n_extra_dofs-k+1} = [supp{end}; supp{n_extra_dofs-k+1}];
