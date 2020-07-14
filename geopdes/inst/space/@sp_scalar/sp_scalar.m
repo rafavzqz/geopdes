@@ -149,7 +149,11 @@ function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_direct
             end
             weights = squeeze (sp.weights(indices{:}));
           end
-          sp.boundary(iside) = sp_scalar (sp.knots(ind), sp.degree(ind), weights, msh.boundary(iside));
+          
+          [~,bnd_periodic_dir] = ismember(periodic_directions,ind);
+          bnd_periodic_dir = nonzeros(bnd_periodic_dir);
+          sp.boundary(iside) = sp_scalar (sp.knots(ind), sp.degree(ind), weights, msh.boundary(iside),...
+              'grad-preserving',bnd_periodic_dir);
         end
       
         bnd_ndof_dir = sp.ndof_dir(ind);
