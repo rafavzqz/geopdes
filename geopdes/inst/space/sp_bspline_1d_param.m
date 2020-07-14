@@ -102,11 +102,6 @@ for inqn = 1:numel(nodes)
   ders(inqn,:,ind:ind+p) = tders(inqn,:,:);
 end
 
-supp = cell (ndof, 1);
-for ii = 1:ndof
-  [~, supp{ii}] = find (connectivity == ii);
-end
-
 shape_functions = reshape (ders(:, 1, :), nqn, nel, []);
 shape_functions = permute (shape_functions, [1, 3, 2]);
 
@@ -119,10 +114,15 @@ if (periodic)
 
   connectivity = mod(connectivity-1,ndof) + 1;
 
-  for k = 1:n_extra_dofs
-    supp{n_extra_dofs-k+1} = [supp{end}; supp{n_extra_dofs-k+1}];
-    supp(end) = []; % deletes cell-array element!
-  end
+% % %   for k = 1:n_extra_dofs
+% % %     supp{n_extra_dofs-k+1} = [supp{end}; supp{n_extra_dofs-k+1}];
+% % %     supp(end) = []; % deletes cell-array element!
+% % %   end
+end
+
+supp = cell (ndof, 1);
+for ii = 1:ndof
+  [~, supp{ii}] = find (connectivity == ii);
 end
 
 sp = struct ('nsh_max', nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
