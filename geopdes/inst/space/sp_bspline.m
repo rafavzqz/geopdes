@@ -29,12 +29,19 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp = sp_bspline (knots, degree, msh, transform)
+function sp = sp_bspline (knots, degree, msh, transform, periodic_directions,regularity)
 
-if (nargin == 3)
-  transform = 'grad-preserving';
-end
+  if (nargin < 6)
+    regularity = degree-1;
+  end
+    
+  if (nargin < 5)
+    periodic_directions  = [];
+  end
+  if (nargin == 3)
+    transform = 'grad-preserving';
+  end
 
-sp = sp_scalar (knots, degree, [], msh, transform);
+  sp = sp_scalar (knots, degree, [], msh, transform, periodic_directions, regularity);
 
 end

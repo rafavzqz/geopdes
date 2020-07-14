@@ -42,6 +42,9 @@ function sp = sp_bspline_1d_param (knots, degree, nodes, varargin)
 
 gradient = true; 
 hessian  = false; 
+periodic = false;
+regularity = degree-1;
+
 if (~isempty (varargin))
   if (~rem (length (varargin), 2) == 0)
     error ('sp_bspline_1d_param: options must be passed in the [option, value] format');
@@ -51,6 +54,10 @@ if (~isempty (varargin))
       gradient = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'hessian'))
       hessian = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'periodic'))
+      periodic = varargin{ii+1};
+    elseif (strcmpi (varargin {ii}, 'regularity'))
+      regularity = varargin{ii+1};
     else 
       error ('sp_bspline_1d_param: unknown option %s', varargin {ii});
     end
@@ -99,11 +106,25 @@ end
 
 supp = cell (ndof, 1);
 for ii = 1:ndof
-  [dummy, supp{ii}] = find (connectivity == ii);
+  [~, supp{ii}] = find (connectivity == ii);
 end
 
 shape_functions = reshape (ders(:, 1, :), nqn, nel, []);
 shape_functions = permute (shape_functions, [1, 3, 2]);
+
+if (periodic)
+  n_extra_dofs = regularity+1;
+
+  ndof = ndof-n_extra_dofs;
+  nsh  = repmat(nsh_max,1,size(connectivity,2));
+
+  connectivity = mod(connectivity-1,ndof)+1;
+
+  for k = 1:n_extra_dofs
+    supp{n_extra_dofs-k+1} = [supp{end}; supp{n_extra_dofs-k+1}];
+    supp(end) = []; % deletes cell-array element!
+  end
+end
 
 sp = struct ('nsh_max', nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
              'connectivity', connectivity, ...
@@ -122,6 +143,7 @@ if (hessian)
   shape_function_hessians = permute (shape_function_hessians, [1, 3, 2]);
   sp.('shape_function_hessians') = shape_function_hessians;
 end
+
 
 end
 
