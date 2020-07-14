@@ -37,6 +37,8 @@ function sp = sp_bspline (knots, degree, msh, transform, periodic_directions)
     
   if (nargin < 5)
     periodic_directions  = [];
+  else % more robust
+    periodic_directions = sort(periodic_directions);
   end
   
   if (nargin == 3)
