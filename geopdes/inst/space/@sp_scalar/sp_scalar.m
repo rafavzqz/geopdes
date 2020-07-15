@@ -77,6 +77,15 @@
 
 function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_directions)
 
+  if (nargin < 1)
+    sp = struct ('space_type', [], 'knots', [], 'degree', [], 'weights', [], 'sp_univ', [], ...
+      'nsh_dir', [], 'nsh_max', [], 'ndof_dir', [], 'ndof', [], 'ncomp', [], 'boundary', [], ...
+      'dofs', [], 'adjacent_dofs', [], 'transform', [], 'periodic_directions', [], ...
+      'constructor', @(MSH) sp_scalar());
+    sp = class (sp, 'sp_scalar');
+    return
+  end
+
   if (nargin < 6)
     periodic_directions  = [];
   end
@@ -99,22 +108,15 @@ function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_direct
     error ('The dimension of the mesh and the space do not correspond to each other')
   end
   
-% % %   if (numel(periodic_directions) > 0)
-% % %     knots = kntunclamp(knots, degree, regularity, periodic_directions);
-% % %   end
-  
-  
   sp.knots = knots;
   sp.degree = degree;
   sp.weights = weights;
-
   
   nodes = msh.qn;
   for idim = 1:msh.ndim
     sp.sp_univ(idim) = sp_bspline_1d_param (knots{idim}, degree(idim), nodes{idim},...
-                                            'gradient', true, 'hessian', true,...
-                                            'periodic',ismember(idim,periodic_directions));
-
+                         'gradient', true, 'hessian', true,...
+                         'periodic',ismember(idim,periodic_directions));
   end
 
   sp.nsh_dir  = [sp.sp_univ.nsh_max];
@@ -177,9 +179,7 @@ function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_direct
         end
       
       else
-        sp.boundary(iside).ndof = 0;
-        sp.boundary(iside).dofs = [];
-        sp.boundary(iside).adjacent_dofs = [];
+        sp.boundary(iside) = sp_scalar();
       end
     end
         
