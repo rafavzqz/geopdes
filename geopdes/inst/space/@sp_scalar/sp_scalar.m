@@ -180,7 +180,16 @@ function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_dir)
         end
       
       else
-        sp.boundary(iside) = sp_scalar();
+        if (~isempty (msh.boundary))
+          sp.boundary(iside) = sp_scalar();
+        else % define relevant struct fields to zero
+          sp.boundary(iside).nsh_dir = 0;
+          sp.boundary(iside).nsh_max = 0;
+          sp.boundary(iside).ndof_dir = 0;
+          sp.boundary(iside).ndof = 0;
+          sp.boundary(iside).ncomp = 0;
+        end
+          
       end
     end
         
