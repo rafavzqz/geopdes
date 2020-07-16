@@ -85,9 +85,9 @@ for iel=1:nel
   c = numbasisfun (s, nodes(:, iel)', p, knots);
   c = unique(c(:))+1;
   connectivity(1:numel(c), iel) = c;
-  % nsh(iel) = nnz (connectivity(:,iel)); % faster outside loop?
+  % nsh(iel) = nnz (connectivity(:,iel)); % faster outside of loop?
 end
-nsh = sum(connectivity ~= 0,1); % faster outside loop?
+nsh = sum(connectivity ~= 0,1); % faster outside of loop?
 
 nsh_max = max (nsh);
 
@@ -117,12 +117,6 @@ if (periodic)
   connectivity(filter) = 0;
   
   nsh = sum(connectivity ~= 0,1);
-%   nsh  = repmat(nsh_max,1,size(connectivity,2));
-  
-% % %   for k = 1:n_extra_dofs
-% % %     supp{n_extra_dofs-k+1} = [supp{end}; supp{n_extra_dofs-k+1}];
-% % %     supp(end) = []; % deletes cell-array element!
-% % %   end
 end
 
 supp = cell (ndof, 1);
