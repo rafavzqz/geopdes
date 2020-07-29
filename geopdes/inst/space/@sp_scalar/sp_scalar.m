@@ -79,9 +79,9 @@ function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_dir)
 
   if (nargin < 1)
     sp = struct ('space_type', [], 'knots', [], 'degree', [], 'weights', [], 'sp_univ', [], ...
-      'nsh_dir', 0, 'nsh_max', 0, 'ndof_dir', 0, 'ndof', 0, 'ncomp', 0, 'boundary', [], ...
-      'dofs', [], 'adjacent_dofs', [], 'transform', [], 'periodic_dir', [], ...
-      'constructor', @(MSH) sp_scalar());
+                 'nsh_dir', [], 'nsh_max', [], 'ndof_dir', [], 'ndof', [], 'ncomp', [], ...
+                 'boundary', [], 'dofs', [], 'adjacent_dofs', [], 'transform', [], 'periodic_dir', [], ...
+                 'constructor', @(MSH) sp_scalar());
     sp = class (sp, 'sp_scalar');
     return
   end
@@ -182,12 +182,17 @@ function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_dir)
       else
         if (~isempty (msh.boundary))
           sp.boundary(iside) = sp_scalar();
-        else % define relevant struct fields to zero
-          sp.boundary(iside).nsh_dir = 0;
-          sp.boundary(iside).nsh_max = 0;
-          sp.boundary(iside).ndof_dir = 0;
+        else % define relevant struct fields
+%           sp.boundary(iside).nsh_dir = 0;
+%           sp.boundary(iside).nsh_max = 0;
+%           sp.boundary(iside).ndof_dir = 0;
+%           sp.boundary(iside).ndof = 0;
+%           sp.boundary(iside).ncomp = 0;
+          sp.boundary(iside).nsh_dir = [];
+          sp.boundary(iside).nsh_max = [];
+          sp.boundary(iside).ndof_dir = [];
           sp.boundary(iside).ndof = 0;
-          sp.boundary(iside).ncomp = 0;
+          sp.boundary(iside).ncomp = [];
         end
           
       end

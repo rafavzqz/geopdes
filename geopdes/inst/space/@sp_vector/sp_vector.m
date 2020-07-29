@@ -68,15 +68,43 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp = sp_vector (scalar_spaces, msh, transform)
-
+function sp = sp_vector (scalar_spaces, msh, transform)%, periodic_dir)
+  
+  if (nargin < 1)
+    sp = struct ('ncomp', [], 'ncomp_param', [], 'scalar_spaces', [],...
+                 'nsh_max', [], 'ndof', [], 'ndof_dir', [],  ...
+                 'cumsum_ndof', [], 'cumsum_nsh', [], ... %'periodic_dir',[],...
+                 'comp_dofs', [], 'boundary', [], 'dofs', [], ...
+                 'transform', [], 'constructor', @(MSH) sp_vector()); 
+    sp = class (sp, 'sp_vector');
+    return
+  
+  else
+    comps = 1:numel(scalar_spaces);
+    for icomp = comps
+      if isempty(scalar_spaces{icomp}.ndof) || (scalar_spaces{icomp}.ndof == 0)
+        sp = struct ('ncomp', [], 'ncomp_param', [], 'scalar_spaces', [],...
+                     'nsh_max', [], 'ndof', [], 'ndof_dir', [],  ...
+                     'cumsum_ndof', [], 'cumsum_nsh', [], ... %'periodic_dir',[],...
+                     'comp_dofs', [], 'boundary', [], 'dofs', [], ...
+                     'transform', [], 'constructor', @(MSH) sp_vector());              
+        sp = class (sp, 'sp_vector');
+        return
+      end
+    end
+  end
+  
+% % %   if (nargin < 4)
+% % %     periodic_dir = [];
+% % %   end
+  
   if (nargin == 2)
     transform = 'grad-preserving';
   end
 
   sp.ncomp = msh.rdim;
   sp.ncomp_param = numel (scalar_spaces);
-
+  
   switch (transform)
     case {'grad-preserving'}
       if (sp.ncomp ~= sp.ncomp_param)
@@ -109,30 +137,74 @@ function sp = sp_vector (scalar_spaces, msh, transform)
 % Boundary construction
   if (msh.ndim > 1)
     for iside = 1:2*msh.ndim
+      
+      %% handling periodic vector spaces?
+% % %       dir = ceil(iside/2);      
+% % %       if (~ismember(dir,periodic_dir))
+      %%
+      
       for icomp = 1:sp.ncomp_param
         scalar_bnd{icomp} = scalar_spaces{icomp}.boundary(iside);
       end
-      
+
       if (strcmpi (transform, 'grad-preserving'))
         ind = 1:sp.ncomp;
+          
         if (~isempty (msh.boundary))
-          sp.boundary(iside) = sp_vector (scalar_bnd(ind), msh.boundary(iside), transform);
+          
+          periodic_bnd = false;
+          for ii = ind
+            if (isempty(scalar_bnd{ii}.ndof) || scalar_bnd{ii}.ndof == 0)
+              periodic_bnd = true;
+              break;
+            end
+          end
+          
+          if periodic_bnd == true
+           sp.boundary(iside) = sp_vector();
+           continue;
+          else
+            sp.boundary(iside) = sp_vector (scalar_bnd(ind), msh.boundary(iside), transform);
+          end
+          
         end
 
       elseif (strcmpi (transform, 'curl-preserving')) % Only tangential components are computed
         ind = setdiff (1:msh.ndim, ceil(iside/2)); % ind =[2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind = [2 2 1 1] in 2D;
         if (~isempty (msh.boundary))
-          sp.boundary(iside) = sp_vector (scalar_bnd(ind), msh.boundary(iside), transform);
+          periodic_bnd = false;
+          for ii = ind
+            if (isempty(scalar_bnd{ii}.ndof) || scalar_bnd{ii}.ndof == 0)
+              periodic_bnd = true;
+              break;
+            end
+          end
+          
+          if periodic_bnd == true
+           sp.boundary(iside) = sp_vector();
+           continue;
+          else
+            sp.boundary(iside) = sp_vector (scalar_bnd(ind), msh.boundary(iside), transform);
+          end
         end
 
       elseif (strcmpi (transform, 'div-preserving')) % Only normal components are computed, and treated as a scalar
         ind = ceil (iside/2); % ind =[1, 1, 2, 2, 3, 3] in 3D, %ind = [1, 1, 2, 2] in 2D;
         if (~isempty (msh.boundary))
           sp_bnd = scalar_bnd{ind};
-          if (iside == 1) % This fixes a bug with the use of subsasgn/subsref
-            sp.boundary = sp_scalar (sp_bnd.knots, sp_bnd.degree, sp_bnd.weights, msh.boundary(iside), 'integral-preserving');
+          if (isempty(sp_bnd.ndof) || sp_bnd.ndof == 0)
+            if (iside == 1)
+              sp.boundary = sp_scalar();
+            else
+              sp.boundary(iside) = sp_scalar();
+            end
+            continue;
           else
-            sp.boundary(iside) = sp_scalar (sp_bnd.knots, sp_bnd.degree, sp_bnd.weights, msh.boundary(iside), 'integral-preserving');
+            if (iside == 1) % This fixes a bug with the use of subsasgn/subsref
+              sp.boundary = sp_scalar (sp_bnd.knots, sp_bnd.degree, sp_bnd.weights, msh.boundary(iside), 'integral-preserving');
+            else
+              sp.boundary(iside) = sp_scalar (sp_bnd.knots, sp_bnd.degree, sp_bnd.weights, msh.boundary(iside), 'integral-preserving');
+            end
           end
         end
 
@@ -142,18 +214,18 @@ function sp = sp_vector (scalar_spaces, msh, transform)
 
       dofs = [];
       bnd_cumsum_ndof(1) = 0;
-      bnd_cumsum_ndof(2:numel(ind)+1) = cumsum (cellfun (@(x) x.ndof, scalar_bnd(ind)));
+      bnd_cumsum_ndof(2:numel(ind)+1) = cumsum (cellfun (@(x) x.ndof, scalar_bnd(ind)));%,'UniformOutput',0));
       for icomp = 1:numel(ind)
         new_dofs = sp.cumsum_ndof(ind(icomp)) + scalar_bnd{ind(icomp)}.dofs;
         dofs = union (dofs, new_dofs);
         comp_dofs{icomp} = bnd_cumsum_ndof(icomp) + (1:scalar_bnd{ind(icomp)}.ndof);
       end
-      
+
       sp.boundary(iside).dofs = dofs(:)';
       if (~strcmpi (transform, 'div-preserving') && isstruct (sp.boundary))
         sp.boundary(iside).comp_dofs = comp_dofs;
       end
-      
+
       if (isempty (msh.boundary))
         sp.boundary(iside).ndof = numel (sp.boundary(iside).dofs);
         if (strcmpi (transform, 'curl-preserving')) % Needed for the interfaces on the boundary, in sp_multipatch
@@ -163,10 +235,17 @@ function sp = sp_vector (scalar_spaces, msh, transform)
           sp.boundary(iside).ndof_dir = ndof_dir;
         end
       end
+        
+      %% handling periodic vector spaces  
+% % %       else
+% % %         
+% % %       end
+      %%
+      
     end
     
   elseif (msh.ndim == 1)
-    if (strcmpi (transform, 'grad-preserving'))
+    if (strcmpi (transform, 'grad-preserving') && isempty(scalar_spaces{1}.periodic_dir))
       sp.boundary(1).dofs = sp.cumsum_ndof(1:end-1)+1;
       sp.boundary(2).dofs = sp.cumsum_ndof(2:end);
 
@@ -179,20 +258,20 @@ function sp = sp_vector (scalar_spaces, msh, transform)
     sp.boundary = [];
   end
 
-  sp.dofs = [];
+  sp.dofs = []; % is this correct? What about boundary vector spaces?
 
   sp.transform = transform;
 
   if (sp.ncomp_param == 2)
     sp.constructor = @(MSH) sp_vector ({scalar_spaces{1}.constructor(MSH), ...
-                                        scalar_spaces{2}.constructor(MSH)}, MSH, transform);
+                                        scalar_spaces{2}.constructor(MSH)}, MSH, transform);%,periodic_dir);
   elseif (sp.ncomp_param == 3)
     sp.constructor = @(MSH) sp_vector ({scalar_spaces{1}.constructor(MSH), ...
                                         scalar_spaces{2}.constructor(MSH), ...
-                                        scalar_spaces{3}.constructor(MSH)}, MSH, transform);
+                                        scalar_spaces{3}.constructor(MSH)}, MSH, transform);%,periodic_dir);
   elseif (sp.ncomp_param == 1)
     sp.constructor = @(MSH) sp_vector ...
-                                      ({scalar_spaces{1}.constructor(MSH)}, MSH, transform);
+                                      ({scalar_spaces{1}.constructor(MSH)}, MSH, transform);%,periodic_dir);
   end
   
   sp = class (sp, 'sp_vector');
