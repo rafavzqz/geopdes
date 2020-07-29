@@ -56,7 +56,7 @@
 function [geometry, msh, space, u] = ...
               solve_maxwell_src (problem_data, method_data)
 
-periodic_directions = [];          
+periodic_sides = []; % a bit hacky...    
           
 % Extract the fields from the data structures into local variables
 data_names = fieldnames (problem_data);
@@ -66,6 +66,13 @@ end
 data_names = fieldnames (method_data);
 for iopt  = 1:numel (data_names)
   eval ([data_names{iopt} '= method_data.(data_names{iopt});']);
+end
+
+% check for periodic directions
+if ~isempty(periodic_sides)
+  periodic_directions = unique(ceil(periodic_sides./2));
+else
+  periodic_directions = [];
 end
 
 % Construct geometry structure 
