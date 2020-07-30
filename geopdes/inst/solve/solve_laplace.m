@@ -56,6 +56,8 @@
 function [geometry, msh, space, u] = ...
               solve_laplace (problem_data, method_data)
 
+periodic_sides = [];
+
 % Extract the fields from the data structures into local variables
 data_names = fieldnames (problem_data);
 for iopt  = 1:numel (data_names)
@@ -66,11 +68,22 @@ for iopt  = 1:numel (data_names)
   eval ([data_names{iopt} '= method_data.(data_names{iopt});']);
 end
 
+% check for periodic directions
+if ~isempty(periodic_sides)
+  periodic_directions = unique(ceil(periodic_sides./2));
+else
+  periodic_directions = [];
+end
+
 % Construct geometry structure
 geometry  = geo_load (geo_name);
 
 [knots, zeta] = kntrefine (geometry.nurbs.knots, nsub-1, degree, regularity);
   
+if ~isempty(periodic_directions)
+  knots = kntunclamp(knots, degree, regularity, periodic_directions);
+end
+
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (zeta, rule);
