@@ -203,7 +203,7 @@ function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_dir)
       end
     end
         
-  elseif (msh.ndim == 1 && numel(periodic_dir) == 0 )
+  elseif (msh.ndim == 1 && isempty(periodic_dir) )
     sp.boundary(1).dofs = 1;
     sp.boundary(2).dofs = sp.ndof;
     if (sp.ndof > 1)

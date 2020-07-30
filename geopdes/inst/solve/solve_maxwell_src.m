@@ -79,6 +79,11 @@ end
 geometry = geo_load (geo_name);
 
 [knots, zeta] = kntrefine (geometry.nurbs.knots, nsub-1, degree, regularity);
+
+if ~isempty(periodic_directions)
+  knots = kntunclamp(knots, degree, regularity, periodic_directions);
+end
+
 [knots_hcurl, degree_hcurl] = knt_derham (knots, degree, 'Hcurl');
 
 % Construct msh structure

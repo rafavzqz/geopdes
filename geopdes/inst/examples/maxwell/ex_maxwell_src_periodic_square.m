@@ -7,8 +7,8 @@ problem_data.geo_name = 'geo_square.txt';
 
 % Type of boundary conditions
 problem_data.nmnn_sides     = [];
-problem_data.drchlt_sides   = [3 4];
-problem_data.periodic_sides = [1 2];
+problem_data.drchlt_sides   = [];
+problem_data.periodic_sides = [1 2 3 4];
 
 % Physical parameters
 problem_data.c_stiff = @(x, y) ones(size(x));
@@ -29,7 +29,7 @@ problem_data.curluex = @(x, y) 4*pi*cos(4*pi*x);
 clear method_data 
 method_data.degree     = [3 3];     % Degree of the bsplines
 method_data.regularity = [2 2];     % Regularity of the splines
-method_data.nsub       = [16 16];     % Number of subdivisions
+method_data.nsub       = [16 16];   % Number of subdivisions
 method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
