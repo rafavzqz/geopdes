@@ -100,7 +100,8 @@ function sp = sp_vector (scalar_spaces, msh, transform)
   
   periodic_dir = scalar_spaces{1}.periodic_dir;
   for icomp = 2:1:sp.ncomp_param
-    if scalar_spaces{icomp}.periodic_dir ~= periodic_dir
+    if ( numel(scalar_spaces{icomp}.periodic_dir) ~= numel(periodic_dir) || ...
+         scalar_spaces{icomp}.periodic_dir ~= periodic_dir )
       error ('sp_vector: the periodic Cartesian directions should match for all vector components')
     end
   end
@@ -114,7 +115,7 @@ function sp = sp_vector (scalar_spaces, msh, transform)
   sp.cumsum_ndof(1) = 0;
   sp.cumsum_ndof(2:sp.ncomp_param+1) = cumsum (cellfun (@(x) x.ndof, scalar_spaces));
   sp.cumsum_nsh(1) = 0;
-  sp.cumsum_nsh(2:sp.ncomp_param+1) = cumsum (cellfun (@(x) x.nsh_max, scalar_spaces));
+  sp.cumsum_nsh(2:sp.ncomp_param+1)  = cumsum (cellfun (@(x) x.nsh_max, scalar_spaces));
 
   aux = 0;
   for icomp = 1:sp.ncomp_param
