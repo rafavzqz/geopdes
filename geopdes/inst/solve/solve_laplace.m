@@ -73,7 +73,7 @@ geometry  = geo_load (geo_name);
   
 % check for periodic directions
 if (exist('periodic_sides', 'var'))
-  periodic_directions = unique(ceil(periodic_sides./2));
+  periodic_directions = unique(ceil(periodic_sides./2), 'legacy');
   knots = kntunclamp(knots, degree, regularity, periodic_directions);
 else
   periodic_directions = [];
