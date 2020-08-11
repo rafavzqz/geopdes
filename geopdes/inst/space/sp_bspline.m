@@ -41,7 +41,7 @@ function sp = sp_bspline (knots, degree, msh, transform, periodic_directions)
     periodic_directions = sort(periodic_directions);
   end
   
-  if (nargin == 3)
+  if (nargin == 3 || isempty (transform))
     transform = 'grad-preserving';
   end
 
