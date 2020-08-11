@@ -11,7 +11,7 @@ function uknt = kntunclamp (knt, deg, k, dim)
 %   knt	: open knot vector: see kntrefine
 %   deg : polynomial degree of the spline space
 %   k   : continuity for the unclamping (from 0 up to p-1)
-%   dim : dimension in which to unclamp (all by default).
+%   dim : dimensions in which to unclamp (all by default).
 %
 % OUTPUT:
 % 
@@ -38,8 +38,10 @@ function uknt = kntunclamp (knt, deg, k, dim)
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+  knt_is_cell = true;
   if (~iscell (knt))
     knt = {knt};
+    knt_is_cell = false;
   end
   uknt = knt;
   
@@ -81,6 +83,10 @@ function uknt = kntunclamp (knt, deg, k, dim)
     
     uknt{idim} = U;
 
+  end
+  
+  if (~knt_is_cell)
+    uknt = uknt{1};
   end
   
 end
