@@ -68,35 +68,17 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp = sp_vector (scalar_spaces, msh, transform)%, periodic_dir)
+function sp = sp_vector (scalar_spaces, msh, transform)
   
   if (nargin < 1)
     sp = struct ('ncomp', [], 'ncomp_param', [], 'scalar_spaces', [],...
                  'nsh_max', [], 'ndof', [], 'ndof_dir', [],  ...
-                 'cumsum_ndof', [], 'cumsum_nsh', [], ... %'periodic_dir',[],...
+                 'cumsum_ndof', [], 'cumsum_nsh', [], ... % 'periodic_dir',[],...
                  'comp_dofs', [], 'boundary', [], 'dofs', [], ...
                  'transform', [], 'constructor', @(MSH) sp_vector()); 
     sp = class (sp, 'sp_vector');
     return
-  
-  else
-    comps = 1:numel(scalar_spaces);
-    for icomp = comps
-      if isempty(scalar_spaces{icomp}.ndof) || (scalar_spaces{icomp}.ndof == 0)
-        sp = struct ('ncomp', [], 'ncomp_param', [], 'scalar_spaces', [],...
-                     'nsh_max', [], 'ndof', [], 'ndof_dir', [],  ...
-                     'cumsum_ndof', [], 'cumsum_nsh', [], ... %'periodic_dir',[],...
-                     'comp_dofs', [], 'boundary', [], 'dofs', [], ...
-                     'transform', [], 'constructor', @(MSH) sp_vector());              
-        sp = class (sp, 'sp_vector');
-        return
-      end
-    end
   end
-  
-% % %   if (nargin < 4)
-% % %     periodic_dir = [];
-% % %   end
   
   if (nargin == 2)
     transform = 'grad-preserving';
@@ -115,7 +97,14 @@ function sp = sp_vector (scalar_spaces, msh, transform)%, periodic_dir)
         error ('sp_vector: the dimensions of the space and the mesh do not match')
       end
   end
-
+  
+  periodic_dir = scalar_spaces{1}.periodic_dir;
+  for icomp = 2:1:sp.ncomp_param
+    if scalar_spaces{icomp}.periodic_dir ~= periodic_dir
+      error ('sp_vector: the periodic Cartesian directions should match for all vector components')
+    end
+  end
+  
   sp.scalar_spaces = scalar_spaces;
 
   sp.nsh_max = sum (cellfun (@(x) x.nsh_max, scalar_spaces));
@@ -138,73 +127,61 @@ function sp = sp_vector (scalar_spaces, msh, transform)%, periodic_dir)
   if (msh.ndim > 1)
     for iside = 1:2*msh.ndim
       
-      %% handling periodic vector spaces?
-% % %       dir = ceil(iside/2);      
-% % %       if (~ismember(dir,periodic_dir))
-      %%
+      % handling periodic vector spaces...
+      dir = ceil(iside/2);
+      if (ismember(dir,periodic_dir))
+        if (strcmpi (transform, 'grad-preserving') || ...
+            strcmpi (transform, 'curl-preserving') )
+          if (~isempty (msh.boundary))
+            sp.boundary(iside) = sp_vector();
+          else % define relevant struct fields
+            sp.boundary(iside).ndof = [];
+            sp.boundary(iside).dofs = [];
+            sp.boundary(iside).comp_dofs = [];
+          end
+          continue;
+        elseif (strcmpi (transform, 'div-preserving'))
+          if (~isempty (msh.boundary))
+            sp.boundary(iside) = sp_scalar();
+          else % define relevant struct fields
+            sp.boundary(iside).ndof = [];
+            sp.boundary(iside).dofs = [];
+            sp.boundary(iside).adjacent_dofs = [];
+          end
+          continue;
+        else
+          error ('sp_vector: unknown transformation')
+        end
+      end
       
       for icomp = 1:sp.ncomp_param
         scalar_bnd{icomp} = scalar_spaces{icomp}.boundary(iside);
       end
 
       if (strcmpi (transform, 'grad-preserving'))
+        
         ind = 1:sp.ncomp;
-          
+        
         if (~isempty (msh.boundary))
-          
-          periodic_bnd = false;
-          for ii = ind
-            if (isempty(scalar_bnd{ii}.ndof) || scalar_bnd{ii}.ndof == 0)
-              periodic_bnd = true;
-              break;
-            end
-          end
-          
-          if periodic_bnd == true
-           sp.boundary(iside) = sp_vector();
-           continue;
-          else
             sp.boundary(iside) = sp_vector (scalar_bnd(ind), msh.boundary(iside), transform);
-          end
-          
         end
 
       elseif (strcmpi (transform, 'curl-preserving')) % Only tangential components are computed
+        
         ind = setdiff (1:msh.ndim, ceil(iside/2)); % ind =[2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind = [2 2 1 1] in 2D;
         if (~isempty (msh.boundary))
-          periodic_bnd = false;
-          for ii = ind
-            if (isempty(scalar_bnd{ii}.ndof) || scalar_bnd{ii}.ndof == 0)
-              periodic_bnd = true;
-              break;
-            end
-          end
-          
-          if periodic_bnd == true
-           sp.boundary(iside) = sp_vector();
-           continue;
-          else
             sp.boundary(iside) = sp_vector (scalar_bnd(ind), msh.boundary(iside), transform);
-          end
         end
 
       elseif (strcmpi (transform, 'div-preserving')) % Only normal components are computed, and treated as a scalar
+        
         ind = ceil (iside/2); % ind =[1, 1, 2, 2, 3, 3] in 3D, %ind = [1, 1, 2, 2] in 2D;
         if (~isempty (msh.boundary))
           sp_bnd = scalar_bnd{ind};
-          if (isempty(sp_bnd.ndof) || sp_bnd.ndof == 0)
-            if (iside == 1)
-              sp.boundary = sp_scalar();
-            else
-              sp.boundary(iside) = sp_scalar();
-            end
-            continue;
+          if (iside == 1) % This fixes a bug with the use of subsasgn/subsref
+            sp.boundary = sp_scalar (sp_bnd.knots, sp_bnd.degree, sp_bnd.weights, msh.boundary(iside), 'integral-preserving');
           else
-            if (iside == 1) % This fixes a bug with the use of subsasgn/subsref
-              sp.boundary = sp_scalar (sp_bnd.knots, sp_bnd.degree, sp_bnd.weights, msh.boundary(iside), 'integral-preserving');
-            else
-              sp.boundary(iside) = sp_scalar (sp_bnd.knots, sp_bnd.degree, sp_bnd.weights, msh.boundary(iside), 'integral-preserving');
-            end
+            sp.boundary(iside) = sp_scalar (sp_bnd.knots, sp_bnd.degree, sp_bnd.weights, msh.boundary(iside), 'integral-preserving');
           end
         end
 
