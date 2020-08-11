@@ -7,8 +7,8 @@ problem_data.geo_name = 'geo_square.txt';
 
 % Type of boundary conditions
 problem_data.nmnn_sides     = [];
-problem_data.drchlt_sides   = [];
-problem_data.periodic_sides = [1 2 3 4];
+problem_data.drchlt_sides   = [3 4];
+problem_data.periodic_sides = [1 2];
 
 % Physical parameters
 problem_data.c_stiff = @(x, y) ones(size(x));
