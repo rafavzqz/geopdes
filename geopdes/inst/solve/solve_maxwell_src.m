@@ -56,8 +56,6 @@
 function [geometry, msh, space, u] = ...
               solve_maxwell_src (problem_data, method_data)
 
-periodic_sides = []; % a bit hacky...    
-          
 % Extract the fields from the data structures into local variables
 data_names = fieldnames (problem_data);
 for iopt  = 1:numel (data_names)
@@ -68,20 +66,17 @@ for iopt  = 1:numel (data_names)
   eval ([data_names{iopt} '= method_data.(data_names{iopt});']);
 end
 
-% check for periodic directions
-if ~isempty(periodic_sides)
-  periodic_directions = unique(ceil(periodic_sides./2));
-else
-  periodic_directions = [];
-end
-
 % Construct geometry structure 
 geometry = geo_load (geo_name);
 
 [knots, zeta] = kntrefine (geometry.nurbs.knots, nsub-1, degree, regularity);
 
-if ~isempty(periodic_directions)
+% check for periodic directions
+if (exist('periodic_sides', 'var'))
+  periodic_directions = unique(ceil(periodic_sides./2), 'legacy');
   knots = kntunclamp(knots, degree, regularity, periodic_directions);
+else
+  periodic_directions = [];
 end
 
 [knots_hcurl, degree_hcurl] = knt_derham (knots, degree, 'Hcurl');
@@ -95,7 +90,7 @@ msh      = msh_cartesian (zeta, qn, qw, geometry);
 scalar_spaces = cell (msh.ndim, 1);
 for idim = 1:msh.ndim
   scalar_spaces{idim} = sp_bspline (knots_hcurl{idim}, degree_hcurl{idim}, msh,...
-                                    'grad-preserving',periodic_directions);
+                                    [], periodic_directions);
 end
 space = sp_vector (scalar_spaces, msh, 'curl-preserving');
 clear scalar_spaces
