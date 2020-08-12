@@ -101,7 +101,7 @@ function sp = sp_vector (scalar_spaces, msh, transform)
   periodic_dir = scalar_spaces{1}.periodic_dir;
   for icomp = 2:1:sp.ncomp_param
     if ( numel(scalar_spaces{icomp}.periodic_dir) ~= numel(periodic_dir) || ...
-         scalar_spaces{icomp}.periodic_dir ~= periodic_dir )
+         any (scalar_spaces{icomp}.periodic_dir ~= periodic_dir ))
       error ('sp_vector: the periodic Cartesian directions should match for all vector components')
     end
   end
