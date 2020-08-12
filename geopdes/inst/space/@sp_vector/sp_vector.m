@@ -136,18 +136,18 @@ function sp = sp_vector (scalar_spaces, msh, transform)
           if (~isempty (msh.boundary))
             sp.boundary(iside) = sp_vector();
           else % define relevant struct fields
-            sp.boundary(iside).ndof = [];
-            sp.boundary(iside).dofs = [];
-            sp.boundary(iside).comp_dofs = [];
+            sp.boundary(iside) = struct ('ndof', [], 'dofs', [], 'comp_dofs', [], 'ndof_dir', []);
           end
           continue;
         elseif (strcmpi (transform, 'div-preserving'))
           if (~isempty (msh.boundary))
-            sp.boundary(iside) = sp_scalar();
+            if (iside == 1) % This fixes a bug with the use of subsasgn/subsref
+              sp.boundary = sp_scalar();
+            else
+              sp.boundary(iside) = sp_scalar();
+            end
           else % define relevant struct fields
-            sp.boundary(iside).ndof = [];
-            sp.boundary(iside).dofs = [];
-            sp.boundary(iside).adjacent_dofs = [];
+            sp.boundary(iside) = struct ('ndof', [], 'dofs', [], 'adjacent_dofs', []);
           end
           continue;
         else
@@ -213,13 +213,7 @@ function sp = sp_vector (scalar_spaces, msh, transform)
           sp.boundary(iside).ndof_dir = ndof_dir;
         end
       end
-        
-      %% handling periodic vector spaces  
-% % %       else
-% % %         
-% % %       end
-      %%
-      
+
     end
     
   elseif (msh.ndim == 1)
@@ -236,7 +230,7 @@ function sp = sp_vector (scalar_spaces, msh, transform)
     sp.boundary = [];
   end
 
-  sp.dofs = []; % is this correct? What about boundary vector spaces?
+  sp.dofs = [];
 
   sp.transform = transform;
 
