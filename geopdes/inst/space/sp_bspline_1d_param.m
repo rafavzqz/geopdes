@@ -78,6 +78,11 @@ ndof   = mcp + 1;
 nel = size (nodes, 2);
 nqn = size (nodes, 1);
 
+% if periodic && (p+1 - nel > 0)
+%   error (['sp_bspline_1d_param: too few elements to ensure single-valued', ...
+%           ' B-splines on periodic domain']);
+% end
+
 nsh = zeros (1, nel);
 connectivity = zeros (p+1, nel);
 for iel=1:nel
@@ -108,8 +113,8 @@ shape_functions = permute (shape_functions, [1, 3, 2]);
 
 if (periodic)
   regularity = degree - nnz(knots == knots(degree+1));
+  
   n_extra_dofs = regularity + 1;
-
   ndof = ndof - n_extra_dofs;
 
   filter = (connectivity == 0);
@@ -117,12 +122,21 @@ if (periodic)
   connectivity(filter) = 0;
   
   nsh = sum(connectivity ~= 0,1);
+  nsh_max = max (nsh);
+  
+  [~,dummy_supp] = find (connectivity == 1);
+  if numel(unique(dummy_supp))<numel(dummy_supp)
+    error (['sp_bspline_1d_param: too few elements to ensure single-valued', ...
+            ' B-splines on periodic domain']);
+  end
+    
 end
 
 supp = cell (ndof, 1);
 for ii = 1:ndof
   [~, supp{ii}] = find (connectivity == ii);
 end
+
 
 sp = struct ('nsh_max', nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
              'connectivity', connectivity, ...
@@ -141,7 +155,6 @@ if (hessian)
   shape_function_hessians = permute (shape_function_hessians, [1, 3, 2]);
   sp.('shape_function_hessians') = shape_function_hessians;
 end
-
 
 end
 
