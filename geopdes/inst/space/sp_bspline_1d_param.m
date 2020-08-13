@@ -78,21 +78,14 @@ ndof   = mcp + 1;
 nel = size (nodes, 2);
 nqn = size (nodes, 1);
 
-% if periodic && (p+1 - nel > 0)
-%   error (['sp_bspline_1d_param: too few elements to ensure single-valued', ...
-%           ' B-splines on periodic domain']);
-% end
-
-nsh = zeros (1, nel);
 connectivity = zeros (p+1, nel);
 for iel=1:nel
   s = findspan (mcp, p, nodes(:, iel)', knots);
   c = numbasisfun (s, nodes(:, iel)', p, knots);
   c = unique(c(:))+1;
   connectivity(1:numel(c), iel) = c;
-  % nsh(iel) = nnz (connectivity(:,iel)); % faster outside of loop?
 end
-nsh = sum(connectivity ~= 0,1); % faster outside of loop?
+nsh = sum(connectivity ~= 0,1);
 
 nsh_max = max (nsh);
 
@@ -125,9 +118,9 @@ if (periodic)
   nsh_max = max (nsh);
   
   [~,dummy_supp] = find (connectivity == 1);
-  if numel(unique(dummy_supp))<numel(dummy_supp)
-    error (['sp_bspline_1d_param: too few elements to ensure single-valued', ...
-            ' B-splines on periodic domain']);
+  if (numel(unique(dummy_supp)) < numel(dummy_supp))
+    error (['sp_bspline_1d_param: too few mesh elements to ensure', ...
+            ' single-valued B-splines on periodic domain']);
   end
     
 end
@@ -157,7 +150,6 @@ if (hessian)
 end
 
 end
-
 
 %!test
 %! knots = [0 0 0 .5 1 1 1];
