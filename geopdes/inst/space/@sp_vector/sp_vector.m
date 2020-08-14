@@ -135,7 +135,10 @@ function sp = sp_vector (scalar_spaces, msh, transform)
           if (~isempty (msh.boundary))
             sp.boundary(iside) = sp_vector();
           else % define relevant struct fields
-            sp.boundary(iside) = struct ('ndof', [], 'dofs', [], 'comp_dofs', [], 'ndof_dir', []);
+%             sp.boundary(iside) = struct ('ndof', [], 'dofs', [], 'comp_dofs', [], 'ndof_dir', []);
+            sp.boundary(iside).ndof = [];
+            sp.boundary(iside).dofs = [];
+            sp.boundary(iside).comp_dofs = [];
           end
           continue;
         elseif (strcmpi (transform, 'div-preserving'))
@@ -205,7 +208,7 @@ function sp = sp_vector (scalar_spaces, msh, transform)
 
       if (isempty (msh.boundary))
         sp.boundary(iside).ndof = numel (sp.boundary(iside).dofs);
-        if (strcmpi (transform, 'curl-preserving')) % Needed for the interfaces on the boundary, in sp_multipatch
+        if (strcmpi (transform, 'curl-preserving'))
           for icomp = 1:numel(ind)
             ndof_dir(icomp,:) = sp.ndof_dir(ind(icomp), ind);
           end
