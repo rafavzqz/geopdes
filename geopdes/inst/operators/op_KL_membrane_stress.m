@@ -129,17 +129,17 @@ function varargout = op_KL_membrane_stress (ref_sp_u, ref_sp_v, msh, E_coeff, nu
     
   membrane(1, 1, :, :, :) = T_1_1 .* reshape(aux(1, 1, :, :, :), [nqn, nsh_u, nel]) + ...
             T_1_2 .* reshape(aux(2, 2, :, :, :), [nqn, nsh_u, nel]) + ...
-            .5 * T_1_3 .* reshape(aux(1, 2, :, :, :), [nqn, nsh_u, nel]);
+            T_1_3 .* reshape(aux(1, 2, :, :, :), [nqn, nsh_u, nel]);
 
-  membrane(1, 2, :, :, :) = T_3_1 .* reshape(aux(1, 1, :, :, :), [nqn, nsh_u, nel]) + ...
+  membrane(1, 2, :, :, :) = .5 * (T_3_1 .* reshape(aux(1, 1, :, :, :), [nqn, nsh_u, nel]) + ...
             T_3_2 .* reshape(aux(2, 2, :, :, :), [nqn, nsh_u, nel]) + ...
-            .5 * T_3_3 .* reshape(aux(1, 2, :, :, :), [nqn, nsh_u, nel]);
+            T_3_3 .* reshape(aux(1, 2, :, :, :), [nqn, nsh_u, nel]));
 
   membrane(2, 2, :, :, :) = T_2_1 .* reshape(aux(1, 1, :, :, :), [nqn, nsh_u, nel]) + ...
             T_2_2 .* reshape(aux(2, 2, :, :, :), [nqn, nsh_u, nel]) + ...
-            .5 * T_2_3 .* reshape(aux(1, 2, :, :, :), [nqn, nsh_u, nel]);
-        
-  membrane(2, 1, :, :, :) =   membrane(1, 2, :, :, :);  
+            T_2_3 .* reshape(aux(1, 2, :, :, :), [nqn, nsh_u, nel]);
+
+  membrane(2, 1, :, :, :) =   membrane(1, 2, :, :, :);
   
   clear aux
   
