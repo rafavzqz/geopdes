@@ -59,7 +59,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_interfaces, boundaries)
+function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_interfaces, vertices)
 
   if (~all (cellfun (@(x) isa (x, 'sp_scalar'), spaces)))
     error ('All the spaces in the array should be of the same class')
@@ -179,12 +179,13 @@ end
 % ndof_per_vertex: number of vertex functions on each vertex. An array of size numel(vertices)
 % CC_vertices: cell array of size npatch x numel(vertices)
 %    The matrix CC_vertices{ii,jj} has size
-%    sp.ndof_per_patch(patch) x ndof_vertices
+%    sp.ndof_per_patch(patch) x ndof_per_vertex{jj}
+%      with patch being the index of the ii-th patch containing vertex jj;
 %
   
 %   [ndof, CC] = compute_coefficients (sp, msh, geometry, interfaces);  
   [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices] = ...
-    compute_coefficients (sp, msh, geometry, interfaces, boundaries);
+    compute_coefficients (sp, msh, geometry, interfaces, vertices);
   
   sp.ndof_edges = sum(ndof_per_interface); % Total number of edge functions
   sp.ndof_vertices = sum (ndof_per_vertex); % Total number of vertex functions
@@ -279,9 +280,10 @@ end
 % And for val_grad, I have to change the sign for coeff2, but not for coeff1
 % But everything seems to work!!!
 
-function [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices] = compute_coefficients (space, msh, geometry, interfaces, boundaries) %based on first Mario's notes (not refinement mask)
+function [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices] = compute_coefficients (space, msh, geometry, interfaces, vertices) %based on first Mario's notes (not refinement mask)
 
-[interfaces, vertices] = vertices_struct(boundaries, interfaces);
+%ndof_per_interface: still to be computed!
+%ndof_per_vertex: still to be computed!
 
 p = space.sp_patch{1}.degree(1);
 k=numel(msh.msh_patch{1}.breaks{1})-2;
@@ -329,7 +331,6 @@ for j=1:space.npatch
     %D_v F^j(1,1)=squeeze(derivatives{j}(:,2,4))    
 end
 
-
 %Construction of CC_edges
 for iref = 1:numel(interfaces)
     patch(1) = interfaces(iref).patch1; %LEFT
@@ -338,7 +339,6 @@ for iref = 1:numel(interfaces)
     side(2) = interfaces(iref).side2; %RIGHT
   
   %STEP 2 - Stuff necessary to evaluate the geo_mapping and its derivatives
-  if ~isempty(patch(1)) && ~isempty(patch(2)) %if it's not a boundary edge...
   for ii = 1:2 % The two patches (L-R)
   %in this cycle we must add to the already existing CC_vertices, the part of the "discarded" interface functions    
     brk = cell (1,msh.ndim);
@@ -472,22 +472,16 @@ for iref = 1:numel(interfaces)
  beta1(2)= c+d*beta1(1); %R
  
  end
-  else %if it's a boundary edge, we a (canonical) choice of alphas and betas only on one side
-      alpha0(1)=NaN; alpha1(1)=NaN;
-      alpha0(2)=1; alpha1(2)=1;
-      beta0(1)=NaN; beta1(1)=NaN;
-      beta0(2)=1; beta1(2)=0;
-  end
-  
+ 
  %Saving alphas and betas (first column=L, second column=R)
  all_alpha0(iref,:)=alpha0;
  all_alpha1(iref,:)=alpha1;
  all_beta0(iref,:)=beta0;
- all_beta1(iref,:)=beta1; 
+ all_beta1(iref,:)=beta1;
+ %Saving t(0)    
     
 % Compute the Greville points, and the auxiliary mesh and space objects
     for ii = 1:2 % The two patches (L-R)
-        if ~isempty(patch(ii))
       brk = cell (1,msh.ndim);
       knots = space.sp_patch{patch(ii)}.knots;
       
@@ -521,7 +515,7 @@ for iref = 1:numel(interfaces)
         tau1 = knt(end) - knt(end-1);
       end
 
-% For now I assume that the orientation is as in the paper, and we do not need any reordering
+% For now we assume that the orientation is as in the paper, and we do not need any reordering
 %XXXX    [sp_bnd(2), msh_side(2)] = reorder_elements_and_quad_points (sp_bnd(2), msh_side(2), interfaces(iref), ndim);
 % msh_side contains only the univariate parametrization of the boundary (dependence on u)
 % msh_side_int contains information for the bivariate parametrization (dependence on u and v)
@@ -634,7 +628,6 @@ for iref = 1:numel(interfaces)
       %keeping the part of the "actually active" edge functions, the remaining part saved in CC_edges_discarded
       CC_edges_discarded{ii,iref}=CC_edges{ii,iref}(:,[1 2 3 sp0_struct.ndof-2:sp0_struct.ndof+2 ndof-1 ndof]); %dimension: n^2 x 10
       CC_edges{ii,iref}=CC_edges{ii,iref}(:,[4:sp0_struct.ndof-3 sp0_struct.ndof+3:ndof-2]);
-        end
     end
     
 %CHECKING G^1 condition  
@@ -700,20 +693,21 @@ end
 
 
 %We assume that the local numbering of interfaces and patches is such that
-%vertices(kver).interface(im) is he interface between
+%vertices(kver).interface(im) is the interface between
 %vertices(kver).patches(im) and vertices(kver).patches(im+1)
 %I actually need to consider the actual parametrization to compute d, t and sigma, don't I?
 
 for kver=1:numel(vertices)
     
+    %This has to be updated using vertices (or already done? check!)
     ver_patches=[];%vector with indices of patches containing the vertex
     ver_ind=[];%vector containing local index of vertex in the patch
     sides=[1 4;2 3;1 2;4 3]; %on i-th row the indices of the endpoints of the i-th side (bottom-up, left-right)
     for h=1:numel(vertices(kver).interfaces)
         hint=vertices(kver).interfaces(h);
         ver_patches=[ver_patches interfaces(hint).patch1 interfaces(hint).patch2];    
-        ver_ind=[ver_ind sides(interfaces(hint).side1,vertices(kver).loc_vertex)...
-                 sides(interfaces(hint).side2,vertices(kver).loc_vertex)];
+        ver_ind=[ver_ind sides(interfaces(hint).side1,vertices(kver).ind)...
+                 sides(interfaces(hint).side2,vertices(kver).ind)];
     end
     ver_patches=unique(ver_patches);
     ver_ind=unique(ver_ind);
@@ -723,43 +717,33 @@ for kver=1:numel(vertices)
     V=cell(nu,numel(vertices));
     E=cell(nu+1,numel(vertices));
     for im=1:nu+1 %cycle over all the interfaces containing the vertex (#interfaces=#patches+1, where the last one coincides with the first if the vertex is interior)
-        inter=vertices(kver).interface(im); %global index of the interface
-        patch_ind1=interfaces(vertices(kver).interface(im)).patch1; %global index of left patch of im-th interface
-        %patch_ind2=interfaces(vertices(kver).interface(im)).patch2; %global index of right patch of im-th interface
-        vertex_ind1=sides(interfaces(vertices(kver).interfaces(im)).side1,vertices(kver).ind); %local index of vertex in left patch
-        %vertex_ind2=vertices(kver).interface(im).vertex2; %local index of vertex in right patch
-        vertex_indi=vertices(kver).ind(im); %local index of vertex in interface
+        inter=vertices(kver).interfaces(im); %global index of the interface 
+        patch_ind1=interfaces(inter).patch1; %global index of left patch of im-th interface
+        %do we need the same for the right patch?
+        vertex_ind1=sides(interfaces(inter).side1,vertices(kver).ind); %local index of vertex in left patch
+        %do we need the same for the right patch?
         %compute t(0) and t'(0), d(0) and d'(0)
-        switch vertex_indi %d0 and D0p to be added in other cases (16 cases in total) ...to be moved where we compute edge functions matrices?
+        switch vertex_ind1 %d0 and D0p to be added in other cases (16 cases in total) ...to be moved where we compute edge functions matrices?
             case 1 %vertex (0,0)
                 t0(im,:)=squeeze(derivatives1{patch_ind1}(:,2,1));
                 t0p(im,:)=squeeze(derivatives2{patch_ind1}(:,2,2,1));
-                d0(im,:)=(squeeze(derivatives1{patch_ind1}(:,1,1)+(all_beta0(inter,1)*(1-0)...
+                d0(im,:)=(squeeze(derivatives1{patch_ind1}(:,1,1)-(all_beta0(inter,1)*(1-0)...
                     +all_beta1(inter,1)*0)*derivatives1{patch_ind1}(:,2,1)))...
                     /(all_alpha0(inter,1)*(1-0)+all_alpha0(inter,1)*0);
-                d0p(im,:)=((all_alpha0(inter,1)*(1-0)+all_alpha0(inter,1)*0)*squeeze(derivatives1{patch_ind1}(:,1,1)+(all_beta0(inter,1)*(1-0)...
+                d0p(im,:)=((all_alpha0(inter,1)*(1-0)+all_alpha0(inter,1)*0)*squeeze(derivatives1{patch_ind1}(:,1,1)-(all_beta0(inter,1)*(1-0)...
                     +all_beta1(inter,1)*0)*derivatives1{patch_ind1}(:,2,1))...
-                    +(all_alpha0(inter,1)-all_alpha1(inter,1))*squeeze(derivatives2{patch_ind1}(:,1,2,1)+(all_beta0(inter,1)*(1-0)...
+                    +(all_alpha0(inter,1)-all_alpha1(inter,1))*squeeze(derivatives2{patch_ind1}(:,1,2,1)-(all_beta0(inter,1)*(1-0)...
                     +all_beta1(inter,1)*0)*derivatives2{patch_ind1}(:,2,2,1)...
-                    -(all_beta0(inter,1)-all_beta1(inter,1))*derivatives1{patch_ind1}(:,2,1)))...
+                    +(all_beta0(inter,1)-all_beta1(inter,1))*derivatives1{patch_ind1}(:,2,1)))...
                     /((-all_alpha0(inter,1)+all_alpha1(inter,1))^2);
                 mix_der2(im,:)=derivatives2{patch_ind1}(:,1,2,1);
-                E{im,kver}=CC_edges_discarded{ii,iref}(:,[1 2 3 7 8]); %part of the matrix corresponding to edge functions close to the vertex
                 
-            case 2 %vertex (1,0)
-                t0(im,:)=squeeze(derivatives1{patch_ind1}(:,2,1));
-                t0p(im,:)=squeeze(derivatives2{patch_ind1}(:,2,2,1));
-                d0(im,:)=(squeeze(-derivatives1{patch_ind1}(:,1,1)-(all_beta0(inter,1)*(0)...
-                    +all_beta1(inter,1)*1)*derivatives1{patch_ind1}(:,2,1)))...
-                    /(all_alpha0(inter,1)*(0)+all_alpha0(inter,1)*1);
-                d0p(im,:)=((all_alpha0(inter,1)*(0)+all_alpha0(inter,1)*1)*squeeze(-derivatives1{patch_ind1}(:,1,1)-(all_beta0(inter,1)*(0)...
-                    +all_beta1(inter,1)*1)*derivatives1{patch_ind1}(:,2,1))...
-                    +(all_alpha0(inter,1)-all_alpha1(inter,1))*squeeze(-derivatives2{patch_ind1}(:,1,2,1)-(all_beta0(inter,1)*(0)...
-                    +all_beta1(inter,1)*1)*derivatives2{patch_ind1}(:,2,2,1)...
-                    +(all_beta0(inter,1)-all_beta1(inter,1))*derivatives1{patch_ind1}(:,2,1)))...
-                    /((-all_alpha0(inter,1)*0+all_alpha1(inter,1)*1)^2);
-                mix_der2(im,:)=-derivatives2{patch_ind1}(:,1,2,1);
-                E{im,kver}=CC_edges_discarded{ii,iref}(:,[4 5 6 9 10]);
+                %Pick the correct part of CC_edges_discarded{ii,iref}
+                if vertices(kver).loc_vertex==1
+                    E{im,kver}=CC_edges_discarded{ii,iref}(:,[1 2 3 7 8]); %part of the matrix corresponding to edge functions close to the vertex
+                else
+                    E{im,kver}=CC_edges_discarded{ii,iref}(:,[4 5 6 9 10]);
+                end
 %             case 2 %vertex (1,0)
 %                 t0(im,:)=squeeze(derivatives1{vertices(kver).interface(im).patch_i1}(:,2,3));
 %                 t0p(im,:)=squeeze(derivatives2{vertices(kver).interface(im).patch_i1}(:,2,2,3));
@@ -774,18 +758,18 @@ for kver=1:numel(vertices)
     %compute sigma
     sigma=0;
     for im=1:nu
-        vertex_ind=ver_ind(im); %local index of the vertex in im-th pacth
+        vertex_ind=ver_ind(im); %local index of the vertex in im-th patch
         patch_ind=ver_patches(im); %global index of the im-th patch
             %this works only for the standard configuration
-            sigma=sigma+norm([derivatives1{patch_ind}(1,1,1) derivatives1{vertices(kver).patches(im).patch_i}(2,2,1)]);
+            sigma=sigma+norm([derivatives1{patch_ind}(1,1,1) derivatives1{patch_ind}(2,2,1)]);
     end
     sigma=1/(sigma/(p*(k+1)*nu));
     
     %computing matrices MM and V
     for im=1:nu
         %assemble matrix (not final: Ms and Vs, then updated with the "discarded parts" of edge functions)
-        n1=space.sp_patch{vertices(kver).patches(im).patch_i}.ndof_dir(1); %dimension of t-p space in the patch (dir 1)
-        n2=space.sp_patch{vertices(kver).patches(im).patch_i}.ndof_dir(2); %dimension of t-p space in the patch (dir 2)
+        n1=space.sp_patch{patch_ind}.ndof_dir(1); %dimension of t-p space in the patch (dir 1)
+        n2=space.sp_patch{patch_ind}.ndof_dir(2); %dimension of t-p space in the patch (dir 2)
         j=0;
         for j1=0:2
             for j2=0:2-j1 %the following computations work in the standard case
@@ -831,7 +815,7 @@ for kver=1:numel(vertices)
                 j=j+1;
             end
         end
-        CC_vertices{vertices(kver).patches(im).patch_i,kver} = E{im,kver}*MM{1,im,kver} + E{im+1,kver}*MM{2,im,kver} + V{im,kver};
+        CC_vertices{ver_patches(im),kver} = E{im,kver}*MM{1,im,kver} + E{im+1,kver}*MM{2,im,kver} + V{im,kver};
     end
 end
   
