@@ -10,6 +10,7 @@
 %    spaces:     cell-array of space objects, one for each patch (see sp_scalar, sp_vector)
 %    msh:        mesh object that defines the multipatch mesh (see msh_multipatch)
 %    interfaces: information of connectivity between patches (see mp_geo_load)
+%    vertices: information about interfaces and patches neighbouring each vertex (to be implemented)
 %%%XXXX    boundary_interfaces: information of connectivity between boundary patches (see mp_geo_load)
 %
 % OUTPUT:
@@ -58,7 +59,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_interfaces)
+function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundary_interfaces, vertices)
 
   if (~all (cellfun (@(x) isa (x, 'sp_scalar'), spaces)))
     error ('All the spaces in the array should be of the same class')
@@ -145,26 +146,54 @@ if (numel (interfaces) > 1 || msh.npatch > 2)
   error ('For now, the implementation only works for two patches')
 end
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% I HAVE CHANGED STARTING FROM HERE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% We could store the info of interfaces per patch, as in mp_interface
+
   sp.ndof_interior = 0;
-% Assuming that interfaces(1).patch1 = 1, interfaces(1).patch2 = 2
-  sides = [interfaces(1).side1, interfaces(1).side2];
   for iptc = 1:sp.npatch
-% This should be a loop on the interfaces to which the patch belongs
-    sp_bnd = spaces{iptc}.boundary(sides(iptc));
-    interior_dofs = setdiff (1:spaces{iptc}.ndof, [sp_bnd.dofs, sp_bnd.adjacent_dofs]);
+    interior_dofs = 1:spaces{iptc}.ndof;
+    for intrfc = 1:numel(interfaces)
+      patches = [interfaces(intrfc).patch1, interfaces(intrfc).patch2];
+      sides = [interfaces(intrfc).side1, interfaces(intrfc).side2];
+      [is_interface,position] = ismember (iptc, patches);
+      if (is_interface)
+        sp_bnd = spaces{iptc}.boundary(sides(position));
+        interior_dofs = setdiff (interior_dofs, [sp_bnd.dofs, sp_bnd.adjacent_dofs]);
+      end
+    end
     sp.interior_dofs_per_patch{iptc} = interior_dofs; % An array with the indices
     sp.ndof_interior = sp.ndof_interior + numel (interior_dofs);
   end
   
-  [ndof, CC] = compute_coefficients (sp, msh, geometry, interfaces);
+% EXPECTED OUTPUT FROM compute_coefficients  
+% ndof_per_interface: number of edge functions on each interface, array of
+%    size 1 x numel(interfaces);
+% CC_edges: cell array of size 2 x numel(interfaces), the two corresponds
+%   to the two patches on the interface. The matrix CC_edges{ii,jj} has size
+%      sp.ndof_per_patch(patch) x ndof_per_interface(jj)
+%      with patch = interfaces(jj).patches(ii);
+% ndof_per_vertex: number of vertex functions on each vertex. An array of size numel(vertices)
+% CC_vertices: cell array of size npatch x numel(vertices)
+%    The matrix CC_vertices{ii,jj} has size
+%    sp.ndof_per_patch(patch) x ndof_per_vertex{jj}
+%      with patch being the index of the ii-th patch containing vertex jj;
+%
   
-  sp.ndof_interface = ndof; % The number of functions in V^2
-  sp.ndof = sp.ndof_interior + sp.ndof_interface;
-
+%   [ndof, CC] = compute_coefficients (sp, msh, geometry, interfaces);  
+  [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices] = ...
+    compute_coefficients (sp, msh, geometry, interfaces, vertices);
+  
+  sp.ndof_edges = sum(ndof_per_interface); % Total number of edge functions
+  sp.ndof_vertices = sum (ndof_per_vertex); % Total number of vertex functions
+  sp.ndof = sp.ndof_interior + sp.ndof_edges + sp.ndof_vertices;
 
 % Computation of the coefficients for basis change
 % The matrix Cpatch{iptc} is a matrix of size ndof_per_patch(iptc) x ndof
-% The coefficients for basis change have been stored in CC
+% The coefficients for basis change have been stored in CC_*
 
   Cpatch = cell (sp.npatch, 1);
   numel_interior_dofs = cellfun (@numel, sp.interior_dofs_per_patch);
@@ -172,15 +201,34 @@ end
     Cpatch{iptc} = sparse (sp.ndof_per_patch(iptc), sp.ndof);
     global_indices = sum (numel_interior_dofs(1:iptc-1)) + (1:numel_interior_dofs(iptc));
     Cpatch{iptc}(sp.interior_dofs_per_patch{iptc}, global_indices) = ...
-      speye (numel (sp.interior_dofs_per_patch{iptc}));
+      speye (numel (sp.interior_dofs_per_patch{iptc}));    
+  end
+  
+  for intrfc = 1:numel(interfaces)
+    global_indices = sp.ndof_interior + sum(ndof_per_interface(1:intrfc-1)) + (1:ndof_per_interface(intrfc));
+    for iptc_on_interface = 1:2
+      iptc = interface(intrfc).patches(iptc_on_interface);
+      Cpatch{iptc}(:,global_indices) = CC_edges{iptc_on_interface,intrfc};
+    end
+  end
 
-    global_indices = (sp.ndof_interior+1):sp.ndof;
-    Cpatch{iptc}(:,global_indices) = CC{iptc};
-  end  
+% Vertices and patches_on_vertex are not defined yet. For now, this only works for one extraordinary point
+% The information of which patches share the vertex can be computed with the help of mp_interface
+  for ivrt = 1%:numel(vertices)
+    global_indices = sp.ndof_interior + sp.ndof_edges + sum(ndof_per_vertex(1:ivrt-1)) + ndof_per_vertex(ivrt);
+    for iptc = 1:sp.npatch %patches_on_vertex (TO BE CHANGED)
+      Cpatch{iptc}(:,global_indices) = CC_vertices{iptc,ivrt};
+    end
+  end
 
+%  sp.patches_on_vertex = patches_on_vertex; TO BE DONE
   sp.interfaces = interfaces;
   sp.Cpatch = Cpatch;
   sp.geometry = geometry; % I store this for simplicity
+  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% I HAVE FINISHED MY CHANGES HERE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % XXXX No boundary for now
 % % Boundary construction
@@ -231,17 +279,67 @@ end
 % And for val_grad, I have to change the sign for coeff2, but not for coeff1
 % But everything seems to work!!!
 
-function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces) %based on first Mario's notes (not refinement mask)
+function [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices] = compute_coefficients (space, msh, geometry, interfaces, vertices) %based on first Mario's notes (not refinement mask)
 
+%ndof_per_interface: still to be computed!
+%ndof_per_vertex: still to be computed!
 
-  for iref = 1:numel(interfaces)
-    patch(1) = interfaces(iref).patch1;
-    patch(2) = interfaces(iref).patch2;
-    side(1) = interfaces(iref).side1;
-    side(2) = interfaces(iref).side2;
+p = space.sp_patch{1}.degree(1);
+k=numel(msh.msh_patch{1}.breaks{1})-2;
+
+all_alpha0=zeros(numel(interfaces),2);
+all_alpha1=zeros(numel(interfaces),2);
+all_beta0=zeros(numel(interfaces),2);
+all_beta1=zeros(numel(interfaces),2);
+all_t0=zeros(numel(interfaces),2);
+
+%Initialize the cell array of CC_vertices matrices
+for ii=1:space.npatch
+    for jj=numel(vertices)
+        CC_vertices{ii,jj} = sparse (space.ndof_per_patch(ii), ndof_per_vertex(jj));
+    end
+end
+%Initialize the cell array of CC_edges matrices
+for jj=1:numel(interfaces)
+    CC_edges{1,jj} = sparse (space.ndof_per_patch(interfaces(jj).patch1), ndof_per_interface(jj));
+    CC_edges{2,jj} = sparse (space.ndof_per_patch(interfaces(jj).patch2), ndof_per_interface(jj));
+end
+
+%computing for each patch all the derivatives we possibly need to compute t,d, and sigma
+brk = cell (1,msh.ndim);
+for j=1:space.npatch
+    knots = space.sp_patch{j}.knots;
+    for idim = 1:msh.ndim
+        brk{idim}=[knots{idim}(1) knots{idim}(end)]; %is this correct?
+    end
+    %the following points correspond to the four vertices of the patch
+    pts{1}=[0 1]';
+    pts{2}=[0 1]';
+    msh_pts_der1 = msh_cartesian (brk, pts, [], geometry(j),'boundary', true, 'der2',false);
+    derivatives1{j}=msh_precompute (msh_pts_der1); %rdim x ndim x n_pts{1}x n_pts{2}
+    msh_pts_der2 = msh_cartesian (brk, pts, [], geometry(j),'boundary', true, 'der2',true);
+    derivatives2{j}=msh_precompute (msh_pts_der2); %rdim x ndim x ndim x n_pts{1}x n_pts{2} (rdim->physical space, ndim->parametric space)   
+    %At this point (check)
+    %D_u F^j(0,0)=squeeze(derivatives{j}(:,1,1))
+    %D_u F^j(0,1)=squeeze(derivatives{j}(:,1,2))
+    %D_u F^j(1,0)=squeeze(derivatives{j}(:,1,3))
+    %D_u F^j(1,1)=squeeze(derivatives{j}(:,1,4))
+    %D_v F^j(0,0)=squeeze(derivatives{j}(:,2,1))
+    %D_v F^j(0,1)=squeeze(derivatives{j}(:,2,2))
+    %D_v F^j(1,0)=squeeze(derivatives{j}(:,2,3))
+    %D_v F^j(1,1)=squeeze(derivatives{j}(:,2,4))    
+end
+
+%Construction of CC_edges
+for iref = 1:numel(interfaces)
+    patch(1) = interfaces(iref).patch1; %LEFT
+    patch(2) = interfaces(iref).patch2; %RIGHT
+    side(1) = interfaces(iref).side1; %LEFT
+    side(2) = interfaces(iref).side2; %RIGHT
   
   %STEP 2 - Stuff necessary to evaluate the geo_mapping and its derivatives
   for ii = 1:2 % The two patches (L-R)
+  %in this cycle we must add to the already existing CC_vertices, the part of the "discarded" interface functions    
     brk = cell (1,msh.ndim);
     knots = space.sp_patch{patch(ii)}.knots;
     for idim = 1:msh.ndim
@@ -267,19 +365,23 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces) %b
   end
   
   %STEP 3 - Assembling and solving G^1 conditions system  %this must depend on orientation!
-  DuFL_x=squeeze(geo_map_jac{1}(1,1,:,:)); %column vector
-  DuFL_y=squeeze(geo_map_jac{1}(2,1,:,:)); %column vector
+%   DuFL_x=squeeze(geo_map_jac{1}(1,1,:,:)); %column vector
+%   DuFL_y=squeeze(geo_map_jac{1}(2,1,:,:)); %column vector
   DuFR_x=squeeze(geo_map_jac{2}(1,1,:,:)); %column vector
   DuFR_y=squeeze(geo_map_jac{2}(2,1,:,:)); %column vector
   DvFL_x=squeeze(geo_map_jac{1}(1,2,:,:)); %column vector
   DvFL_y=squeeze(geo_map_jac{1}(2,2,:,:)); %column vector
+  DvFR_x=squeeze(geo_map_jac{2}(1,2,:,:)); %column vector
+  DvFR_y=squeeze(geo_map_jac{2}(2,2,:,:)); %column vector
   if side(2)==1 || side(2)==2
       v=grev_pts{2}';
   else
       v=grev_pts{1}';
   end
-  A_full=[(1-v).*DuFL_x v.*DuFL_x -(1-v).*DuFR_x -v.*DuFR_x (1-v).^2.*DvFL_x 2*(1-v).*v.*DvFL_x v.^2.*DvFL_x;...
-     (1-v).*DuFL_y v.*DuFL_y -(1-v).*DuFR_y -v.*DuFR_y (1-v).^2.*DvFL_y 2*(1-v).*v.*DvFL_y v.^2.*DvFL_y];
+%   A_full=[(1-v).*DuFL_x v.*DuFL_x -(1-v).*DuFR_x -v.*DuFR_x (1-v).^2.*DvFL_x 2*(1-v).*v.*DvFL_x v.^2.*DvFL_x;...
+%      (1-v).*DuFL_y v.*DuFL_y -(1-v).*DuFR_y -v.*DuFR_y (1-v).^2.*DvFL_y 2*(1-v).*v.*DvFL_y v.^2.*DvFL_y];
+  A_full=[(1-v).*DvFL_x v.*DvFL_x (1-v).*DuFR_x v.*DuFR_x (1-v).^2.*DvFR_x 2*(1-v).*v.*DvFR_x v.^2.*DvFR_x;...
+     (1-v).*DvFL_y v.*DvFL_y (1-v).*DuFR_y v.*DuFR_y (1-v).^2.*DvFR_y 2*(1-v).*v.*DvFR_y v.^2.*DvFR_y];
  if rank(A_full)==6
      A=A_full(:,2:end);
      b=-A_full(:,1);
@@ -305,10 +407,13 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces) %b
  end
  
  %STEP 4 - Normalizing the alphas
- C1=((alpha1_n(1)-alpha0_n(1))^2)/3+((alpha1_n(2)-alpha0_n(2))^2)/3 + (alpha1_n(1)-alpha0_n(1))*alpha0_n(1)+(alpha1_n(2)-alpha0_n(2))*alpha0_n(2)...
-    +alpha0_n(1)^2+alpha0_n(2)^2;
- C2=(alpha1_n(1)-alpha0_n(1))-(alpha1_n(2)-alpha0_n(2))+2*alpha0_n(1)-2*alpha0_n(2);
- gamma=-C2/(2*C1);
+ %C1=((alpha1_n(1)-alpha0_n(1))^2)/3+((alpha1_n(2)-alpha0_n(2))^2)/3 + (alpha1_n(1)-alpha0_n(1))*alpha0_n(1)+(alpha1_n(2)-alpha0_n(2))*alpha0_n(2)...
+ %   +alpha0_n(1)^2+alpha0_n(2)^2;
+ %C2=(alpha1_n(1)-alpha0_n(1))-(alpha1_n(2)-alpha0_n(2))+2*alpha0_n(1)-2*alpha0_n(2);
+ %gamma=-C2/(2*C1);
+ C1=alpha0_n(1)^2+alpha0_n(1)*alpha1_n(1)+alpha1_n(1)^2+alpha0_n(2)^2+alpha0_n(2)*alpha1_n(2)+alpha1_n(2)^2;
+ C2=alpha0_n(1)+alpha1_n(1)+alpha0_n(2)+alpha1_n(2);
+ gamma=3*C2/(2*C1);
  alpha0(2)=alpha0_n(2)*gamma; %R
  alpha1(2)=alpha1_n(2)*gamma; %R
  alpha0(1)=alpha0_n(1)*gamma; %L
@@ -369,8 +474,14 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces) %b
  beta0(2)= a+b*beta0(1); %R
  beta1(2)= c+d*beta1(1); %R
  
- end 
-    
+ end
+ 
+ %Saving alphas and betas (first column=L, second column=R)
+ all_alpha0(iref,:)=alpha0;
+ all_alpha1(iref,:)=alpha1;
+ all_beta0(iref,:)=beta0;
+ all_beta1(iref,:)=beta1;
+ %Saving t(0)    
     
 % Compute the Greville points, and the auxiliary mesh and space objects
     for ii = 1:2 % The two patches (L-R)
@@ -407,7 +518,7 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces) %b
         tau1 = knt(end) - knt(end-1);
       end
 
-% For now I assume that the orientation is as in the paper, and we do not need any reordering
+% For now we assume that the orientation is as in the paper, and we do not need any reordering
 %XXXX    [sp_bnd(2), msh_side(2)] = reorder_elements_and_quad_points (sp_bnd(2), msh_side(2), interfaces(iref), ndim);
 % msh_side contains only the univariate parametrization of the boundary (dependence on u)
 % msh_side_int contains information for the bivariate parametrization (dependence on u and v)
@@ -462,7 +573,7 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces) %b
       end
       val = val_grad * (tau1 / degu)^2;
       for jj = 1:msh_side(ii).nel  %paper case - check beta
-        val_aux = val * beta{ii}(jj);
+        val_aux = -val * beta{ii}(jj); %added a minus, as in (6) of multipatch paper
         rhsb(jj,sp0_struct.connectivity(:,jj)) = sp0_struct.shape_function_gradients(:,:,:,jj) * val_aux;
       end
       rhsb = rhsb + rhss;
@@ -477,7 +588,7 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces) %b
       rhsc = sparse (msh_side(ii).nel, sp1_struct.ndof);
       val = val_grad* (tau1 / degu)^2;  %WARNING: WE DIVIDED BY tau1/degu, which REQUIRES A SMALL MODIFICATION IN THE REF MASK (ADD MULT. BY 1/2) 
       for jj = 1:msh_side(ii).nel
-        val_aux = val * alpha{ii}(jj);
+        val_aux = val * alpha{ii}(jj) * (-1)^ii; %with the multipatch settings must be multiplied by -1 for left patch;
         rhsc(jj,sp1_struct.connectivity(:,jj)) = sp1_struct.shape_functions(:,:,jj) * val_aux;
       end
       coeff2{ii} = A \ rhsc;
@@ -486,7 +597,7 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces) %b
 % Pass the coefficients to the tensor product basis
 % The numbering (ndof) only works for the two patch case, for now
       ndof = sp0_struct.ndof + sp1_struct.ndof;
-      CC{ii} = sparse (space.ndof_per_patch(patch(ii)), ndof);
+      CC_edges{ii,iref} = sparse (space.ndof_per_patch(patch(ii)), ndof);
       
       ndof_dir = space.sp_patch{patch(ii)}.ndof_dir;
       if (side(ii) == 1)
@@ -503,17 +614,23 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces) %b
         ind1 = sub2ind (ndof_dir, 1:spn.ndof, (ndof_dir(2)-1) * ones(1,spn.ndof));
       end
 
-      if (ii == 2 && interfaces(iref).ornt == -1)
+      if (ii == 2 && interfaces(iref).ornt == -1) %this should be still the same for the multipatch
         ind0 = fliplr (ind0);
         ind1 = fliplr (ind1);
+        ind0_s{iref}=ind0; %saving the indices for later use;
+        ind1_s{iref}=ind1;
         coeff0{2} = flipud (fliplr (coeff0{2}));
         coeff1{2} = flipud (fliplr (coeff1{2}));
         coeff2{2} = flipud (fliplr (coeff2{2}));
       end
 
-      CC{ii}(ind0,1:sp0_struct.ndof) = coeff0{ii};
-      CC{ii}(ind1,1:sp0_struct.ndof) = coeff1{ii};
-      CC{ii}(ind1,sp0_struct.ndof+1:ndof) = coeff2{ii} * (-1)^(ii+1);
+      CC_edges{ii,iref}(ind0,1:sp0_struct.ndof) = coeff0{ii};  %coefficients of trace basis functions...
+      CC_edges{ii,iref}(ind1,1:sp0_struct.ndof) = coeff1{ii};
+      CC_edges{ii,iref}(ind1,sp0_struct.ndof+1:ndof) = coeff2{ii} * (-1)^(ii+1); %...and derivative basis functions (associated to iref-th interface)
+      
+      %keeping the part of the "actually active" edge functions, the remaining part saved in CC_edges_discarded
+      CC_edges_discarded{ii,iref}=CC_edges{ii,iref}(:,[1 2 3 sp0_struct.ndof-2:sp0_struct.ndof+2 ndof-1 ndof]); %dimension: n^2 x 10
+      CC_edges{ii,iref}=CC_edges{ii,iref}(:,[4:sp0_struct.ndof-3 sp0_struct.ndof+3:ndof-2]);
     end
     
 %CHECKING G^1 condition  
@@ -574,19 +691,135 @@ function [ndof, CC] = compute_coefficients (space, msh, geometry, interfaces) %b
 % grev_pts{1}
 % grev_pts{2}
 
-  end
-  
-  
-%%%%%%%%%% FOR MARIO, TRYING TO SUMMARIZE %%%%%%%%%%%%%%%%
-% In the inner loop (for ii = 1:2), we consider the two patches. ii = L,R
-% msh_side_int{ii} is a structure that contains the information about the parametrization F^(ii)
-%  In particular, it contains the value (geo_map), the derivatives (geo_map_jac) 
-%  and the jacobian (jacdet) at the Greville points. The last index
-%  indicates the Greville point.
-% sp_grev(ii) is a structure with the value of the basis functions
-% (.shape_functions) at the Greville points. The last index indicates the Greville point.
-% The previous one indicates the basis functions that are non-null on the
-% element. This also includes functions from the interior.
-% The number of the non-vanishing basis functions is in connectivity
+end
 
+
+
+%We assume that the local numbering of interfaces and patches is such that
+%vertices(kver).interface(im) is the interface between
+%vertices(kver).patches(im) and vertices(kver).patches(im+1)
+%I actually need to consider the actual parametrization to compute d, t and sigma, don't I?
+
+for kver=1:numel(vertices)
+    
+    %This has to be updated using vertices (or already done? check!)
+    ver_patches=[];%vector with indices of patches containing the vertex
+    ver_ind=[];%vector containing local index of vertex in the patch
+    sides=[1 4;2 3;1 2;4 3]; %on i-th row the indices of the endpoints of the i-th side (bottom-up, left-right)
+    for h=1:numel(vertices(kver).interfaces)
+        hint=vertices(kver).interfaces(h);
+        ver_patches=[ver_patches interfaces(hint).patch1 interfaces(hint).patch2];    
+        ver_ind=[ver_ind sides(interfaces(hint).side1,vertices(kver).ind)...
+                 sides(interfaces(hint).side2,vertices(kver).ind)];
+    end
+    ver_patches=unique(ver_patches);
+    ver_ind=unique(ver_ind);
+    
+    nu=numel(vertices(kver).interfaces)-1;
+    MM=cell(2,nu,numel(vertices));
+    V=cell(nu,numel(vertices));
+    E=cell(nu+1,numel(vertices));
+    for im=1:nu+1 %cycle over all the interfaces containing the vertex (#interfaces=#patches+1, where the last one coincides with the first if the vertex is interior)
+        inter=vertices(kver).interfaces(im); %global index of the interface 
+        patch_ind1=interfaces(inter).patch1; %global index of left patch of im-th interface
+        %do we need the same for the right patch?
+        vertex_ind1=sides(interfaces(inter).side1,vertices(kver).ind); %local index of vertex in left patch
+        %do we need the same for the right patch?
+        %compute t(0) and t'(0), d(0) and d'(0)
+        switch vertex_ind1 %d0 and D0p to be added in other cases (16 cases in total) ...to be moved where we compute edge functions matrices?
+            case 1 %vertex (0,0)
+                t0(im,:)=squeeze(derivatives1{patch_ind1}(:,2,1));
+                t0p(im,:)=squeeze(derivatives2{patch_ind1}(:,2,2,1));
+                d0(im,:)=(squeeze(derivatives1{patch_ind1}(:,1,1)-(all_beta0(inter,1)*(1-0)...
+                    +all_beta1(inter,1)*0)*derivatives1{patch_ind1}(:,2,1)))...
+                    /(all_alpha0(inter,1)*(1-0)+all_alpha0(inter,1)*0);
+                d0p(im,:)=((all_alpha0(inter,1)*(1-0)+all_alpha0(inter,1)*0)*squeeze(derivatives1{patch_ind1}(:,1,1)-(all_beta0(inter,1)*(1-0)...
+                    +all_beta1(inter,1)*0)*derivatives1{patch_ind1}(:,2,1))...
+                    +(all_alpha0(inter,1)-all_alpha1(inter,1))*squeeze(derivatives2{patch_ind1}(:,1,2,1)-(all_beta0(inter,1)*(1-0)...
+                    +all_beta1(inter,1)*0)*derivatives2{patch_ind1}(:,2,2,1)...
+                    +(all_beta0(inter,1)-all_beta1(inter,1))*derivatives1{patch_ind1}(:,2,1)))...
+                    /((-all_alpha0(inter,1)+all_alpha1(inter,1))^2);
+                mix_der2(im,:)=derivatives2{patch_ind1}(:,1,2,1);
+                
+                %Pick the correct part of CC_edges_discarded{ii,iref}
+                if vertices(kver).loc_vertex==1
+                    E{im,kver}=CC_edges_discarded{ii,iref}(:,[1 2 3 7 8]); %part of the matrix corresponding to edge functions close to the vertex
+                else
+                    E{im,kver}=CC_edges_discarded{ii,iref}(:,[4 5 6 9 10]);
+                end
+%             case 2 %vertex (1,0)
+%                 t0(im,:)=squeeze(derivatives1{vertices(kver).interface(im).patch_i1}(:,2,3));
+%                 t0p(im,:)=squeeze(derivatives2{vertices(kver).interface(im).patch_i1}(:,2,2,3));
+%             case 3 %vertex (1,1)
+%                 t0(im,:)=-squeeze(derivatives1{vertices(kver).interface(im).patch_i1}(:,2,4));
+%                 t0p(im,:)=-squeeze(derivatives2{vertices(kver).interface(im).patch_i1}(:,2,2,4));
+%             case 4 %vertex (0,1)
+%                 t0(im,:)=-squeeze(derivatives1{vertices(kver).interface(im).patch_i1}(:,2,2));
+%                 t0p(im,:)=-squeeze(derivatives2{vertices(kver).interface(im).patch_i1}(:,2,2,2));
+        end        
+    end
+    %compute sigma
+    sigma=0;
+    for im=1:nu
+        vertex_ind=ver_ind(im); %local index of the vertex in im-th patch
+        patch_ind=ver_patches(im); %global index of the im-th patch
+            %this works only for the standard configuration
+            sigma=sigma+norm([derivatives1{patch_ind}(1,1,1) derivatives1{patch_ind}(2,2,1)]);
+    end
+    sigma=1/(sigma/(p*(k+1)*nu));
+    
+    %computing matrices MM and V
+    for im=1:nu
+        %assemble matrix (not final: Ms and Vs, then updated with the "discarded parts" of edge functions)
+        n1=space.sp_patch{patch_ind}.ndof_dir(1); %dimension of t-p space in the patch (dir 1)
+        n2=space.sp_patch{patch_ind}.ndof_dir(2); %dimension of t-p space in the patch (dir 2)
+        j=0;
+        for j1=0:2
+            for j2=0:2-j1 %the following computations work in the standard case
+                d00=(j1==0)*(j2==0);
+                %M_{i_{m-1},i}
+                d10_a=[(j1==1)*(j2==0), (j1==0)*(j2==1)]*t0(im,:)';
+                d20_a=t0(im,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*t0(im,:)'+...
+                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*t0p(im,:)';
+                d01_a=[(j1==1)*(j2==0), (j1==0)*(j2==1)]*d0(im,:)';
+                d11_a=t0(im,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*d0(im,:)'+...
+                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*d0p(im,:)';
+                MM{1,im,kver}(:,j)=sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+2*d10_a/(p*(k+1))+d20_a/(p*(p-1)*(k+1)^2),...
+                                                 d01_a/(p*(k+1)), d01_a/(p*(k+1))+d11_a/(p*(p-1)*(k+1)^2)]';
+                %M_{i_{m+1},i}
+                d10_b=[(j1==1)*(j2==0), (j1==0)*(j2==1)]*t0(im+1,:)';
+                d20_b=t0(im+1,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*t0(im+1,:)'+...
+                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*t0p(im+1,:)';
+                d01_b=[(j1==1)*(j2==0), (j1==0)*(j2==1)]*d0(im+1,:)';
+                d11_b=t0(im+1,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*d0(im+1,:)'+...
+                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*d0p(im+1,:)';                
+                MM{2,im,kver}(:,j)=sigma^(j1+j2)*[d00, d00+d10_b/(p*(k+1)), d00+2*d10_b/(p*(k+1))+d20_b/(p*(p-1)*(k+1)^2),...
+                                                 d01_b/(p*(k+1)), d01_b/(p*(k+1))+d11_b/(p*(p-1)*(k+1)^2)]';     
+                %V_{i_m,i}  
+                d11_c=t0(im,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*t0(im+1,:)'+...
+                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*mix_der2(im,:)';
+                V{im,kver}=zeros(n1*n2,6);
+                
+                side1=interfaces(vertices(kver).interface(im)).side1; %side of left patch
+                switch side1 %only case 3 (standard) is correct
+                    case 1
+                    V{im,kver}([1, 2, n2+1, n2+2],j)=[d00, d00+d10_b/(p*(k+1)), d00+d10_a/(p*(k+1)),...
+                                                  d00+ (d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]';
+                    case 2
+                    V{im,kver}([1, 2, n2+1, n2+2],j)=[d00, d00+d10_b/(p*(k+1)), d00+d10_a/(p*(k+1)),...
+                                                  d00+ (d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]';    
+                    case 3
+                    V{im,kver}([1, 2, n2+1, n2+2],j)=[d00, d00+d10_b/(p*(k+1)), d00+d10_a/(p*(k+1)),...
+                                                  d00+ (d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]';    
+                    case 4
+                    V{im,kver}([1, 2, n2+1, n2+2],j)=[d00, d00+d10_b/(p*(k+1)), d00+d10_a/(p*(k+1)),...
+                                                  d00+ (d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]';    
+                end
+                j=j+1;
+            end
+        end
+        CC_vertices{ver_patches(im),kver} = E{im,kver}*MM{1,im,kver} + E{im+1,kver}*MM{2,im,kver} + V{im,kver};
+    end
+end
+  
 end
