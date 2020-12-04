@@ -291,11 +291,11 @@ function [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices] = compute_
 p = space.sp_patch{1}.degree(1);
 k=numel(msh.msh_patch{1}.breaks{1})-2;
 
-all_alpha0=zeros(numel(interfaces),2);
-all_alpha1=zeros(numel(interfaces),2);
-all_beta0=zeros(numel(interfaces),2);
-all_beta1=zeros(numel(interfaces),2);
-all_t0=zeros(numel(interfaces),2);
+all_alpha0=zeros(numel(interfaces_all),2);
+all_alpha1=zeros(numel(interfaces_all),2);
+all_beta0=zeros(numel(interfaces_all),2);
+all_beta1=zeros(numel(interfaces_all),2);
+all_t0=zeros(numel(interfaces_all),2);
 
 %Initialize the cell array of CC_vertices matrices
 for ii=1:space.npatch
@@ -304,9 +304,9 @@ for ii=1:space.npatch
     end
 end
 %Initialize the cell array of CC_edges matrices
-for jj=1:numel(interfaces)
-    CC_edges{1,jj} = sparse (space.ndof_per_patch(interfaces(jj).patch1), ndof_per_interface(jj));
-    CC_edges{2,jj} = sparse (space.ndof_per_patch(interfaces(jj).patch2), ndof_per_interface(jj));
+for jj=1:numel(interfaces_all)
+    CC_edges{1,jj} = sparse (space.ndof_per_patch(interfaces_all(jj).patch1), ndof_per_interface(jj));
+    CC_edges{2,jj} = sparse (space.ndof_per_patch(interfaces_all(jj).patch2), ndof_per_interface(jj));
 end
 
 %computing for each patch all the derivatives we possibly need to compute t,d, and sigma
@@ -350,11 +350,11 @@ for j=1:space.npatch
 end
 
 %Construction of CC_edges
-for iref = 1:numel(interfaces)
-    patch(1) = interfaces(iref).patch1; %LEFT
-    patch(2) = interfaces(iref).patch2; %RIGHT
-    side(1) = interfaces(iref).side1; %LEFT
-    side(2) = interfaces(iref).side2; %RIGHT
+for iref = 1:numel(interfaces_all)
+    patch(1) = interfaces_all(iref).patch1; %LEFT
+    patch(2) = interfaces_all(iref).patch2; %RIGHT
+    side(1) = interfaces_all(iref).side1; %LEFT
+    side(2) = interfaces_all(iref).side2; %RIGHT
   
   %STEP 2 - Stuff necessary to evaluate the geo_mapping and its derivatives
   for ii = 1:2 % The two patches (L-R)
@@ -629,7 +629,7 @@ for iref = 1:numel(interfaces)
         ind1 = sub2ind (ndof_dir, 1:spn.ndof, (ndof_dir(2)-1) * ones(1,spn.ndof));
       end
 
-      if (ii == 2 && interfaces(iref).ornt == -1) %this should be still the same for the multipatch
+      if (ii == 2 && interfaces_all(iref).ornt == -1) %this should be still the same for the multipatch
         ind0 = fliplr (ind0);
         ind1 = fliplr (ind1);
         ind0_s{iref}=ind0; %saving the indices for later use;
@@ -739,12 +739,12 @@ for kver=1:numel(vertices)
 %     ver_patches=unique(ver_patches,'stable');
 %     ver_ind=unique(ver_ind,'stable');
     
-    for im=1:nu %cycle over all the interfaces containing the vertex (#interfaces=#patches+1, where the last one coincides with the first if the vertex is interior)
+    for im=1:nu %cycle over all the interfaces containing the vertex
         inter=vertices(kver).interfaces(im); %global index of the interface 
-        patch_ind1=interfaces(inter).patch1; %global index of left patch of im-th interface
-        patch_ind2=interfaces(inter).patch2; %global index of right patch of im-th interface
-        vertex_ind1=sides(interfaces(inter).side1,vertices(kver).ind(im)); %local index of vertex in left patch
-        vertex_ind2=sides(interfaces(inter).side2,vertices(kver).ind(im)); %local index of vertex in right patch
+        patch_ind1=interfaces_all(inter).patch1; %global index of left patch of im-th interface
+        patch_ind2=interfaces_all(inter).patch2; %global index of right patch of im-th interface
+        vertex_ind1=sides(interfaces_all(inter).side1,vertices(kver).ind(im)); %local index of vertex in left patch
+        vertex_ind2=sides(interfaces_all(inter).side2,vertices(kver).ind(im)); %local index of vertex in right patch
         ver_patches=[ver_patches patch_ind1 patch_ind2];
         ver_ind=[ver_ind vertex_ind1 vertex_ind2];
         %compute t(0) and t'(0), d(0) and d'(0)
@@ -754,26 +754,25 @@ for kver=1:numel(vertices)
                 Dv_F00=squeeze(derivatives1{patch_ind1}(:,2,1,1));
                 Duv_F00=squeeze(derivatives2{j}(:,1,2,1,1));
                 Dvv_F00=squeeze(derivatives2{j}(:,2,2,1,1));
-                %ver_patches_nabla=[#ind1 #ind2]
             case 2 %vertex (0,1)
                 Du_F00=squeeze(derivatives1{patch_ind1}(:,1,1,2));
                 Dv_F00=-squeeze(derivatives1{patch_ind1}(:,2,1,2));
                 Duv_F00=-squeeze(derivatives2{j}(:,1,2,1,2));
                 Dvv_F00=squeeze(derivatives2{j}(:,2,2,1,2));  
-                %ver_patches_nabla=[#ind1 #ind2]
             case 3 %vertex (1,0)
                 Du_F00=-squeeze(derivatives1{patch_ind1}(:,1,2,1));
                 Dv_F00=squeeze(derivatives1{patch_ind1}(:,2,2,1));
                 Duv_F00=-squeeze(derivatives2{j}(:,1,2,2,1));
                 Dvv_F00=squeeze(derivatives2{j}(:,2,2,2,1));  
-                %ver_patches_nabla=[#ind1 #ind2]
             case 4 %vertex (1,1)
                 Du_F00=-squeeze(derivatives1{patch_ind1}(:,1,2,2));
                 Dv_F00=-squeeze(derivatives1{patch_ind1}(:,2,2,2));
                 Duv_F00=squeeze(derivatives2{j}(:,1,2,2,2));
                 Dvv_F00=squeeze(derivatives2{j}(:,2,2,2,2));
-                %ver_patches_nabla=[#ind1 #ind2]
         end
+        %Store the jacobian of F for the left patch
+        ver_patches_nabla{2*im-1}=[Du_F00 Dv_F00];
+        
         t0(im,:)=Dv_F00;
         t0p(im,:)=Dvv_F00;
         d0(im,:)=(Du_F00+(all_beta0(inter,1)*(1-0)+all_beta1(inter,1)*0)*Dv_F00)...
@@ -783,16 +782,34 @@ for kver=1:numel(vertices)
                    -all_beta0(inter,1)*Dv_F00+(all_beta0(inter,1)*(1-0)+all_beta1(inter,1)*0)*Dvv_F00...
                    ))/(all_alpha0(inter,1)*(1-0)+all_alpha1(inter,1)*0)^2;  
         mix_der2(im,:)=Duv_F00;
+        %We need to get the jacobian also for the right patch
+        switch vertex_ind2
+            case 1 %vertex (0,0)
+                Du_F00=squeeze(derivatives1{patch_ind2}(:,1,1,1));
+                Dv_F00=squeeze(derivatives1{patch_ind2}(:,2,1,1));
+            case 2 %vertex (0,1)
+                Du_F00=squeeze(derivatives1{patch_ind2}(:,1,1,2));
+                Dv_F00=-squeeze(derivatives1{patch_ind2}(:,2,1,2));
+            case 3 %vertex (1,0)
+                Du_F00=-squeeze(derivatives1{patch_ind2}(:,1,2,1));
+                Dv_F00=squeeze(derivatives1{patch_ind2}(:,2,2,1));
+            case 4 %vertex (1,1)
+                Du_F00=-squeeze(derivatives1{patch_ind2}(:,1,2,2));
+                Dv_F00=-squeeze(derivatives1{patch_ind2}(:,2,2,2));
+        end
+        ver_patches_nabla{2*im}=[Du_F00 Dv_F00];
+        
         %Pick the correct part of CC_edges_discarded %TO BE FIXED
         if vertices(kver).ind(im)==1
-            E{kver}{im,1}=CC_edges_discarded{ii,inter}(:,[1 2 3 7 8]); %part of the matrix corresponding to edge functions close to the vertex
+            E{kver}{im,1}=CC_edges_discarded{1,inter}(:,[1 2 3 7 8]); %part of the matrix corresponding to edge functions close to the vertex
+            E{kver}{im,2}=CC_edges_discarded{2,inter}(:,[1 2 3 7 8]);
         else
-            E{kver}{im,2}=CC_edges_discarded{ii,inter}(:,[4 5 6 9 10]);
+            E{kver}{im,1}=CC_edges_discarded{1,inter}(:,[4 5 6 9 10]);
+            E{kver}{im,2}=CC_edges_discarded{2,inter}(:,[4 5 6 9 10]);
         end    
     end
-    ver_patches=unique(ver_patches,'stable');
-    ver_ind=unique(ver_ind,'rows','stable');
-    %ver_patches_nabla=unique(ver_patches_nabla,'stable');
+    [ver_patches, ind_patch_sigma, ind_patch_rep]=unique(ver_patches,'stable');
+    %ver_ind=unique(ver_ind,'rows','stable');
     
     %if the number of patches coincides with the number of interfaces, 
     %we add one fictional interface coinciding with the first one
@@ -809,7 +826,7 @@ for kver=1:numel(vertices)
     %computing sigma
     sigma=0;
     for im=1:nu
-        sigma=sigma+norm(ver_patches_nabla(im));
+        sigma=sigma+norm(ver_patches_nabla{ind_patch_sigma(im)},Inf);
     end
     sigma=1/(sigma/(p*(k+1)*nu));
     
@@ -818,38 +835,50 @@ for kver=1:numel(vertices)
         %assemble matrix (not final: Ms and Vs, then updated with the "discarded parts" of edge functions)
         n1=space.sp_patch{ver_patches(im)}.ndof_dir(1); %dimension of tensor-product space in the patch (dir 1)
         n2=space.sp_patch{ver_patches(im)}.ndof_dir(2); %dimension of tensor-product space in the patch (dir 2)
+        im_edges=floor(find(ind_patch_rep==im)/2); %global indices of the edges 
+        im1=im_edges(1); im2=im_edges(2)
         j=0;
         for j1=0:2
             for j2=0:2-j1 %the following computations work in the standard case
                 d00=(j1==0)*(j2==0);
                 %M_{i_{m-1},i}
-                d10_a=[(j1==1)*(j2==0), (j1==0)*(j2==1)]*t0(im,:)';
-                d20_a=t0(im,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*t0(im,:)'+...
-                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*t0p(im,:)';
-                d01_a=[(j1==1)*(j2==0), (j1==0)*(j2==1)]*d0(im,:)';
-                d11_a=t0(im,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*d0(im,:)'+...
-                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*d0p(im,:)';
+                d10_a=[(j1==1)*(j2==0), (j1==0)*(j2==1)]*t0(im1,:)';
+                d20_a=t0(im1,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*t0(im1,:)'+...
+                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*t0p(im1,:)';
+                d01_a=[(j1==1)*(j2==0), (j1==0)*(j2==1)]*d0(im1,:)';
+                d11_a=t0(im1,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*d0(im1,:)'+...
+                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*d0p(im1,:)';
                 MM{1,kver}{im}(:,j)=sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+2*d10_a/(p*(k+1))+d20_a/(p*(p-1)*(k+1)^2),...
                                                  d01_a/(p*(k+1)), d01_a/(p*(k+1))+d11_a/(p*(p-1)*(k+1)^2)]';
                 %M_{i_{m+1},i}
-                d10_b=[(j1==1)*(j2==0), (j1==0)*(j2==1)]*t0(im+1,:)';
-                d20_b=t0(im+1,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*t0(im+1,:)'+...
-                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*t0p(im+1,:)';
-                d01_b=[(j1==1)*(j2==0), (j1==0)*(j2==1)]*d0(im+1,:)';
-                d11_b=t0(im+1,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*d0(im+1,:)'+...
-                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*d0p(im+1,:)';                
+                d10_b=[(j1==1)*(j2==0), (j1==0)*(j2==1)]*t0(im2,:)';
+                d20_b=t0(im2,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*t0(im2,:)'+...
+                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*t0p(im2,:)';
+                d01_b=[(j1==1)*(j2==0), (j1==0)*(j2==1)]*d0(im2,:)';
+                d11_b=t0(im2,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*d0(im2,:)'+...
+                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*d0p(im2,:)';                
                 MM{2,kver}{im}(:,j)=sigma^(j1+j2)*[d00, d00+d10_b/(p*(k+1)), d00+2*d10_b/(p*(k+1))+d20_b/(p*(p-1)*(k+1)^2),...
                                                  d01_b/(p*(k+1)), d01_b/(p*(k+1))+d11_b/(p*(p-1)*(k+1)^2)]';     
                 %V_{i_m,i}  
-                d11_c=t0(im,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*t0(im+1,:)'+...
-                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*mix_der2(im,:)';
+                d11_c=t0(im1,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*t0(im2,:)'+...
+                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*mix_der2(im1,:)';
                 V{kver}{im}=zeros(n1*n2,6);
                 V{kver}{im}([1, 2, n2+1, n2+2],j)=[d00, d00+d10_b/(p*(k+1)), d00+d10_a/(p*(k+1)),...
                                                   d00+ (d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]';    
                 j=j+1;
             end
         end
-        CC_vertices{ver_patches(im),kver} = E{kver}{im}*MM{1,kver}{im} + E{kver}{im+1}*MM{2,kver}{im} - V{kver}{im};
+        if interfaces_all(vertices(kver).interfaces(im1)).side2==ver_patches(im)%the considered patch is to the right of edge im1
+            E1=E{kver}{im1,2};
+        else
+            E1=E{kver}{im1,1};
+        end
+        if interfaces_all(vertices(kver).interfaces(im2)).side2==ver_patches(im)%the considered patch is to the right of edge im2
+            E2=E{kver}{im2,2};
+        else
+            E2=E{kver}{im2,1};
+        end
+        CC_vertices{ver_patches(im),kver} = E1*MM{1,kver}{im} + E2*MM{2,kver}{im} - V{kver}{im};%E{kver}{im1,2}*MM{1,kver}{im} + E{kver}{im2,1}*MM{2,kver}{im} - V{kver}{im};
     end
 end
   
@@ -857,10 +886,9 @@ end
 end
 
 %TO DO:
+%- fix association patch->interface
 %- case of boundary edges
-%- do modifications to handle different orientations (in basic case)
 %- compute number of ndof per edge, per vertex 
-%- write clear algorithm for the whole construction?
 
 %TO BE TESTED
 %- number of functions
