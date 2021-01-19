@@ -216,7 +216,7 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries)
 % Vertices and patches_on_vertex are not defined yet. For now, this only works for one extraordinary point
 % The information of which patches share the vertex can be computed with the help of mp_interface
   for ivrt = 1%:numel(vertices)
-    global_indices = sp.ndof_interior + sp.ndof_edges + sum(ndof_per_vertex(1:ivrt-1)) + ndof_per_vertex(ivrt);
+    global_indices = sp.ndof_interior + sp.ndof_edges + sum(ndof_per_vertex(1:ivrt-1)) + (1:ndof_per_vertex(ivrt));
     for iptc = 1:sp.npatch %patches_on_vertex (TO BE CHANGED)
       Cpatch{iptc}(:,global_indices) = CC_vertices{iptc,ivrt};
     end
