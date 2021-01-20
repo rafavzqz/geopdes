@@ -153,11 +153,12 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries)
 % We could store the info of interfaces per patch, as in mp_interface
 
   sp.ndof_interior = 0;
+  [interfaces_all, ~] = vertices_struct(boundaries, interfaces);
   for iptc = 1:sp.npatch
     interior_dofs = 1:spaces{iptc}.ndof;
-    for intrfc = 1:numel(interfaces)
-      patches = [interfaces(intrfc).patch1, interfaces(intrfc).patch2];
-      sides = [interfaces(intrfc).side1, interfaces(intrfc).side2];
+    for intrfc = 1:numel(interfaces_all)
+      patches = [interfaces_all(intrfc).patch1, interfaces_all(intrfc).patch2];
+      sides = [interfaces_all(intrfc).side1, interfaces_all(intrfc).side2];
       [is_interface,position] = ismember (iptc, patches);
       if (is_interface)
         sp_bnd = spaces{iptc}.boundary(sides(position));
@@ -360,6 +361,7 @@ end
 
 %Construction of CC_edges
 for iref = 1:numel(interfaces_all)
+    clear patch
     if ~isempty(interfaces_all(iref).patch1)
         patch(1) = interfaces_all(iref).patch1; %LEFT
         side(1) = interfaces_all(iref).side1; %LEFT
@@ -397,7 +399,7 @@ for iref = 1:numel(interfaces_all)
     geo_map_jac{ii} = msh_side_int{ii}.geo_map_jac; %rdim x ndim x 1 x n_grev_pts (rdim->physical space, ndim->parametric space)
   end
   
-  if nnz(patch)==2 %as it is placed now, this check computes the matrices corresponding only to interior edges
+  if length(patch)==2 %as it is placed now, this check computes the matrices corresponding only to interior edges
   %STEP 3 - Assembling and solving G^1 conditions system  %this must depend on orientation!
   DuFR_x=squeeze(geo_map_jac{2}(1,1,:,:)); %column vector
   DuFR_y=squeeze(geo_map_jac{2}(2,1,:,:)); %column vector
@@ -512,7 +514,6 @@ for iref = 1:numel(interfaces_all)
  all_beta0(iref,:)=beta0;
  all_beta1(iref,:)=beta1;
  %Saving t(0)    
-  
     
 % Compute the Greville points, and the auxiliary mesh and space objects
     for ii = 1:2 % The two patches (L-R)
