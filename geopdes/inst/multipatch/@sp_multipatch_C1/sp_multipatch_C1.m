@@ -186,6 +186,7 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries)
 %   [ndof, CC] = compute_coefficients (sp, msh, geometry, interfaces);  
   [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices] = ...
     compute_coefficients (sp, msh, geometry, interfaces, boundaries);
+%keyboard
   
   sp.ndof_edges = sum(ndof_per_interface); % Total number of edge functions
   sp.ndof_vertices = sum (ndof_per_vertex); % Total number of vertex functions
@@ -328,7 +329,7 @@ for j=1:space.npatch
     end
     %the following points correspond to the four vertices of the patch
     pts{1}=[0 1]';
-    pts{2}=[0 1/2 1]';
+    pts{2}=[0 1]';%pts{2}=[0 1/2 1]'
     msh_pts_der1 = msh_cartesian (brk, pts, [], geometry(j),'boundary', true, 'der2',false);
     msh_der1{j}=msh_precompute (msh_pts_der1); 
     derivatives1{j}=msh_der1{j}.geo_map_jac; %rdim x ndim x (n_pts{1}x n_pts{2}) (rdim->physical space, ndim->parametric space)
@@ -371,22 +372,26 @@ for iref = 1:numel(interfaces_all)
         side(2) = interfaces_all(iref).side2; %RIGHT
     end
     nnz_el=find(patch>0);
+    if side(1)==3 && side(2)==1
+        patch=flip(patch);
+        side=flip(side);
+    end
   
   %STEP 2 - Stuff necessary to evaluate the geo_mapping and its derivatives
   for ii = nnz_el % The two patches (L-R)
   %in this cycle we must add to the already existing CC_vertices, the part of the "discarded" interface functions    
     brk = cell (1,msh.ndim);
     knots = space.sp_patch{patch(ii)}.knots;
+    %Greville points for G^1 conditions system
+    geo_knot_v1=geometry(patch(ii)).nurbs.knots{1};
+    p1=geometry(patch(ii)).nurbs.order(1);
+    aug_geo_knot1=[geo_knot_v1(1)*ones(1,p1+1)  repelem(geo_knot_v1(p1+1:end-p1-1),3)  geo_knot_v1(end)*ones(1,p1+1)];
+    geo_knot_v2=geometry(patch(ii)).nurbs.knots{2};
+    p2=geometry(patch(ii)).nurbs.order(2);
+    aug_geo_knot2=[geo_knot_v2(1)*ones(1,p2+1)  repelem(geo_knot_v2(p2+1:end-p2-1),3)  geo_knot_v2(end)*ones(1,p2+1)];
+    grev_pts{1}=aveknt(aug_geo_knot1,p1+1);
+    grev_pts{2}=aveknt(aug_geo_knot2,p2+1);
     for idim = 1:msh.ndim
-        %Greville points for G^1 conditions system
-        geo_knot_v1=geometry(patch(ii)).nurbs.knots{1};
-        p1=geometry(patch(ii)).nurbs.order(1);
-        aug_geo_knot1=[geo_knot_v1(1)*ones(1,p1+1)  repelem(geo_knot_v1(p1+1:end-p1-1),3)  geo_knot_v1(end)*ones(1,p1+1)];
-        geo_knot_v2=geometry(patch(ii)).nurbs.knots{2};
-        p2=geometry(patch(ii)).nurbs.order(2);
-        aug_geo_knot2=[geo_knot_v2(1)*ones(1,p2+1)  repelem(geo_knot_v2(p2+1:end-p2-1),3)  geo_knot_v2(end)*ones(1,p2+1)];
-        grev_pts{1}=aveknt(aug_geo_knot1,p1+1);
-        grev_pts{2}=aveknt(aug_geo_knot2,p2+1);
         if (numel(grev_pts{idim}) > 1)
             brk{idim} = [knots{idim}(1), grev_pts{idim}(1:end-1) + diff(grev_pts{idim})/2, knots{idim}(end)];
         else
@@ -397,21 +402,30 @@ for iref = 1:numel(interfaces_all)
     msh_side_int{ii} = msh_boundary_side_from_interior (msh_grev, side(ii));
     msh_side_int{ii} = msh_precompute (msh_side_int{ii});      
     geo_map_jac{ii} = msh_side_int{ii}.geo_map_jac; %rdim x ndim x 1 x n_grev_pts (rdim->physical space, ndim->parametric space)
+%     if ii==1 && (side(ii)==3 || side(ii)==4)
+%         disp('done1')
+%         geo_map_jac{ii}=flip(geo_map_jac{ii});
+%     elseif ii==2 && (side(ii)==1 || side(ii)==2)
+%         disp('done2')
+%         geo_map_jac{ii}=flip(geo_map_jac{ii});
+%     end
   end
   
   if length(patch)==2 %as it is placed now, this check computes the matrices corresponding only to interior edges
   %STEP 3 - Assembling and solving G^1 conditions system  %this must depend on orientation!
-  DuFR_x=squeeze(geo_map_jac{2}(1,1,:,:)); %column vector
-  DuFR_y=squeeze(geo_map_jac{2}(2,1,:,:)); %column vector
-  DvFL_x=squeeze(geo_map_jac{1}(1,2,:,:)); %column vector
-  DvFL_y=squeeze(geo_map_jac{1}(2,2,:,:)); %column vector
-  DvFR_x=squeeze(geo_map_jac{2}(1,2,:,:)); %column vector
-  DvFR_y=squeeze(geo_map_jac{2}(2,2,:,:)); %column vector
   if side(2)==1 || side(2)==2
-      v=grev_pts{2}';
+      v=grev_pts{2}(:);
   else
-      v=grev_pts{1}';
+      v=grev_pts{1}(:);
   end
+  ngrev=numel(v);
+  DuFR_x=reshape(geo_map_jac{1}(1,1,:,:),ngrev,1); %column vector
+  DuFR_y=reshape(geo_map_jac{1}(2,1,:,:),ngrev,1); %column vector
+  DvFL_x=reshape(geo_map_jac{2}(1,2,:,:),ngrev,1); %column vector
+  DvFL_y=reshape(geo_map_jac{2}(2,2,:,:),ngrev,1); %column vector
+  DvFR_x=reshape(geo_map_jac{1}(1,2,:,:),ngrev,1); %column vector
+  DvFR_y=reshape(geo_map_jac{1}(2,2,:,:),ngrev,1); %column vector
+  
   A_full=[(1-v).*DvFL_x v.*DvFL_x (1-v).*DuFR_x v.*DuFR_x (1-v).^2.*DvFR_x 2*(1-v).*v.*DvFR_x v.^2.*DvFR_x;...
      (1-v).*DvFL_y v.*DvFL_y (1-v).*DuFR_y v.*DuFR_y (1-v).^2.*DvFR_y 2*(1-v).*v.*DvFR_y v.^2.*DvFR_y];
  if rank(A_full)==6
@@ -438,6 +452,7 @@ for iref = 1:numel(interfaces_all)
      beta2_n=sols(5);     
  end
  
+ %keyboard
  %STEP 4 - Normalizing the alphas
  %C1=((alpha1_n(1)-alpha0_n(1))^2)/3+((alpha1_n(2)-alpha0_n(2))^2)/3 + (alpha1_n(1)-alpha0_n(1))*alpha0_n(1)+(alpha1_n(2)-alpha0_n(2))*alpha0_n(2)...
  %   +alpha0_n(1)^2+alpha0_n(2)^2;
@@ -512,11 +527,10 @@ for iref = 1:numel(interfaces_all)
  all_alpha0(iref,:)=alpha0;
  all_alpha1(iref,:)=alpha1;
  all_beta0(iref,:)=beta0;
- all_beta1(iref,:)=beta1;
- %Saving t(0)    
+ all_beta1(iref,:)=beta1;  
     
 % Compute the Greville points, and the auxiliary mesh and space objects
-    for ii = 1:2 % The two patches (L-R)
+    for ii = 1:2 % The two patches (R-L)
       brk = cell (1,msh.ndim);
       knots = space.sp_patch{patch(ii)}.knots;
       
@@ -620,7 +634,7 @@ for iref = 1:numel(interfaces_all)
       rhsc = sparse (msh_side(ii).nel, sp1_struct.ndof);
       val = val_grad* (tau1 / degu)^2;  %WARNING: WE DIVIDED BY tau1/degu, which REQUIRES A SMALL MODIFICATION IN THE REF MASK (ADD MULT. BY 1/2) 
       for jj = 1:msh_side(ii).nel
-        val_aux = val * alpha{ii}(jj) * (-1)^ii; %with the multipatch settings must be multiplied by -1 for left patch;
+        val_aux = val * alpha{ii}(jj)* (-1)^(ii-1); %with the multipatch settings must be multiplied by -1 for left patch;
         rhsc(jj,sp1_struct.connectivity(:,jj)) = sp1_struct.shape_functions(:,:,jj) * val_aux;
       end
       coeff2{ii} = A \ rhsc;
@@ -657,7 +671,7 @@ for iref = 1:numel(interfaces_all)
 
       CC_edges{ii,iref}(ind0,1:sp0_struct.ndof) = coeff0{ii};  %coefficients of trace basis functions...
       CC_edges{ii,iref}(ind1,1:sp0_struct.ndof) = coeff1{ii};
-      CC_edges{ii,iref}(ind1,sp0_struct.ndof+1:ndof) = coeff2{ii} * (-1)^(ii+1); %...and derivative basis functions (associated to iref-th interface)
+      CC_edges{ii,iref}(ind1,sp0_struct.ndof+1:ndof) = coeff2{ii};%CORRECT REMOVING THIS? * (-1)^(ii+1); %...and derivative basis functions (associated to iref-th interface)
       
       %keeping the part of the "actually active" edge functions, the remaining part saved in CC_edges_discarded
       CC_edges_discarded{ii,iref}=CC_edges{ii,iref}(:,[1 2 3 sp0_struct.ndof-2:sp0_struct.ndof+2 ndof-1 ndof]); %dimension: n^2 x 10
