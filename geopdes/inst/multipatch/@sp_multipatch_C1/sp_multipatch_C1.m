@@ -228,6 +228,7 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries)
   sp.interfaces = interfaces;
   sp.Cpatch = Cpatch;
   sp.geometry = geometry; % I store this for simplicity
+  %keyboard
   
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % I HAVE FINISHED MY CHANGES HERE
@@ -372,10 +373,6 @@ for iref = 1:numel(interfaces_all)
         side(2) = interfaces_all(iref).side2; %RIGHT
     end
     nnz_el=find(patch>0);
-    if side(1)==3 && side(2)==1
-        patch=flip(patch);
-        side=flip(side);
-    end
   
   %STEP 2 - Stuff necessary to evaluate the geo_mapping and its derivatives
   for ii = nnz_el % The two patches (L-R)
@@ -849,10 +846,10 @@ for kver=1:numel(vertices)
         ver_patches_nabla{2*im}=[Du_F00 Dv_F00];
         
         %Pick the correct part of CC_edges_discarded %TO BE FIXED
-        if vertices(kver).ind(im)==1
+        if vertices(kver).ind(im)==1 %the vertex is the left/bottom endpoint of im-th interface
             E{kver}{im,1}=CC_edges_discarded{1,inter}(:,[1 2 3 7 8]); %part of the matrix corresponding to edge functions close to the vertex
             E{kver}{im,2}=CC_edges_discarded{2,inter}(:,[1 2 3 7 8]);
-        else
+        else %the vertex is the right/top endpoint of im-th interface
             E{kver}{im,1}=CC_edges_discarded{1,inter}(:,[4 5 6 9 10]);
             E{kver}{im,2}=CC_edges_discarded{2,inter}(:,[4 5 6 9 10]);
         end    
@@ -884,7 +881,8 @@ for kver=1:numel(vertices)
         %assemble matrix (not final: Ms and Vs, then updated with the "discarded parts" of edge functions)
         n1=space.sp_patch{ver_patches(im)}.ndof_dir(1); %dimension of tensor-product space in the patch (dir 1)
         n2=space.sp_patch{ver_patches(im)}.ndof_dir(2); %dimension of tensor-product space in the patch (dir 2)
-        im_edges=ceil(find(ind_patch_rep==im)/2); %global indices of the edges 
+        V{kver}{im}=zeros(n1*n2,6);
+        im_edges=ceil(find(ind_patch_rep==im)/2); %indices of the edges containing the vertex (local)
         im1=im_edges(1); im2=im_edges(2);
         j=1;
         for j1=0:2
@@ -911,23 +909,25 @@ for kver=1:numel(vertices)
                 %V_{i_m,i}  
                 d11_c=t0(im1,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*t0(im2,:)'+...
                       [(j1==1)*(j2==0), (j1==0)*(j2==1)]*mix_der2(im1,:)';
-                V{kver}{im}=zeros(n1*n2,6);
                 V{kver}{im}([1, 2, n2+1, n2+2],j)=[d00, d00+d10_b/(p*(k+1)), d00+d10_a/(p*(k+1)),...
-                                                  d00+ (d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]';    
+                                                  d00+ (d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]';  
                 j=j+1;
             end
         end
-        if interfaces_all(vertices(kver).interfaces(im1)).side2==ver_patches(im)%the considered patch is to the right of edge im1
+        %size(V{kver}{im})
+        %keyboard
+        if interfaces_all(vertices(kver).interfaces(im1)).patch2==ver_patches(im)%the considered patch is the second patch edge im1
             E1=E{kver}{im1,2};
         else
             E1=E{kver}{im1,1};
         end
-        if interfaces_all(vertices(kver).interfaces(im2)).side2==ver_patches(im)%the considered patch is to the right of edge im2
+        if interfaces_all(vertices(kver).interfaces(im2)).patch2==ver_patches(im)%the considered patch is the second patch of edge im2
             E2=E{kver}{im2,2};
         else
             E2=E{kver}{im2,1};
         end
         CC_vertices{ver_patches(im),kver} = E1*MM{1,kver}{im} + E2*MM{2,kver}{im} - V{kver}{im};%E{kver}{im1,2}*MM{1,kver}{im} + E{kver}{im2,1}*MM{2,kver}{im} - V{kver}{im};
+        %keyboard
     end
     end
 
@@ -939,6 +939,5 @@ end
 %- case of boundary edges
 
 %TO BE TESTED
-%- number of functions
 %- plots of the functions
 %- continuity 
