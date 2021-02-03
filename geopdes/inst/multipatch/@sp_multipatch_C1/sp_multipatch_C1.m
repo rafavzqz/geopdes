@@ -860,14 +860,14 @@ for kver=1:numel(vertices)
     %if the number of patches coincides with the number of interfaces, 
     %we add one fictional interface coinciding with the first one
     %(just for coding-numbering reasons)
-    if numel(ver_patches)==nu
-        t0(nu+1,:)=t0(1,:);
-        t0p(nu+1,:)=t0p(1,:);
-        d0(nu+1,:)=d0(1,:);
-        d0p(nu+1,:)=d0p(1,:);
-        E{kver}{nu,1}=E{kver}{1,1};
-        E{kver}{nu,2}=E{kver}{1,2};
-    end
+%     if numel(ver_patches)==nu
+%         t0(nu+1,:)=t0(1,:);
+%         t0p(nu+1,:)=t0p(1,:);
+%         d0(nu+1,:)=d0(1,:);
+%         d0p(nu+1,:)=d0p(1,:);
+%         E{kver}{nu+1,1}=E{kver}{1,1};
+%         E{kver}{nu+1,2}=E{kver}{1,2};
+%     end
     
     %computing sigma
     sigma=0;
