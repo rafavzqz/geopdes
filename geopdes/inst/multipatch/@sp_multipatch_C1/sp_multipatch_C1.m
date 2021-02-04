@@ -823,9 +823,9 @@ for kver=1:numel(vertices)
         t0p(im,:)=Dvv_F00;
         d0(im,:)=(Du_F00+(all_beta0(inter,1)*(1-0)+all_beta1(inter,1)*0)*Dv_F00)...
             /(all_alpha0(inter,1)*(1-0)+all_alpha1(inter,1)*0);
-        d0p(im,:)=(-all_alpha0(inter,1)*(Du_F00+(all_beta0(inter,1)*(1-0)+all_beta1(inter,1)*0)*Dv_F00)+...
-                   (all_alpha0(inter,1)*(1-0)+all_alpha1(inter,1)*0)*(Duv_F00...
-                   -all_beta0(inter,1)*Dv_F00+(all_beta0(inter,1)*(1-0)+all_beta1(inter,1)*0)*Dvv_F00...
+        d0p(im,:)=((-all_alpha0(inter,1)+all_alpha1(inter,1))*(Du_F00+(all_beta0(inter,1)*(1-0)+all_beta1(inter,1)*0)*Dv_F00)+...
+                   (all_alpha0(inter,1)*(1-0)+all_alpha1(inter,1)*0)*(Duv_F00+...
+                   (-all_beta0(inter,1)+all_beta1(inter,1))*Dv_F00+(all_beta0(inter,1)*(1-0)+all_beta1(inter,1)*0)*Dvv_F00...
                    ))/(all_alpha0(inter,1)*(1-0)+all_alpha1(inter,1)*0)^2;  
         mix_der2(im,:)=Duv_F00;
         %We need to get the jacobian also for the right patch
@@ -878,12 +878,16 @@ for kver=1:numel(vertices)
     
     %computing matrices MM and V
     for im=1:nu
+        
         %assemble matrix (not final: Ms and Vs, then updated with the "discarded parts" of edge functions)
         n1=space.sp_patch{ver_patches(im)}.ndof_dir(1); %dimension of tensor-product space in the patch (dir 1)
         n2=space.sp_patch{ver_patches(im)}.ndof_dir(2); %dimension of tensor-product space in the patch (dir 2)
         V{kver}{im}=zeros(n1*n2,6);
         im_edges=ceil(find(ind_patch_rep==im)/2); %indices of the edges containing the vertex (local)
         im1=im_edges(1); im2=im_edges(2);
+        if im==2  %works only if the interfaces and patches are ordered in clockwise order
+            im1=4; im2=1;
+        end
         j=1;
         for j1=0:2
             for j2=0:2-j1 %the following computations work in the standard case
@@ -908,9 +912,10 @@ for kver=1:numel(vertices)
                                                  d01_b/(p*(k+1)), d01_b/(p*(k+1))+d11_b/(p*(p-1)*(k+1)^2)]';     
                 %V_{i_m,i}  
                 d11_c=t0(im1,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*t0(im2,:)'+...
-                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*mix_der2(im1,:)';
-                V{kver}{im}([1, 2, n2+1, n2+2],j)=[d00, d00+d10_b/(p*(k+1)), d00+d10_a/(p*(k+1)),...
-                                                  d00+ (d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]';  
+                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*mix_der2(im,:)';
+                V{kver}{im}([1, 2, n2+1, n2+2],j)=sigma^(j1+j2)*[d00, d00+d10_b/(p*(k+1)), d00+d10_a/(p*(k+1)),...
+                                                  d00+ (d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]'; 
+                
                 j=j+1;
             end
         end
