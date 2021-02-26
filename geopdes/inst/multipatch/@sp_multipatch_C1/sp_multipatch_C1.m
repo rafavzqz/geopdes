@@ -469,29 +469,29 @@ for iref = 1:numel(interfaces_all)
 
  %STEP 5 - Computing the betas
  %alphas and beta evaluated at 0,1,1/2
- alpha_L_0=alpha0(1); %alpha_L(0)
- alpha_L_1=alpha1(1); %alpha_L(1)
- alpha_L_12=(alpha0(1)+alpha1(1))/2; %alpha_L(1/2)
- alpha_R_0=alpha0(2); %alpha_L(0)
- alpha_R_1=alpha1(2); %alpha_L(1)
- alpha_R_12=(alpha0(2)+alpha1(2))/2; %alpha_L(1/2)  
+ alpha_L_0=alpha0(2); %alpha_L(0)
+ alpha_L_1=alpha1(2); %alpha_L(1)
+ alpha_L_12=(alpha0(2)+alpha1(2))/2; %alpha_L(1/2)
+ alpha_R_0=alpha0(1); %alpha_L(0)
+ alpha_R_1=alpha1(1); %alpha_L(1)
+ alpha_R_12=(alpha0(1)+alpha1(1))/2; %alpha_L(1/2)  
  beta_0=bbeta0; %beta(0)
  beta_1=bbeta2; %beta(1)
  beta_12=(bbeta0+bbeta2)/4+bbeta1/2; %beta(1/2)
  
   %Computing the matrix of the system considering the relationship between beta^L, beta^R and beta
- M=[alpha_L_0 0 -alpha_R_0 0; 0 alpha_L_1 0 -alpha_R_1; alpha_L_12/2 alpha_L_12/2 -alpha_R_12/2 -alpha_R_12/2];
+ M=[alpha_L_0 0 alpha_R_0 0; 0 alpha_L_1 0 alpha_R_1; alpha_L_12/2 alpha_L_12/2 alpha_R_12/2 alpha_R_12/2];
  
  if rank(M)==3
      
  %Computing beta1_L, beta0_R, beta1_R in terms of beta0_L
- quant1=(alpha_R_12/2-(alpha_R_0*alpha_L_12)/(2*alpha_L_0))/((alpha_R_1*alpha_L_12)/(2*alpha_L_1)-alpha_R_12/2);
+ quant1=(-alpha_R_12/2+(alpha_R_0*alpha_L_12)/(2*alpha_L_0))/(-(alpha_R_1*alpha_L_12)/(2*alpha_L_1)+alpha_R_12/2);
  quant2=(beta_12-(beta_0*alpha_L_12)/(2*alpha_L_0)-(beta_1*alpha_L_12)/(2*alpha_L_1))/((alpha_R_1*alpha_L_12)/(2*alpha_L_1)-alpha_R_12/2); 
  
  %beta1_L=a+b*beta0_L,  beta0_R=c+d*beta0_L,  beta1_R=e+f*beta0_L, where
  a=quant2; b=quant1;
- c=beta_0/alpha_L_0; d=alpha_R_0/alpha_L_0;
- e=(beta_1+alpha_R_1*quant2)/alpha_L_1; f=alpha_R_1*quant1/alpha_L_1;
+ c=beta_0/alpha_L_0; d=-alpha_R_0/alpha_L_0;
+ e=(beta_1-alpha_R_1*quant2)/alpha_L_1; f=-alpha_R_1*quant1/alpha_L_1;
  
  %We determine beta0_L by minimizing the sum of the norms of beta_L and beta_R
  C1=((b-1)^2)/3+(b-1)+((f-d)^2)/3+(f-d)*d+d^2+1;
@@ -505,8 +505,8 @@ for iref = 1:numel(interfaces_all)
      
  %Computing beta0_R in terms of beta0_L and beta1_R in terms of beta1_L: 
  %beta0_R=a+b*beta0_L,  beta1_R=c+d*beta1_L, where
- a=beta_0/alpha_L_0; b=alpha_R_0/alpha_L_0;
- c=beta_1/alpha_L_1; d=alpha_R_1/alpha_L_1;
+ a=beta_0/alpha_L_0; b=-alpha_R_0/alpha_L_0;
+ c=beta_1/alpha_L_1; d=-alpha_R_1/alpha_L_1;
  
  %We determine beta0_L and beta_1_L by minimizing the sum of the norms of beta_L and beta_R
  %The resuting system is
@@ -527,7 +527,8 @@ for iref = 1:numel(interfaces_all)
  all_beta1(iref,:)=beta1;  
     
 % Compute the Greville points, and the auxiliary mesh and space objects
-    for ii = 1:2 % The two patches (R-L)
+    for ii = 1:2 % The two patches (L-R)
+      ii_ab=3-ii; %this will be used to access the correct alphas and betas
       brk = cell (1,msh.ndim);
       knots = space.sp_patch{patch(ii)}.knots;
       
@@ -592,8 +593,8 @@ for iref = 1:numel(interfaces_all)
       end
 
 %alphas and betas
-        alpha{ii}=abs(alpha0(ii)*(1-grev_pts{2}')+alpha1(ii)*grev_pts{2}'); %we have to take the absolute value to make it work for any orientation
-        beta{ii}=beta0(ii)*(1-grev_pts{2}')+beta1(ii)*grev_pts{2}';       
+        alpha{ii}=abs(alpha0(ii_ab)*(1-grev_pts{2}')+alpha1(ii_ab)*grev_pts{2}'); %we have to take the absolute value to make it work for any orientation
+        beta{ii}=beta0(ii_ab)*(1-grev_pts{2}')+beta1(ii_ab)*grev_pts{2}';       
 
 % RHS for the first linear system, (14) in Mario's notes
       rhss = sparse (msh_side(ii).nel, sp0_struct.ndof);
@@ -629,9 +630,9 @@ for iref = 1:numel(interfaces_all)
       val_grad = val_grad * (-1)^(side(ii)+1);
 
       rhsc = sparse (msh_side(ii).nel, sp1_struct.ndof);
-      val = val_grad* (tau1 / degu)^2;  %WARNING: WE DIVIDED BY tau1/degu, which REQUIRES A SMALL MODIFICATION IN THE REF MASK (ADD MULT. BY 1/2) 
+      val = val_grad* (tau1 / degu); %^2 removed  %WARNING: WE DIVIDED BY tau1/degu, which REQUIRES A SMALL MODIFICATION IN THE REF MASK (ADD MULT. BY 1/2) 
       for jj = 1:msh_side(ii).nel
-        val_aux = val * alpha{ii}(jj)* (-1)^(ii-1); %with the multipatch settings must be multiplied by -1 for left patch;
+        val_aux = val * alpha{ii}(jj)* (-1)^(ii); %with the multipatch settings must be multiplied by -1 for left patch;
         rhsc(jj,sp1_struct.connectivity(:,jj)) = sp1_struct.shape_functions(:,:,jj) * val_aux;
       end
       coeff2{ii} = A \ rhsc;
