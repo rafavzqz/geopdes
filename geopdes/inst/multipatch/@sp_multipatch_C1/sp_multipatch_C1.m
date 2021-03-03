@@ -486,20 +486,20 @@ for iref = 1:numel(interfaces_all)
      
  %Computing beta1_L, beta0_R, beta1_R in terms of beta0_L
  quant1=(-alpha_R_12/2+(alpha_R_0*alpha_L_12)/(2*alpha_L_0))/(-(alpha_R_1*alpha_L_12)/(2*alpha_L_1)+alpha_R_12/2);
- quant2=(beta_12-(beta_0*alpha_L_12)/(2*alpha_L_0)-(beta_1*alpha_L_12)/(2*alpha_L_1))/((alpha_R_1*alpha_L_12)/(2*alpha_L_1)-alpha_R_12/2); 
+ quant2=(beta_12-(beta_0*alpha_L_12)/(2*alpha_L_0)-(beta_1*alpha_L_12)/(2*alpha_L_1))/(-(alpha_R_1*alpha_L_12)/(2*alpha_L_1)+alpha_R_12/2); 
  
  %beta1_L=a+b*beta0_L,  beta0_R=c+d*beta0_L,  beta1_R=e+f*beta0_L, where
- a=quant2; b=quant1;
- c=beta_0/alpha_L_0; d=-alpha_R_0/alpha_L_0;
- e=(beta_1-alpha_R_1*quant2)/alpha_L_1; f=-alpha_R_1*quant1/alpha_L_1;
+ a=quant2; b=quant1; %?
+ c=beta_0/alpha_L_0; d=-alpha_R_0/alpha_L_0; %this is ok
+ e=(beta_1-alpha_R_1*quant2)/alpha_L_1; f=-alpha_R_1*quant1/alpha_L_1; 
  
  %We determine beta0_L by minimizing the sum of the norms of beta_L and beta_R
  C1=((b-1)^2)/3+(b-1)+((f-d)^2)/3+(f-d)*d+d^2+1;
  C2=2*a*(b-1)/3+a+2*(e-c)*(f-d)/3+(e-c)*d+(f-d)*c+2*c*d;
- beta0(1)=-C2/(2*C1); %L
- beta1(1)=a+b*beta0(1); %L
- beta0(2)=c+d*beta0(1); %R
- beta1(2)=e+f*beta0(1); %R
+ beta0(2)=-C2/(2*C1); %L
+ beta1(2)=a+b*beta0(2); %L
+ beta0(1)=c+d*beta0(2); %R
+ beta1(1)=e+f*beta0(2); %R
  
  else
      
@@ -513,10 +513,10 @@ for iref = 1:numel(interfaces_all)
  M2=[2*(1+b^2) 1+b*d; 1+b*d 2*(1+d^2)];
  M2b=[-b*c-2*a*b; -a*d-2*c*d];
  sol=M2\M2b;
- beta0(1)= sol(1); %L
- beta1(1)= sol(2); %L
- beta0(2)= a+b*beta0(1); %R
- beta1(2)= c+d*beta1(1); %R
+ beta0(2)= sol(1); %L
+ beta1(2)= sol(2); %L
+ beta0(1)= a+b*beta0(2); %R
+ beta1(1)= c+d*beta1(2); %R
  
  end
  
@@ -525,6 +525,8 @@ for iref = 1:numel(interfaces_all)
  all_alpha1(iref,:)=alpha1;
  all_beta0(iref,:)=beta0;
  all_beta1(iref,:)=beta1;  
+ %keyboard
+
     
 % Compute the Greville points, and the auxiliary mesh and space objects
     for ii = 1:2 % The two patches (L-R)
@@ -594,7 +596,8 @@ for iref = 1:numel(interfaces_all)
 
 %alphas and betas
         alpha{ii}=abs(alpha0(ii_ab)*(1-grev_pts{2}')+alpha1(ii_ab)*grev_pts{2}'); %we have to take the absolute value to make it work for any orientation
-        beta{ii}=beta0(ii_ab)*(1-grev_pts{2}')+beta1(ii_ab)*grev_pts{2}';       
+        beta{ii}=beta0(ii_ab)*(1-grev_pts{2}')+beta1(ii_ab)*grev_pts{2}';   
+        %keyboard looks like alpha must be inverted, but betas mustn't
 
 % RHS for the first linear system, (14) in Mario's notes
       rhss = sparse (msh_side(ii).nel, sp0_struct.ndof);
