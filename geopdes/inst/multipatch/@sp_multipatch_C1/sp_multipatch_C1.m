@@ -788,13 +788,13 @@ for kver=1:numel(vertices)
 %     end
 %     ver_patches=unique(ver_patches,'stable');
 %     ver_ind=unique(ver_ind,'stable');
-    
+% 1=RIGHT PATCH 2=LEFT PATCH (true also for alphas and betas, but not for CC_edges and CC_edges_discarded)    
     for im=1:nu %cycle over all the interfaces containing the vertex
         inter=vertices(kver).interfaces(im); %global index of the interface 
-        patch_ind1=interfaces_all(inter).patch1; %global index of left patch of im-th interface
-        patch_ind2=interfaces_all(inter).patch2; %global index of right patch of im-th interface
-        vertex_ind1=sides(interfaces_all(inter).side1,vertices(kver).ind(im)); %local index of vertex in left patch
-        vertex_ind2=sides(interfaces_all(inter).side2,vertices(kver).ind(im)); %local index of vertex in right patch
+        patch_ind2=interfaces_all(inter).patch1; %global index of left patch of im-th interface
+        patch_ind1=interfaces_all(inter).patch2; %global index of right patch of im-th interface
+        vertex_ind2=sides(interfaces_all(inter).side1,vertices(kver).ind(im)); %local index of vertex in left patch
+        vertex_ind1=sides(interfaces_all(inter).side2,vertices(kver).ind(im)); %local index of vertex in right patch
         ver_patches=[ver_patches patch_ind1 patch_ind2];
         ver_ind=[ver_ind vertex_ind1 vertex_ind2];
         %compute t(0) and t'(0), d(0) and d'(0)
@@ -831,23 +831,28 @@ for kver=1:numel(vertices)
                    (all_alpha0(inter,1)*(1-0)+all_alpha1(inter,1)*0)*(Duv_F00+...
                    (-all_beta0(inter,1)+all_beta1(inter,1))*Dv_F00+(all_beta0(inter,1)*(1-0)+all_beta1(inter,1)*0)*Dvv_F00...
                    ))/(all_alpha0(inter,1)*(1-0)+all_alpha1(inter,1)*0)^2;  
-        mix_der2(im,:)=Duv_F00;
+        mix_der2(2*im-1,:)=Duv_F00;
         %We need to get the jacobian also for the right patch
         switch vertex_ind2
             case 1 %vertex (0,0)
                 Du_F00=squeeze(derivatives1{patch_ind2}(:,1,1));
                 Dv_F00=squeeze(derivatives1{patch_ind2}(:,2,1));
+                Duv_F00=squeeze(derivatives2{patch_ind2}(:,1,2,1));
             case 2 %vertex (0,1)
                 Du_F00=squeeze(derivatives1{patch_ind2}(:,1,2));
                 Dv_F00=-squeeze(derivatives1{patch_ind2}(:,2,2));
+                Duv_F00=-squeeze(derivatives2{patch_ind2}(:,1,2,2));
             case 3 %vertex (1,0)
                 Du_F00=-squeeze(derivatives1{patch_ind2}(:,1,3));
                 Dv_F00=squeeze(derivatives1{patch_ind2}(:,2,3));
+                Duv_F00=-squeeze(derivatives2{patch_ind2}(:,1,2,3));
             case 4 %vertex (1,1)
                 Du_F00=-squeeze(derivatives1{patch_ind2}(:,1,4));
                 Dv_F00=-squeeze(derivatives1{patch_ind2}(:,2,4));
+                Duv_F00=squeeze(derivatives2{patch_ind2}(:,1,2,4));
         end
         ver_patches_nabla{2*im}=[Du_F00 Dv_F00];
+        mix_der2(2*im,:)=Duv_F00;
         
         %Pick the correct part of CC_edges_discarded %TO BE FIXED
         if vertices(kver).ind(im)==1 %the vertex is the left/bottom endpoint of im-th interface
@@ -859,7 +864,11 @@ for kver=1:numel(vertices)
         end    
     end
     [ver_patches, ind_patch_sigma, ind_patch_rep]=unique(ver_patches,'stable');
+    mix_der2_n=mix_der2(ind_patch_sigma,:);
     %ver_ind=unique(ver_ind,'rows','stable');
+    
+    %ind_patch_sigma contains the positions of the elements of ver_patches
+    %originally (each of them is present twice, the first one is considered)
     
     %if the number of patches coincides with the number of interfaces, 
     %we add one fictional interface coinciding with the first one
@@ -881,16 +890,16 @@ for kver=1:numel(vertices)
     sigma=1/(sigma/(p*(k+1)*nu));
     
     %computing matrices MM and V
-    for im=1:nu
+    for im=1:nu %cycle over the patches containing the vertex
         
         %assemble matrix (not final: Ms and Vs, then updated with the "discarded parts" of edge functions)
         n1=space.sp_patch{ver_patches(im)}.ndof_dir(1); %dimension of tensor-product space in the patch (dir 1)
         n2=space.sp_patch{ver_patches(im)}.ndof_dir(2); %dimension of tensor-product space in the patch (dir 2)
         V{kver}{im}=zeros(n1*n2,6);
-        im_edges=ceil(find(ind_patch_rep==im)/2); %indices of the edges containing the vertex (local)
+        im_edges=ceil(find(ind_patch_rep==im)/2); %indices of the edges containing the vertex (in the list of edges containing the vertex)
         im1=im_edges(1); im2=im_edges(2);
-        if im==2  %works only if the interfaces and patches are ordered in clockwise order
-            im1=4; im2=1;
+        if im~=1  %works only if the interfaces and patches are ordered in clockwise order
+            temp=im1; im1=im2; im2=temp; %this is done to have always the interface to the right of the patch in im1
         end
         j=1;
         for j1=0:2
@@ -916,10 +925,10 @@ for kver=1:numel(vertices)
                                                  d01_b/(p*(k+1)), d01_b/(p*(k+1))+d11_b/(p*(p-1)*(k+1)^2)]';     
                 %V_{i_m,i}  
                 d11_c=t0(im1,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*t0(im2,:)'+...
-                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*mix_der2(im,:)';
-                V{kver}{im}([1, 2, n2+1, n2+2],j)=sigma^(j1+j2)*[d00, d00+d10_b/(p*(k+1)), d00+d10_a/(p*(k+1)),...
+                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*mix_der2_n(im,:)';
+                V{kver}{im}([1, 2, n2+1, n2+2],j)=sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+d10_b/(p*(k+1)),...
                                                   d00+ (d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]'; 
-                
+                                              %keyboard
                 j=j+1;
             end
         end
@@ -936,7 +945,6 @@ for kver=1:numel(vertices)
             E2=E{kver}{im2,1};
         end
         CC_vertices{ver_patches(im),kver} = E1*MM{1,kver}{im} + E2*MM{2,kver}{im} - V{kver}{im};%E{kver}{im1,2}*MM{1,kver}{im} + E{kver}{im2,1}*MM{2,kver}{im} - V{kver}{im};
-        %keyboard
     end
     end
 
