@@ -10,7 +10,7 @@
 %     msh:                 msh object that defines the quadrature rule (see msh_cartesian)
 %     transform:           string with the transformation to the physical domain, one of 
 %                          'grad-preserving' (default) and 'integral-preserving', for N-forms
-%     periodic_dir: Cartesian directions in which the space should be made periodic
+%     periodic_dir:        Cartesian directions in which the space should be made periodic
 %     
 %
 % OUTPUT:
@@ -61,6 +61,7 @@
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011, 2015 Rafael Vazquez
+% Copyright (C) 2020, 2021 Bernard Kapidani, Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
