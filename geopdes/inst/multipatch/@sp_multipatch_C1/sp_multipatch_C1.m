@@ -792,10 +792,10 @@ for kver=1:numel(vertices)
 % 1=RIGHT PATCH 2=LEFT PATCH (true also for alphas and betas, but not for CC_edges and CC_edges_discarded)    
     for im=1:nu %cycle over all the interfaces containing the vertex
         inter=vertices(kver).interfaces(im); %global index of the interface 
-        patch_ind2=interfaces_all(inter).patch1; %global index of left patch of im-th interface
-        patch_ind1=interfaces_all(inter).patch2; %global index of right patch of im-th interface
-        vertex_ind2=sides(interfaces_all(inter).side1,vertices(kver).ind(im)); %local index of vertex in left patch
-        vertex_ind1=sides(interfaces_all(inter).side2,vertices(kver).ind(im)); %local index of vertex in right patch
+        patch_ind1=interfaces_all(inter).patch1; %global index of left patch of im-th interface
+        patch_ind2=interfaces_all(inter).patch2; %global index of right patch of im-th interface
+        vertex_ind1=sides(interfaces_all(inter).side1,vertices(kver).ind(im)); %local index of vertex in left patch
+        vertex_ind2=sides(interfaces_all(inter).side2,vertices(kver).ind(im)); %local index of vertex in right patch
         ver_patches=[ver_patches patch_ind1 patch_ind2];
         ver_ind=[ver_ind vertex_ind1 vertex_ind2];
         %compute t(0) and t'(0), d(0) and d'(0)
@@ -905,28 +905,30 @@ for kver=1:numel(vertices)
         j=1;
         for j1=0:2
             for j2=0:2-j1 %the following computations work in the standard case
+                mat_deltas = [(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)];
+                vec_deltas = [(j1==1)*(j2==0), (j1==0)*(j2==1)];
                 d00=(j1==0)*(j2==0);
                 %M_{i_{m-1},i}
-                d10_a=[(j1==1)*(j2==0), (j1==0)*(j2==1)]*t0(im1,:)';
-                d20_a=t0(im1,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*t0(im1,:)'+...
-                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*t0p(im1,:)';
-                d01_a=[(j1==1)*(j2==0), (j1==0)*(j2==1)]*d0(im1,:)';
-                d11_a=t0(im1,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*d0(im1,:)'+...
-                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*d0p(im1,:)';
+                d10_a=vec_detlas*t0(im1,:)';
+                d20_a=t0(im1,:)*mat_deltas*t0(im1,:)'+...
+                      vec_deltas*t0p(im1,:)';
+                d01_a=vec_deltas*d0(im1,:)';
+                d11_a=t0(im1,:)*mat_deltas*d0(im1,:)'+...
+                      vec_deltas*d0p(im1,:)';
                 MM{1,kver}{im}(:,j)=sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+2*d10_a/(p*(k+1))+d20_a/(p*(p-1)*(k+1)^2),...
                                                  d01_a/(p*(k+1)), d01_a/(p*(k+1))+d11_a/(p*(p-1)*(k+1)^2)]';
                 %M_{i_{m+1},i}
-                d10_b=[(j1==1)*(j2==0), (j1==0)*(j2==1)]*t0(im2,:)';
-                d20_b=t0(im2,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*t0(im2,:)'+...
-                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*t0p(im2,:)';
-                d01_b=[(j1==1)*(j2==0), (j1==0)*(j2==1)]*d0(im2,:)';
-                d11_b=t0(im2,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*d0(im2,:)'+...
-                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*d0p(im2,:)';                
+                d10_b=vec_deltas*t0(im2,:)';
+                d20_b=t0(im2,:)*mat_deltas*t0(im2,:)'+...
+                      vec_deltas*t0p(im2,:)';
+                d01_b=vec_deltas*d0(im2,:)';
+                d11_b=t0(im2,:)*mat_deltas*d0(im2,:)'+...
+                      vec_deltas*d0p(im2,:)';                
                 MM{2,kver}{im}(:,j)=sigma^(j1+j2)*[d00, d00+d10_b/(p*(k+1)), d00+2*d10_b/(p*(k+1))+d20_b/(p*(p-1)*(k+1)^2),...
                                                  d01_b/(p*(k+1)), d01_b/(p*(k+1))+d11_b/(p*(p-1)*(k+1)^2)]';     
                 %V_{i_m,i}  
-                d11_c=t0(im1,:)*[(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)]*t0(im2,:)'+...
-                      [(j1==1)*(j2==0), (j1==0)*(j2==1)]*mix_der2_n(im,:)';
+                d11_c=t0(im1,:)*mat_deltas*t0(im2,:)'+...
+                      vec_deltas*mix_der2_n(im,:)';
                 V{kver}{im}([1, 2, n2+1, n2+2],j)=sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+d10_b/(p*(k+1)),...
                                                   d00+ (d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]'; 
                                               %keyboard
