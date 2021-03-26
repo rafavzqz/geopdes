@@ -909,7 +909,7 @@ for kver=1:numel(vertices)
                 vec_deltas = [(j1==1)*(j2==0), (j1==0)*(j2==1)];
                 d00=(j1==0)*(j2==0);
                 %M_{i_{m-1},i}
-                d10_a=vec_detlas*t0(im1,:)';
+                d10_a=vec_deltas*t0(im1,:)';
                 d20_a=t0(im1,:)*mat_deltas*t0(im1,:)'+...
                       vec_deltas*t0p(im1,:)';
                 d01_a=vec_deltas*d0(im1,:)';
