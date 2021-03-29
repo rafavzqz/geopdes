@@ -930,7 +930,7 @@ for kver=1:numel(vertices)
                       vec_deltas*mix_der2_n(im,:)';
                 V{kver}{im}([1, 2, n2+1, n2+2],j)=sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+d10_b/(p*(k+1)),...
                                                   d00+ (d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]'; 
-                                              keyboard
+                                              %keyboard
                 j=j+1;
             end
         end
