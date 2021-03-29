@@ -826,12 +826,12 @@ for kver=1:numel(vertices)
         
         t0(im,:)=Dv_F00;
         t0p(im,:)=Dvv_F00;
-        d0(im,:)=(Du_F00+(all_beta0(inter,1)*(1-0)+all_beta1(inter,1)*0)*Dv_F00)...
-            /(all_alpha0(inter,1)*(1-0)+all_alpha1(inter,1)*0);
-        d0p(im,:)=((-all_alpha0(inter,1)+all_alpha1(inter,1))*(Du_F00+(all_beta0(inter,1)*(1-0)+all_beta1(inter,1)*0)*Dv_F00)+...
-                   (all_alpha0(inter,1)*(1-0)+all_alpha1(inter,1)*0)*(Duv_F00+...
-                   (-all_beta0(inter,1)+all_beta1(inter,1))*Dv_F00+(all_beta0(inter,1)*(1-0)+all_beta1(inter,1)*0)*Dvv_F00...
-                   ))/(all_alpha0(inter,1)*(1-0)+all_alpha1(inter,1)*0)^2;  
+        d0(im,:)=(Du_F00+(all_beta0(inter,2)*(1-0)+all_beta1(inter,2)*0)*Dv_F00)...
+            /(all_alpha0(inter,2)*(1-0)+all_alpha1(inter,2)*0);
+        d0p(im,:)=((-all_alpha0(inter,2)+all_alpha1(inter,2))*(Du_F00+(all_beta0(inter,2)*(1-0)+all_beta1(inter,2)*0)*Dv_F00)+...
+                   (all_alpha0(inter,2)*(1-0)+all_alpha1(inter,2)*0)*(Duv_F00+...
+                   (-all_beta0(inter,2)+all_beta1(inter,2))*Dv_F00+(all_beta0(inter,2)*(1-0)+all_beta1(inter,2)*0)*Dvv_F00...
+                   ))/(all_alpha0(inter,2)*(1-0)+all_alpha1(inter,2)*0)^2;  
         mix_der2(2*im-1,:)=Duv_F00;
         %We need to get the jacobian also for the right patch
         switch vertex_ind2
@@ -889,7 +889,6 @@ for kver=1:numel(vertices)
         sigma=sigma+norm(ver_patches_nabla{ind_patch_sigma(im)},Inf);
     end
     sigma=1/(sigma/(p*(k+1)*nu));
-    
     %computing matrices MM and V
     for im=1:nu %cycle over the patches containing the vertex
         
@@ -931,7 +930,7 @@ for kver=1:numel(vertices)
                       vec_deltas*mix_der2_n(im,:)';
                 V{kver}{im}([1, 2, n2+1, n2+2],j)=sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+d10_b/(p*(k+1)),...
                                                   d00+ (d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]'; 
-                                              %keyboard
+                                              keyboard
                 j=j+1;
             end
         end
