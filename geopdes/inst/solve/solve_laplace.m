@@ -16,6 +16,7 @@
 %    - geo_name:     name of the file containing the geometry
 %    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
 %    - drchlt_sides: sides with Dirichlet boundary condition
+%    - periodic_directions: parametric directions along which to apply periodic conditions
 %    - c_diff:       diffusion coefficient (epsilon in the equation)
 %    - f:            source term
 %    - g:            function for Neumann condition (if nmnn_sides is not empty)
@@ -38,7 +39,8 @@
 % See also EX_LAPLACE_SQUARE, EX_LAPLACE_THICK_RING for examples.
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
-% Copyright (C) 2011, 2015, 2017 Rafael Vazquez
+% Copyright (C) 2011, 2015, 2017, 2021 Rafael Vazquez
+% Copyright (C) 2021 Bernard Kapidani
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
