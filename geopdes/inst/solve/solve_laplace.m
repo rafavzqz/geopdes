@@ -71,10 +71,13 @@ geometry  = geo_load (geo_name);
 
 [knots, zeta] = kntrefine (geometry.nurbs.knots, nsub-1, degree, regularity);
   
-% check for periodic directions
-if (exist('periodic_sides', 'var'))
-  periodic_directions = unique(ceil(periodic_sides./2), 'legacy');
-  knots = kntunclamp(knots, degree, regularity, periodic_directions);
+% Check for periodic conditions, and consistency with other boundary conditions
+if (exist('periodic_directions', 'var'))
+  knots = kntunclamp (knots, degree, regularity, periodic_directions);
+  per_sides = union (periodic_directions*2 - 1, periodic_directions*2);
+  if (~isempty (intersect(per_sides, [nmnn_sides, drchlt_sides])))
+    error ('Neumann or Dirichlet conditions cannot be imposed on periodic sides')
+  end
 else
   periodic_directions = [];
 end

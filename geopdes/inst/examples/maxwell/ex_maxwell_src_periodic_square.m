@@ -4,11 +4,14 @@
 clear problem_data 
 % Physical domain, defined as NURBS map given in a text file
 problem_data.geo_name = 'geo_square.txt';
+% The domain must also have the right continuity conditions on the periodic
+%  sides, otherwise the convergence rate may deteriorate. 
+%  See the example in ex_laplace_square_periodic.
 
 % Type of boundary conditions
 problem_data.nmnn_sides     = [];
 problem_data.drchlt_sides   = [3 4];
-problem_data.periodic_sides = [1 2];
+problem_data.periodic_directions = [1];
 
 % Physical parameters
 problem_data.c_stiff = @(x, y) ones(size(x));
@@ -29,7 +32,7 @@ problem_data.curluex = @(x, y) 4*pi*cos(4*pi*x);
 clear method_data 
 method_data.degree     = [3 3];     % Degree of the bsplines
 method_data.regularity = [2 2];     % Regularity of the splines
-method_data.nsub       = [16 16];   % Number of subdivisions
+method_data.nsub       = [9 9];   % Number of subdivisions
 method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
@@ -57,26 +60,6 @@ quiver (X, Y, squeeze(eu2(1,:,:)), squeeze(eu2(2,:,:)))
 axis equal tight
 title('Exact solution')
 ylim([0,1]); xlim([0,1]);
-
-
-% % % y_pt = 0.5;
-% % % vtk_pts = {linspace(0,1,60),y_pt};
-% % % [eu, F] = sp_eval (u, space, geometry, vtk_pts);
-% % % [X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
-% % % eu2     = problem_data.uex (X, Y);
-% % % 
-% % % eu = squeeze(eu(2,:,:)); %eu = eu(:,1);
-% % % eu2 = squeeze(eu2(2,:,:)); %eu2 = eu2(:,1);
-% % % 
-% % % subplot(1,2,1)
-% % % plot (X, eu);
-% % % grid on;
-% % % title('Computed solution')
-% % % 
-% % % subplot(1,2,2)
-% % % plot (X, eu2)
-% % % grid on;
-% % % title('Exact solution')
 
 [error_hcurl, error_l2] = ...
     sp_hcurl_error (space, msh, u, problem_data.uex, problem_data.curluex)
