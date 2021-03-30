@@ -136,7 +136,6 @@ function sp = sp_vector (scalar_spaces, msh, transform)
           if (~isempty (msh.boundary))
             sp.boundary(iside) = sp_vector();
           else % define relevant struct fields
-%             sp.boundary(iside) = struct ('ndof', [], 'dofs', [], 'comp_dofs', [], 'ndof_dir', []);
             sp.boundary(iside).ndof = [];
             sp.boundary(iside).dofs = [];
             sp.boundary(iside).comp_dofs = [];
