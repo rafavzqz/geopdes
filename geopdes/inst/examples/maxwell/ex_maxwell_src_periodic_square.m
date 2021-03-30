@@ -41,7 +41,7 @@ method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
 % 4) POST-PROCESSING
 vtk_pts = {linspace(0, 1, 30), linspace(0, 1, 30)};
 % 4.1) EXPORT TO PARAVIEW
-output_file = 'maxwell_square_Deg3_Reg2_Sub8';
+output_file = 'maxwell_square_periodic_Deg3_Reg2_Sub8';
 fprintf ('The result is saved in the file %s \n \n', output_file);
 sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 
