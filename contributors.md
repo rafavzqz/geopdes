@@ -22,7 +22,8 @@ permalink: /contributors/
 * **Carlo de Falco**, contributions to the design of the code, implementation and maintenance of oct-files, implementation of many low level functions, and constant advice and support.
 * **Sara Frizziero**, contributions to the 3D div-conforming splines.
 * **Eduardo M. Garau**, algorithms and implementation of adaptive methods with hierarchical B-splines.
-* **Monica Montardini**, collocation methods.
+* **Bernard Kapidani**, spaces with periodic conditions.
+* **Monica Montardini**, collocation methods, periodic conditions.
 * **Luca Pegolotti**, contributions to Navier-Stokes equations.
 * **Marco Pingaro**, implementation of the bilaplacian and the Kirchhoff-Love plate.
 * **Alessandro Reali**, contributions to the original design of the code.
