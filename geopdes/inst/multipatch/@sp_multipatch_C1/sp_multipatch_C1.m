@@ -898,7 +898,7 @@ for kver=1:numel(vertices)
         V{kver}{im}=zeros(n1*n2,6);
         im_edges=ceil(find(ind_patch_rep==im)/2); %indices of the edges containing the vertex (in the list of edges containing the vertex)
         im1=im_edges(1); im2=im_edges(2);
-        if im~=1  %works only if the interfaces and patches are ordered in clockwise order
+        if im==1  %works only if the interfaces and patches are ordered in clockwise order
             temp=im1; im1=im2; im2=temp; %this is done to have always the interface to the right of the patch in im1
         end
         j=1;
@@ -947,6 +947,9 @@ for kver=1:numel(vertices)
             E2=E{kver}{im2,1};
         end
         CC_vertices{ver_patches(im),kver} = E1*MM{1,kver}{im} + E2*MM{2,kver}{im} - V{kver}{im};%E{kver}{im1,2}*MM{1,kver}{im} + E{kver}{im2,1}*MM{2,kver}{im} - V{kver}{im};
+        boundary_dofs_right=[1 9 17 25 33 41 49 57]; %for debug
+        boundary_dofs_left=1:8; %for debug
+        %keyboard
     end
     end
 
