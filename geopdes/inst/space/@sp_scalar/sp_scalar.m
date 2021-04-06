@@ -1,6 +1,6 @@
 % SP_SCALAR: Constructor of the class of scalar tensor-product spaces (B-Splines or NURBS).
 %
-%     sp = sp_scalar (knots, degree, weights, msh, [transform, periodic_directions])
+%     sp = sp_scalar (knots, degree, weights, msh, [transform, periodic_dir])
 %
 % INPUTS:
 %     
@@ -10,7 +10,7 @@
 %     msh:                 msh object that defines the quadrature rule (see msh_cartesian)
 %     transform:           string with the transformation to the physical domain, one of 
 %                          'grad-preserving' (default) and 'integral-preserving', for N-forms
-%     periodic_directions: Cartesian directions in which the space should be made periodic
+%     periodic_dir:        Cartesian directions in which the space should be made periodic
 %     
 %
 % OUTPUT:
@@ -61,6 +61,7 @@
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011, 2015 Rafael Vazquez
+% Copyright (C) 2020, 2021 Bernard Kapidani, Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -75,10 +76,19 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_directions)
+function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_dir)
+
+  if (nargin < 1)
+    sp = struct ('space_type', [], 'knots', [], 'degree', [], 'weights', [], 'sp_univ', [], ...
+                 'nsh_dir', [], 'nsh_max', [], 'ndof_dir', [], 'ndof', [], 'ncomp', [], ...
+                 'boundary', [], 'dofs', [], 'adjacent_dofs', [], 'transform', [], 'periodic_dir', [], ...
+                 'constructor', @(MSH) sp_scalar());
+    sp = class (sp, 'sp_scalar');
+    return
+  end
 
   if (nargin < 6)
-    periodic_directions  = [];
+    periodic_dir  = [];
   end
   if (nargin == 4)
     transform = 'grad-preserving';
@@ -99,22 +109,15 @@ function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_direct
     error ('The dimension of the mesh and the space do not correspond to each other')
   end
   
-% % %   if (numel(periodic_directions) > 0)
-% % %     knots = kntunclamp(knots, degree, regularity, periodic_directions);
-% % %   end
-  
-  
   sp.knots = knots;
   sp.degree = degree;
   sp.weights = weights;
-
   
   nodes = msh.qn;
   for idim = 1:msh.ndim
     sp.sp_univ(idim) = sp_bspline_1d_param (knots{idim}, degree(idim), nodes{idim},...
-                                            'gradient', true, 'hessian', true,...
-                                            'periodic',ismember(idim,periodic_directions));
-
+                         'gradient', true, 'hessian', true,...
+                         'periodic',ismember(idim,periodic_dir));
   end
 
   sp.nsh_dir  = [sp.sp_univ.nsh_max];
@@ -136,7 +139,7 @@ function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_direct
       ind2 = ceil (iside/2);
       ind = setdiff (1:msh.ndim, ind2);
       
-      if (~ismember(ind2,periodic_directions))
+      if (~ismember(ind2,periodic_dir))
         if (~isempty (msh.boundary))
           if (strcmpi (sp.space_type, 'spline'))
             weights = [];
@@ -149,7 +152,12 @@ function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_direct
             end
             weights = squeeze (sp.weights(indices{:}));
           end
-          sp.boundary(iside) = sp_scalar (sp.knots(ind), sp.degree(ind), weights, msh.boundary(iside));
+          
+          [~,bnd_periodic_dir] = ismember(periodic_dir,ind);
+          bnd_periodic_dir = nonzeros(bnd_periodic_dir);
+          
+          sp.boundary(iside) = sp_scalar (sp.knots(ind), sp.degree(ind), weights, msh.boundary(iside),...
+              'grad-preserving',bnd_periodic_dir);
         end
       
         bnd_ndof_dir = sp.ndof_dir(ind);
@@ -173,13 +181,16 @@ function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_direct
         end
       
       else
-        sp.boundary(iside).ndof = 0;
-        sp.boundary(iside).dofs = [];
-        sp.boundary(iside).adjacent_dofs = [];
+        if (~isempty (msh.boundary))
+          sp.boundary(iside) = sp_scalar();
+        else % define relevant struct fields
+          sp.boundary(iside) = struct ('ndof', [], 'dofs', [], 'adjacent_dofs', []);
+        end
+          
       end
     end
         
-  elseif (msh.ndim == 1 && numel(periodic_directions) == 0 )
+  elseif (msh.ndim == 1 && isempty(periodic_dir) )
     sp.boundary(1).dofs = 1;
     sp.boundary(2).dofs = sp.ndof;
     if (sp.ndof > 1)
@@ -198,10 +209,10 @@ function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_direct
   
   sp.transform = transform;
   
-  sp.periodic_directions = periodic_directions;
+  sp.periodic_dir = periodic_dir;
   
   sp.constructor = @(MSH) sp_scalar (sp.knots, sp.degree, sp.weights, MSH, sp.transform,...
-                                     sp.periodic_directions);
+                                     sp.periodic_dir);
   sp = class (sp, 'sp_scalar');
 
 end

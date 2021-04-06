@@ -78,15 +78,14 @@ ndof   = mcp + 1;
 nel = size (nodes, 2);
 nqn = size (nodes, 1);
 
-nsh = zeros (1, nel);
 connectivity = zeros (p+1, nel);
 for iel=1:nel
   s = findspan (mcp, p, nodes(:, iel)', knots);
   c = numbasisfun (s, nodes(:, iel)', p, knots);
   c = unique(c(:))+1;
   connectivity(1:numel(c), iel) = c;
-  nsh(iel) = nnz (connectivity(:,iel));
 end
+nsh = sum(connectivity ~= 0,1);
 
 nsh_max = max (nsh);
 
@@ -107,23 +106,30 @@ shape_functions = permute (shape_functions, [1, 3, 2]);
 
 if (periodic)
   regularity = degree - nnz(knots == knots(degree+1));
+  
   n_extra_dofs = regularity + 1;
-
   ndof = ndof - n_extra_dofs;
-  nsh  = repmat(nsh_max,1,size(connectivity,2));
 
+  filter = (connectivity == 0);
   connectivity = mod(connectivity-1,ndof) + 1;
-
-% % %   for k = 1:n_extra_dofs
-% % %     supp{n_extra_dofs-k+1} = [supp{end}; supp{n_extra_dofs-k+1}];
-% % %     supp(end) = []; % deletes cell-array element!
-% % %   end
+  connectivity(filter) = 0;
+  
+  nsh = sum(connectivity ~= 0,1);
+  nsh_max = max (nsh);
+  
+  [~,dummy_supp] = find (connectivity == 1);
+  if (numel(unique(dummy_supp)) < numel(dummy_supp))
+    error (['sp_bspline_1d_param: too few mesh elements to ensure', ...
+            ' single-valued B-splines on periodic domain']);
+  end
+    
 end
 
 supp = cell (ndof, 1);
 for ii = 1:ndof
   [~, supp{ii}] = find (connectivity == ii);
 end
+
 
 sp = struct ('nsh_max', nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
              'connectivity', connectivity, ...
@@ -143,9 +149,7 @@ if (hessian)
   sp.('shape_function_hessians') = shape_function_hessians;
 end
 
-
 end
-
 
 %!test
 %! knots = [0 0 0 .5 1 1 1];

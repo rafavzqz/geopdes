@@ -54,6 +54,7 @@
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011, 2015 Rafael Vazquez
+% Copyright (C) 2020, 2021 Bernard Kapidani, Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -69,14 +70,24 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function sp = sp_vector (scalar_spaces, msh, transform)
-
+  
+  if (nargin < 1)
+    sp = struct ('ncomp', [], 'ncomp_param', [], 'scalar_spaces', [],...
+                 'nsh_max', [], 'ndof', [], 'ndof_dir', [],  ...
+                 'cumsum_ndof', [], 'cumsum_nsh', [], ... % 'periodic_dir',[],...
+                 'comp_dofs', [], 'boundary', [], 'dofs', [], ...
+                 'transform', [], 'constructor', @(MSH) sp_vector()); 
+    sp = class (sp, 'sp_vector');
+    return
+  end
+  
   if (nargin == 2)
     transform = 'grad-preserving';
   end
 
   sp.ncomp = msh.rdim;
   sp.ncomp_param = numel (scalar_spaces);
-
+  
   switch (transform)
     case {'grad-preserving'}
       if (sp.ncomp ~= sp.ncomp_param)
@@ -87,7 +98,14 @@ function sp = sp_vector (scalar_spaces, msh, transform)
         error ('sp_vector: the dimensions of the space and the mesh do not match')
       end
   end
-
+  
+  periodic_dir = scalar_spaces{1}.periodic_dir;
+  for icomp = 2:1:sp.ncomp_param
+    if ~isempty(setxor(scalar_spaces{icomp}.periodic_dir, periodic_dir))
+      error ('sp_vector: the periodic Cartesian directions should match for all vector components')
+    end
+  end
+  
   sp.scalar_spaces = scalar_spaces;
 
   sp.nsh_max = sum (cellfun (@(x) x.nsh_max, scalar_spaces));
@@ -97,7 +115,7 @@ function sp = sp_vector (scalar_spaces, msh, transform)
   sp.cumsum_ndof(1) = 0;
   sp.cumsum_ndof(2:sp.ncomp_param+1) = cumsum (cellfun (@(x) x.ndof, scalar_spaces));
   sp.cumsum_nsh(1) = 0;
-  sp.cumsum_nsh(2:sp.ncomp_param+1) = cumsum (cellfun (@(x) x.nsh_max, scalar_spaces));
+  sp.cumsum_nsh(2:sp.ncomp_param+1)  = cumsum (cellfun (@(x) x.nsh_max, scalar_spaces));
 
   aux = 0;
   for icomp = 1:sp.ncomp_param
@@ -109,23 +127,57 @@ function sp = sp_vector (scalar_spaces, msh, transform)
 % Boundary construction
   if (msh.ndim > 1)
     for iside = 1:2*msh.ndim
+      
+      % handling periodic vector spaces...
+      dir = ceil(iside/2);
+      if (ismember(dir,periodic_dir))
+        if (strcmpi (transform, 'grad-preserving') || ...
+            strcmpi (transform, 'curl-preserving') )
+          if (~isempty (msh.boundary))
+            sp.boundary(iside) = sp_vector();
+          else % define relevant struct fields
+            sp.boundary(iside).ndof = [];
+            sp.boundary(iside).dofs = [];
+            sp.boundary(iside).comp_dofs = [];
+          end
+          continue;
+        elseif (strcmpi (transform, 'div-preserving'))
+          if (~isempty (msh.boundary))
+            if (iside == 1) % This fixes a bug with the use of subsasgn/subsref
+              sp.boundary = sp_scalar();
+            else
+              sp.boundary(iside) = sp_scalar();
+            end
+          else % define relevant struct fields
+            sp.boundary(iside) = struct ('ndof', [], 'dofs', [], 'adjacent_dofs', []);
+          end
+          continue;
+        else
+          error ('sp_vector: unknown transformation')
+        end
+      end
+      
       for icomp = 1:sp.ncomp_param
         scalar_bnd{icomp} = scalar_spaces{icomp}.boundary(iside);
       end
-      
+
       if (strcmpi (transform, 'grad-preserving'))
+        
         ind = 1:sp.ncomp;
+        
         if (~isempty (msh.boundary))
-          sp.boundary(iside) = sp_vector (scalar_bnd(ind), msh.boundary(iside), transform);
+            sp.boundary(iside) = sp_vector (scalar_bnd(ind), msh.boundary(iside), transform);
         end
 
       elseif (strcmpi (transform, 'curl-preserving')) % Only tangential components are computed
+        
         ind = setdiff (1:msh.ndim, ceil(iside/2)); % ind =[2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind = [2 2 1 1] in 2D;
         if (~isempty (msh.boundary))
-          sp.boundary(iside) = sp_vector (scalar_bnd(ind), msh.boundary(iside), transform);
+            sp.boundary(iside) = sp_vector (scalar_bnd(ind), msh.boundary(iside), transform);
         end
 
       elseif (strcmpi (transform, 'div-preserving')) % Only normal components are computed, and treated as a scalar
+        
         ind = ceil (iside/2); % ind =[1, 1, 2, 2, 3, 3] in 3D, %ind = [1, 1, 2, 2] in 2D;
         if (~isempty (msh.boundary))
           sp_bnd = scalar_bnd{ind};
@@ -142,31 +194,32 @@ function sp = sp_vector (scalar_spaces, msh, transform)
 
       dofs = [];
       bnd_cumsum_ndof(1) = 0;
-      bnd_cumsum_ndof(2:numel(ind)+1) = cumsum (cellfun (@(x) x.ndof, scalar_bnd(ind)));
+      bnd_cumsum_ndof(2:numel(ind)+1) = cumsum (cellfun (@(x) x.ndof, scalar_bnd(ind)));%,'UniformOutput',0));
       for icomp = 1:numel(ind)
         new_dofs = sp.cumsum_ndof(ind(icomp)) + scalar_bnd{ind(icomp)}.dofs;
         dofs = union (dofs, new_dofs);
         comp_dofs{icomp} = bnd_cumsum_ndof(icomp) + (1:scalar_bnd{ind(icomp)}.ndof);
       end
-      
+
       sp.boundary(iside).dofs = dofs(:)';
       if (~strcmpi (transform, 'div-preserving') && isstruct (sp.boundary))
         sp.boundary(iside).comp_dofs = comp_dofs;
       end
-      
+
       if (isempty (msh.boundary))
         sp.boundary(iside).ndof = numel (sp.boundary(iside).dofs);
-        if (strcmpi (transform, 'curl-preserving')) % Needed for the interfaces on the boundary, in sp_multipatch
+        if (strcmpi (transform, 'curl-preserving'))
           for icomp = 1:numel(ind)
             ndof_dir(icomp,:) = sp.ndof_dir(ind(icomp), ind);
           end
           sp.boundary(iside).ndof_dir = ndof_dir;
         end
       end
+
     end
     
   elseif (msh.ndim == 1)
-    if (strcmpi (transform, 'grad-preserving'))
+    if (strcmpi (transform, 'grad-preserving') && isempty(scalar_spaces{1}.periodic_dir))
       sp.boundary(1).dofs = sp.cumsum_ndof(1:end-1)+1;
       sp.boundary(2).dofs = sp.cumsum_ndof(2:end);
 
@@ -185,14 +238,14 @@ function sp = sp_vector (scalar_spaces, msh, transform)
 
   if (sp.ncomp_param == 2)
     sp.constructor = @(MSH) sp_vector ({scalar_spaces{1}.constructor(MSH), ...
-                                        scalar_spaces{2}.constructor(MSH)}, MSH, transform);
+                                        scalar_spaces{2}.constructor(MSH)}, MSH, transform);%,periodic_dir);
   elseif (sp.ncomp_param == 3)
     sp.constructor = @(MSH) sp_vector ({scalar_spaces{1}.constructor(MSH), ...
                                         scalar_spaces{2}.constructor(MSH), ...
-                                        scalar_spaces{3}.constructor(MSH)}, MSH, transform);
+                                        scalar_spaces{3}.constructor(MSH)}, MSH, transform);%,periodic_dir);
   elseif (sp.ncomp_param == 1)
     sp.constructor = @(MSH) sp_vector ...
-                                      ({scalar_spaces{1}.constructor(MSH)}, MSH, transform);
+                                      ({scalar_spaces{1}.constructor(MSH)}, MSH, transform);%,periodic_dir);
   end
   
   sp = class (sp, 'sp_vector');

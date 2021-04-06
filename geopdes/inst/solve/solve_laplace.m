@@ -16,6 +16,7 @@
 %    - geo_name:     name of the file containing the geometry
 %    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
 %    - drchlt_sides: sides with Dirichlet boundary condition
+%    - periodic_directions: parametric directions along which to apply periodic conditions
 %    - c_diff:       diffusion coefficient (epsilon in the equation)
 %    - f:            source term
 %    - g:            function for Neumann condition (if nmnn_sides is not empty)
@@ -38,7 +39,8 @@
 % See also EX_LAPLACE_SQUARE, EX_LAPLACE_THICK_RING for examples.
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
-% Copyright (C) 2011, 2015, 2017 Rafael Vazquez
+% Copyright (C) 2011, 2015, 2017, 2021 Rafael Vazquez
+% Copyright (C) 2021 Bernard Kapidani
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -71,13 +73,24 @@ geometry  = geo_load (geo_name);
 
 [knots, zeta] = kntrefine (geometry.nurbs.knots, nsub-1, degree, regularity);
   
+% Check for periodic conditions, and consistency with other boundary conditions
+if (exist('periodic_directions', 'var'))
+  knots = kntunclamp (knots, degree, regularity, periodic_directions);
+  per_sides = union (periodic_directions*2 - 1, periodic_directions*2);
+  if (~isempty (intersect(per_sides, [nmnn_sides, drchlt_sides])))
+    error ('Neumann or Dirichlet conditions cannot be imposed on periodic sides')
+  end
+else
+  periodic_directions = [];
+end
+
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (zeta, rule);
 msh      = msh_cartesian (zeta, qn, qw, geometry);
   
 % Construct space structure
-space    = sp_bspline (knots, degree, msh);
+space    = sp_bspline (knots, degree, msh, [], periodic_directions);
   
 % Assemble the matrices
 stiff_mat = op_gradu_gradv_tp (space, space, msh, c_diff);

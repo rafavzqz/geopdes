@@ -1,3 +1,7 @@
+Summary of important changes for geopdes-3.2.2:
+-----------------------------------------------------------------------------
+* Added periodic conditions for spline spaces
+
 Summary of important changes for geopdes-3.2.1:
 -----------------------------------------------------------------------------
 * Fixed bug in MP_DG_PENALTY, causing low order of convergence.
