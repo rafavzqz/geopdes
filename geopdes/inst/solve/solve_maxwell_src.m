@@ -16,7 +16,7 @@
 %    - geo_name:     name of the file containing the geometry
 %    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
 %    - drchlt_sides: sides with Dirichlet boundary condition
-%    - periodic_directions: parametric directions along which to apply periodic conditions
+%    - periodic_directions: parametric directions along which to apply periodic conditions (may be empty)
 %    - c_mass:       coefficient for the mass matrix (mu in the equation)
 %    - c_stiff:      coefficient for the stiffness matrix (epsilon in the equation)
 %    - f:            source term
