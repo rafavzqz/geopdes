@@ -16,7 +16,7 @@
 %    - geo_name:     name of the file containing the geometry
 %    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
 %    - drchlt_sides: sides with Dirichlet boundary condition
-%    - periodic_directions: parametric directions along which to apply periodic conditions
+%    - periodic_directions: parametric directions along which to apply periodic conditions (may be empty)
 %    - c_diff:       diffusion coefficient (epsilon in the equation)
 %    - f:            source term
 %    - g:            function for Neumann condition (if nmnn_sides is not empty)
