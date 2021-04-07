@@ -291,6 +291,9 @@ function [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices] = compute_
 p = space.sp_patch{1}.degree(1);
 k = numel(msh.msh_patch{1}.breaks{1})-2;
 n= space.sp_patch{1}.sp_univ(1).ndof;
+breaks_m = cellfun (@unique, space.sp_patch{1}.knots, 'UniformOutput', false);
+mult=histc(space.sp_patch{1}.knots{1},breaks_m{1});
+reg=p-max(mult(2:end-1));
 
 ndof_per_interface=(2*n-2*k-11)*ones(1,numel(interfaces_all)); %works only if the space is degree and regularity are the same everywhere
 ndof_per_vertex=6*ones(1,numel(vertices));
@@ -914,17 +917,25 @@ for kver=1:numel(vertices)
                 d01_a=vec_deltas*d0(im1,:)';
                 d11_a=t0(im1,:)*mat_deltas*d0(im1,:)'+...
                       vec_deltas*d0p(im1,:)';
-                MM{1,kver}{im}(:,j)=sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+2*d10_a/(p*(k+1))+d20_a/(p*(p-1)*(k+1)^2),...
-                                                 d01_a/(p*(k+1)), d01_a/(p*(k+1))+d11_a/(p*(p-1)*(k+1)^2)]';
+
                 %M_{i_{m+1},i}
                 d10_b=vec_deltas*t0(im2,:)';
                 d20_b=t0(im2,:)*mat_deltas*t0(im2,:)'+...
                       vec_deltas*t0p(im2,:)';
                 d01_b=vec_deltas*d0(im2,:)';
                 d11_b=t0(im2,:)*mat_deltas*d0(im2,:)'+...
-                      vec_deltas*d0p(im2,:)';                
-                MM{2,kver}{im}(:,j)=sigma^(j1+j2)*[d00, d00+d10_b/(p*(k+1)), d00+2*d10_b/(p*(k+1))+d20_b/(p*(p-1)*(k+1)^2),...
-                                                 d01_b/(p*(k+1)), d01_b/(p*(k+1))+d11_b/(p*(p-1)*(k+1)^2)]';     
+                      vec_deltas*d0p(im2,:)';  
+                if reg<p-2  
+                    MM{1,kver}{im}(:,j)=sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+2*d10_a/(p*(k+1))+d20_a/(p*(p-1)*(k+1)^2),...
+                                                 d01_a/(p*(k+1)), d01_a/(p*(k+1))+d11_a/(p*(p-1)*(k+1)^2)]';  
+                    MM{2,kver}{im}(:,j)=sigma^(j1+j2)*[d00, d00+d10_b/(p*(k+1)), d00+2*d10_b/(p*(k+1))+d20_b/(p*(p-1)*(k+1)^2),...
+                                                 d01_b/(p*(k+1)), d01_b/(p*(k+1))+d11_b/(p*(p-1)*(k+1)^2)]';  
+                else
+                    MM{1,kver}{im}(:,j)=sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+3*d10_a/(p*(k+1))+2*d20_a/(p*(p-1)*(k+1)^2),...
+                                                 d01_a/(p*(k+1)), d01_a/(p*(k+1))+d11_a/(p*(p-1)*(k+1)^2)]';  
+                    MM{2,kver}{im}(:,j)=sigma^(j1+j2)*[d00, d00+d10_b/(p*(k+1)), d00+3*d10_b/(p*(k+1))+2*d20_b/(p*(p-1)*(k+1)^2),...
+                                                 d01_b/(p*(k+1)), d01_b/(p*(k+1))+d11_b/(p*(p-1)*(k+1)^2)]';
+                end
                 %V_{i_m,i}  
                 d11_c=t0(im1,:)*mat_deltas*t0(im2,:)'+...
                       vec_deltas*mix_der2_n(im,:)';
@@ -936,6 +947,7 @@ for kver=1:numel(vertices)
         end
         %size(V{kver}{im})
         %keyboard
+        %controllare quale matrice delle edge function si sta considerando
         if interfaces_all(vertices(kver).interfaces(im1)).patch2==ver_patches(im)%the considered patch is the second patch edge im1
             E1=E{kver}{im1,2};
         else
@@ -947,8 +959,9 @@ for kver=1:numel(vertices)
             E2=E{kver}{im2,1};
         end
         CC_vertices{ver_patches(im),kver} = E1*MM{1,kver}{im} + E2*MM{2,kver}{im} - V{kver}{im};%E{kver}{im1,2}*MM{1,kver}{im} + E{kver}{im2,1}*MM{2,kver}{im} - V{kver}{im};
-        boundary_dofs_right=[1 9 17 25 33 41 49 57]; %for debug
-        boundary_dofs_left=1:8; %for debug
+        %csi2=[1 9 17 25 33 41 49 57];
+        %csi1=1:8;
+        %corner_4dofs=[1 2 9 10];
         %keyboard
     end
     end
