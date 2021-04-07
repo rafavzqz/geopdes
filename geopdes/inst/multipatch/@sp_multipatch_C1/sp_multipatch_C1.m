@@ -412,125 +412,14 @@ for iref = 1:numel(interfaces_all)
 %     end
   end
   
-  if length(patch)==2 %as it is placed now, this check computes the matrices corresponding only to interior edges
-  %STEP 3 - Assembling and solving G^1 conditions system  %this must depend on orientation!
-  if side(2)==1 || side(2)==2
-      v=grev_pts{2}(:);
-  else
-      v=grev_pts{1}(:);
-  end
-  ngrev=numel(v);
-  DuFR_x=reshape(geo_map_jac{1}(1,1,:,:),ngrev,1); %column vector
-  DuFR_y=reshape(geo_map_jac{1}(2,1,:,:),ngrev,1); %column vector
-  DvFL_x=reshape(geo_map_jac{2}(1,2,:,:),ngrev,1); %column vector
-  DvFL_y=reshape(geo_map_jac{2}(2,2,:,:),ngrev,1); %column vector
-  DvFR_x=reshape(geo_map_jac{1}(1,2,:,:),ngrev,1); %column vector
-  DvFR_y=reshape(geo_map_jac{1}(2,2,:,:),ngrev,1); %column vector
-  
-  A_full=[(1-v).*DvFL_x v.*DvFL_x (1-v).*DuFR_x v.*DuFR_x (1-v).^2.*DvFR_x 2*(1-v).*v.*DvFR_x v.^2.*DvFR_x;...
-     (1-v).*DvFL_y v.*DvFL_y (1-v).*DuFR_y v.*DuFR_y (1-v).^2.*DvFR_y 2*(1-v).*v.*DvFR_y v.^2.*DvFR_y];
- if rank(A_full)==6
-     A=A_full(:,2:end);
-     b=-A_full(:,1);
-     sols=A\b;
-     alpha0_n(2)=1; %R
-     alpha1_n(2)=sols(1); %R
-     alpha0_n(1)=sols(2); %L
-     alpha1_n(1)=sols(3); %L
-     beta0_n=sols(4);
-     beta1_n=sols(5);
-     beta2_n=sols(6);
- else
-     A=A_full(:,3:end);
-     b=-sum(A_full(:,1:2),2);
-     sols=A\b;
-     alpha0_n(2)=1; %R
-     alpha1_n(2)=1; %R
-     alpha0_n(1)=sols(1); %L
-     alpha1_n(1)=sols(2); %L
-     beta0_n=sols(3);
-     beta1_n=sols(4);
-     beta2_n=sols(5);     
- end
- 
- %keyboard
- %STEP 4 - Normalizing the alphas
- %C1=((alpha1_n(1)-alpha0_n(1))^2)/3+((alpha1_n(2)-alpha0_n(2))^2)/3 + (alpha1_n(1)-alpha0_n(1))*alpha0_n(1)+(alpha1_n(2)-alpha0_n(2))*alpha0_n(2)...
- %   +alpha0_n(1)^2+alpha0_n(2)^2;
- %C2=(alpha1_n(1)-alpha0_n(1))-(alpha1_n(2)-alpha0_n(2))+2*alpha0_n(1)-2*alpha0_n(2);
- %gamma=-C2/(2*C1);
- C1=alpha0_n(1)^2+alpha0_n(1)*alpha1_n(1)+alpha1_n(1)^2+alpha0_n(2)^2+alpha0_n(2)*alpha1_n(2)+alpha1_n(2)^2;
- C2=alpha0_n(1)+alpha1_n(1)+alpha0_n(2)+alpha1_n(2);
- gamma=3*C2/(2*C1);
- alpha0(2)=alpha0_n(2)*gamma; %R
- alpha1(2)=alpha1_n(2)*gamma; %R
- alpha0(1)=alpha0_n(1)*gamma; %L
- alpha1(1)=alpha1_n(1)*gamma; %L
- bbeta0=beta0_n*gamma;
- bbeta1=beta1_n*gamma;
- bbeta2=beta2_n*gamma;
- 
+  if (length(patch)==2) %as it is placed now, this check computes the matrices corresponding only to interior edges
+    [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev_pts, side);
 
- %STEP 5 - Computing the betas
- %alphas and beta evaluated at 0,1,1/2
- alpha_L_0=alpha0(2); %alpha_L(0)
- alpha_L_1=alpha1(2); %alpha_L(1)
- alpha_L_12=(alpha0(2)+alpha1(2))/2; %alpha_L(1/2)
- alpha_R_0=alpha0(1); %alpha_L(0)
- alpha_R_1=alpha1(1); %alpha_L(1)
- alpha_R_12=(alpha0(1)+alpha1(1))/2; %alpha_L(1/2)  
- beta_0=bbeta0; %beta(0)
- beta_1=bbeta2; %beta(1)
- beta_12=(bbeta0+bbeta2)/4+bbeta1/2; %beta(1/2)
- 
-  %Computing the matrix of the system considering the relationship between beta^L, beta^R and beta
- M=[alpha_L_0 0 alpha_R_0 0; 0 alpha_L_1 0 alpha_R_1; alpha_L_12/2 alpha_L_12/2 alpha_R_12/2 alpha_R_12/2];
- 
- if rank(M)==3
-     
- %Computing beta1_L, beta0_R, beta1_R in terms of beta0_L
- quant1=(-alpha_R_12/2+(alpha_R_0*alpha_L_12)/(2*alpha_L_0))/(-(alpha_R_1*alpha_L_12)/(2*alpha_L_1)+alpha_R_12/2);
- quant2=(beta_12-(beta_0*alpha_L_12)/(2*alpha_L_0)-(beta_1*alpha_L_12)/(2*alpha_L_1))/(-(alpha_R_1*alpha_L_12)/(2*alpha_L_1)+alpha_R_12/2); 
- 
- %beta1_L=a+b*beta0_L,  beta0_R=c+d*beta0_L,  beta1_R=e+f*beta0_L, where
- a=quant2; b=quant1; %?
- c=beta_0/alpha_L_0; d=-alpha_R_0/alpha_L_0; %this is ok
- e=(beta_1-alpha_R_1*quant2)/alpha_L_1; f=-alpha_R_1*quant1/alpha_L_1; 
- 
- %We determine beta0_L by minimizing the sum of the norms of beta_L and beta_R
- C1=((b-1)^2)/3+(b-1)+((f-d)^2)/3+(f-d)*d+d^2+1;
- C2=2*a*(b-1)/3+a+2*(e-c)*(f-d)/3+(e-c)*d+(f-d)*c+2*c*d;
- beta0(2)=-C2/(2*C1); %L
- beta1(2)=a+b*beta0(2); %L
- beta0(1)=c+d*beta0(2); %R
- beta1(1)=e+f*beta0(2); %R
- 
- else
-     
- %Computing beta0_R in terms of beta0_L and beta1_R in terms of beta1_L: 
- %beta0_R=a+b*beta0_L,  beta1_R=c+d*beta1_L, where
- a=beta_0/alpha_L_0; b=-alpha_R_0/alpha_L_0;
- c=beta_1/alpha_L_1; d=-alpha_R_1/alpha_L_1;
- 
- %We determine beta0_L and beta_1_L by minimizing the sum of the norms of beta_L and beta_R
- %The resuting system is
- M2=[2*(1+b^2) 1+b*d; 1+b*d 2*(1+d^2)];
- M2b=[-b*c-2*a*b; -a*d-2*c*d];
- sol=M2\M2b;
- beta0(2)= sol(1); %L
- beta1(2)= sol(2); %L
- beta0(1)= a+b*beta0(2); %R
- beta1(1)= c+d*beta1(2); %R
- 
- end
- 
  %Saving alphas and betas (first column=L, second column=R)
- all_alpha0(iref,:)=alpha0;
- all_alpha1(iref,:)=alpha1;
- all_beta0(iref,:)=beta0;
- all_beta1(iref,:)=beta1;  
- %keyboard
-
+    all_alpha0(iref,:) = alpha0;
+    all_alpha1(iref,:) = alpha1;
+    all_beta0(iref,:) = beta0;
+    all_beta1(iref,:) = beta1;  
     
 % Compute the Greville points, and the auxiliary mesh and space objects
     for ii = 1:2 % The two patches (L-R)
@@ -599,8 +488,8 @@ for iref = 1:numel(interfaces_all)
       end
 
 %alphas and betas
-        alpha{ii}=abs(alpha0(ii_ab)*(1-grev_pts{2}')+alpha1(ii_ab)*grev_pts{2}'); %we have to take the absolute value to make it work for any orientation
-        beta{ii}=beta0(ii_ab)*(1-grev_pts{2}')+beta1(ii_ab)*grev_pts{2}';   
+      alpha{ii} = abs(alpha0(ii_ab)*(1-grev_pts{2}')+alpha1(ii_ab)*grev_pts{2}'); %we have to take the absolute value to make it work for any orientation
+      beta{ii} = beta0(ii_ab)*(1-grev_pts{2}')+beta1(ii_ab)*grev_pts{2}';   
         %keyboard looks like alpha must be inverted, but betas mustn't
 
 % RHS for the first linear system, (14) in Mario's notes
@@ -667,8 +556,8 @@ for iref = 1:numel(interfaces_all)
       if (ii == 2 & interfaces_all(iref).ornt == -1) %this should be still the same for the multipatch
         ind0 = fliplr (ind0);
         ind1 = fliplr (ind1);
-        ind0_s{iref}=ind0; %saving the indices for later use;
-        ind1_s{iref}=ind1;
+        ind0_s{iref} = ind0; %saving the indices for later use;
+        ind1_s{iref} = ind1;
         coeff0{2} = flipud (fliplr (coeff0{2}));
         coeff1{2} = flipud (fliplr (coeff1{2}));
         coeff2{2} = flipud (fliplr (coeff2{2}));
@@ -682,14 +571,14 @@ for iref = 1:numel(interfaces_all)
       CC_edges_discarded{ii,iref}=CC_edges{ii,iref}(:,[1 2 3 sp0_struct.ndof-2:sp0_struct.ndof+2 ndof-1 ndof]); %dimension: n^2 x 10
       CC_edges{ii,iref}=CC_edges{ii,iref}(:,[4:sp0_struct.ndof-3 sp0_struct.ndof+3:ndof-2]);
     end
-  else 
-     n0=n-k; 
-     ndof=n0+n-k-1;
-     CC_edges{ii,iref} = sparse (space.ndof_per_patch(patch(ii)), ndof);
+  else
+    n0=n-k; 
+    ndof=n0+n-k-1;
+    CC_edges{ii,iref} = sparse (space.ndof_per_patch(patch(ii)), ndof);
 %      size(CC_edges{ii,iref})
 %      keyboard
-     CC_edges_discarded{ii,iref}=CC_edges{ii,iref}(:,[1 2 3 n0-3:n0+1 ndof-1 ndof]); %dimension: n^2 x 10
-     CC_edges{ii,iref}=CC_edges{ii,iref}(:,[4:n0-4 n0+2:ndof-2]);
+    CC_edges_discarded{ii,iref}=CC_edges{ii,iref}(:,[1 2 3 n0-3:n0+1 ndof-1 ndof]); %dimension: n^2 x 10
+    CC_edges{ii,iref}=CC_edges{ii,iref}(:,[4:n0-4 n0+2:ndof-2]);
   end
     
 %CHECKING G^1 condition  
@@ -970,9 +859,127 @@ end
 
 end
 
+function [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev_pts, side)
+
+  %STEP 3 - Assembling and solving G^1 conditions system  %this must depend on orientation!
+  if (side(2)==1 || side(2)==2)
+    v = grev_pts{2}(:);
+  else
+    v = grev_pts{1}(:);
+  end
+  ngrev = numel(v);
+  DuFR_x = reshape(geo_map_jac{1}(1,1,:,:),ngrev,1); %column vector
+  DuFR_y = reshape(geo_map_jac{1}(2,1,:,:),ngrev,1); %column vector
+  DvFL_x = reshape(geo_map_jac{2}(1,2,:,:),ngrev,1); %column vector
+  DvFL_y = reshape(geo_map_jac{2}(2,2,:,:),ngrev,1); %column vector
+  DvFR_x = reshape(geo_map_jac{1}(1,2,:,:),ngrev,1); %column vector
+  DvFR_y = reshape(geo_map_jac{1}(2,2,:,:),ngrev,1); %column vector
+  
+  A_full = [(1-v).*DvFL_x v.*DvFL_x (1-v).*DuFR_x v.*DuFR_x (1-v).^2.*DvFR_x 2*(1-v).*v.*DvFR_x v.^2.*DvFR_x;...
+       (1-v).*DvFL_y v.*DvFL_y (1-v).*DuFR_y v.*DuFR_y (1-v).^2.*DvFR_y 2*(1-v).*v.*DvFR_y v.^2.*DvFR_y];
+  if (rank(A_full)==6)
+    A = A_full(:,2:end);
+    b = -A_full(:,1);
+    sols = A\b;
+    alpha0_n(2) = 1; %R
+    alpha1_n(2) = sols(1); %R
+    alpha0_n(1) = sols(2); %L
+    alpha1_n(1) = sols(3); %L
+    beta0_n = sols(4);
+    beta1_n = sols(5);
+    beta2_n = sols(6);
+  else
+    A = A_full(:,3:end);
+    b = -sum(A_full(:,1:2),2);
+    sols = A\b;
+    alpha0_n(2) = 1; %R
+    alpha1_n(2) = 1; %R
+    alpha0_n(1) = sols(1); %L
+    alpha1_n(1) = sols(2); %L
+    beta0_n = sols(3);
+    beta1_n = sols(4);
+    beta2_n = sols(5);     
+  end
+ 
+ %keyboard
+ %STEP 4 - Normalizing the alphas
+ %C1=((alpha1_n(1)-alpha0_n(1))^2)/3+((alpha1_n(2)-alpha0_n(2))^2)/3 + (alpha1_n(1)-alpha0_n(1))*alpha0_n(1)+(alpha1_n(2)-alpha0_n(2))*alpha0_n(2)...
+ %   +alpha0_n(1)^2+alpha0_n(2)^2;
+ %C2=(alpha1_n(1)-alpha0_n(1))-(alpha1_n(2)-alpha0_n(2))+2*alpha0_n(1)-2*alpha0_n(2);
+ %gamma=-C2/(2*C1);
+  C1 = alpha0_n(1)^2+alpha0_n(1)*alpha1_n(1)+alpha1_n(1)^2+alpha0_n(2)^2+alpha0_n(2)*alpha1_n(2)+alpha1_n(2)^2;
+  C2 = alpha0_n(1)+alpha1_n(1)+alpha0_n(2)+alpha1_n(2);
+  gamma = 3*C2/(2*C1);
+  alpha0(2) = alpha0_n(2)*gamma; %R
+  alpha1(2) = alpha1_n(2)*gamma; %R
+  alpha0(1) = alpha0_n(1)*gamma; %L
+  alpha1(1) = alpha1_n(1)*gamma; %L
+  bbeta0 = beta0_n*gamma;
+  bbeta1 = beta1_n*gamma;
+  bbeta2 = beta2_n*gamma;
+ 
+ %STEP 5 - Computing the betas
+ %alphas and beta evaluated at 0,1,1/2
+  alpha_L_0 = alpha0(2); %alpha_L(0)
+  alpha_L_1 = alpha1(2); %alpha_L(1)
+  alpha_L_12 = (alpha0(2)+alpha1(2))/2; %alpha_L(1/2)
+  alpha_R_0 = alpha0(1); %alpha_L(0)
+  alpha_R_1 = alpha1(1); %alpha_L(1)
+  alpha_R_12 = (alpha0(1)+alpha1(1))/2; %alpha_L(1/2)  
+  beta_0 = bbeta0; %beta(0)
+  beta_1 = bbeta2; %beta(1)
+  beta_12 = (bbeta0+bbeta2)/4+bbeta1/2; %beta(1/2)
+ 
+  %Computing the matrix of the system considering the relationship between beta^L, beta^R and beta
+  M = [alpha_L_0 0 alpha_R_0 0; ...
+       0 alpha_L_1 0 alpha_R_1; ...
+       alpha_L_12/2 alpha_L_12/2 alpha_R_12/2 alpha_R_12/2];
+ 
+  if (rank(M)==3)
+     
+ %Computing beta1_L, beta0_R, beta1_R in terms of beta0_L
+    quant1 = (-alpha_R_12/2 + (alpha_R_0*alpha_L_12)/(2*alpha_L_0)) / ...
+      (-(alpha_R_1*alpha_L_12)/(2*alpha_L_1) + alpha_R_12/2);
+    quant2 = (beta_12-(beta_0*alpha_L_12)/(2*alpha_L_0) - (beta_1*alpha_L_12)/(2*alpha_L_1)) / ...
+      (-(alpha_R_1*alpha_L_12)/(2*alpha_L_1) + alpha_R_12/2); 
+ 
+ %beta1_L=a+b*beta0_L,  beta0_R=c+d*beta0_L,  beta1_R=e+f*beta0_L, where
+    a = quant2; b = quant1;
+    c = beta_0/alpha_L_0; d = -alpha_R_0/alpha_L_0;
+    e = (beta_1-alpha_R_1*quant2)/alpha_L_1; f = -alpha_R_1*quant1/alpha_L_1;
+      
+ %We determine beta0_L by minimizing the sum of the norms of beta_L and beta_R
+    C1 = ((b-1)^2)/3 + (b-1) + ((f-d)^2)/3 + (f-d)*d + d^2 + 1;
+    C2 = 2*a*(b-1)/3 + a + 2*(e-c)*(f-d)/3 + (e-c)*d + (f-d)*c + 2*c*d;
+    beta0(2) = -C2/(2*C1); %L
+    beta1(2) = a + b*beta0(2); %L
+    beta0(1) = c + d*beta0(2); %R
+    beta1(1) = e + f*beta0(2); %R
+
+  else
+ %Computing beta0_R in terms of beta0_L and beta1_R in terms of beta1_L: 
+ %beta0_R=a+b*beta0_L,  beta1_R=c+d*beta1_L, where
+    a = beta_0/alpha_L_0; b = -alpha_R_0/alpha_L_0;
+    c = beta_1/alpha_L_1; d = -alpha_R_1/alpha_L_1;
+ 
+ %We determine beta0_L and beta_1_L by minimizing the sum of the norms of beta_L and beta_R
+ %The resuting system is
+    M2 = [2*(1+b^2) 1+b*d; 1+b*d 2*(1+d^2)];
+    M2b = [-b*c-2*a*b; -a*d-2*c*d];
+    sol = M2\M2b;
+    beta0(2)= sol(1); %L
+    beta1(2)= sol(2); %L
+    beta0(1)= a + b*beta0(2); %R
+    beta1(1)= c + d*beta1(2); %R
+  end 
+
+end
+
 %TO DO:
 %- case of boundary edges
 
 %TO BE TESTED
 %- plots of the functions
 %- continuity 
+
+
