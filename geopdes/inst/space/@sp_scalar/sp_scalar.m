@@ -10,7 +10,7 @@
 %     msh:                 msh object that defines the quadrature rule (see msh_cartesian)
 %     transform:           string with the transformation to the physical domain, one of 
 %                          'grad-preserving' (default) and 'integral-preserving', for N-forms
-%     periodic_dir:        Cartesian directions in which the space should be made periodic
+%     periodic_dir:        Cartesian directions in which the space should be made periodic. By default it is empty.
 %     
 %
 % OUTPUT:
