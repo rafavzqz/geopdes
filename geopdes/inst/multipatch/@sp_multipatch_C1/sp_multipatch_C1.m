@@ -453,9 +453,9 @@ for iref = 1:numel(interfaces_all)
 % msh_side_int contains information for the bivariate parametrization (dependence on u and v)
 % sp_grev contains the value and derivatives of the basis functions, at the Greville points
       msh_side(ii) = msh_eval_boundary_side (msh_grev, side(ii));
-      msh_side_int{ii} = msh_boundary_side_from_interior (msh_grev, side(ii));
-      sp_aux = space.sp_patch{patch(ii)}.constructor (msh_side_int{ii});
-      msh_side_int{ii} = msh_precompute (msh_side_int{ii});
+      msh_side_interior = msh_boundary_side_from_interior (msh_grev, side(ii));
+      sp_aux = space.sp_patch{patch(ii)}.constructor (msh_side_interior);
+%       msh_side_int{ii} = msh_precompute (msh_side_interior);
 %       sp_grev = sp_precompute_param (sp_aux, msh_side_int{ii}, 'value', true, 'gradient', true); % This could be done in just one element
 
 % The univariate spaces for the basis functions N^{p,r+1} (knots0) and N^{p-1,r} (knots1)
@@ -477,10 +477,10 @@ for iref = 1:numel(interfaces_all)
         A(jj,spn_struct.connectivity(:,jj)) = spn_struct.shape_functions(:,:,jj);
       end
 
-%alphas and betas
-      alpha{ii} = abs(alpha0(ii_ab)*(1-grev_pts{2}')+alpha1(ii_ab)*grev_pts{2}'); %we have to take the absolute value to make it work for any orientation
-      beta{ii} = beta0(ii_ab)*(1-grev_pts{2}')+beta1(ii_ab)*grev_pts{2}';   
-        %keyboard looks like alpha must be inverted, but betas mustn't
+%alphas and betas % ORIENTATION ISSUE
+      alpha{ii} = abs (alpha0(ii_ab)*(1-grev_pts{2}') + alpha1(ii_ab)*grev_pts{2}'); %we have to take the absolute value to make it work for any orientation
+      beta{ii} = beta0(ii_ab)*(1-grev_pts{2}') + beta1(ii_ab)*grev_pts{2}';   
+        %looks like alpha must be inverted, but betas mustn't
 
 % RHS for the first linear system, (14) in Mario's notes
       rhss = sparse (msh_side(ii).nel, sp0_struct.ndof);
@@ -543,7 +543,7 @@ for iref = 1:numel(interfaces_all)
         ind0 = sub2ind (ndof_dir, 1:spn.ndof, ndof_dir(2) * ones(1,spn.ndof));
         ind1 = sub2ind (ndof_dir, 1:spn.ndof, (ndof_dir(2)-1) * ones(1,spn.ndof));
       end
-      if (ii == 2 & interfaces_all(iref).ornt == -1) %this should be still the same for the multipatch
+      if (ii == 2 && interfaces_all(iref).ornt == -1) %this should be still the same for the multipatch
         ind0 = fliplr (ind0);
         ind1 = fliplr (ind1);
         ind0_s{iref} = ind0; %saving the indices for later use;
