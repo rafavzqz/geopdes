@@ -634,32 +634,32 @@ end
 %We assume that the local numbering of interfaces and patches is such that
 %vertices(kver).interface(im) is the interface between
 %vertices(kver).patches(im) and vertices(kver).patches(im+1)
-MM=cell(2,numel(vertices));
-V=cell(numel(vertices),1);
-E=cell(numel(vertices),1);
+MM = cell(2,numel(vertices));
+V = cell(numel(vertices),1);
+E = cell(numel(vertices),1);
 %Previously:
 %MM=cell(2,nu,numel(vertices));
 %V=cell(nu,numel(vertices));
 %E=cell(nu+1,numel(vertices));
-sides=[1 4;2 3;1 2;4 3]; %on i-th row the indices of the endpoints of the i-th side (bottom-up, left-right)
+sides = [1 4; 2 3; 1 2; 4 3]; %on i-th row the indices of the endpoints of the i-th side (bottom-up, left-right)
 
-for kver=1:numel(vertices)
+for kver = 1:numel(vertices)
     
-    %Everything must be updated by using interfaces_all instead of interfaces TO DO
-    ver_patches=[];%vector with indices of patches containing the vertex
-    ver_patches_nabla={}; %cell array containing jacobians
-    ver_ind=[];%vector containing local index of vertex in the patch
-    nu=numel(vertices(kver).interfaces);
+  %Everything must be updated by using interfaces_all instead of interfaces TO DO
+  ver_patches = []; %vector with indices of patches containing the vertex
+  ver_patches_nabla = {}; %cell array containing jacobians
+  ver_ind = []; %vector containing local index of vertex in the patch
+  nu = numel(vertices(kver).interfaces);
     
-    boundary_v=0;
-    for im=1:nu
-        inter=vertices(kver).interfaces(im);
-        if isempty(interfaces_all(inter).side1) | isempty(interfaces_all(inter).side2)
-            boundary_v=1;
-            break
-        end
+  boundary_vertex = 0;
+  for im = 1:nu
+    inter = vertices(kver).interfaces(im);
+    if (isempty(interfaces_all(inter).side1) || isempty(interfaces_all(inter).side2))
+      boundary_vertex = 1;
+      break
     end
-    if boundary_v==0
+  end
+  if (~boundary_vertex)
     
 %     for h=1:numel(vertices(kver).interfaces)
 %         hint=vertices(kver).interfaces(h);
@@ -670,37 +670,37 @@ for kver=1:numel(vertices)
 %     ver_patches=unique(ver_patches,'stable');
 %     ver_ind=unique(ver_ind,'stable');
 % 1=RIGHT PATCH 2=LEFT PATCH (true also for alphas and betas, but not for CC_edges and CC_edges_discarded)    
-    for im=1:nu %cycle over all the interfaces containing the vertex
-        inter=vertices(kver).interfaces(im); %global index of the interface 
-        patch_ind1=interfaces_all(inter).patch1; %global index of left patch of im-th interface
-        patch_ind2=interfaces_all(inter).patch2; %global index of right patch of im-th interface
-        vertex_ind1=sides(interfaces_all(inter).side1,vertices(kver).ind(im)); %local index of vertex in left patch
-        vertex_ind2=sides(interfaces_all(inter).side2,vertices(kver).ind(im)); %local index of vertex in right patch
-        ver_patches=[ver_patches patch_ind1 patch_ind2];
-        ver_ind=[ver_ind vertex_ind1 vertex_ind2];
+    for im = 1:nu %cycle over all the interfaces containing the vertex
+      inter = vertices(kver).interfaces(im); %global index of the interface 
+      patch_ind1 = interfaces_all(inter).patch1; %global index of left patch of im-th interface
+      patch_ind2 = interfaces_all(inter).patch2; %global index of right patch of im-th interface
+      vertex_ind1 = sides(interfaces_all(inter).side1,vertices(kver).ind(im)); %local index of vertex in left patch
+      vertex_ind2 = sides(interfaces_all(inter).side2,vertices(kver).ind(im)); %local index of vertex in right patch
+      ver_patches = [ver_patches patch_ind1 patch_ind2];
+      ver_ind = [ver_ind vertex_ind1 vertex_ind2];
         %compute t(0) and t'(0), d(0) and d'(0)
-        switch vertex_ind1
-            case 1 %vertex (0,0)
-                Du_F00=squeeze(derivatives1{patch_ind1}(:,1,1));
-                Dv_F00=squeeze(derivatives1{patch_ind1}(:,2,1));
-                Duv_F00=squeeze(derivatives2{patch_ind1}(:,1,2,1));
-                Dvv_F00=squeeze(derivatives2{patch_ind1}(:,2,2,1));
-            case 2 %vertex (0,1)
-                Du_F00=squeeze(derivatives1{patch_ind1}(:,1,2));
-                Dv_F00=-squeeze(derivatives1{patch_ind1}(:,2,2));
-                Duv_F00=-squeeze(derivatives2{patch_ind1}(:,1,2,2));
-                Dvv_F00=squeeze(derivatives2{patch_ind1}(:,2,2,2));  
-            case 3 %vertex (1,0)
-                Du_F00=-squeeze(derivatives1{patch_ind1}(:,1,3));
-                Dv_F00=squeeze(derivatives1{patch_ind1}(:,2,3));
-                Duv_F00=-squeeze(derivatives2{patch_ind1}(:,1,2,3));
-                Dvv_F00=squeeze(derivatives2{patch_ind1}(:,2,2,3));  
-            case 4 %vertex (1,1)
-                Du_F00=-squeeze(derivatives1{patch_ind1}(:,1,4));
-                Dv_F00=-squeeze(derivatives1{patch_ind1}(:,2,4));
-                Duv_F00=squeeze(derivatives2{patch_ind1}(:,1,2,4));
-                Dvv_F00=squeeze(derivatives2{patch_ind1}(:,2,2,4));
-        end
+      switch vertex_ind1
+        case 1 %vertex (0,0)
+          Du_F00 = derivatives1{patch_ind1}(:,1,1);
+          Dv_F00 = derivatives1{patch_ind1}(:,2,1);
+          Duv_F00 = derivatives2{patch_ind1}(:,1,2,1);
+          Dvv_F00 = derivatives2{patch_ind1}(:,2,2,1);
+%         case 2 %vertex (0,1)
+%           Du_F00 = derivatives1{patch_ind1}(:,1,2);
+%           Dv_F00 = -derivatives1{patch_ind1}(:,2,2);
+%           Duv_F00 = -derivatives2{patch_ind1}(:,1,2,2);
+%           Dvv_F00 = derivatives2{patch_ind1}(:,2,2,2);
+%         case 3 %vertex (1,0)
+%           Du_F00 = -derivatives1{patch_ind1}(:,1,3);
+%           Dv_F00 = derivatives1{patch_ind1}(:,2,3);
+%           Duv_F00 = -derivatives2{patch_ind1}(:,1,2,3);
+%           Dvv_F00 = derivatives2{patch_ind1}(:,2,2,3);
+%         case 4 %vertex (1,1)
+%           Du_F00 = -derivatives1{patch_ind1}(:,1,4);
+%           Dv_F00 = -derivatives1{patch_ind1}(:,2,4);
+%           Duv_F00 = derivatives2{patch_ind1}(:,1,2,4);
+%           Dvv_F00 = derivatives2{patch_ind1}(:,2,2,4);
+      end
         %Store the jacobian of F for the left patch
         ver_patches_nabla{2*im-1}=[Du_F00 Dv_F00];
         
@@ -841,7 +841,7 @@ for kver=1:numel(vertices)
         %corner_4dofs=[1 2 9 10];
         %keyboard
     end
-    end
+  end
 
 end
 
