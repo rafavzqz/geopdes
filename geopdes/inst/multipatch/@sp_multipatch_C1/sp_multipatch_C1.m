@@ -391,16 +391,12 @@ for iref = 1:numel(interfaces_all)
     grev_pts{1} = aveknt(aug_geo_knot1,p1+1);
     grev_pts{2} = aveknt(aug_geo_knot2,p2+1);
     for idim = 1:msh.ndim
-        if (numel(grev_pts{idim}) > 1)
-            brk{idim} = [knots{idim}(1), grev_pts{idim}(1:end-1) + diff(grev_pts{idim})/2, knots{idim}(end)];
-        else
-            brk{idim} = [knots{idim}(1) knots{idim}(end)];
-        end
+      brk{idim} = [knots{idim}(1), grev_pts{idim}(1:end-1) + diff(grev_pts{idim})/2, knots{idim}(end)];
     end  
     msh_grev = msh_cartesian (brk, grev_pts, [], geometry(patch(ii)), 'boundary', true, 'der2',false);
-    msh_side_int{ii} = msh_boundary_side_from_interior (msh_grev, side(ii));
-    msh_side_int{ii} = msh_precompute (msh_side_int{ii});      
-    geo_map_jac{ii} = msh_side_int{ii}.geo_map_jac; %rdim x ndim x 1 x n_grev_pts (rdim->physical space, ndim->parametric space)
+    msh_side_interior = msh_boundary_side_from_interior (msh_grev, side(ii));
+    msh_side_interior = msh_precompute (msh_side_interior);
+    geo_map_jac{ii} = msh_side_interior.geo_map_jac; %rdim x ndim x 1 x n_grev_pts (rdim->physical space, ndim->parametric space)
 %     if ii==1 && (side(ii)==3 || side(ii)==4)
 %         disp('done1')
 %         geo_map_jac{ii}=flip(geo_map_jac{ii});
