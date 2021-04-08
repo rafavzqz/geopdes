@@ -379,19 +379,13 @@ for iref = 1:numel(interfaces_all)
   %STEP 2 - Stuff necessary to evaluate the geo_mapping and its derivatives
   %in this cycle we must add to the already existing CC_vertices, the part of the "discarded" interface functions    
   for ii = nnz_el % The two patches (L-R)
+    % Points for G^1 conditions system
     brk = cell (1,msh.ndim);
-    knots = space.sp_patch{patch(ii)}.knots;
-    %Greville points for G^1 conditions system
-    geo_knot_v1 = geometry(patch(ii)).nurbs.knots{1};
-    p1 = geometry(patch(ii)).nurbs.order(1);
-    aug_geo_knot1 = [geo_knot_v1(1)*ones(1,p1+1)  repelem(geo_knot_v1(p1+1:end-p1-1),3)  geo_knot_v1(end)*ones(1,p1+1)];
-    geo_knot_v2 = geometry(patch(ii)).nurbs.knots{2};
-    p2 = geometry(patch(ii)).nurbs.order(2);
-    aug_geo_knot2 = [geo_knot_v2(1)*ones(1,p2+1)  repelem(geo_knot_v2(p2+1:end-p2-1),3)  geo_knot_v2(end)*ones(1,p2+1)];
-    grev_pts{1} = aveknt(aug_geo_knot1,p1+1);
-    grev_pts{2} = aveknt(aug_geo_knot2,p2+1);
+    knt = geometry(patch(ii)).nurbs.knots;
+    order = geometry(patch(ii)).nurbs.order;
     for idim = 1:msh.ndim
-      brk{idim} = [knots{idim}(1), grev_pts{idim}(1:end-1) + diff(grev_pts{idim})/2, knots{idim}(end)];
+      grev_pts{idim} = [knt{idim}(order(idim)) (knt{idim}(order(idim))+knt{idim}(end-order(idim)+1))/2 knt{idim}(end-order(idim)+1)];
+      brk{idim} = [knt{idim}(order(idim)), grev_pts{idim}(1:end-1) + diff(grev_pts{idim})/2, knt{idim}(end-order(idim)+1)];
     end  
     msh_grev = msh_cartesian (brk, grev_pts, [], geometry(patch(ii)), 'boundary', true, 'der2',false);
     msh_side_interior = msh_boundary_side_from_interior (msh_grev, side(ii));
