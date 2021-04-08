@@ -290,57 +290,57 @@ function [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices] = compute_
 
 p = space.sp_patch{1}.degree(1);
 k = numel(msh.msh_patch{1}.breaks{1})-2;
-n= space.sp_patch{1}.sp_univ(1).ndof;
+n = space.sp_patch{1}.sp_univ(1).ndof;
 breaks_m = cellfun (@unique, space.sp_patch{1}.knots, 'UniformOutput', false);
-mult=histc(space.sp_patch{1}.knots{1},breaks_m{1});
-reg=p-max(mult(2:end-1));
+mult = histc(space.sp_patch{1}.knots{1},breaks_m{1});
+reg = p-max(mult(2:end-1));
 
-ndof_per_interface=(2*n-2*k-11)*ones(1,numel(interfaces_all)); %works only if the space is degree and regularity are the same everywhere
-ndof_per_vertex=6*ones(1,numel(vertices));
+ndof_per_interface = (2*n-2*k-11)*ones(1,numel(interfaces_all)); %works only if the space is degree and regularity are the same everywhere
+ndof_per_vertex = 6*ones(1,numel(vertices));
 
-all_alpha0=zeros(numel(interfaces_all),2);
-all_alpha1=zeros(numel(interfaces_all),2);
-all_beta0=zeros(numel(interfaces_all),2);
-all_beta1=zeros(numel(interfaces_all),2);
-all_t0=zeros(numel(interfaces_all),2);
+all_alpha0 = zeros(numel(interfaces_all),2);
+all_alpha1 = zeros(numel(interfaces_all),2);
+all_beta0 = zeros(numel(interfaces_all),2);
+all_beta1 = zeros(numel(interfaces_all),2);
+all_t0 = zeros(numel(interfaces_all),2);
 
 %Initialize the cell array of CC_vertices matrices
-for ii=1:space.npatch
-    for jj=numel(vertices)
-        CC_vertices{ii,jj} = sparse (space.ndof_per_patch(ii), ndof_per_vertex(jj));
-    end
+for ii = 1:space.npatch
+  for jj = 1:numel(vertices)
+    CC_vertices{ii,jj} = sparse (space.ndof_per_patch(ii), ndof_per_vertex(jj));
+  end
 end
-%keyboard
+
 %Initialize the cell array of CC_edges matrices
-for jj=1:numel(interfaces_all)
-    if isempty(interfaces_all(jj).patch1)
-        CC_edges{1,jj} = [];
-    else
-        CC_edges{1,jj} = sparse (space.ndof_per_patch(interfaces_all(jj).patch1), ndof_per_interface(jj));
-    end
-    if isempty(interfaces_all(jj).patch2)
-        CC_edges{2,jj} = [];
-    else
-        CC_edges{2,jj} = sparse (space.ndof_per_patch(interfaces_all(jj).patch2), ndof_per_interface(jj));
-    end
+for jj = 1:numel(interfaces_all)
+  if (isempty(interfaces_all(jj).patch1))
+    CC_edges{1,jj} = [];
+  else
+    CC_edges{1,jj} = sparse (space.ndof_per_patch(interfaces_all(jj).patch1), ndof_per_interface(jj));
+  end
+  if (isempty(interfaces_all(jj).patch2))
+    CC_edges{2,jj} = [];
+  else
+    CC_edges{2,jj} = sparse (space.ndof_per_patch(interfaces_all(jj).patch2), ndof_per_interface(jj));
+  end
 end
 
 %computing for each patch all the derivatives we possibly need to compute t,d, and sigma
 brk = cell (1,msh.ndim);
 for j=1:space.npatch
-    knots = space.sp_patch{j}.knots;
-    for idim = 1:msh.ndim
-        brk{idim}=[knots{idim}(1) knots{idim}(end)]; %is this correct?
-    end
-    %the following points correspond to the four vertices of the patch
-    pts{1}=[0 1]';
-    pts{2}=[0 1]';%pts{2}=[0 1/2 1]'
-    msh_pts_der1 = msh_cartesian (brk, pts, [], geometry(j),'boundary', true, 'der2',false);
-    msh_der1{j}=msh_precompute (msh_pts_der1); 
-    derivatives1{j}=msh_der1{j}.geo_map_jac; %rdim x ndim x (n_pts{1}x n_pts{2}) (rdim->physical space, ndim->parametric space)
-    msh_pts_der2 = msh_cartesian (brk, pts, [], geometry(j),'boundary', true, 'der2',true);
-    msh_der2{j}=msh_precompute (msh_pts_der2);     
-    derivatives2{j}=msh_der1{j}.geo_map_der2; %rdim x ndim x ndim x n_pts{1}x n_pts{2}
+  knots = space.sp_patch{j}.knots;
+  for idim = 1:msh.ndim
+    brk{idim}=[knots{idim}(1) knots{idim}(end)]; %is this correct?
+  end
+  %the following points correspond to the four vertices of the patch
+  pts{1} = [0 1]';
+  pts{2} = [0 1]';%pts{2}=[0 1/2 1]'
+  msh_pts_der1 = msh_cartesian (brk, pts, [], geometry(j),'boundary', true, 'der2',false);
+  msh_der1{j} = msh_precompute (msh_pts_der1); 
+  derivatives1{j} = msh_der1{j}.geo_map_jac; %rdim x ndim x (n_pts{1}x n_pts{2}) (rdim->physical space, ndim->parametric space)
+  msh_pts_der2 = msh_cartesian (brk, pts, [], geometry(j),'boundary', true, 'der2',true);
+  msh_der2{j} = msh_precompute (msh_pts_der2);     
+  derivatives2{j} = msh_der1{j}.geo_map_der2; %rdim x ndim x ndim x n_pts{1}x n_pts{2}
     %In this case (rdim=2)
     %D_u F^j(0,0)=squeeze(derivatives1{j}(:,1,1,1)) %this contains both components in the physical space
     %D_u F^j(0,1)=squeeze(derivatives1{j}(:,1,1,2))
