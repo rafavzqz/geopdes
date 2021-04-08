@@ -702,36 +702,37 @@ for kver = 1:numel(vertices)
 %           Dvv_F00 = derivatives2{patch_ind1}(:,2,2,4);
       end
         %Store the jacobian of F for the left patch
-        ver_patches_nabla{2*im-1}=[Du_F00 Dv_F00];
+      ver_patches_nabla{2*im-1} = [Du_F00 Dv_F00];
         
-        t0(im,:)=Dv_F00;
-        t0p(im,:)=Dvv_F00;
-        d0(im,:)=(Du_F00+(all_beta0(inter,2)*(1-0)+all_beta1(inter,2)*0)*Dv_F00)...
-            /(all_alpha0(inter,2)*(1-0)+all_alpha1(inter,2)*0);
-        d0p(im,:)=((-all_alpha0(inter,2)+all_alpha1(inter,2))*(Du_F00+(all_beta0(inter,2)*(1-0)+all_beta1(inter,2)*0)*Dv_F00)+...
-                   (all_alpha0(inter,2)*(1-0)+all_alpha1(inter,2)*0)*(Duv_F00+...
-                   (-all_beta0(inter,2)+all_beta1(inter,2))*Dv_F00+(all_beta0(inter,2)*(1-0)+all_beta1(inter,2)*0)*Dvv_F00...
-                   ))/(all_alpha0(inter,2)*(1-0)+all_alpha1(inter,2)*0)^2;  
-        mix_der2(2*im-1,:)=Duv_F00;
-        %We need to get the jacobian also for the right patch
-        switch vertex_ind2
-            case 1 %vertex (0,0)
-                Du_F00=squeeze(derivatives1{patch_ind2}(:,1,1));
-                Dv_F00=squeeze(derivatives1{patch_ind2}(:,2,1));
-                Duv_F00=squeeze(derivatives2{patch_ind2}(:,1,2,1));
-            case 2 %vertex (0,1)
-                Du_F00=squeeze(derivatives1{patch_ind2}(:,1,2));
-                Dv_F00=-squeeze(derivatives1{patch_ind2}(:,2,2));
-                Duv_F00=-squeeze(derivatives2{patch_ind2}(:,1,2,2));
-            case 3 %vertex (1,0)
-                Du_F00=-squeeze(derivatives1{patch_ind2}(:,1,3));
-                Dv_F00=squeeze(derivatives1{patch_ind2}(:,2,3));
-                Duv_F00=-squeeze(derivatives2{patch_ind2}(:,1,2,3));
-            case 4 %vertex (1,1)
-                Du_F00=-squeeze(derivatives1{patch_ind2}(:,1,4));
-                Dv_F00=-squeeze(derivatives1{patch_ind2}(:,2,4));
-                Duv_F00=squeeze(derivatives2{patch_ind2}(:,1,2,4));
-        end
+      t0(im,:) = Dv_F00;
+      t0p(im,:) = Dvv_F00;
+      d0(im,:) = (Du_F00 + (all_beta0(inter,2)*(1-0) + all_beta1(inter,2)*0)*Dv_F00) / ...
+            (all_alpha0(inter,2)*(1-0) + all_alpha1(inter,2)*0);
+      d0p(im,:) = ((-all_alpha0(inter,2) + all_alpha1(inter,2))*(Du_F00 + (all_beta0(inter,2)*(1-0) + all_beta1(inter,2)*0)*Dv_F00) +...
+                   (all_alpha0(inter,2)*(1-0) + all_alpha1(inter,2)*0) * ...
+                   (Duv_F00 + (-all_beta0(inter,2) + all_beta1(inter,2))*Dv_F00 + ...
+                   (all_beta0(inter,2)*(1-0) + all_beta1(inter,2)*0)*Dvv_F00)) / ...
+                   (all_alpha0(inter,2)*(1-0)+all_alpha1(inter,2)*0)^2;  
+      mix_der2(2*im-1,:) = Duv_F00;
+      %We need to get the jacobian also for the right patch
+      switch vertex_ind2
+        case 1 %vertex (0,0)
+          Du_F00 = derivatives1{patch_ind2}(:,1,1);
+          Dv_F00 = derivatives1{patch_ind2}(:,2,1);
+          Duv_F00 = derivatives2{patch_ind2}(:,1,2,1);
+%         case 2 %vertex (0,1)
+%           Du_F00 = derivatives1{patch_ind2}(:,1,2);
+%           Dv_F00 = -derivatives1{patch_ind2}(:,2,2);
+%           Duv_F00 = -derivatives2{patch_ind2}(:,1,2,2);
+%         case 3 %vertex (1,0)
+%           Du_F00 = -derivatives1{patch_ind2}(:,1,3);
+%           Dv_F00 = derivatives1{patch_ind2}(:,2,3);
+%           Duv_F00 = -derivatives2{patch_ind2}(:,1,2,3);
+%         case 4 %vertex (1,1)
+%           Du_F00 = -derivatives1{patch_ind2}(:,1,4);
+%           Dv_F00 = -derivatives1{patch_ind2}(:,2,4);
+%           Duv_F00 = derivatives2{patch_ind2}(:,1,2,4);
+      end
         ver_patches_nabla{2*im}=[Du_F00 Dv_F00];
         mix_der2(2*im,:)=Duv_F00;
         
