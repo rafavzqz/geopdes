@@ -337,8 +337,8 @@ for iptc = 1:space.npatch
   pts{2} = [0 1]';%pts{2}=[0 1/2 1]'
   msh_pts_der1 = msh_cartesian (brk, pts, [], geometry(iptc),'boundary', true, 'der2', true);
   msh_der = msh_precompute (msh_pts_der1);
-  derivatives1{j} = msh_der.geo_map_jac; %rdim x ndim x (n_pts{1}x n_pts{2}) (rdim->physical space, ndim->parametric space)
-  derivatives2{j} = msh_der.geo_map_der2; %rdim x ndim x ndim x n_pts{1} x n_pts{2}
+  derivatives1{iptc} = msh_der.geo_map_jac; %rdim x ndim x (n_pts{1}x n_pts{2}) (rdim->physical space, ndim->parametric space)
+  derivatives2{iptc} = msh_der.geo_map_der2; %rdim x ndim x ndim x n_pts{1} x n_pts{2}
     %In this case (rdim=2)
     %D_u F^j(0,0)=squeeze(derivatives1{j}(:,1,1,1)) %this contains both components in the physical space
     %D_u F^j(0,1)=squeeze(derivatives1{j}(:,1,1,2))
@@ -365,31 +365,31 @@ end
 
 %Construction of CC_edges
 for iref = 1:numel(interfaces_all)
-    clear patch
-    if ~isempty(interfaces_all(iref).patch1)
-        patch(1) = interfaces_all(iref).patch1; %LEFT
-        side(1) = interfaces_all(iref).side1; %LEFT
-    end
-    if ~isempty(interfaces_all(iref).patch2)
-        patch(2) = interfaces_all(iref).patch2; %RIGHT
-        side(2) = interfaces_all(iref).side2; %RIGHT
-    end
-    nnz_el=find(patch>0);
+  clear patch
+  if (~isempty(interfaces_all(iref).patch1))
+    patch(1) = interfaces_all(iref).patch1; %LEFT
+    side(1) = interfaces_all(iref).side1; %LEFT
+  end
+  if (~isempty(interfaces_all(iref).patch2))
+    patch(2) = interfaces_all(iref).patch2; %RIGHT
+    side(2) = interfaces_all(iref).side2; %RIGHT
+  end
+  nnz_el = find(patch>0);
   
   %STEP 2 - Stuff necessary to evaluate the geo_mapping and its derivatives
-  for ii = nnz_el % The two patches (L-R)
   %in this cycle we must add to the already existing CC_vertices, the part of the "discarded" interface functions    
+  for ii = nnz_el % The two patches (L-R)
     brk = cell (1,msh.ndim);
     knots = space.sp_patch{patch(ii)}.knots;
     %Greville points for G^1 conditions system
-    geo_knot_v1=geometry(patch(ii)).nurbs.knots{1};
-    p1=geometry(patch(ii)).nurbs.order(1);
-    aug_geo_knot1=[geo_knot_v1(1)*ones(1,p1+1)  repelem(geo_knot_v1(p1+1:end-p1-1),3)  geo_knot_v1(end)*ones(1,p1+1)];
-    geo_knot_v2=geometry(patch(ii)).nurbs.knots{2};
-    p2=geometry(patch(ii)).nurbs.order(2);
-    aug_geo_knot2=[geo_knot_v2(1)*ones(1,p2+1)  repelem(geo_knot_v2(p2+1:end-p2-1),3)  geo_knot_v2(end)*ones(1,p2+1)];
-    grev_pts{1}=aveknt(aug_geo_knot1,p1+1);
-    grev_pts{2}=aveknt(aug_geo_knot2,p2+1);
+    geo_knot_v1 = geometry(patch(ii)).nurbs.knots{1};
+    p1 = geometry(patch(ii)).nurbs.order(1);
+    aug_geo_knot1 = [geo_knot_v1(1)*ones(1,p1+1)  repelem(geo_knot_v1(p1+1:end-p1-1),3)  geo_knot_v1(end)*ones(1,p1+1)];
+    geo_knot_v2 = geometry(patch(ii)).nurbs.knots{2};
+    p2 = geometry(patch(ii)).nurbs.order(2);
+    aug_geo_knot2 = [geo_knot_v2(1)*ones(1,p2+1)  repelem(geo_knot_v2(p2+1:end-p2-1),3)  geo_knot_v2(end)*ones(1,p2+1)];
+    grev_pts{1} = aveknt(aug_geo_knot1,p1+1);
+    grev_pts{2} = aveknt(aug_geo_knot2,p2+1);
     for idim = 1:msh.ndim
         if (numel(grev_pts{idim}) > 1)
             brk{idim} = [knots{idim}(1), grev_pts{idim}(1:end-1) + diff(grev_pts{idim})/2, knots{idim}(end)];
