@@ -327,20 +327,18 @@ end
 
 %computing for each patch all the derivatives we possibly need to compute t,d, and sigma
 brk = cell (1,msh.ndim);
-for j=1:space.npatch
-  knots = space.sp_patch{j}.knots;
+for iptc = 1:space.npatch
+  knots = space.sp_patch{iptc}.knots;
   for idim = 1:msh.ndim
     brk{idim}=[knots{idim}(1) knots{idim}(end)]; %is this correct?
   end
   %the following points correspond to the four vertices of the patch
   pts{1} = [0 1]';
   pts{2} = [0 1]';%pts{2}=[0 1/2 1]'
-  msh_pts_der1 = msh_cartesian (brk, pts, [], geometry(j),'boundary', true, 'der2',false);
-  msh_der1{j} = msh_precompute (msh_pts_der1); 
-  derivatives1{j} = msh_der1{j}.geo_map_jac; %rdim x ndim x (n_pts{1}x n_pts{2}) (rdim->physical space, ndim->parametric space)
-  msh_pts_der2 = msh_cartesian (brk, pts, [], geometry(j),'boundary', true, 'der2',true);
-  msh_der2{j} = msh_precompute (msh_pts_der2);     
-  derivatives2{j} = msh_der1{j}.geo_map_der2; %rdim x ndim x ndim x n_pts{1}x n_pts{2}
+  msh_pts_der1 = msh_cartesian (brk, pts, [], geometry(iptc),'boundary', true, 'der2', true);
+  msh_der = msh_precompute (msh_pts_der1);
+  derivatives1{j} = msh_der.geo_map_jac; %rdim x ndim x (n_pts{1}x n_pts{2}) (rdim->physical space, ndim->parametric space)
+  derivatives2{j} = msh_der.geo_map_der2; %rdim x ndim x ndim x n_pts{1} x n_pts{2}
     %In this case (rdim=2)
     %D_u F^j(0,0)=squeeze(derivatives1{j}(:,1,1,1)) %this contains both components in the physical space
     %D_u F^j(0,1)=squeeze(derivatives1{j}(:,1,1,2))
