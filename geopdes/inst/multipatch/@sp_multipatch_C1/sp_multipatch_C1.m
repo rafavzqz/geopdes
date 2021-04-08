@@ -417,7 +417,7 @@ for iref = 1:numel(interfaces_all)
     
 % Compute the Greville points, and the auxiliary mesh and space objects
     for ii = 1:2 % The two patches (L-R)
-      ii_ab=3-ii; %this will be used to access the correct alphas and betas
+      ii_ab = 3-ii; %this will be used to access the correct alphas and betas
       brk = cell (1,msh.ndim);
       knots = space.sp_patch{patch(ii)}.knots;
       
@@ -433,11 +433,7 @@ for iref = 1:numel(interfaces_all)
       for idim = 1:msh.ndim
         grev_pts{idim} = aveknt (knots{idim}, space.sp_patch{patch(ii)}.degree(idim)+1); 
         grev_pts{idim} = grev_pts{idim}(:)';
-        if (numel(grev_pts{idim}) > 1)
-          brk{idim} = [knots{idim}(1), grev_pts{idim}(1:end-1) + diff(grev_pts{idim})/2, knots{idim}(end)];
-        else
-          brk{idim} = [knots{idim}(1) knots{idim}(end)];
-        end
+        brk{idim} = [knots{idim}(1), grev_pts{idim}(1:end-1) + diff(grev_pts{idim})/2, knots{idim}(end)];
       end
       msh_grev = msh_cartesian (brk, grev_pts, [], geometry(patch(ii)), 'boundary', true, 'der2',false);
 
