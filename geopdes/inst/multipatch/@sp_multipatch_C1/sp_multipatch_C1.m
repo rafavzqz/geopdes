@@ -525,9 +525,9 @@ for iref = 1:numel(interfaces_all)
       coeff2{ii}(abs(coeff2{ii}) < 1e-12) = 0; % Make more sparse
       
 % Pass the coefficients to the tensor product basis
-% The numbering (ndof) only works for the two patch case, for now
-      ndof = sp0_struct.ndof + sp1_struct.ndof;
-      CC_edges{ii,iref} = sparse (space.ndof_per_patch(patch(ii)), ndof);
+% The numbering (ndof_edge) only works for the two patch case, for now
+      ndof_edge = sp0_struct.ndof + sp1_struct.ndof;
+      CC_edges{ii,iref} = sparse (space.ndof_per_patch(patch(ii)), ndof_edge);
       
       ndof_dir = space.sp_patch{patch(ii)}.ndof_dir;
       if (side(ii) == 1)
@@ -555,20 +555,18 @@ for iref = 1:numel(interfaces_all)
 
       CC_edges{ii,iref}(ind0,1:sp0_struct.ndof) = coeff0{ii};  %coefficients of trace basis functions...
       CC_edges{ii,iref}(ind1,1:sp0_struct.ndof) = coeff1{ii};
-      CC_edges{ii,iref}(ind1,sp0_struct.ndof+1:ndof) = coeff2{ii};%CORRECT REMOVING THIS? * (-1)^(ii+1); %...and derivative basis functions (associated to iref-th interface)
+      CC_edges{ii,iref}(ind1,sp0_struct.ndof+1:ndof_edge) = coeff2{ii};%CORRECT REMOVING THIS? * (-1)^(ii+1); %...and derivative basis functions (associated to iref-th interface)
       
       %keeping the part of the "actually active" edge functions, the remaining part saved in CC_edges_discarded
-      CC_edges_discarded{ii,iref}=CC_edges{ii,iref}(:,[1 2 3 sp0_struct.ndof-2:sp0_struct.ndof+2 ndof-1 ndof]); %dimension: n^2 x 10
-      CC_edges{ii,iref}=CC_edges{ii,iref}(:,[4:sp0_struct.ndof-3 sp0_struct.ndof+3:ndof-2]);
+      CC_edges_discarded{ii,iref}=CC_edges{ii,iref}(:,[1 2 3 sp0_struct.ndof-2:sp0_struct.ndof+2 ndof_edge-1 ndof_edge]); %dimension: n^2 x 10
+      CC_edges{ii,iref}=CC_edges{ii,iref}(:,[4:sp0_struct.ndof-3 sp0_struct.ndof+3:ndof_edge-2]);
     end
   else
-    n0=n-k; 
-    ndof=n0+n-k-1;
-    CC_edges{ii,iref} = sparse (space.ndof_per_patch(patch(ii)), ndof);
-%      size(CC_edges{ii,iref})
-%      keyboard
-    CC_edges_discarded{ii,iref}=CC_edges{ii,iref}(:,[1 2 3 n0-3:n0+1 ndof-1 ndof]); %dimension: n^2 x 10
-    CC_edges{ii,iref}=CC_edges{ii,iref}(:,[4:n0-4 n0+2:ndof-2]);
+    n0 = n-k; 
+    ndof_edge = n0+n-k-1;
+    CC_edges{ii,iref} = sparse (space.ndof_per_patch(patch(ii)), ndof_edge);
+    CC_edges_discarded{ii,iref} = CC_edges{ii,iref}(:,[1 2 3 n0-3:n0+1 ndof_edge-1 ndof_edge]); %dimension: n^2 x 10
+    CC_edges{ii,iref} = CC_edges{ii,iref}(:,[4:n0-4 n0+2:ndof_edge-2]);
   end
     
 %CHECKING G^1 condition  
