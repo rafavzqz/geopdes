@@ -777,6 +777,7 @@ for kver = 1:numel(vertices)
       n1 = space.sp_patch{ver_patches(ipatch)}.ndof_dir(1); %dimension of tensor-product space in the patch (dir 1)
       n2 = space.sp_patch{ver_patches(ipatch)}.ndof_dir(2); %dimension of tensor-product space in the patch (dir 2)
 %       V{kver}{im} = zeros(n1*n2,6);
+      MM1 = zeros(5,6); MM2 = zeros(5,6);
       VV = zeros(n1*n2,6);
       im_edges = ceil(find(ind_patch_rep==ipatch)/2); %indices of the edges containing the vertex (in the list of edges containing the vertex)
       if (ipatch == 1)  %works only if the interfaces and patches are ordered in clockwise order
