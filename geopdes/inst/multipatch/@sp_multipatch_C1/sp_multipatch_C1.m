@@ -733,20 +733,20 @@ for kver = 1:numel(vertices)
 %           Dv_F00 = -derivatives1{patch_ind2}(:,2,4);
 %           Duv_F00 = derivatives2{patch_ind2}(:,1,2,4);
       end
-        ver_patches_nabla{2*im}=[Du_F00 Dv_F00];
-        mix_der2(2*im,:)=Duv_F00;
+      ver_patches_nabla{2*im} = [Du_F00 Dv_F00];
+      mix_der2(2*im,:) = Duv_F00;
         
-        %Pick the correct part of CC_edges_discarded %TO BE FIXED
-        if vertices(kver).ind(im)==1 %the vertex is the left/bottom endpoint of im-th interface
-            E{kver}{im,1}=CC_edges_discarded{1,inter}(:,[1 2 3 7 8]); %part of the matrix corresponding to edge functions close to the vertex
-            E{kver}{im,2}=CC_edges_discarded{2,inter}(:,[1 2 3 7 8]);
-        else %the vertex is the right/top endpoint of im-th interface
-            E{kver}{im,1}=CC_edges_discarded{1,inter}(:,[4 5 6 9 10]);
-            E{kver}{im,2}=CC_edges_discarded{2,inter}(:,[4 5 6 9 10]);
-        end    
+      %Pick the correct part of CC_edges_discarded %TO BE FIXED
+      if (vertices(kver).ind(im) == 1) %the vertex is the left/bottom endpoint of im-th interface
+        E{kver}{im,1} = CC_edges_discarded{1,inter}(:,[1 2 3 7 8]); %part of the matrix corresponding to edge functions close to the vertex
+        E{kver}{im,2} = CC_edges_discarded{2,inter}(:,[1 2 3 7 8]);
+%       else %the vertex is the right/top endpoint of im-th interface
+%         E{kver}{im,1}=CC_edges_discarded{1,inter}(:,[4 5 6 9 10]);
+%         E{kver}{im,2}=CC_edges_discarded{2,inter}(:,[4 5 6 9 10]);
+      end    
     end
-    [ver_patches, ind_patch_sigma, ind_patch_rep]=unique(ver_patches,'stable');
-    mix_der2_n=mix_der2(ind_patch_sigma,:);
+    [ver_patches, ind_patch_sigma, ind_patch_rep] = unique (ver_patches, 'stable');
+    mix_der2_n = mix_der2(ind_patch_sigma,:);
     %ver_ind=unique(ver_ind,'rows','stable');
     
     %ind_patch_sigma contains the positions of the elements of ver_patches
@@ -765,82 +765,74 @@ for kver = 1:numel(vertices)
 %     end
     
     %computing sigma
-    sigma=0;
-    for im=1:nu
-        sigma=sigma+norm(ver_patches_nabla{ind_patch_sigma(im)},Inf);
+    sigma = 0;
+    for im = 1:nu
+      sigma = sigma + norm(ver_patches_nabla{ind_patch_sigma(im)},Inf);
     end
-    sigma=1/(sigma/(p*(k+1)*nu));
+    sigma = 1/(sigma/(p*(k+1)*nu));
     %computing matrices MM and V
-    for im=1:nu %cycle over the patches containing the vertex
+    for im = 1:nu %cycle over the patches containing the vertex
         
         %assemble matrix (not final: Ms and Vs, then updated with the "discarded parts" of edge functions)
-        n1=space.sp_patch{ver_patches(im)}.ndof_dir(1); %dimension of tensor-product space in the patch (dir 1)
-        n2=space.sp_patch{ver_patches(im)}.ndof_dir(2); %dimension of tensor-product space in the patch (dir 2)
-        V{kver}{im}=zeros(n1*n2,6);
-        im_edges=ceil(find(ind_patch_rep==im)/2); %indices of the edges containing the vertex (in the list of edges containing the vertex)
-        im1=im_edges(1); im2=im_edges(2);
-        if im==1  %works only if the interfaces and patches are ordered in clockwise order
-            temp=im1; im1=im2; im2=temp; %this is done to have always the interface to the right of the patch in im1
-        end
-        j=1;
-        for j1=0:2
-            for j2=0:2-j1 %the following computations work in the standard case
-                mat_deltas = [(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)];
-                vec_deltas = [(j1==1)*(j2==0), (j1==0)*(j2==1)];
-                d00=(j1==0)*(j2==0);
-                %M_{i_{m-1},i}
-                d10_a=vec_deltas*t0(im1,:)';
-                d20_a=t0(im1,:)*mat_deltas*t0(im1,:)'+...
-                      vec_deltas*t0p(im1,:)';
-                d01_a=vec_deltas*d0(im1,:)';
-                d11_a=t0(im1,:)*mat_deltas*d0(im1,:)'+...
-                      vec_deltas*d0p(im1,:)';
+      n1 = space.sp_patch{ver_patches(im)}.ndof_dir(1); %dimension of tensor-product space in the patch (dir 1)
+      n2 = space.sp_patch{ver_patches(im)}.ndof_dir(2); %dimension of tensor-product space in the patch (dir 2)
+      V{kver}{im} = zeros(n1*n2,6);
+      im_edges = ceil(find(ind_patch_rep==im)/2); %indices of the edges containing the vertex (in the list of edges containing the vertex)
+      im1 = im_edges(1); im2 = im_edges(2);
+      if (im == 1)  %works only if the interfaces and patches are ordered in clockwise order
+        temp = im1; im1 = im2; im2 = temp; %this is done to have always the interface to the right of the patch in im1
+      end
+      jj = 1;
+      for j1 = 0:2
+        for j2 = 0:2-j1 %the following computations work in the standard case
+          mat_deltas = [(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)];
+          vec_deltas = [(j1==1)*(j2==0), (j1==0)*(j2==1)];
+          d00 = (j1==0)*(j2==0);
+          %M_{i_{m-1},i}
+          d10_a = vec_deltas*t0(im1,:)';
+          d20_a = t0(im1,:)*mat_deltas*t0(im1,:)' + vec_deltas*t0p(im1,:)';
+          d01_a = vec_deltas*d0(im1,:)';
+          d11_a = t0(im1,:)*mat_deltas*d0(im1,:)' + vec_deltas*d0p(im1,:)';
 
-                %M_{i_{m+1},i}
-                d10_b=vec_deltas*t0(im2,:)';
-                d20_b=t0(im2,:)*mat_deltas*t0(im2,:)'+...
-                      vec_deltas*t0p(im2,:)';
-                d01_b=vec_deltas*d0(im2,:)';
-                d11_b=t0(im2,:)*mat_deltas*d0(im2,:)'+...
-                      vec_deltas*d0p(im2,:)';  
-                if reg<p-2  
-                    MM{1,kver}{im}(:,j)=sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+2*d10_a/(p*(k+1))+d20_a/(p*(p-1)*(k+1)^2),...
-                                                 -d01_a/(p*(k+1)), -d01_a/(p*(k+1))+d11_a/(p*(p-1)*(k+1)^2)]';  
-                    MM{2,kver}{im}(:,j)=sigma^(j1+j2)*[d00, d00+d10_b/(p*(k+1)), d00+2*d10_b/(p*(k+1))+d20_b/(p*(p-1)*(k+1)^2),...
-                                                 -d01_b/(p*(k+1)), -d01_b/(p*(k+1))+d11_b/(p*(p-1)*(k+1)^2)]';  
-                else
-                    MM{1,kver}{im}(:,j)=sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+3*d10_a/(p*(k+1))+2*d20_a/(p*(p-1)*(k+1)^2),...
-                                                 -d01_a/(p*(k+1)), -d01_a/(p*(k+1))+d11_a/(p*(p-1)*(k+1)^2)]';  
-                    MM{2,kver}{im}(:,j)=sigma^(j1+j2)*[d00, d00+d10_b/(p*(k+1)), d00+3*d10_b/(p*(k+1))+2*d20_b/(p*(p-1)*(k+1)^2),...
-                                                 -d01_b/(p*(k+1)), -d01_b/(p*(k+1))+d11_b/(p*(p-1)*(k+1)^2)]';
-                end
-                %V_{i_m,i}  
-                d11_c=t0(im1,:)*mat_deltas*t0(im2,:)'+...
-                      vec_deltas*mix_der2_n(im,:)';
-                V{kver}{im}([1, 2, n2+1, n2+2],j)=sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+d10_b/(p*(k+1)),...
+          %M_{i_{m+1},i}
+          d10_b = vec_deltas*t0(im2,:)';
+          d20_b = t0(im2,:)*mat_deltas*t0(im2,:)' + vec_deltas*t0p(im2,:)';
+          d01_b = vec_deltas*d0(im2,:)';
+          d11_b = t0(im2,:)*mat_deltas*d0(im2,:)' + vec_deltas*d0p(im2,:)';  
+          if (reg < p-2)
+            MM{1,kver}{im}(:,jj) = sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+2*d10_a/(p*(k+1))+d20_a/(p*(p-1)*(k+1)^2),...
+                                              -d01_a/(p*(k+1)), -d01_a/(p*(k+1))+d11_a/(p*(p-1)*(k+1)^2)]';  
+            MM{2,kver}{im}(:,jj) = sigma^(j1+j2)*[d00, d00+d10_b/(p*(k+1)), d00+2*d10_b/(p*(k+1))+d20_b/(p*(p-1)*(k+1)^2),...
+                                              -d01_b/(p*(k+1)), -d01_b/(p*(k+1))+d11_b/(p*(p-1)*(k+1)^2)]';  
+          else
+            MM{1,kver}{im}(:,jj) = sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+3*d10_a/(p*(k+1))+2*d20_a/(p*(p-1)*(k+1)^2),...
+                                              -d01_a/(p*(k+1)), -d01_a/(p*(k+1))+d11_a/(p*(p-1)*(k+1)^2)]';  
+            MM{2,kver}{im}(:,jj) = sigma^(j1+j2)*[d00, d00+d10_b/(p*(k+1)), d00+3*d10_b/(p*(k+1))+2*d20_b/(p*(p-1)*(k+1)^2),...
+                                              -d01_b/(p*(k+1)), -d01_b/(p*(k+1))+d11_b/(p*(p-1)*(k+1)^2)]';
+          end
+          %V_{i_m,i}  
+          d11_c = t0(im1,:)*mat_deltas*t0(im2,:)' + vec_deltas*mix_der2_n(im,:)';
+          V{kver}{im}([1, 2, n2+1, n2+2],jj) = sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+d10_b/(p*(k+1)),...
                                                   d00+ (d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]'; 
                                               %keyboard
-                j=j+1;
-            end
+          jj = jj+1;
         end
-        %size(V{kver}{im})
-        %keyboard
-        %controllare quale matrice delle edge function si sta considerando
-        if interfaces_all(vertices(kver).interfaces(im1)).patch2==ver_patches(im)%the considered patch is the second patch edge im1
-            E1=E{kver}{im1,2};
-        else
-            E1=E{kver}{im1,1};
-        end
-        if interfaces_all(vertices(kver).interfaces(im2)).patch2==ver_patches(im)%the considered patch is the second patch of edge im2
-            E2=E{kver}{im2,2};
-        else
-            E2=E{kver}{im2,1};
-        end
-        CC_vertices{ver_patches(im),kver} = E1*MM{1,kver}{im} + E2*MM{2,kver}{im} - V{kver}{im};%E{kver}{im1,2}*MM{1,kver}{im} + E{kver}{im2,1}*MM{2,kver}{im} - V{kver}{im};
-        %csi2=[1 9 17 25 33 41 49 57];
-        %csi1=1:8;
-        %corner_4dofs=[1 2 9 10];
-        %keyboard
+      end
+      % Check which patch of the edge function we are considering
+      if (interfaces_all(vertices(kver).interfaces(im1)).patch2 == ver_patches(im))%the considered patch is the second patch edge im1
+        E1=E{kver}{im1,2};
+      else
+        E1=E{kver}{im1,1};
+      end
+      if (interfaces_all(vertices(kver).interfaces(im2)).patch2 == ver_patches(im))%the considered patch is the second patch of edge im2
+        E2=E{kver}{im2,2};
+      else
+        E2=E{kver}{im2,1};
+      end
+      CC_vertices{ver_patches(im),kver} = E1*MM{1,kver}{im} + E2*MM{2,kver}{im} - V{kver}{im};
+      %csi2=[1 9 17 25 33 41 49 57];
+      %csi1=1:8;
+      %corner_4dofs=[1 2 9 10];
     end
   end
 
@@ -970,5 +962,3 @@ end
 %TO BE TESTED
 %- plots of the functions
 %- continuity 
-
-
