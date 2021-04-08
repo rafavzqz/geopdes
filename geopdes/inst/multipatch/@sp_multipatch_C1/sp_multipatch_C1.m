@@ -815,19 +815,19 @@ for kver = 1:numel(vertices)
           V{kver}{im}([1, 2, n2+1, n2+2],jfun) = sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+d10_b/(p*(k+1)),...
                                                   d00+ (d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]'; 
                                               %keyboard
-          jj = jj+1;
+          jfun = jfun+1;
         end
       end
       % Check which patch of the edge function we are considering
       if (interfaces_all(vertices(kver).interfaces(im1)).patch2 == ver_patches(im))%the considered patch is the second patch edge im1
-        E1=E{kver}{im1,2};
+        E1 = E{kver}{im1,2};
       else
-        E1=E{kver}{im1,1};
+        E1 = E{kver}{im1,1};
       end
       if (interfaces_all(vertices(kver).interfaces(im2)).patch2 == ver_patches(im))%the considered patch is the second patch of edge im2
-        E2=E{kver}{im2,2};
+        E2 = E{kver}{im2,2};
       else
-        E2=E{kver}{im2,1};
+        E2 = E{kver}{im2,1};
       end
       CC_vertices{ver_patches(im),kver} = E1*MM{1,kver}{im} + E2*MM{2,kver}{im} - V{kver}{im};
       %csi2=[1 9 17 25 33 41 49 57];
