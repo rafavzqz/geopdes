@@ -427,7 +427,7 @@ for iref = 1:numel(interfaces_all)
       ind2 = ceil (side(ii)/2);
       ind1 = setdiff (1:msh.ndim, ind2);
 
-      degree = space.sp_patch{patch(1)}.degree(ind1);
+      degree = space.sp_patch{patch(ii)}.degree(ind1);
       knots0 = space.knots0_patches{patch(ii)}{ind1};
       knots1 = space.knots1_patches{patch(ii)}{ind1};
       for idim = 1:msh.ndim
