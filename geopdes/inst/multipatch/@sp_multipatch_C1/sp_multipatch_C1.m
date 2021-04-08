@@ -764,7 +764,7 @@ for kver = 1:numel(vertices)
 %         E{kver}{nu+1,2}=E{kver}{1,2};
 %     end
     
-    %computing sigma
+    %computing sigma % FIX: ver_patches_nabla needs to be changed for multiple vertices
     sigma = 0;
     for im = 1:nu
       sigma = sigma + norm(ver_patches_nabla{ind_patch_sigma(im)},Inf);
@@ -782,7 +782,7 @@ for kver = 1:numel(vertices)
       if (im == 1)  %works only if the interfaces and patches are ordered in clockwise order
         temp = im1; im1 = im2; im2 = temp; %this is done to have always the interface to the right of the patch in im1
       end
-      jj = 1;
+      jfun = 1;
       for j1 = 0:2
         for j2 = 0:2-j1 %the following computations work in the standard case
           mat_deltas = [(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)];
@@ -800,19 +800,19 @@ for kver = 1:numel(vertices)
           d01_b = vec_deltas*d0(im2,:)';
           d11_b = t0(im2,:)*mat_deltas*d0(im2,:)' + vec_deltas*d0p(im2,:)';  
           if (reg < p-2)
-            MM{1,kver}{im}(:,jj) = sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+2*d10_a/(p*(k+1))+d20_a/(p*(p-1)*(k+1)^2),...
+            MM{1,kver}{im}(:,jfun) = sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+2*d10_a/(p*(k+1))+d20_a/(p*(p-1)*(k+1)^2),...
                                               -d01_a/(p*(k+1)), -d01_a/(p*(k+1))+d11_a/(p*(p-1)*(k+1)^2)]';  
-            MM{2,kver}{im}(:,jj) = sigma^(j1+j2)*[d00, d00+d10_b/(p*(k+1)), d00+2*d10_b/(p*(k+1))+d20_b/(p*(p-1)*(k+1)^2),...
+            MM{2,kver}{im}(:,jfun) = sigma^(j1+j2)*[d00, d00+d10_b/(p*(k+1)), d00+2*d10_b/(p*(k+1))+d20_b/(p*(p-1)*(k+1)^2),...
                                               -d01_b/(p*(k+1)), -d01_b/(p*(k+1))+d11_b/(p*(p-1)*(k+1)^2)]';  
           else
-            MM{1,kver}{im}(:,jj) = sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+3*d10_a/(p*(k+1))+2*d20_a/(p*(p-1)*(k+1)^2),...
+            MM{1,kver}{im}(:,jfun) = sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+3*d10_a/(p*(k+1))+2*d20_a/(p*(p-1)*(k+1)^2),...
                                               -d01_a/(p*(k+1)), -d01_a/(p*(k+1))+d11_a/(p*(p-1)*(k+1)^2)]';  
-            MM{2,kver}{im}(:,jj) = sigma^(j1+j2)*[d00, d00+d10_b/(p*(k+1)), d00+3*d10_b/(p*(k+1))+2*d20_b/(p*(p-1)*(k+1)^2),...
+            MM{2,kver}{im}(:,jfun) = sigma^(j1+j2)*[d00, d00+d10_b/(p*(k+1)), d00+3*d10_b/(p*(k+1))+2*d20_b/(p*(p-1)*(k+1)^2),...
                                               -d01_b/(p*(k+1)), -d01_b/(p*(k+1))+d11_b/(p*(p-1)*(k+1)^2)]';
           end
           %V_{i_m,i}  
           d11_c = t0(im1,:)*mat_deltas*t0(im2,:)' + vec_deltas*mix_der2_n(im,:)';
-          V{kver}{im}([1, 2, n2+1, n2+2],jj) = sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+d10_b/(p*(k+1)),...
+          V{kver}{im}([1, 2, n2+1, n2+2],jfun) = sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+d10_b/(p*(k+1)),...
                                                   d00+ (d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]'; 
                                               %keyboard
           jj = jj+1;
