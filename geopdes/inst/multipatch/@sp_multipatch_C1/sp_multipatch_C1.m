@@ -887,7 +887,7 @@ function [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev
     beta1_n = sols(5);
     beta2_n = sols(6);
   else
-    A = A_full(:,3:end);
+    A = A_full(:,3:end); % FIX: not a square matrix
     b = -sum(A_full(:,1:2),2);
     sols = A\b;
     alpha0_n(2) = 1; %R
