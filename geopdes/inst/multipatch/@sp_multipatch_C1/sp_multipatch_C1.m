@@ -829,8 +829,8 @@ for kver = 1:numel(vertices)
 %                                                           d00+d10_b/(p*(k+1)),...
 %                                                           d00+(d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]'; 
           VV(corner_4dofs,jfun) = sigma^(j1+j2)*[d00, ...
-                                                 d00+d10_b/(p*(k+1)), ...
-                                                 d00+d10_a/(p*(k+1)),...
+                                                 d00+d10_a/(p*(k+1)), ...
+                                                 d00+d10_b/(p*(k+1)),...
                                                  d00+(d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]'; 
           jfun = jfun+1;
         end
@@ -846,8 +846,11 @@ for kver = 1:numel(vertices)
       else
         E2 = E{kver}{iedge2,1};
       end
+      XX1 = E1; XX1(:,4) = -XX1(:,4); XX1(:,5) = -XX1(:,5);
+      XX2 = E2; XX2(:,4) = -XX2(:,4); XX2(:,5) = -XX2(:,5);
 %       CC_vertices{ver_patches(ipatch),kver} = E1*MM{1,kver}{ipatch} + E2*MM{2,kver}{ipatch} - V{kver}{ipatch};
       CC_vertices{ver_patches(ipatch),kver} = E1*MM1 + E2*MM2 - VV;
+      CC_vertices{ver_patches(ipatch),kver} = XX1*MM1 + XX2*MM2 - VV;
       %csi2=[1 9 17 25 33 41 49 57];
       %csi1=1:8;
     end
