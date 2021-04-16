@@ -761,7 +761,7 @@ for kver = 1:numel(vertices)
     %computing sigma % FIX: ver_patches_nabla needs to be changed for multiple vertices
     sigma = 0;
     for im = 1:ninterfaces_ver % FIX: is this the number of interfaces?
-      sigma = sigma + norm(ver_patches_nabla{ind_patch_sigma(im)},Inf);
+      sigma = sigma + norm(ver_patches_nabla{ind_patch_sigma(im)},2);
     end
     sigma = 1/(sigma/(p*(k+1)*ninterfaces_ver));
     %computing matrices MM and V
@@ -790,13 +790,13 @@ for kver = 1:numel(vertices)
           d10_a = vec_deltas*t0(iedge1,:)';
           d20_a = t0(iedge1,:)*mat_deltas*t0(iedge1,:)' + vec_deltas*t0p(iedge1,:)';
           d01_a = vec_deltas*d0(iedge1,:)';
-          d11_a = t0(iedge1,:)*mat_deltas*d0(iedge1,:)' + vec_deltas*d0p(iedge1,:)';
+          d11_a = t0(iedge1,:)*mat_deltas*d0(iedge1,:)' + 0*vec_deltas*d0p(iedge1,:)';
 
           %M_{i_{m+1},i}
           d10_b = vec_deltas*t0(iedge2,:)';
           d20_b = t0(iedge2,:)*mat_deltas*t0(iedge2,:)' + vec_deltas*t0p(iedge2,:)';
           d01_b = vec_deltas*d0(iedge2,:)';
-          d11_b = t0(iedge2,:)*mat_deltas*d0(iedge2,:)' + vec_deltas*d0p(iedge2,:)';  
+          d11_b = t0(iedge2,:)*mat_deltas*d0(iedge2,:)' + 0*vec_deltas*d0p(iedge2,:)';  
           if (reg < p-2)
 %             MM{1,kver}{ipatch}(:,jfun) = sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+2*d10_a/(p*(k+1))+d20_a/(p*(p-1)*(k+1)^2),...
 %                                                        -d01_a/(p*(k+1)), -d01_a/(p*(k+1))+d11_a/(p*(p-1)*(k+1)^2)]';  
@@ -829,8 +829,8 @@ for kver = 1:numel(vertices)
 %                                                           d00+d10_b/(p*(k+1)),...
 %                                                           d00+(d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]'; 
           VV(corner_4dofs,jfun) = sigma^(j1+j2)*[d00, ...
-                                                 d00+d10_b/(p*(k+1)), ...
-                                                 d00+d10_a/(p*(k+1)),...
+                                                 d00+d10_a/(p*(k+1)), ...
+                                                 d00+d10_b/(p*(k+1)),...
                                                  d00+(d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]'; 
           jfun = jfun+1;
         end
@@ -853,6 +853,9 @@ for kver = 1:numel(vertices)
 % %       CC_vertices{ver_patches(ipatch),kver} = XX1*MM1 + XX2*MM2 - VV;
       %csi2=[1 9 17 25 33 41 49 57];
       %csi1=1:8;
+      M1aux{ipatch} = E1 * MM1;
+      M2aux{ipatch} = E2 * MM2;
+      Vaux{ipatch} = VV;
     end
   end
 
