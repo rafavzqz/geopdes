@@ -702,7 +702,7 @@ for kver = 1:numel(vertices)
       t0p(iedge,:) = Dvv_F00;
       d0(iedge,:) = (Du_F00 + (all_beta0(inter,2)*(1-0) + all_beta1(inter,2)*0)*Dv_F00) / ...
             (all_alpha0(inter,2)*(1-0) + all_alpha1(inter,2)*0);
-      d0p(iedge,:) = ((-all_alpha0(inter,2) + all_alpha1(inter,2))*(Du_F00 + (all_beta0(inter,2)*(1-0) + all_beta1(inter,2)*0)*Dv_F00) +...
+      d0p(iedge,:) = (-(-all_alpha0(inter,2) + all_alpha1(inter,2))*(Du_F00 + (all_beta0(inter,2)*(1-0) + all_beta1(inter,2)*0)*Dv_F00) +...
                    (all_alpha0(inter,2)*(1-0) + all_alpha1(inter,2)*0) * ...
                    (Duv_F00 + (-all_beta0(inter,2) + all_beta1(inter,2))*Dv_F00 + ...
                    (all_beta0(inter,2)*(1-0) + all_beta1(inter,2)*0)*Dvv_F00)) / ...
@@ -790,13 +790,13 @@ for kver = 1:numel(vertices)
           d10_a = vec_deltas*t0(iedge1,:)';
           d20_a = t0(iedge1,:)*mat_deltas*t0(iedge1,:)' + vec_deltas*t0p(iedge1,:)';
           d01_a = vec_deltas*d0(iedge1,:)';
-          d11_a = t0(iedge1,:)*mat_deltas*d0(iedge1,:)' + 0*vec_deltas*d0p(iedge1,:)';
+          d11_a = t0(iedge1,:)*mat_deltas*d0(iedge1,:)' + vec_deltas*d0p(iedge1,:)';
 
           %M_{i_{m+1},i}
           d10_b = vec_deltas*t0(iedge2,:)';
           d20_b = t0(iedge2,:)*mat_deltas*t0(iedge2,:)' + vec_deltas*t0p(iedge2,:)';
           d01_b = vec_deltas*d0(iedge2,:)';
-          d11_b = t0(iedge2,:)*mat_deltas*d0(iedge2,:)' + 0*vec_deltas*d0p(iedge2,:)';  
+          d11_b = t0(iedge2,:)*mat_deltas*d0(iedge2,:)' + vec_deltas*d0p(iedge2,:)';  
           if (reg < p-2)
 %             MM{1,kver}{ipatch}(:,jfun) = sigma^(j1+j2)*[d00, d00+d10_a/(p*(k+1)), d00+2*d10_a/(p*(k+1))+d20_a/(p*(p-1)*(k+1)^2),...
 %                                                        -d01_a/(p*(k+1)), -d01_a/(p*(k+1))+d11_a/(p*(p-1)*(k+1)^2)]';  
