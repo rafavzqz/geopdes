@@ -512,7 +512,7 @@ for iref = 1:numel(interfaces_all)
       rhsc = sparse (msh_side(ii).nel, sp1_struct.ndof);
       val = val_grad* (tau1 / degu); %^2 removed  %WARNING: WE DIVIDED BY tau1/degu, which REQUIRES A SMALL MODIFICATION IN THE REF MASK (ADD MULT. BY 1/2) 
       for jj = 1:msh_side(ii).nel
-        val_aux = val * alpha{ii}(jj)* (-1)^(ii); %with the multipatch settings must be multiplied by -1 for left patch;
+        val_aux = val * alpha{ii}(jj)* (-1)^(ii+1); %with the multipatch settings must be multiplied by -1 for left patch;
         rhsc(jj,sp1_struct.connectivity(:,jj)) = sp1_struct.shape_functions(:,:,jj) * val_aux;
       end
       coeff2{ii} = A \ rhsc;
@@ -829,8 +829,8 @@ for kver = 1:numel(vertices)
 %                                                           d00+d10_b/(p*(k+1)),...
 %                                                           d00+(d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]'; 
           VV(corner_4dofs,jfun) = sigma^(j1+j2)*[d00, ...
-                                                 d00+d10_a/(p*(k+1)), ...
-                                                 d00+d10_b/(p*(k+1)),...
+                                                 d00+d10_b/(p*(k+1)), ...
+                                                 d00+d10_a/(p*(k+1)),...
                                                  d00+(d10_a+d10_b+d11_c/(p*(k+1)))/(p*(k+1))]'; 
           jfun = jfun+1;
         end
@@ -847,10 +847,10 @@ for kver = 1:numel(vertices)
         E2 = E{kver}{iedge2,1};
       end
       XX1 = E1; XX1(:,4) = -XX1(:,4); XX1(:,5) = -XX1(:,5);
-      XX2 = E2; XX2(:,4) = -XX2(:,4); XX2(:,5) = -XX2(:,5);
+% %       XX2 = E2; XX2(:,4) = -XX2(:,4); XX2(:,5) = -XX2(:,5);
 %       CC_vertices{ver_patches(ipatch),kver} = E1*MM{1,kver}{ipatch} + E2*MM{2,kver}{ipatch} - V{kver}{ipatch};
       CC_vertices{ver_patches(ipatch),kver} = E1*MM1 + E2*MM2 - VV;
-      CC_vertices{ver_patches(ipatch),kver} = XX1*MM1 + XX2*MM2 - VV;
+% %       CC_vertices{ver_patches(ipatch),kver} = XX1*MM1 + XX2*MM2 - VV;
       %csi2=[1 9 17 25 33 41 49 57];
       %csi1=1:8;
     end
