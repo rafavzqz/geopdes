@@ -16,8 +16,8 @@ permalink: /contributors/
 * **Elena Bulgarello**, contributions to the 3D div-conforming splines.
 * **Massimo Carraturo**, contributions to coarsening algorithms for THB-splines.
 * **Luca Coradello**, contributions to Navier-Stokes and Kirchhoff-Love shells, and reduce memory consumption for THB-splines.
-* **Adriano Côrtes**, Nitsche's method for enforcing Dirichlet conditions with div-conforming splines.
 * **Jacopo Corno**, beta testing and geometry of the Tesla cavity.
+* **Adriano Côrtes**, Nitsche's method for enforcing Dirichlet conditions with div-conforming splines.
 * **Luca Dedè**, advection-diffusion equation.
 * **Carlo de Falco**, contributions to the design of the code, implementation and maintenance of oct-files, implementation of many low level functions, and constant advice and support.
 * **Sara Frizziero**, contributions to the 3D div-conforming splines.
