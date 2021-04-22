@@ -16,7 +16,7 @@ These are some of the main features of GeoPDEs:
 * Implementation of multipatch domains, with conforming interfaces.
 * Div- and curl-conforming spline spaces, also in multipatch domains.
 * Examples for Poisson, linear elasticity, advection-diffusion, bilaplacian, Stokes, Navier-Stokes, Maxwell equations and Kirchhoff-Love shells.
-* Adaptive methods with hierarchical B-splines.
+* Adaptive methods with hierarchical B-splines, including refinement and coarsening.
 * Detailed documentation, accessible with the _help_ command.
 
 # License
