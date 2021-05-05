@@ -235,38 +235,6 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-% XXXX No boundary for now
-% % Boundary construction
-%   if (nargin == 4 && ~isempty (msh.boundary) && ~isempty (spaces{1}.boundary))
-%     sp_bnd = cell (msh.boundary.npatch, 1);
-%     for iptc = 1:msh.boundary.npatch
-%       patch_number = msh.boundary.patch_numbers(iptc);
-%       side_number  = msh.boundary.side_numbers(iptc);
-%       sp_bnd{iptc} = spaces{patch_number}.boundary(side_number);
-%     end
-%     sp.boundary = sp_multipatch (sp_bnd, msh.boundary, boundary_interfaces);
-%     
-%     dofs = zeros (sp.boundary.ndof, 1);
-%     boundary_orientation = []; %boundary_orient = zeros (sp.boundary.ndof, 1);
-%     for iptc = 1:msh.boundary.npatch
-%       patch_number = msh.boundary.patch_numbers(iptc);
-%       side_number  = msh.boundary.side_numbers(iptc);
-%       dofs(sp.boundary.gnum{iptc}) = sp.gnum{patch_number}(sp.sp_patch{patch_number}.boundary(side_number).dofs);
-%       if (~isempty (sp.boundary.dofs_ornt))
-%         boundary_orientation(sp.boundary.gnum{iptc}) = sp.boundary.dofs_ornt{iptc} .* ...
-%           sp.dofs_ornt{patch_number}(sp.sp_patch{patch_number}.boundary(side_number).dofs);
-%       end
-%     end
-%     sp.boundary.dofs = dofs;
-%     sp.boundary.boundary_orientation = boundary_orientation;
-%     
-%   else
-%     sp.boundary = [];
-%   end
-%   
-%   sp.dofs = [];
-%   sp.boundary_orientation = [];
-  
   sp.constructor = @(MSH) sp_multipatch_C1 (patches_constructor(spaces, MSH), MSH, geometry, interfaces);
     function spaux = patches_constructor (spaces, MSH)
       for ipatch = 1:MSH.npatch
