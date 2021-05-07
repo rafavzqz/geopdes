@@ -965,14 +965,14 @@ end
 function indices = indices_reorientation (ndof_dir, operations)
   ndof = prod (ndof_dir);
   indices = reshape (1:ndof, ndof_dir);
-  if (operations(3))
-    indices = indices.';
-  end
-  if (operations(2))
+  if (operations(1))
     indices = flipud (indices);
   end
-  if (operations(1))
+  if (operations(2))
     indices = fliplr (indices);
+  end
+  if (operations(3))
+    indices = indices.';
   end
     
 end
