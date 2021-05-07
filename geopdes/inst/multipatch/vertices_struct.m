@@ -5,105 +5,83 @@ function [interfaces, vertices] = vertices_struct(boundaries, interfaces_i)
 %and corresponding incides of sides in the patches; 2)for each vertex the list of interfaces
 %containing it and the corresponding index of the point in the interface (1=left/bottom, 2=right/top)
 
-%interfaces=interfaces_i
-N_int=numel(interfaces_i);
-interfaces=interfaces_i;
-for h=1:numel(boundaries)
-    interfaces(N_int+h).patch1=boundaries(h).patches;
-    interfaces(N_int+h).patch2=[];
-    interfaces(N_int+h).side1=boundaries(h).faces;
-    interfaces(N_int+h).side2=[];
-    interfaces(N_int+h).ornt=[];
+N_int = numel (interfaces_i);
+interfaces = interfaces_i;
+for hh = 1:numel(boundaries)
+  interfaces(N_int+hh).patch1 = boundaries(hh).patches;
+  interfaces(N_int+hh).side1 = boundaries(hh).faces;
 end
 
 %initialize vertices
 ivertices=[];
 
-nv=0;
-for i=1:numel(interfaces)
-    patches_i=[interfaces(i).patch1 interfaces(i).patch2];
-    sides_i=[interfaces(i).side1 interfaces(i).side2];  
-    for j=i+1:numel(interfaces)
-        patches_j=[interfaces(j).patch1 interfaces(j).patch2];
-        sides_j=[interfaces(j).side1 interfaces(j).side2];
-        [cpatch,cpatch_indi,cpatch_indj] = intersect(patches_i,patches_j);
-        cside_i=sides_i(cpatch_indi);
-        cside_j=sides_j(cpatch_indj);
-        if numel(cpatch)>0 %if vertex found
-            switch cside_i
-                case 1
-                    if cside_j==3
-                        nv=nv+1; %increase number of vertices
-                        ivertices(nv).interfaces=[i j];
-                        ivertices(nv).ind=[1 1];
-                    elseif cside_j==4
-                        nv=nv+1; %increase number of vertices
-                        ivertices(nv).interfaces=[i j];
-                        ivertices(nv).ind=[2 1];                        
-                    end
-                case 2
-                    if cside_j==3
-                        nv=nv+1; %increase number of vertices
-                        ivertices(nv).interfaces=[i j];
-                        ivertices(nv).ind=[1 2];
-                    elseif cside_j==4
-                        nv=nv+1; %increase number of vertices
-                        ivertices(nv).interfaces=[i j];
-                        ivertices(nv).ind=[2 2];                        
-                    end                    
-                case 3
-                    if cside_j==1
-                        nv=nv+1; %increase number of vertices
-                        ivertices(nv).interfaces=[i j];
-                        ivertices(nv).ind=[1 1];
-                    elseif cside_j==2
-                        nv=nv+1; %increase number of vertices
-                        ivertices(nv).interfaces=[i j];
-                        ivertices(nv).ind=[2 1];                        
-                    end                    
-                case 4     
-                    if cside_j==1
-                        nv=nv+1; %increase number of vertices
-                        ivertices(nv).interfaces=[i j];
-                        ivertices(nv).ind=[1 2];
-                    elseif cside_j==2
-                        nv=nv+1; %increase number of vertices
-                        ivertices(nv).interfaces=[i j];
-                        ivertices(nv).ind=[2 2];                        
-                    end                    
-            end
-        end
+% Find all vertices as intersection of two edges
+nv = 0;
+for ii = 1:numel(interfaces)
+  patches_i = [interfaces(ii).patch1 interfaces(ii).patch2];
+  sides_i = [interfaces(ii).side1 interfaces(ii).side2];  
+  for jj = ii+1:numel(interfaces)
+    patches_j = [interfaces(jj).patch1 interfaces(jj).patch2];
+    sides_j = [interfaces(jj).side1 interfaces(jj).side2];
+    [cpatch, cpatch_indi, cpatch_indj] = intersect (patches_i, patches_j);
+    cside_i = sides_i(cpatch_indi);
+    cside_j = sides_j(cpatch_indj);
+    
+    if (numel(cpatch) > 0) % possible vertex found
+      flag = false;
+      if (cside_i == 1 && cside_j == 3)
+        inds = [1 1]; flag = true;
+      elseif (cside_i == 1 && cside_j == 4)
+        inds = [2 1]; flag = true;
+      elseif (cside_i == 2 && cside_j==3)
+        inds = [1 2]; flag = true;
+      elseif (cside_i == 2 && cside_j==4)
+        inds = [2 2]; flag = true;
+      elseif (cside_i == 3 && cside_j == 1)
+        inds = [1 1]; flag = true;
+      elseif (cside_i == 3 && cside_j == 2)
+        inds = [2 1]; flag = true;
+      elseif (cside_i == 4 && cside_j == 1)
+        inds = [1 2]; flag = true;
+      elseif (cside_i == 4 && cside_j==2)
+        inds = [2 2]; flag = true;
+      end
+      if (flag)
+        nv = nv+1; %increase number of vertices
+        ivertices(nv).interfaces = [ii jj];
+        ivertices(nv).ind = inds;
+      end
     end
+  end
 end
 
 %vertices=ivertices;
 
-vertices(1)=ivertices(1);
-nv=1;
+% Remove redundant vertices
+vertices(1) = ivertices(1);
+nvert = 1;
 
-for i=2:numel(ivertices)
-inter_i=ivertices(i).interfaces;
-ind_i=ivertices(i).ind;     
-info_i=[inter_i' ind_i'];
-    flag_new=1;
-    for j=1:numel(vertices)
-        inter_j=vertices(j).interfaces;
-        ind_j=vertices(j).ind;
-        info_j=[inter_j' ind_j'];
-        if numel(intersect(info_i,info_j,'rows'))>0
-            [vertices(j).interfaces,indu,~]=unique([vertices(j).interfaces ivertices(i).interfaces]);
-            vertices(j).ind=[vertices(j).ind ivertices(i).ind];
-            vertices(j).ind=vertices(j).ind(indu);
-            flag_new=0;
-            break
-        end
+for ii = 2:numel(ivertices)
+  inter_i = ivertices(ii).interfaces;
+  ind_i = ivertices(ii).ind;
+  info_i = [inter_i' ind_i'];
+  flag_new = 1;
+  for jj = 1:numel(vertices)
+    inter_j = vertices(jj).interfaces;
+    ind_j = vertices(jj).ind;
+    info_j = [inter_j' ind_j'];
+    if (numel(intersect(info_i,info_j,'rows')) > 0)
+      [vertices(jj).interfaces,indu,~] = unique([vertices(jj).interfaces ivertices(ii).interfaces]);
+      vertices(jj).ind = [vertices(jj).ind ivertices(ii).ind];
+      vertices(jj).ind = vertices(jj).ind(indu);
+      flag_new = 0;
+      break
     end
-    if flag_new==1
-        nv=nv+1;
-        vertices(nv)=ivertices(i);
-    end
+  end
+  if (flag_new)
+    nvert = nvert + 1;
+    vertices(nvert) = ivertices(ii);
+  end
 end   
-    
 
 end
-
