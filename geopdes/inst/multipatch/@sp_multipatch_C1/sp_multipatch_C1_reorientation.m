@@ -153,7 +153,7 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries)
 % We could store the info of interfaces per patch, as in mp_interface
 
   sp.ndof_interior = 0;
-  [interfaces_all, ~] = vertices_struct(boundaries, interfaces);
+  [interfaces_all, vertices] = vertices_struct(boundaries, interfaces);
   for iptc = 1:sp.npatch
     interior_dofs = 1:spaces{iptc}.ndof;
     for intrfc = 1:numel(interfaces_all)
@@ -185,7 +185,7 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries)
   
 %   [ndof, CC] = compute_coefficients (sp, msh, geometry, interfaces);  
   [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices] = ...
-    compute_coefficients (sp, msh, geometry, interfaces, boundaries);
+    compute_coefficients (sp, msh, geometry, interfaces_all, vertices);
 %keyboard
   
   sp.ndof_edges = sum(ndof_per_interface); % Total number of edge functions
@@ -205,13 +205,12 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries)
       speye (numel (sp.interior_dofs_per_patch{iptc}));    
   end
 
-% Boundary edges are missing
-  for intrfc = 1:numel(interfaces)
+  for intrfc = 1:numel(interfaces_all)
     global_indices = sp.ndof_interior + sum(ndof_per_interface(1:intrfc-1)) + (1:ndof_per_interface(intrfc));
-    iptc1 = interfaces(intrfc).patch1;
-    iptc2 = interfaces(intrfc).patch2;
-    Cpatch{iptc1}(:,global_indices) = CC_edges{1,intrfc};
-    Cpatch{iptc2}(:,global_indices) = CC_edges{2,intrfc};
+    patches = [interfaces_all(intrfc).patch1 interfaces_all(intrfc).patch2];
+    for iptc = 1:numel(patches)
+      Cpatch{patches(iptc)}(:,global_indices) = CC_edges{iptc,intrfc};
+    end
   end
 
 % Vertices and patches_on_vertex are not defined yet. For now, this only works for one extraordinary point
@@ -246,37 +245,34 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries)
 end
 
 
-% There are some issues related to the orientation.
-% I am taking the absolute value of alpha
-% And for val_grad, I have to change the sign for coeff2, but not for coeff1
-% But everything seems to work!!!
+function [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices] = compute_coefficients (space, msh, geometry, interfaces_all, vertices)
 
-function [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices] = compute_coefficients (space, msh, geometry, interfaces, boundaries) %based on first Mario's notes (not refinement mask)
+%Initialize output variables with correct size
+ndof_per_interface = zeros (1, numel(interfaces_all));
+ndof_per_vertex = 6*ones(1,numel(vertices));
 
-[interfaces_all, vertices]=vertices_struct(boundaries, interfaces); 
+CC_edges = cell (2, numel (interfaces_all));
+CC_edges_discarded = cell (2, numel (interfaces_all));
+CC_vertices = cell (space.npatch, numel(vertices));
+for ii = 1:space.npatch
+  for jj = 1:numel(vertices)
+    CC_vertices{ii,jj} = sparse (space.ndof_per_patch(ii), 6);
+  end
+end
 
 pp = space.sp_patch{1}.degree(1);
 kk = numel(msh.msh_patch{1}.breaks{1})-2;
-nn = space.sp_patch{1}.sp_univ(1).ndof;
+% nn = space.sp_patch{1}.sp_univ(1).ndof;
 breaks_m = cellfun (@unique, space.sp_patch{1}.knots, 'UniformOutput', false);
 mult = histc(space.sp_patch{1}.knots{1},breaks_m{1});
-reg = pp-max(mult(2:end-1));
+reg = pp - max(mult(2:end-1));
 
-% ndof_per_interface = (2*nn-2*kk-11)*ones(1,numel(interfaces_all)); %works only if the space is degree and regularity are the same everywhere
-ndof_per_vertex = 6*ones(1,numel(vertices));
 
 all_alpha0 = zeros(numel(interfaces_all),2);
 all_alpha1 = zeros(numel(interfaces_all),2);
 all_beta0 = zeros(numel(interfaces_all),2);
 all_beta1 = zeros(numel(interfaces_all),2);
-all_t0 = zeros(numel(interfaces_all),2);
 
-%Initialize the cell array of CC_vertices matrices
-for ii = 1:space.npatch
-  for jj = 1:numel(vertices)
-    CC_vertices{ii,jj} = sparse (space.ndof_per_patch(ii), ndof_per_vertex(jj));
-  end
-end
 
 %computing for each patch all the derivatives we possibly need to compute t,d, and sigma
 % FIX: this would be done inside the vertex loop, after reorientation
@@ -296,30 +292,19 @@ for iptc = 1:space.npatch
 end
 
 %Construction of CC_edges
-for iref = 1%:numel(interfaces_all)
-% Create an auxiliary geometry with reorientation
-% FIX: Probably not valid for boundary edges
-  [geo_local, interface_local, operations] = reorientation_edge (interfaces_all(iref), geometry);
+for iref = 1:numel(interfaces_all)
+% Auxiliary geometry with orientation as in the paper
+  [geo_local, operations] = reorientation_edge (interfaces_all(iref), geometry);
   
-% FIX: only necessary for boundary edges. Reorientation makes the others as in the paper
-  clear patch
-  if (~isempty(interface_local.patch1))
-    original_patch(1) = interfaces_all(iref).patch1;
-    patch(1) = interface_local.patch1; %LEFT
-    side(1) = interface_local.side1; %LEFT
-  end
-  if (~isempty(interface_local.patch2))
-    original_patch(2) = interfaces_all(iref).patch2;
-    patch(2) = interface_local.patch2; %RIGHT
-    side(2) = interface_local.side2; %RIGHT
-  end
-  nnz_el = find(patch>0);
-  
-  %STEP 2 - Stuff necessary to evaluate the geo_mapping and its derivatives
-  %in this cycle we must add to the already existing CC_vertices, the part of the "discarded" interface functions    
-  for ii = nnz_el % The two patches (L-R)
-    % Points for G^1 conditions system
-    brk = cell (1,msh.ndim);
+  original_patch = [interfaces_all(iref).patch1 interfaces_all(iref).patch2];
+  patch = [1 2]; side = [1 3];
+  npatches_on_edge = numel (original_patch);
+
+% Compute gluing data  
+  geo_map_jac = cell (npatches_on_edge, 1);
+  for ii = 1:npatches_on_edge
+    brk = cell (1,msh.ndim); 
+    grev_pts = cell (1, msh.ndim);
     knt = geo_local(ii).nurbs.knots;
     order = geo_local(ii).nurbs.order;
     for idim = 1:msh.ndim
@@ -332,184 +317,132 @@ for iref = 1%:numel(interfaces_all)
     geo_map_jac{ii} = msh_side_interior.geo_map_jac; %rdim x ndim x 1 x n_grev_pts (rdim->physical space, ndim->parametric space)
   end
   
-  if (length(patch)==2) %as it is placed now, this check computes the matrices corresponding only to interior edges
-    [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev_pts, side);
-
+  [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev_pts, side);
+  clear geo_map_jac msh_grev msh_side_interior grev_pts
+  
  %Saving alphas and betas (first column=R, second column=L)
  % FIX: THIS HAS TO BE RECOMPUTED AFTER REORIENTATION
-    all_alpha0(iref,:) = alpha0;
-    all_alpha1(iref,:) = alpha1;
-    all_beta0(iref,:) = beta0;
-    all_beta1(iref,:) = beta1;  
+  all_alpha0(iref,:) = alpha0;
+  all_alpha1(iref,:) = alpha1;
+  all_beta0(iref,:) = beta0;
+  all_beta1(iref,:) = beta1;  
     
-% Compute the Greville points, and the auxiliary mesh and space objects
-    for ii = 1:2 % The two patches (R-L)
-      brk = cell (1,msh.ndim);
-      knots = knot_vector_reorientation (space.sp_patch{original_patch(ii)}.knots, operations(ii,:));
-      knots0 = knot_vector_reorientation (space.knots0_patches{original_patch(ii)}, operations(ii,:));
-      knots1 = knot_vector_reorientation (space.knots1_patches{original_patch(ii)}, operations(ii,:));
-      degrees = degree_reorientation (space.sp_patch{original_patch(ii)}.degree, operations(ii,3));
-      
-% The knot vectors for the N0 and N1 basis functions, as in Mario's notation
-% Only univariate knot vectors are computed
+% Compute the Greville points, and the auxiliary mesh and space objects for
+%  functions with reduced degree or increased regularity
+  for ii = 1:npatches_on_edge
 %%    %ind1  = [2 2 1 1]; ind2 = [1 1 2 2]
-      ind2 = ceil (side(ii)/2);
-      ind1 = setdiff (1:msh.ndim, ind2);
-
-      degree = degrees(ind1); %space.sp_patch{patch(ii)}.degree(ind1);
-      knots0 = knots0{ind1}; %space.knots0_patches{patch(ii)}{ind1};
-      knots1 = knots1{ind1}; %space.knots1_patches{patch(ii)}{ind1};
-      for idim = 1:msh.ndim
-        grev_pts{idim} = aveknt (knots{idim}, degrees(idim)+1);%space.sp_patch{patch(ii)}.degree(idim)+1); 
-        grev_pts{idim} = grev_pts{idim}(:)';
-        brk{idim} = [knots{idim}(1), grev_pts{idim}(1:end-1) + diff(grev_pts{idim})/2, knots{idim}(end)];
-      end
-      msh_grev = msh_cartesian (brk, grev_pts, [], geo_local(ii), 'boundary', true, 'der2',false);
+    ind2 = ceil (side(ii)/2);
+    ind1 = setdiff (1:msh.ndim, ind2);
+    
+    brk = cell (1,msh.ndim);
+    grev_pts = cell (1, msh.ndim);
+    degrees = degree_reorientation (space.sp_patch{original_patch(ii)}.degree, operations(ii,3));
+    degree = degrees(ind1); %space.sp_patch{patch(ii)}.degree(ind1);
+    
+    knots = knot_vector_reorientation (space.sp_patch{original_patch(ii)}.knots, operations(ii,:));
+    knots0 = knot_vector_reorientation (space.knots0_patches{original_patch(ii)}, operations(ii,:));
+    knots0 = knots0{ind1}; %space.knots0_patches{patch(ii)}{ind1};
+    knots1 = knot_vector_reorientation (space.knots1_patches{original_patch(ii)}, operations(ii,:));
+    knots1 = knots1{ind1}; %space.knots1_patches{patch(ii)}{ind1};
+    for idim = 1:msh.ndim
+      grev_pts{idim} = aveknt (knots{idim}, degrees(idim)+1);%space.sp_patch{patch(ii)}.degree(idim)+1); 
+      grev_pts{idim} = grev_pts{idim}(:)';
+      brk{idim} = [knots{idim}(1), grev_pts{idim}(1:end-1) + diff(grev_pts{idim})/2, knots{idim}(end)];
+    end
+    msh_grev = msh_cartesian (brk, grev_pts, [], geo_local(ii), 'boundary', true, 'der2',false);
 
 % Degree and first length in the direction normal to the interface
-      degu = degrees(ind2); %space.sp_patch{patch(ii)}.degree(ind2);
-      knt = unique (knots{ind2});
-      if (mod (side(ii), 2) == 1)
-        tau1 = knt(2) - knt(1);
-%       else
-%         tau1 = knt(end) - knt(end-1);
-      end
+    degu = degrees(ind2); %space.sp_patch{patch(ii)}.degree(ind2);
+    knt = unique (knots{ind2});
+    tau1 = knt(2) - knt(1);
 
-% For now we assume that the orientation is as in the paper, and we do not need any reordering
-% msh_side contains only the univariate parametrization of the boundary (dependence on u)
-% msh_side_int contains information for the bivariate parametrization (dependence on u and v)
 % sp_aux contains the value and derivatives of the basis functions, at the Greville points
-      msh_side(ii) = msh_eval_boundary_side (msh_grev, side(ii));
-      msh_side_interior = msh_boundary_side_from_interior (msh_grev, side(ii));
-%       sp_aux = space.sp_patch{patch(ii)}.constructor (msh_side_interior);
-      sp_aux = sp_bspline (knots, degrees, msh_side_interior);
+    msh_side = msh_eval_boundary_side (msh_grev, side(ii));
+    msh_side_interior = msh_boundary_side_from_interior (msh_grev, side(ii));
+    sp_aux = sp_bspline (knots, degrees, msh_side_interior);
 
-% The univariate spaces for the basis functions N^{p,r+1} (knots0) and N^{p-1,r} (knots1)
-      sp0 = sp_bspline (knots0, degree, msh_grev.boundary(side(ii)));
-      sp1 = sp_bspline (knots1, degree-1, msh_grev.boundary(side(ii)));
-      sp0_struct = sp_precompute_param (sp0, msh_grev.boundary(side(ii)), 'value', true, 'gradient', true);
-      sp1_struct = sp_precompute_param (sp1, msh_grev.boundary(side(ii)), 'value', true, 'gradient', true);
+% Univariate spaces for the basis functions N^{p,r+1} (knots0) and N^{p-1,r} (knots1) and N^{p,r} on the interface
+    sp0 = sp_bspline (knots0, degree, msh_grev.boundary(side(ii)));
+    sp1 = sp_bspline (knots1, degree-1, msh_grev.boundary(side(ii)));
+    sp0_struct = sp_precompute_param (sp0, msh_grev.boundary(side(ii)), 'value', true, 'gradient', true);
+    sp1_struct = sp_precompute_param (sp1, msh_grev.boundary(side(ii)), 'value', true, 'gradient', true);
 
-% The univariate space for the basis functions N^{p,r} on the interface
-%       spn = space.sp_patch{patch(ii)}.boundary(side(ii)).constructor(msh_grev.boundary(side(ii)))
-      ind = [2 2 1 1];
-      knotsn = knots{ind(side(ii))};
-      spn = sp_bspline (knotsn, degree, msh_grev.boundary(side(ii)));
-      spn_struct = sp_precompute_param (spn, msh_grev.boundary(side(ii)), 'value', true, 'gradient', true);
+    knotsn = knots{ind1};
+    spn = sp_bspline (knotsn, degree, msh_grev.boundary(side(ii)));
+    spn_struct = sp_precompute_param (spn, msh_grev.boundary(side(ii)), 'value', true, 'gradient', true);
 
 % Matrix for the linear systems, (14)-(16) in Mario's notes
-      A = sparse (msh_side(ii).nel, msh_side(ii).nel);
-      for jj = 1:msh_side(ii).nel
-        A(jj,spn_struct.connectivity(:,jj)) = spn_struct.shape_functions(:,:,jj);
-      end
+    A = sparse (msh_side.nel, msh_side.nel);
+    for jj = 1:msh_side.nel
+      A(jj,spn_struct.connectivity(:,jj)) = spn_struct.shape_functions(:,:,jj);
+    end
 
 %alphas and betas
-      alpha{ii} = abs (alpha0(ii)*(1-grev_pts{3-ii}') + alpha1(ii)*grev_pts{3-ii}'); %we have to take the absolute value to make it work for any orientation
-      beta{ii} = beta0(ii)*(1-grev_pts{3-ii}') + beta1(ii)*grev_pts{3-ii}';
-        %looks like alpha must be inverted, but betas mustn't
+    alpha = alpha0(ii)*(1-grev_pts{3-ii}') + alpha1(ii)*grev_pts{3-ii}';
+    beta = beta0(ii)*(1-grev_pts{3-ii}') + beta1(ii)*grev_pts{3-ii}';
 
-% RHS for the first linear system, (14) in Mario's notes
-      rhss = sparse (msh_side(ii).nel, sp0_struct.ndof);
-      for jj = 1:msh_side(ii).nel
-        rhss(jj,sp0_struct.connectivity(:,jj)) = sp0_struct.shape_functions(:,:,jj);
-      end
-      coeff0{ii} = A \ rhss;
-      coeff0{ii}(abs(coeff0{ii}) < 1e-12) = 0; % Make more sparse
+% RHS and solution of the linear systems, (14)-(16) in Mario's notes
+    rhss = sparse (msh_side.nel, sp0_struct.ndof);
+    for jj = 1:msh_side.nel
+      rhss(jj,sp0_struct.connectivity(:,jj)) = sp0_struct.shape_functions(:,:,jj);
+    end
+    coeff0 = A \ rhss;
+    coeff0(abs(coeff0) < 1e-12) = 0; % Make more sparse
 
-% RHS for the second linear system, (15) in Mario's notes
-      rhsb = sparse (msh_side(ii).nel, sp0_struct.ndof);
-      if (side(ii) == 1) %paper case, ii = 1
-        val_grad = sp_aux.sp_univ(1).shape_function_gradients(2);
-%       elseif (side(ii) == 2)
-%         val_grad = sp_aux.sp_univ(1).shape_function_gradients(end-1);
-      elseif (side(ii) == 3) % The other paper case, ii = 2
-        val_grad = sp_aux.sp_univ(2).shape_function_gradients(2);
-%       elseif (side(ii) == 4)
-%         val_grad = sp_aux.sp_univ(2).shape_function_gradients(end-1);
-      end
-      val = val_grad * (tau1 / degu)^2;
-      for jj = 1:msh_side(ii).nel  %paper case - check beta
-        val_aux = -val * beta{ii}(jj); %added a minus, as in (6) of multipatch paper
-        rhsb(jj,sp0_struct.connectivity(:,jj)) = sp0_struct.shape_function_gradients(:,:,:,jj) * val_aux;
-      end
-      rhsb = rhsb + rhss;
-      coeff1{ii} = A \ rhsb;
-      coeff1{ii}(abs(coeff1{ii}) < 1e-12) = 0; % Make more sparse
+    rhsb = sparse (msh_side.nel, sp0_struct.ndof);
+    if (ii == 1) % paper case, (side(ii) == 1)
+      val_grad = sp_aux.sp_univ(1).shape_function_gradients(2);
+    elseif (ii == 2) %The other paper case, (side(ii) == 3)
+      val_grad = sp_aux.sp_univ(2).shape_function_gradients(2);
+    end
+    val = val_grad * (tau1 / degu)^2;
+    for jj = 1:msh_side.nel
+      val_aux = -val * beta(jj);
+      rhsb(jj,sp0_struct.connectivity(:,jj)) = sp0_struct.shape_function_gradients(:,:,:,jj) * val_aux;
+    end
+    rhsb = rhsb + rhss;
+    coeff1 = A \ rhsb;
+    coeff1(abs(coeff1) < 1e-12) = 0; % Make more sparse
       
-% RHS for the third linear system, (16) in Mario's notes
-% We need this change of sign to make it work for general orientation.
-% I don't understand why we don't need it in the previous system.
-      val_grad = val_grad * (-1)^(side(ii)+1);
-
-      rhsc = sparse (msh_side(ii).nel, sp1_struct.ndof);
-      val = val_grad* (tau1 / degu); %^2 removed  %WARNING: WE DIVIDED BY tau1/degu, which REQUIRES A SMALL MODIFICATION IN THE REF MASK (ADD MULT. BY 1/2) 
-      for jj = 1:msh_side(ii).nel
-        val_aux = val * alpha{ii}(jj)* (-1)^(ii+1); %with the multipatch settings must be multiplied by -1 for left patch;
-        rhsc(jj,sp1_struct.connectivity(:,jj)) = sp1_struct.shape_functions(:,:,jj) * val_aux;
-      end
-      coeff2{ii} = A \ rhsc;
-      coeff2{ii}(abs(coeff2{ii}) < 1e-12) = 0; % Make more sparse
+    rhsc = sparse (msh_side.nel, sp1_struct.ndof);
+    val = val_grad* (tau1 / degu); %^2 removed  %WARNING: WE DIVIDED BY tau1/degu, which REQUIRES A SMALL MODIFICATION IN THE REF MASK (ADD MULT. BY 1/2) 
+    for jj = 1:msh_side.nel
+      val_aux = val * alpha{ii}(jj)* (-1)^(ii+1); %with the multipatch settings must be multiplied by -1 for left patch;
+      rhsc(jj,sp1_struct.connectivity(:,jj)) = sp1_struct.shape_functions(:,:,jj) * val_aux;
+    end
+    coeff2 = A \ rhsc;
+    coeff2(abs(coeff2) < 1e-12) = 0; % Make more sparse
       
 % Pass the coefficients to the tensor product basis
-% The numbering (ndof_edge) only works for the two patch case, for now
-      ndof_dir = sp_aux.ndof_dir; %space.sp_patch{patch(ii)}.ndof_dir;
-      ndof_dir_original = space.sp_patch{original_patch(ii)}.ndof_dir;
-      if (side(ii) == 1)
-        ind0 = sub2ind (ndof_dir, ones(1,spn.ndof), 1:spn.ndof);
-        ind1 = sub2ind (ndof_dir, 2*ones(1,spn.ndof), 1:spn.ndof);
-%       elseif (side(ii) == 2)
-%         ind0 = sub2ind (ndof_dir, ndof_dir(1) * ones(1,spn.ndof), 1:spn.ndof);
-%         ind1 = sub2ind (ndof_dir, (ndof_dir(1)-1) * ones(1,spn.ndof), 1:spn.ndof);
-      elseif (side(ii) == 3)
-        ind0 = sub2ind (ndof_dir, 1:spn.ndof, ones(1,spn.ndof));
-        ind1 = sub2ind (ndof_dir, 1:spn.ndof, 2*ones(1,spn.ndof));
-%       elseif (side(ii) == 4)
-%         ind0 = sub2ind (ndof_dir, 1:spn.ndof, ndof_dir(2) * ones(1,spn.ndof));
-%         ind1 = sub2ind (ndof_dir, 1:spn.ndof, (ndof_dir(2)-1) * ones(1,spn.ndof));
-      end
-
-      ndof_edge = sp0_struct.ndof + sp1_struct.ndof;
-      CC_edges{ii,iref} = sparse (space.ndof_per_patch(patch(ii)), ndof_edge);
-      
-      CC_edges{ii,iref}(ind0,1:sp0_struct.ndof) = coeff0{ii};  %coefficients of trace basis functions...
-      CC_edges{ii,iref}(ind1,1:sp0_struct.ndof) = coeff1{ii};
-      CC_edges{ii,iref}(ind1,sp0_struct.ndof+1:ndof_edge) = coeff2{ii}; %...and derivative basis functions (associated to iref-th interface)
-      
-      %keeping the part of the "actually active" edge functions, the remaining part saved in CC_edges_discarded
-      CC_edges_discarded{ii,iref}=CC_edges{ii,iref}(:,[1 2 3 sp0_struct.ndof-2:sp0_struct.ndof+2 ndof_edge-1 ndof_edge]); %dimension: n^2 x 10
-      CC_edges{ii,iref}=CC_edges{ii,iref}(:,[4:sp0_struct.ndof-3 sp0_struct.ndof+3:ndof_edge-2]);
-      
-% My (longer) version to better understand the indexing
-      trace_functions = 4:sp0_struct.ndof-3;
-      deriv_functions = 3:sp1_struct.ndof-2;
-      ndof_trace = sp0_struct.ndof - 6;
-      ndof_deriv = sp1_struct.ndof - 4;
-      discarded_trace_functions = [1:3, sp0_struct.ndof-2:sp0_struct.ndof];
-      discarded_deriv_functions = [1 2 sp1_struct.ndof-1 sp1_struct.ndof];
-
-      indices_reoriented = indices_reorientation (ndof_dir_original, operations(ii,:));
-      ind0_ornt = indices_reoriented(ind0);
-      ind1_ornt = indices_reoriented(ind1);
-
-% Active functions
-      CC_edges{ii,iref} = sparse (space.ndof_per_patch(patch(ii)), ndof_trace + ndof_deriv);
-      CC_edges{ii,iref}(ind0_ornt,1:ndof_trace) = coeff0{ii}(:,trace_functions);  %coefficients of trace basis functions...
-      CC_edges{ii,iref}(ind1_ornt,1:ndof_trace) = coeff1{ii}(:,trace_functions);
-      CC_edges{ii,iref}(ind1_ornt,ndof_trace+(1:ndof_deriv)) = coeff2{ii}(:,deriv_functions); %...and derivative basis functions (associated to iref-th interface)
-% Inactive functions, used to compute vertex functions
-      CC_edges_discarded{ii,iref} = sparse (space.ndof_per_patch(patch(ii)), 10);
-      CC_edges_discarded{ii,iref}(ind0,1:6) = coeff0{ii}(:,discarded_trace_functions);
-      CC_edges_discarded{ii,iref}(ind1,1:6) = coeff1{ii}(:,discarded_trace_functions);
-      CC_edges_discarded{ii,iref}(ind1,7:10) = coeff2{ii}(:,discarded_deriv_functions);
-      
-      ndof_per_interface(iref) = ndof_trace + ndof_deriv;
+    ndof_dir = sp_aux.ndof_dir; %space.sp_patch{patch(ii)}.ndof_dir;
+    ndof_dir_original = space.sp_patch{original_patch(ii)}.ndof_dir;
+    if (ii == 1)     %(side(ii) == 1)
+      ind0 = sub2ind (ndof_dir, ones(1,spn.ndof), 1:spn.ndof);
+      ind1 = sub2ind (ndof_dir, 2*ones(1,spn.ndof), 1:spn.ndof);
+    elseif (ii == 2) %(side(ii) == 3)
+      ind0 = sub2ind (ndof_dir, 1:spn.ndof, ones(1,spn.ndof));
+      ind1 = sub2ind (ndof_dir, 1:spn.ndof, 2*ones(1,spn.ndof));
     end
-  else
-    n0 = nn-kk; 
-    ndof_edge = n0+nn-kk-1;
-    CC_edges{ii,iref} = sparse (space.ndof_per_patch(patch(ii)), ndof_edge);
-    CC_edges_discarded{ii,iref} = CC_edges{ii,iref}(:,[1 2 3 n0-3:n0+1 ndof_edge-1 ndof_edge]); %dimension: n^2 x 10
-    CC_edges{ii,iref} = CC_edges{ii,iref}(:,[4:n0-4 n0+2:ndof_edge-2]);
+    indices_reoriented = indices_reorientation (ndof_dir_original, operations(ii,:));
+    ind0_ornt = indices_reoriented(ind0);
+    ind1_ornt = indices_reoriented(ind1);
+
+% Store the coefficients in CC_edges, and compute the number of functions
+    ndof_edge = sp0_struct.ndof + sp1_struct.ndof;
+    trace_functions = 4:sp0_struct.ndof-3;
+    deriv_functions = sp0_struct.ndof + (3:sp1_struct.ndof-2);
+    active_functions = union (trace_functions, deriv_functions);
+    discarded_functions = setdiff (1:ndof_edge, active_functions);
+
+    CC = sparse (space.ndof_per_patch(original_patch(ii)), ndof_edge);
+    CC(ind0_ornt,1:sp0_struct.ndof) = coeff0;
+    CC(ind1_ornt,1:sp0_struct.ndof) = coeff1;
+    CC(ind1_ornt,sp0_struct.ndof+(1:sp1_struct.ndof)) = coeff2;
+ 
+    ndof_per_interface(iref) = numel(active_functions);    
+    CC_edges{ii,iref} = sparse (space.ndof_per_patch(original_patch(ii)), ndof_per_interface(iref));
+    CC_edges{ii,iref} = CC(:,active_functions);
+    CC_edges_discarded{ii,iref} = CC(:,discarded_functions);
   end
 end
 
@@ -743,6 +676,15 @@ end
 
 function [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev_pts, side)
 
+  if (numel (geo_map_jac) == 1)
+% FIX: alpha1 and beta1 do not exist. They should be empty, but give an error in all_alpha
+    alpha0 = [1 1];
+    alpha1 = [0 0];
+    beta0 = [0 0]; 
+    beta1 = [0 0];
+    return
+  end
+
   %STEP 3 - Assembling and solving G^1 conditions system  %this must depend on orientation!
   if (side(2)==1 || side(2)==2)
     v = grev_pts{2}(:);
@@ -857,13 +799,7 @@ function [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev
   
 end
 
-%TO DO:
-%- case of boundary edges
-
-%TO BE TESTED
-%- plots of the functions
-%- continuity 
-function [geo_reoriented, local_interface, operations] = reorientation_edge (interface, geometry)
+function [geo_reoriented, operations] = reorientation_edge (interface, geometry)
   patches = [interface.patch1 interface.patch2];
   nrb_patches = [geometry(patches).nurbs];
   sides = [interface.side1 interface.side2];
@@ -896,36 +832,38 @@ function [geo_reoriented, local_interface, operations] = reorientation_edge (int
     end
   end
 
-% Change orientation of second patch
-  [~,jac] = nrbdeval (nrb_patches(2), nrbderiv(nrb_patches(2)), {rand(1) rand(1)});
-  jacdet = jac{1}(1) * jac{2}(2) - jac{1}(2) * jac{2}(1);
-  if (sides(2) == 1)
-    if (jacdet < 0)
-      operations(2,:) = [0 0 1];
-    else
-      operations(2,:) = [0 1 1];
-    end
-  elseif (sides(2) == 2)
-    if (jacdet < 0)
-      operations(2,:) = [1 1 1];
-    else
-      operations(2,:) = [1 0 1];
-    end
-  elseif (sides(2) == 3)
-    if (jacdet < 0)
-      operations(2,:) = [1 0 0];
-    else
-      operations(2,:) = [0 0 0];
-    end
-  elseif (sides(2) == 4)
-    if (jacdet < 0)
-      operations(2,:) = [0 1 0];
-    else
-      operations(2,:) = [1 1 0];
+% Change orientation of second patch, only for inner edges
+  if (numel(nrb_patches) == 2)
+    [~,jac] = nrbdeval (nrb_patches(2), nrbderiv(nrb_patches(2)), {rand(1) rand(1)});
+    jacdet = jac{1}(1) * jac{2}(2) - jac{1}(2) * jac{2}(1);
+    if (sides(2) == 1)
+      if (jacdet < 0)
+        operations(2,:) = [0 0 1];
+      else
+        operations(2,:) = [0 1 1];
+      end
+    elseif (sides(2) == 2)
+      if (jacdet < 0)
+        operations(2,:) = [1 1 1];
+      else
+        operations(2,:) = [1 0 1];
+      end
+    elseif (sides(2) == 3)
+      if (jacdet < 0)
+        operations(2,:) = [1 0 0];
+      else
+        operations(2,:) = [0 0 0];
+      end
+    elseif (sides(2) == 4)
+      if (jacdet < 0)
+        operations(2,:) = [0 1 0];
+      else
+        operations(2,:) = [1 1 0];
+      end
     end
   end
   
-  for ii = 1:2
+  for ii = 1:numel(nrb_patches)
     if (operations(ii,1))
       nrb_patches(ii) = nrbreverse (nrb_patches(ii), 1);
     end
@@ -938,9 +876,11 @@ function [geo_reoriented, local_interface, operations] = reorientation_edge (int
   end
 
   [geo_reoriented, ~, local_interface] = mp_geo_load (nrb_patches);
-  
-  if (local_interface.side1 ~= 1 || local_interface.side2 ~= 3 || local_interface.ornt ~= 1)
-    error('The reorientation is wrong')
+% FIX: this check can be removed once everything is working
+  if (numel (nrb_patches) == 2)
+    if (local_interface.side1 ~= 1 || local_interface.side2 ~= 3 || local_interface.ornt ~= 1)
+      error('The reorientation is wrong')
+    end
   end
 end
 
@@ -973,6 +913,5 @@ function indices = indices_reorientation (ndof_dir, operations)
   end
   if (operations(3))
     indices = indices.';
-  end
-    
+  end   
 end
