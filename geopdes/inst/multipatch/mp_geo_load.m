@@ -135,7 +135,7 @@ function [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = m
     for iptc = 1:numel(in)
       geometry(iptc) = geo_load (in(iptc));
     end
-    warning ('Automatically generating the interface and boundary information with nrbmultipatch')
+    warning ('geopdes:nrbmultipatch','Automatically generating the interface and boundary information with nrbmultipatch')
     [interfaces, boundaries] = nrbmultipatch (in);
     subdomains(1).name = 'SUBDOMAIN 1';
     subdomains(1).patches = 1:numel(in);
