@@ -2,7 +2,7 @@
 %
 %     sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries, boundary_interfaces)
 %
-% INPUTS:
+% INPUT:
 %
 %    spaces:     cell-array of space objects, one for each patch (see sp_scalar)
 %    msh:        mesh object that defines the multipatch mesh (see msh_multipatch)

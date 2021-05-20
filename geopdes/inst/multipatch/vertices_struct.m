@@ -1,9 +1,45 @@
-%INPUT: boundaries and interfaces as given by mp_geo_load
-%OUTPUT: structures containing 1) for each interfaces (included boundaries) indices of the djacent patches 
-%and corresponding incides of sides in the patches; 2)for each vertex the list of interfaces
-%containing it and the corresponding index of the point in the interface (1=left/bottom, 2=right/top)
+% VERTICES_STRUCT: Compute interfaces and vertices struct, necessary to build the basis
+%
+%     [edges, vertices] = vertices_struct (geometry, interfaces, boundaries, boundary_interfaces)
+%
+% INPUT:
+%
+%    geometry:   geometry struct (see mp_geo_load)
+%    interfaces: information of connectivity between patches (see mp_geo_load)
+%    boundaries: information about the boundary of the domain (see mp_geo_load)
+%    boundary_interfaces: information of connectivity between boundary patches (see mp_geo_load)
+%
+% OUTPUT:
+%
+%    interfaces: struct array similar to interfaces, but it also contains boundary edges
+%    vertices:   struct array. For each vertex it contains:
+%      - valence_p: number of patches touching the vertex
+%      - valence_e: number of edges touching the vertex
+%      - edges:     global numbering of the edges
+%      - patches:   global numbering of the patches
+%      - patch_reorientation: operations necessary to orient the patch as
+%             in the standard configuration (reverse x, reverse y, transpose)
+%      - edge_orientation: orientation of the edge in interfaces with
+%             respect to the standard configuration in the vertex
+%      - boundary_vertex: true if the vertex is a boundary vertex
+%
+% Copyright (C) 2019-2021 Rafael Vazquez
+% Copyright (C) 2019-2021 Cesare Bracco
+%
+%    This program is free software: you can redistribute it and/or modify
+%    it under the terms of the GNU General Public License as published by
+%    the Free Software Foundation, either version 3 of the License, or
+%    (at your option) any later version.
 
-function [interfaces, vertices] = vertices_struct(boundaries, interfaces_i, geometry, boundary_interfaces)
+%    This program is distributed in the hope that it will be useful,
+%    but WITHOUT ANY WARRANTY; without even the implied warranty of
+%    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+%    GNU General Public License for more details.
+%
+%    You should have received a copy of the GNU General Public License
+%    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+function [interfaces, vertices] = vertices_struct (geometry, interfaces_i, boundaries, boundary_interfaces)
 
 for iptc = 1:numel(geometry)
   msh{iptc} = msh_cartesian ({[0 1] [0 1]}, {0.5 0.5}, {1 1}, geometry(iptc), 'der2', false);
