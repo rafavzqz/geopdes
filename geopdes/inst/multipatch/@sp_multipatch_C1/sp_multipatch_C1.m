@@ -127,16 +127,11 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries, b
   sp.knots0_patches = knots0;
   sp.knots1_patches = knots1;
 
-% Computation of the number of degrees of freedom
-% We need to give a global numbering to the C^1 basis functions
-% We start numbering those away from the interface (V^1) patch by patch
-% And then generate the numbering for the functions close to the interface (V^2)
-
-% Compute the local indices of the functions in V^1
-%  and sum them up to get the whole space V^1
-
+% Computation of the number of degrees of freedom, and the coefficients to
+% express them as linear combinations of B-splines.
+% See the function compute_coefficients below for details.  
   sp.ndof_interior = 0;
-  [interfaces_all, vertices] = vertices_struct_rafa (boundaries, interfaces, geometry, boundary_interfaces);
+  [interfaces_all, vertices] = vertices_struct (boundaries, interfaces, geometry, boundary_interfaces);
   for iptc = 1:sp.npatch
     interior_dofs = 1:spaces{iptc}.ndof;
     for intrfc = 1:numel(interfaces_all)
@@ -148,12 +143,9 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries, b
         interior_dofs = setdiff (interior_dofs, [sp_bnd.dofs, sp_bnd.adjacent_dofs]);
       end
     end
-    sp.interior_dofs_per_patch{iptc} = interior_dofs; % An array with the indices
+    sp.interior_dofs_per_patch{iptc} = interior_dofs;
     sp.ndof_interior = sp.ndof_interior + numel (interior_dofs);
   end
-
-% Compute coefficients to express the basis functions as combinations of B-splines
-% See the function compute_coefficients below for details.
   
   [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices] = ...
     compute_coefficients (sp, msh, geometry, interfaces_all, vertices);
