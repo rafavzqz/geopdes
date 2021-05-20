@@ -131,7 +131,7 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries, b
 % express them as linear combinations of B-splines.
 % See the function compute_coefficients below for details.  
   sp.ndof_interior = 0;
-  [interfaces_all, vertices] = vertices_struct (boundaries, interfaces, geometry, boundary_interfaces);
+  [interfaces_all, vertices] = vertices_struct (geometry, interfaces, boundaries, boundary_interfaces);
   for iptc = 1:sp.npatch
     interior_dofs = 1:spaces{iptc}.ndof;
     for intrfc = 1:numel(interfaces_all)
