@@ -62,7 +62,6 @@ function [sp_fine, Proj, Proj0, Proj1] = sp_refine (space, msh, nsub, degree, re
       sp_fine{iptc} = sp_refine (space.sp_patch{iptc}, msh.msh_patch{iptc}, nsub, degree, regularity);
     end
   end
-  sp_fine = sp_multipatch_C1 (sp_fine, msh, space.geometry, space.interfaces, []);
-
+  sp_fine = sp_multipatch_C1 (sp_fine, msh, space.geometry, space.interfaces, space.vertices);
 
 end
