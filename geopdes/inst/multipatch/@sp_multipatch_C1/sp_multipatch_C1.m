@@ -44,7 +44,8 @@
 %         sp_get_cells:           compute the cells on which a list of functions do not vanish
 %         sp_get_neighbors:       compute the neighbors, functions that share at least one element with a given one
 %
-% Copyright (C) 2015, 2017 Rafael Vazquez
+% Copyright (C) 2015-2021 Rafael Vazquez
+% Copyright (C) 2019-2021 Cesare Bracco
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -74,12 +75,8 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries, b
   if (msh.ndim ~= 2 || msh.rdim ~= 2)
     error ('Only implemented for planar surfaces')
   end
-  
 
-   for iptc = 1:numel(geometry)
-%     if (any (geometry(iptc).nurbs.order > 2))
-%       error ('For now, only bilinear patches are implemented')
-%     end
+  for iptc = 1:numel(geometry)
     knots = spaces{iptc}.knots;
     breaks = cellfun (@unique, knots, 'UniformOutput', false);
     mult = cellfun (@histc, knots, breaks, 'UniformOutput', false);
@@ -92,7 +89,6 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries, b
       end
     end
   end
-  
 
   sp.ncomp = spaces{1}.ncomp;
   sp.transform = spaces{1}.transform;
@@ -113,11 +109,7 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries, b
   sp.ndof_per_patch = [aux.ndof];
   sp.sp_patch = spaces;
   
-% Assuming that the starting space has degree p and regularity r, 
-% r <= p-2, we compute the knot vectors of the auxiliary spaces:
-%  knots0: degree p, regularity r+1.
-%  knots1: degree p-1, regularity r.
-
+% Knot vectors of auxiliary spaces
   knots0 = cell (sp.npatch, 1); knots1 = knots0;
   for iptc = 1:sp.npatch
     knots = spaces{iptc}.knots;
@@ -141,16 +133,8 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries, b
 % Compute the local indices of the functions in V^1
 %  and sum them up to get the whole space V^1
 
-% if (numel (interfaces) > 1 || msh.npatch > 2)
-%   error ('For now, the implementation only works for two patches')
-% end
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% I HAVE CHANGED STARTING FROM HERE
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% We could store the info of interfaces per patch, as in mp_interface
 
   sp.ndof_interior = 0;
   [interfaces_all, vertices] = vertices_struct_rafa (boundaries, interfaces, geometry, boundary_interfaces);
@@ -186,12 +170,10 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries, b
 %   [ndof, CC] = compute_coefficients (sp, msh, geometry, interfaces);  
   [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices] = ...
     compute_coefficients (sp, msh, geometry, interfaces_all, vertices);
-%keyboard
-  
-  sp.ndof_edges = sum(ndof_per_interface); % Total number of edge functions
-  sp.ndof_vertices = sum (ndof_per_vertex); % Total number of vertex functions
-%%% FIX : only for one interior vertex
-%   sp.ndof_vertices = ndof_per_vertex(1); % Total number of vertex functions
+
+% Total number of functions, and of functions of each type
+  sp.ndof_edges = sum(ndof_per_interface);
+  sp.ndof_vertices = sum (ndof_per_vertex);
   sp.ndof = sp.ndof_interior + sp.ndof_edges + sp.ndof_vertices;
 
 % Computation of the coefficients for basis change
@@ -215,31 +197,17 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries, b
     end
   end
 
-% Vertices and patches_on_vertex are not defined yet. For now, this only works for one extraordinary point
-% The information of which patches share the vertex can be computed with the help of mp_interface
   for ivrt = 1:numel(vertices)
-% %%% FIX : only for one interior vertex
-%     if (vertices(ivrt).boundary_vertex)
-%       continue
-%     end
     global_indices = sp.ndof_interior + sp.ndof_edges + sum(ndof_per_vertex(1:ivrt-1)) + (1:ndof_per_vertex(ivrt));
-%     global_indices = sp.ndof_interior + sp.ndof_edges + (1:ndof_per_vertex(ivrt));
     for iptc = 1:sp.npatch %patches_on_vertex (TO BE CHANGED)
       Cpatch{iptc}(:,global_indices) = CC_vertices{iptc,ivrt};
     end
   end
 
-%  sp.patches_on_vertex = patches_on_vertex; TO BE DONE
   sp.interfaces = interfaces;
   sp.Cpatch = Cpatch;
   sp.geometry = geometry; % I store this for simplicity
-  %keyboard
   
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% I HAVE FINISHED MY CHANGES HERE
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
   sp.constructor = @(MSH) sp_multipatch_C1 (patches_constructor(spaces, MSH), MSH, geometry, interfaces);
     function spaux = patches_constructor (spaces, MSH)
       for ipatch = 1:MSH.npatch
@@ -247,8 +215,7 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries, b
       end
     end
 
-  sp = class (sp, 'sp_multipatch_C1');
-  
+  sp = class (sp, 'sp_multipatch_C1');  
 end
 
 
@@ -273,7 +240,6 @@ kk = numel(msh.msh_patch{1}.breaks{1})-2;
 breaks_m = cellfun (@unique, space.sp_patch{1}.knots, 'UniformOutput', false);
 mult = histc(space.sp_patch{1}.knots{1},breaks_m{1});
 reg = pp - max(mult(2:end-1));
-
 
 all_alpha0 = zeros(numel(interfaces_all),2);
 all_alpha1 = zeros(numel(interfaces_all),2);
@@ -309,8 +275,7 @@ for iref = 1:numel(interfaces_all)
   [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev_pts, sides);
   clear geo_map_jac msh_grev msh_side_interior grev_pts
 
- %Saving alphas and betas (first column=R, second column=L)
- % FIX: THIS HAS TO BE RECOMPUTED AFTER REORIENTATION
+ %Saving alphas and betas (first column=i_0, second column=i_1)
   all_alpha0(iref,:) = alpha0;
   all_alpha1(iref,:) = alpha1;
   all_beta0(iref,:) = beta0;
@@ -326,13 +291,13 @@ for iref = 1:numel(interfaces_all)
     brk = cell (1,msh.ndim);
     grev_pts = cell (1, msh.ndim);
     degrees = degree_reorientation (space.sp_patch{patches(ii)}.degree, operations(ii,3));
-    degree = degrees(ind1); %space.sp_patch{patch(ii)}.degree(ind1);
+    degree = degrees(ind1);
 
     knots = knot_vector_reorientation (space.sp_patch{patches(ii)}.knots, operations(ii,:));
     knots0 = knot_vector_reorientation (space.knots0_patches{patches(ii)}, operations(ii,:));
-    knots0 = knots0{ind1}; %space.knots0_patches{patch(ii)}{ind1};
+    knots0 = knots0{ind1};
     knots1 = knot_vector_reorientation (space.knots1_patches{patches(ii)}, operations(ii,:));
-    knots1 = knots1{ind1}; %space.knots1_patches{patch(ii)}{ind1};
+    knots1 = knots1{ind1};
     for idim = 1:msh.ndim
       grev_pts{idim} = aveknt (knots{idim}, degrees(idim)+1);%space.sp_patch{patch(ii)}.degree(idim)+1); 
       grev_pts{idim} = grev_pts{idim}(:)';
@@ -341,7 +306,7 @@ for iref = 1:numel(interfaces_all)
     msh_grev = msh_cartesian (brk, grev_pts, [], geo_local(ii), 'boundary', true, 'der2',false);
 
 % Degree and first length in the direction normal to the interface
-    degu = degrees(ind2); %space.sp_patch{patch(ii)}.degree(ind2);
+    degu = degrees(ind2);
     knt = unique (knots{ind2});
     tau1 = knt(2) - knt(1);
 
@@ -360,7 +325,7 @@ for iref = 1:numel(interfaces_all)
     spn = sp_bspline (knotsn, degree, msh_grev.boundary(sides(ii)));
     spn_struct = sp_precompute_param (spn, msh_grev.boundary(sides(ii)), 'value', true, 'gradient', true);
 
-% Matrix for the linear systems, (14)-(16) in Mario's notes
+% Matrix for the linear systems
     A = sparse (msh_side.nel, msh_side.nel);
     for jj = 1:msh_side.nel
       A(jj,spn_struct.connectivity(:,jj)) = spn_struct.shape_functions(:,:,jj);
@@ -394,9 +359,9 @@ for iref = 1:numel(interfaces_all)
     coeff1(abs(coeff1) < 1e-12) = 0; % Make more sparse
 
     rhsc = sparse (msh_side.nel, sp1_struct.ndof);
-    val = val_grad* (tau1 / degu); %^2 removed  %WARNING: WE DIVIDED BY tau1/degu, which REQUIRES A SMALL MODIFICATION IN THE REF MASK (ADD MULT. BY 1/2) 
+    val = val_grad* (tau1 / degu);
     for jj = 1:msh_side.nel
-      val_aux = val * alpha(jj)* (-1)^(ii+1); %with the multipatch settings must be multiplied by -1 for left patch;
+      val_aux = val * alpha(jj)* (-1)^(ii+1);
       rhsc(jj,sp1_struct.connectivity(:,jj)) = sp1_struct.shape_functions(:,:,jj) * val_aux;
     end
     coeff2 = A \ rhsc;
@@ -445,9 +410,6 @@ E = cell(numel(vertices),1);
 sides = [1 4; 2 3; 1 2; 4 3]; %on i-th row the indices of the endpoints of the i-th side (bottom-up, left-right)
 
 for kver = 1:numel(vertices)
-%   if (vertices(kver).boundary_vertex)
-%     continue
-%   end
   edges = vertices(kver).edges;
   patches = vertices(kver).patches;
   valence_e = vertices(kver).valence_e;
@@ -583,207 +545,9 @@ for kver = 1:numel(vertices)
         jfun = jfun+1;
       end
     end
-
     CC_vertices{patches(ipatch),kver} = E_prev*M_prev + E_next*M_next - VV;
   end
-
 end
-
-
-% % Computation of CC_vertices
-% % Compute for each patch all the derivatives we possibly need to compute t,d, and sigma
-% % FIX: this would be done inside the vertex loop, after reorientation
-% brk = cell (1,msh.ndim);
-% for iptc = 1:space.npatch
-%   knots = space.sp_patch{iptc}.knots;
-%   for idim = 1:msh.ndim
-%     brk{idim}=[knots{idim}(1) knots{idim}(end)]; %is this correct?
-%   end
-%   %the following points correspond to the four vertices of the patch
-%   pts{1} = [0 1]';
-%   pts{2} = [0 1]';%pts{2}=[0 1/2 1]'
-%   msh_pts_der1 = msh_cartesian (brk, pts, [], geometry(iptc),'boundary', true, 'der2', true);
-%   msh_der = msh_precompute (msh_pts_der1);
-%   derivatives1{iptc} = msh_der.geo_map_jac; %rdim x ndim x (n_pts{1}x n_pts{2}) (rdim->physical space, ndim->parametric space)
-%   derivatives2{iptc} = msh_der.geo_map_der2; %rdim x ndim x ndim x n_pts{1} x n_pts{2}
-% end
-% 
-% for kver = 1:numel(vertices)
-%   %Everything must be updated by using interfaces_all instead of interfaces TO DO
-%   ver_patches = []; %vector with indices of patches containing the vertex
-%   ver_patches_nabla = {}; %cell array containing jacobians
-%   ver_ind = []; %vector containing local index of vertex in the patch
-%   valence_e = vertices(kver).valence_e;
-%   valence_p = vertices(kver).valence_p;
-%   patches = vertices(kver).patches;
-%     
-%   if (~vertices(kver).boundary_vertex)
-%     
-% % 1=RIGHT PATCH 2=LEFT PATCH (true also for alphas and betas, but not for CC_edges and CC_edges_discarded)    
-%     for iedge = 1:valence_e %cycle over all the interfaces containing the vertex
-%       inter = vertices(kver).edges(iedge); %global index of the interface 
-%       patch_ind1 = interfaces_all(inter).patch1; %global index of left patch of iedge-th interface
-%       patch_ind2 = interfaces_all(inter).patch2; %global index of right patch of iedge-th interface
-% %       vertex_ind1 = sides(interfaces_all(inter).side1,vertices(kver).ind(iedge)); %local index of vertex in left patch
-% %       vertex_ind2 = sides(interfaces_all(inter).side2,vertices(kver).ind(iedge)); %local index of vertex in right patch
-%       vertex_ind1 = 1; vertex_ind2 = 1; % FIX: This must depend on the orientation
-%       ver_patches = [ver_patches patch_ind1 patch_ind2];
-%       ver_ind = [ver_ind vertex_ind1 vertex_ind2];
-%         %compute t(0) and t'(0), d(0) and d'(0)
-%       switch vertex_ind1
-%         case 1 %vertex (0,0)
-%           Du_F00 = derivatives1{patch_ind1}(:,1,1);
-%           Dv_F00 = derivatives1{patch_ind1}(:,2,1);
-%           Duv_F00 = derivatives2{patch_ind1}(:,1,2,1);
-%           Dvv_F00 = derivatives2{patch_ind1}(:,2,2,1);
-%       end
-%         %Store the jacobian of F for the left patch
-%       ver_patches_nabla{2*iedge-1} = [Du_F00 Dv_F00];
-% 
-%       t0(iedge,:) = Dv_F00;
-%       t0p(iedge,:) = Dvv_F00;
-%       d0(iedge,:) = (Du_F00 + (all_beta0(inter,1)*(1-0) + all_beta1(inter,1)*0)*Dv_F00) / ...
-%             (all_alpha0(inter,1)*(1-0) + all_alpha1(inter,1)*0);
-%       d0p(iedge,:) = (-(-all_alpha0(inter,1) + all_alpha1(inter,1))*(Du_F00 + (all_beta0(inter,1)*(1-0) + all_beta1(inter,1)*0)*Dv_F00) +...
-%                    (all_alpha0(inter,1)*(1-0) + all_alpha1(inter,1)*0) * ...
-%                    (Duv_F00 + (-all_beta0(inter,1) + all_beta1(inter,1))*Dv_F00 + ...
-%                    (all_beta0(inter,1)*(1-0) + all_beta1(inter,1)*0)*Dvv_F00)) / ...
-%                    (all_alpha0(inter,1)*(1-0)+all_alpha1(inter,1)*0)^2;  
-%       mix_der2(2*iedge-1,:) = Duv_F00;
-%       %We need to get the jacobian also for the right patch
-%       switch vertex_ind2
-%         case 1 %vertex (0,0)
-%           Du_F00 = derivatives1{patch_ind2}(:,1,1);
-%           Dv_F00 = derivatives1{patch_ind2}(:,2,1);
-%           Duv_F00 = derivatives2{patch_ind2}(:,1,2,1);
-%       end
-%       ver_patches_nabla{2*iedge} = [Du_F00 Dv_F00];
-%       mix_der2(2*iedge,:) = Duv_F00;
-%         
-%       %Pick the correct part of CC_edges_discarded %TO BE FIXED
-%       if (vertices(kver).edge_orientation(iedge) == 1) %the vertex is the left/bottom endpoint of im-th interface
-%         E{kver}{iedge,1} = CC_edges_discarded{1,inter}(:,[1 2 3 7 8]); %part of the matrix corresponding to edge functions close to the vertex
-%         E{kver}{iedge,2} = CC_edges_discarded{2,inter}(:,[1 2 3 7 8]);
-% %       else %the vertex is the right/top endpoint of im-th interface
-% %         E{kver}{im,1}=CC_edges_discarded{1,inter}(:,[4 5 6 9 10]);
-% %         E{kver}{im,2}=CC_edges_discarded{2,inter}(:,[4 5 6 9 10]);
-%       end
-%     end
-%     [ver_patches, ind_patch_sigma, ind_patch_rep] = unique (ver_patches, 'stable');
-%     mix_der2_n = mix_der2(ind_patch_sigma,:);
-%     %ver_ind=unique(ver_ind,'rows','stable');
-%     
-%     %ind_patch_sigma contains the positions of the elements of ver_patches
-%     %originally (each of them is present twice, the first one is considered)
-%     
-%     %if the number of patches coincides with the number of interfaces, 
-%     %we add one fictional interface coinciding with the first one
-%     %(just for coding-numbering reasons)
-% %     if numel(ver_patches)==ninterfaces_ver
-% %         t0(ninterfaces_ver+1,:)=t0(1,:);
-% %         t0p(ninterfaces_ver+1,:)=t0p(1,:);
-% %         d0(ninterfaces_ver+1,:)=d0(1,:);
-% %         d0p(ninterfaces_ver+1,:)=d0p(1,:);
-% %         E{kver}{ninterfaces_ver+1,1}=E{kver}{1,1};
-% %         E{kver}{ninterfaces_ver+1,2}=E{kver}{1,2};
-% %     end
-%     
-%     %computing sigma % FIX: ver_patches_nabla needs to be changed for multiple vertices
-%     sigma = 0;
-%     for im = 1:valence_p % FIX: is this the number of interfaces?
-%       sigma = sigma + norm(ver_patches_nabla{ind_patch_sigma(im)},2);
-%     end
-%     sigma = 1/(sigma/(pp*(kk+1)*valence_p));
-%     %computing matrices MM and V
-%     for ipatch = 1:valence_p %FIX: cycle over the patches containing the vertex
-%         
-%         %assemble matrix (not final: Ms and Vs, then updated with the "discarded parts" of edge functions)
-%       n1 = space.sp_patch{patches(ipatch)}.ndof_dir(1); %dimension of tensor-product space in the patch (dir 1)
-%       n2 = space.sp_patch{patches(ipatch)}.ndof_dir(2); %dimension of tensor-product space in the patch (dir 2)
-% %       V{kver}{im} = zeros(n1*n2,6);
-%       MM1 = zeros(5,6); MM2 = zeros(5,6);
-%       VV = zeros(n1*n2,6);
-%       im_edges = ceil(find(ind_patch_rep==ipatch)/2); %indices of the edges containing the vertex (in the list of edges containing the vertex)
-%       if (ipatch == 1)  %works only if the interfaces and patches are ordered in clockwise order
-%         im_edges = flip (im_edges); %this is done to have always the interface to the right of the patch in iedge1
-%       end
-%       iedge1 = im_edges(1); iedge2 = im_edges(2);
-% 
-%       corner_4dofs = [1 2 n2+1 n2+2];
-%       jfun = 1;
-%       for j1 = 0:2
-%         for j2 = 0:2-j1 %the following computations work in the standard case
-%           mat_deltas = [(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)];
-%           vec_deltas = [(j1==1)*(j2==0), (j1==0)*(j2==1)];
-%           d00 = (j1==0)*(j2==0);
-%           %M_{i_{m-1},i}
-%           d10_a = vec_deltas*t0(iedge1,:)';
-%           d20_a = t0(iedge1,:)*mat_deltas*t0(iedge1,:)' + vec_deltas*t0p(iedge1,:)';
-%           d01_a = vec_deltas*d0(iedge1,:)';
-%           d11_a = t0(iedge1,:)*mat_deltas*d0(iedge1,:)' + vec_deltas*d0p(iedge1,:)';
-% 
-%           %M_{i_{m+1},i}
-%           d10_b = vec_deltas*t0(iedge2,:)';
-%           d20_b = t0(iedge2,:)*mat_deltas*t0(iedge2,:)' + vec_deltas*t0p(iedge2,:)';
-%           d01_b = vec_deltas*d0(iedge2,:)';
-%           d11_b = t0(iedge2,:)*mat_deltas*d0(iedge2,:)' + vec_deltas*d0p(iedge2,:)';  
-%           if (reg < pp-2)
-%             MM1(:,jfun) = sigma^(j1+j2)*[d00, ...
-%                                          d00+d10_a/(pp*(kk+1)), ...
-%                                          d00+2*d10_a/(pp*(kk+1))+d20_a/(pp*(pp-1)*(kk+1)^2), ...
-%                                          d01_a/(pp*(kk+1)), ...
-%                                          d01_a/(pp*(kk+1))+d11_a/(pp*(pp-1)*(kk+1)^2)].';
-%             MM2(:,jfun) = sigma^(j1+j2)*[d00, ...
-%                                          d00+d10_b/(pp*(kk+1)), ...
-%                                          d00+2*d10_b/(pp*(kk+1))+d20_b/(pp*(pp-1)*(kk+1)^2), ...
-%                                          d01_b/(pp*(kk+1)), ...
-%                                          d01_b/(pp*(kk+1))+d11_b/(pp*(pp-1)*(kk+1)^2)].';
-%           else
-%             MM1(:,jfun) = sigma^(j1+j2)*[d00, ...
-%                                          d00+d10_a/(pp*(kk+1)), ...
-%                                          d00+3*d10_a/(pp*(kk+1))+2*d20_a/(pp*(pp-1)*(kk+1)^2), ...
-%                                          d01_a/(pp*(kk+1)), ...
-%                                          d01_a/(pp*(kk+1))+d11_a/(pp*(pp-1)*(kk+1)^2)].';
-%             MM2(:,jfun) = sigma^(j1+j2)*[d00, ...
-%                                          d00+d10_b/(pp*(kk+1)), ...
-%                                          d00+3*d10_b/(pp*(kk+1))+2*d20_b/(pp*(pp-1)*(kk+1)^2), ...
-%                                          d01_b/(pp*(kk+1)), ...
-%                                          d01_b/(pp*(kk+1))+d11_b/(pp*(pp-1)*(kk+1)^2)].';
-%           end
-%           %V_{i_m,i}  
-%           d11_c = t0(iedge1,:)*mat_deltas*t0(iedge2,:)' + vec_deltas*mix_der2_n(ipatch,:)';
-%           VV(corner_4dofs,jfun) = sigma^(j1+j2)*[d00, ...
-%                                                  d00+d10_a/(pp*(kk+1)), ...
-%                                                  d00+d10_b/(pp*(kk+1)), ...
-%                                                  d00+(d10_a+d10_b+d11_c/(pp*(kk+1)))/(pp*(kk+1))]'; 
-%           jfun = jfun+1;
-%         end
-%       end
-%       % Check which patch of the edge function we are considering
-%       if (interfaces_all(vertices(kver).edges(iedge1)).patch2 == patches(ipatch))%the considered patch is the second patch edge iedge1
-%         E1 = E{kver}{iedge1,2};
-%       else
-%         E1 = E{kver}{iedge1,1};
-%       end
-%       if (interfaces_all(vertices(kver).edges(iedge2)).patch2 == patches(ipatch))%the considered patch is the second patch of edge iedge2
-%         E2 = E{kver}{iedge2,2};
-%       else
-%         E2 = E{kver}{iedge2,1};
-%       end
-% % %       XX1 = E1; XX1(:,4) = -XX1(:,4); XX1(:,5) = -XX1(:,5);
-% % %       XX2 = E2; XX2(:,4) = -XX2(:,4); XX2(:,5) = -XX2(:,5);
-% %       CC_vertices{ver_patches(ipatch),kver} = E1*MM{1,kver}{ipatch} + E2*MM{2,kver}{ipatch} - V{kver}{ipatch};
-%       CC_vertices{patches(ipatch),1} = E1*MM1 + E2*MM2 - VV;
-% % %       CC_vertices{ver_patches(ipatch),kver} = XX1*MM1 + XX2*MM2 - VV;
-%       %csi2=[1 9 17 25 33 41 49 57];
-%       %csi1=1:8;
-% %       M1aux{ipatch} = E1 * MM1;
-% %       M2aux{ipatch} = E2 * MM2;
-% %       Vaux{ipatch} = VV;
-%     end
-%   end
-% 
-% end
 
 end
 
@@ -838,7 +602,6 @@ function [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev
     beta2_n = sols(5);     
   end
  
- %keyboard
  %STEP 4 - Normalizing the alphas
  %C1=((alpha1_n(1)-alpha0_n(1))^2)/3+((alpha1_n(2)-alpha0_n(2))^2)/3 + (alpha1_n(1)-alpha0_n(1))*alpha0_n(1)+(alpha1_n(2)-alpha0_n(2))*alpha0_n(2)...
  %   +alpha0_n(1)^2+alpha0_n(2)^2;
@@ -927,13 +690,13 @@ function geo_reoriented = reorientation_patches (operations, geometry)
     end
   end
 
-  [geo_reoriented, ~, local_interface] = mp_geo_load (nrb_patches);
-% FIX: this check can be removed once everything is working
-  if (numel (nrb_patches) == 2)
-    if (local_interface.side1 ~= 1 || local_interface.side2 ~= 3 || local_interface.ornt ~= 1)
-      error('The reorientation is wrong')
-    end
-  end
+  geo_reoriented = mp_geo_load (nrb_patches);
+%   [geo_reoriented, ~, local_interface] = mp_geo_load (nrb_patches);
+%   if (numel (nrb_patches) == 2)
+%     if (local_interface.side1 ~= 1 || local_interface.side2 ~= 3 || local_interface.ornt ~= 1)
+%       error('The reorientation is wrong')
+%     end
+%   end
 end
 
 function knots = knot_vector_reorientation (knots, operations)
