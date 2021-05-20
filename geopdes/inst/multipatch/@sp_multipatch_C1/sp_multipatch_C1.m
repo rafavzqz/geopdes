@@ -46,6 +46,9 @@
 %         sp_get_cells:           compute the cells on which a list of functions do not vanish
 %         sp_get_neighbors:       compute the neighbors, functions that share at least one element with a given one
 %
+%       Other methods
+%         sp_refine: generate a refined space, and subdivision matrices for the univariate spaces
+%
 % Copyright (C) 2015-2021 Rafael Vazquez
 % Copyright (C) 2019-2021 Cesare Bracco
 %
