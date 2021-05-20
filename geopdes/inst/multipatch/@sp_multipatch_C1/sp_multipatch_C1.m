@@ -1,15 +1,14 @@
 % SP_MULTIPATCH_C1: Constructor of the class for multipatch spaces with C1 continuity
 %
-%     sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries, boundary_interfaces)
+%     sp = sp_multipatch_C1 (spaces, msh, geometry, edges, vertices)
 %
 % INPUT:
 %
-%    spaces:     cell-array of space objects, one for each patch (see sp_scalar)
-%    msh:        mesh object that defines the multipatch mesh (see msh_multipatch)
-%    geometry:   geometry struct (see mp_geo_load)
-%    interfaces: information of connectivity between patches (see mp_geo_load)
-%    boundaries: information about the boundary of the domain (see mp_geo_load)
-%    boundary_interfaces: information of connectivity between boundary patches (see mp_geo_load)
+%    spaces:   cell-array of space objects, one for each patch (see sp_scalar)
+%    msh:      mesh object that defines the multipatch mesh (see msh_multipatch)
+%    geometry: geometry struct (see mp_geo_load)
+%    edges:    struct array similar to interfaces (see vertices_struct)
+%    vertices: struct array with vertex information (see vertices_struct)
 %
 % OUTPUT:
 %
@@ -40,6 +39,7 @@
 %         sp_h1_error:    compute the error in H1 norm
 %         sp_h2_error:    compute the error in H2 norm
 %         sp_to_vtk:      export the computed solution to a pvd file, using a Cartesian grid of points on each patch
+%         sp_plot_solution: plot the solution in Matlab
 %
 %       Methods for basic connectivity operations
 %         sp_get_basis_functions: compute the functions that do not vanish in a given list of elements
@@ -62,7 +62,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries, boundary_interfaces)
+function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces_all, vertices)
 
   if (~all (cellfun (@(x) isa (x, 'sp_scalar'), spaces)))
     error ('All the spaces in the array should be of the same class')
@@ -106,7 +106,7 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries, b
       error ('C1 continuity is only implemented for splines, not for NURBS')
     end
   end
-  
+
   sp.ndof = 0;
   sp.ndof_per_patch = [aux.ndof];
   sp.sp_patch = spaces;
@@ -131,7 +131,6 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries, b
 % express them as linear combinations of B-splines.
 % See the function compute_coefficients below for details.  
   sp.ndof_interior = 0;
-  [interfaces_all, vertices] = vertices_struct (geometry, interfaces, boundaries, boundary_interfaces);
   for iptc = 1:sp.npatch
     interior_dofs = 1:spaces{iptc}.ndof;
     for intrfc = 1:numel(interfaces_all)
@@ -191,7 +190,7 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries, b
   sp.vertices = vertices;
   sp.geometry = geometry;
   
-  sp.constructor = @(MSH) sp_multipatch_C1 (patches_constructor(spaces, MSH), MSH, geometry, interfaces);
+  sp.constructor = @(MSH) sp_multipatch_C1 (patches_constructor(spaces, MSH), MSH, geometry, interfaces_all, vertices);
     function spaux = patches_constructor (spaces, MSH)
       for ipatch = 1:MSH.npatch
         spaux{ipatch} = spaces{ipatch}.constructor(MSH.msh_patch{ipatch});
