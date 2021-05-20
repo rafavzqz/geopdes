@@ -1,33 +1,35 @@
 % SP_MULTIPATCH_C1: Constructor of the class for multipatch spaces with C1 continuity
 %
-% BETA VERSION. For now, it will only work with two patches
-%
-%     sp = sp_multipatch_C1 (spaces, msh, interfaces)
-%%%XXXX     sp = sp_multipatch_C1 (spaces, msh, interfaces, boundary_interfaces)
+%     sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries, boundary_interfaces)
 %
 % INPUTS:
 %
-%    spaces:     cell-array of space objects, one for each patch (see sp_scalar, sp_vector)
+%    spaces:     cell-array of space objects, one for each patch (see sp_scalar)
 %    msh:        mesh object that defines the multipatch mesh (see msh_multipatch)
+%    geometry:   geometry struct (see mp_geo_load)
 %    interfaces: information of connectivity between patches (see mp_geo_load)
-%    vertices: information about interfaces and patches neighbouring each vertex (to be implemented)
-%%%XXXX    boundary_interfaces: information of connectivity between boundary patches (see mp_geo_load)
+%    boundaries: information about the boundary of the domain (see mp_geo_load)
+%    boundary_interfaces: information of connectivity between boundary patches (see mp_geo_load)
 %
 % OUTPUT:
 %
 %    sp: object representing the discrete function space of vector-valued functions, with the following fields and methods:
 %
-%        FIELD_NAME      (SIZE)                       DESCRIPTION
-%        npatch          (scalar)                      number of patches
-%        ncomp           (scalar)                      number of components of the functions of the space (always equal to one)
-%        ndof            (scalar)                      total number of degrees of freedom after gluing patches together
-%        ndof_per_patch  (1 x npatch array)            number of degrees of freedom per patch, without gluing
-% interior_dofs_per_patch
-% ndof_interior
-% ndof_interface
-%        sp_patch        (1 x npatch cell-array)       the input spaces, one space object for each patch (see sp_scalar and sp_vector)
-%        gnum            (1 x npatch cell-array)       global numbering of the degress of freedom (see mp_interface)
-%        constructor     function handle               function handle to construct the same discrete space in a different msh
+%        FIELD_NAME      (SIZE)                          DESCRIPTION
+%        npatch          (scalar)                        number of patches
+%        ncomp           (scalar)                        number of components of the functions of the space (always equal to one)
+%        ndof            (scalar)                        total number of degrees of freedom after gluing patches together
+%        ndof_per_patch  (1 x npatch array)              number of degrees of freedom per patch, without gluing
+%        ndof_interior   (scalar)                        total number of interior degrees of freedom
+%        ndof_edges      (scalar)                        total number of edge degrees of freedom
+%        ndof_vertices   (scalar)                        total number of vertex degrees of freedom
+%        interior_dofs_per_patch (1 x npatch cell-array) local number of interior functions on each patch
+%        dofs_on_edge    (1 x nedges cell-array)         global numbering of edge functions on each edge
+%        dofs_on_vertex  (1 x nvertices cell-array)      global numbering of the six functions on each vertex
+%        sp_patch        (1 x npatch cell-array)         the input spaces, one space object for each patch (see sp_scalar)
+%        Cpatch          (1 x npatch cell-array)         coefficients of the linear combination of basis functions as standard B-splines,
+%                                                         on each patch. The matrix Cpatch{iptc} has size ndof_per_patch(iptc) x ndof
+%        constructor     function handle                 function handle to construct the same discrete space in a different msh
 %
 %       METHODS
 %       Methods that give a structure with all the functions computed in a certain subset of the mesh
@@ -133,9 +135,6 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries, b
 % Compute the local indices of the functions in V^1
 %  and sum them up to get the whole space V^1
 
-
-
-
   sp.ndof_interior = 0;
   [interfaces_all, vertices] = vertices_struct_rafa (boundaries, interfaces, geometry, boundary_interfaces);
   for iptc = 1:sp.npatch
@@ -152,34 +151,19 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries, b
     sp.interior_dofs_per_patch{iptc} = interior_dofs; % An array with the indices
     sp.ndof_interior = sp.ndof_interior + numel (interior_dofs);
   end
+
+% Compute coefficients to express the basis functions as combinations of B-splines
+% See the function compute_coefficients below for details.
   
-% EXPECTED OUTPUT FROM compute_coefficients  
-% ndof_per_interface: number of edge functions on each interface, array of
-%    size 1 x numel(interfaces);
-% CC_edges: cell array of size 2 x numel(interfaces), the two corresponds
-%   to the two patches on the interface. The matrix CC_edges{ii,jj} has size
-%      sp.ndof_per_patch(patch) x ndof_per_interface(jj)
-%      with patch = interfaces(jj).patches(ii);
-% ndof_per_vertex: number of vertex functions on each vertex. An array of size numel(vertices)
-% CC_vertices: cell array of size npatch x numel(vertices)
-%    The matrix CC_vertices{ii,jj} has size
-%    sp.ndof_per_patch(patch) x ndof_per_vertex{jj}
-%      with patch being the index of the ii-th patch containing vertex jj;
-%
-  
-%   [ndof, CC] = compute_coefficients (sp, msh, geometry, interfaces);  
   [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices] = ...
     compute_coefficients (sp, msh, geometry, interfaces_all, vertices);
 
 % Total number of functions, and of functions of each type
-  sp.ndof_edges = sum(ndof_per_interface);
+  sp.ndof_edges = sum (ndof_per_interface);
   sp.ndof_vertices = sum (ndof_per_vertex);
   sp.ndof = sp.ndof_interior + sp.ndof_edges + sp.ndof_vertices;
-
-% Computation of the coefficients for basis change
-% The matrix Cpatch{iptc} is a matrix of size ndof_per_patch(iptc) x ndof
-% The coefficients for basis change have been stored in CC_*
-
+  
+% Store the coefficients for matrix change in Cpatch
   Cpatch = cell (sp.npatch, 1);
   numel_interior_dofs = cellfun (@numel, sp.interior_dofs_per_patch);
   for iptc = 1:sp.npatch
@@ -189,24 +173,31 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces, boundaries, b
       speye (numel (sp.interior_dofs_per_patch{iptc}));    
   end
 
+  sp.dofs_on_edge = cell (1, numel(interfaces_all));
   for intrfc = 1:numel(interfaces_all)
     global_indices = sp.ndof_interior + sum(ndof_per_interface(1:intrfc-1)) + (1:ndof_per_interface(intrfc));
+    sp.dofs_on_edge{intrfc} = global_indices;
     patches = [interfaces_all(intrfc).patch1 interfaces_all(intrfc).patch2];
     for iptc = 1:numel(patches)
       Cpatch{patches(iptc)}(:,global_indices) = CC_edges{iptc,intrfc};
     end
   end
 
+  sp.dofs_on_vertex = cell (1, numel(vertices));
   for ivrt = 1:numel(vertices)
     global_indices = sp.ndof_interior + sp.ndof_edges + sum(ndof_per_vertex(1:ivrt-1)) + (1:ndof_per_vertex(ivrt));
+    sp.dofs_on_vertex{ivrt} = global_indices;
     for iptc = 1:sp.npatch %patches_on_vertex (TO BE CHANGED)
       Cpatch{iptc}(:,global_indices) = CC_vertices{iptc,ivrt};
     end
   end
 
-  sp.interfaces = interfaces;
   sp.Cpatch = Cpatch;
-  sp.geometry = geometry; % I store this for simplicity
+
+% I store this for simplicity
+  sp.interfaces = interfaces_all;
+  sp.vertices = vertices;
+  sp.geometry = geometry;
   
   sp.constructor = @(MSH) sp_multipatch_C1 (patches_constructor(spaces, MSH), MSH, geometry, interfaces);
     function spaux = patches_constructor (spaces, MSH)
@@ -220,6 +211,16 @@ end
 
 
 function [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices] = compute_coefficients (space, msh, geometry, interfaces_all, vertices)
+% OUTPUT from compute_coefficients  
+% ndof_per_interface: number of edge functions on each interface, array of size 1 x numel(interfaces);
+% CC_edges: cell array of size 2 x numel(interfaces), the two corresponds
+%   to the two patches on the interface. The matrix CC_edges{ii,jj} has size
+%      sp.ndof_per_patch(patch) x ndof_per_interface(jj)
+%      with patch = interfaces(jj).patches(ii);
+% ndof_per_vertex: number of vertex functions on each vertex. An array of size numel(vertices). Even if the value is always six.
+% CC_vertices: cell array of size npatch x numel(vertices)
+%   The matrix CC_vertices{ii,jj} has size sp.ndof_per_patch(patch) x ndof_per_vertex{jj}
+%      with patch being the index of the ii-th patch containing vertex jj;
 
 %Initialize output variables with correct size
 ndof_per_interface = zeros (1, numel(interfaces_all));
@@ -236,7 +237,6 @@ end
 
 pp = space.sp_patch{1}.degree(1);
 kk = numel(msh.msh_patch{1}.breaks{1})-2;
-% nn = space.sp_patch{1}.sp_univ(1).ndof;
 breaks_m = cellfun (@unique, space.sp_patch{1}.knots, 'UniformOutput', false);
 mult = histc(space.sp_patch{1}.knots{1},breaks_m{1});
 reg = pp - max(mult(2:end-1));
