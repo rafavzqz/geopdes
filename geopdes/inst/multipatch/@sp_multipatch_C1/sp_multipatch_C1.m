@@ -538,9 +538,13 @@ end
 end
 
 function [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev_pts, side)
+% OUTPUT from gluing data
+% The gluing data are computed as alpha = alpha0*(1-t) + alpha1*t.
+% The two components of alpha0, alpha1, beta0, beta1 refer to the neighboring
+%  patches: first or second ((i,0) and (i,1) in the draft, L and R in old notation).
 
+% For boundary edges we set alpha=1 and beta=0. For simplicity, we store an inexistent second patch.
   if (numel (geo_map_jac) == 1)
-% FIX: alpha1 and beta1 do not exist. They should be empty, but give an error in all_alpha
     alpha0 = [1 1];
     alpha1 = [1 1];
     beta0 = [0 0]; 
@@ -548,19 +552,19 @@ function [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev
     return
   end
 
-  %STEP 3 - Assembling and solving G^1 conditions system  %this must depend on orientation!
+  % Assemble and solve G^1 conditions system
   if (side(2)==1 || side(2)==2)
     v = grev_pts{2}(:);
   else
     v = grev_pts{1}(:);
   end
   ngrev = numel(v);
-  DuFR_x = reshape(geo_map_jac{1}(1,1,:,:),ngrev,1); %column vector
-  DuFR_y = reshape(geo_map_jac{1}(2,1,:,:),ngrev,1); %column vector
-  DvFL_x = reshape(geo_map_jac{2}(1,2,:,:),ngrev,1); %column vector
-  DvFL_y = reshape(geo_map_jac{2}(2,2,:,:),ngrev,1); %column vector
-  DvFR_x = reshape(geo_map_jac{1}(1,2,:,:),ngrev,1); %column vector
-  DvFR_y = reshape(geo_map_jac{1}(2,2,:,:),ngrev,1); %column vector
+  DuFR_x = reshape (geo_map_jac{1}(1,1,:,:), ngrev, 1);
+  DuFR_y = reshape (geo_map_jac{1}(2,1,:,:), ngrev, 1);
+  DvFL_x = reshape (geo_map_jac{2}(1,2,:,:), ngrev, 1);
+  DvFL_y = reshape (geo_map_jac{2}(2,2,:,:), ngrev, 1);
+  DvFR_x = reshape (geo_map_jac{1}(1,2,:,:), ngrev, 1);
+  DvFR_y = reshape (geo_map_jac{1}(2,2,:,:), ngrev, 1);
   
   A_full = [(1-v).*DvFL_x v.*DvFL_x (1-v).*DuFR_x v.*DuFR_x (1-v).^2.*DvFR_x 2*(1-v).*v.*DvFR_x v.^2.*DvFR_x;...
        (1-v).*DvFL_y v.*DvFL_y (1-v).*DuFR_y v.*DuFR_y (1-v).^2.*DvFR_y 2*(1-v).*v.*DvFR_y v.^2.*DvFR_y];
@@ -568,10 +572,10 @@ function [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev
     A = A_full(:,2:end);
     b = -A_full(:,1);
     sols = A\b;
-    alpha0_n(1) = 1; %R
-    alpha1_n(1) = sols(1); %R
-    alpha0_n(2) = sols(2); %L
-    alpha1_n(2) = sols(3); %L
+    alpha0_n(1) = 1;
+    alpha1_n(1) = sols(1);
+    alpha0_n(2) = sols(2);
+    alpha1_n(2) = sols(3);
     beta0_n = sols(4);
     beta1_n = sols(5);
     beta2_n = sols(6);
@@ -579,57 +583,51 @@ function [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev
     A = A_full(:,3:end); % FIX: not a square matrix
     b = -sum(A_full(:,1:2),2);
     sols = A\b;
-    alpha0_n(1) = 1; %R
-    alpha1_n(1) = 1; %R
-    alpha0_n(2) = sols(1); %L
-    alpha1_n(2) = sols(2); %L
+    alpha0_n(1) = 1;
+    alpha1_n(1) = 1;
+    alpha0_n(2) = sols(1);
+    alpha1_n(2) = sols(2);
     beta0_n = sols(3);
     beta1_n = sols(4);
     beta2_n = sols(5);     
   end
  
- %STEP 4 - Normalizing the alphas
- %C1=((alpha1_n(1)-alpha0_n(1))^2)/3+((alpha1_n(2)-alpha0_n(2))^2)/3 + (alpha1_n(1)-alpha0_n(1))*alpha0_n(1)+(alpha1_n(2)-alpha0_n(2))*alpha0_n(2)...
- %   +alpha0_n(1)^2+alpha0_n(2)^2;
- %C2=(alpha1_n(1)-alpha0_n(1))-(alpha1_n(2)-alpha0_n(2))+2*alpha0_n(1)-2*alpha0_n(2);
- %gamma=-C2/(2*C1);
+ % Normalize the alphas
   C1 = alpha0_n(2)^2+alpha0_n(2)*alpha1_n(2)+alpha1_n(2)^2+alpha0_n(1)^2+alpha0_n(1)*alpha1_n(1)+alpha1_n(1)^2;
   C2 = alpha0_n(2)+alpha1_n(2)+alpha0_n(1)+alpha1_n(1);
   gamma = 3*C2/(2*C1);
-  alpha0(1) = alpha0_n(1)*gamma; %R
-  alpha1(1) = alpha1_n(1)*gamma; %R
-  alpha0(2) = alpha0_n(2)*gamma; %L
-  alpha1(2) = alpha1_n(2)*gamma; %L
+  alpha0(1) = alpha0_n(1)*gamma;
+  alpha1(1) = alpha1_n(1)*gamma;
+  alpha0(2) = alpha0_n(2)*gamma;
+  alpha1(2) = alpha1_n(2)*gamma;
   bbeta0 = beta0_n*gamma;
   bbeta1 = beta1_n*gamma;
   bbeta2 = beta2_n*gamma;
  
- %STEP 5 - Computing the betas
- %alphas and beta evaluated at 0,1,1/2
-  alpha_R_0 = alpha0(1); %alpha_R(0)
-  alpha_R_1 = alpha1(1); %alpha_R(1)
-  alpha_R_12 = (alpha0(1)+alpha1(1))/2; %alpha_R(1/2)
-  alpha_L_0 = alpha0(2); %alpha_L(0)
-  alpha_L_1 = alpha1(2); %alpha_L(1)
-  alpha_L_12 = (alpha0(2)+alpha1(2))/2; %alpha_L(1/2)  
-  beta_0 = bbeta0; %beta(0)
-  beta_1 = bbeta2; %beta(1)
-  beta_12 = (bbeta0+bbeta2)/4+bbeta1/2; %beta(1/2)
+ % Compute the betas, evaluating alphas and betas at 0, 1/2, 1.
+  alpha_R_0 = alpha0(1);
+  alpha_R_1 = alpha1(1);
+  alpha_R_12 = (alpha0(1)+alpha1(1))/2;
+  alpha_L_0 = alpha0(2);
+  alpha_L_1 = alpha1(2);
+  alpha_L_12 = (alpha0(2)+alpha1(2))/2;
+  beta_0 = bbeta0;
+  beta_1 = bbeta2;
+  beta_12 = (bbeta0+bbeta2)/4+bbeta1/2;
  
-  %Computing the matrix of the system considering the relationship between beta^L, beta^R and beta
+ % Compute the matrix of the system considering the relationship between beta^(i,0), beta^(i,1) and beta
   M = [alpha_R_0 0 alpha_L_0 0; ...
        0 alpha_R_1 0 alpha_L_1; ...
        alpha_R_12/2 alpha_R_12/2 alpha_L_12/2 alpha_L_12/2];
  
   if (rank(M)==3)
-     
- %Computing beta1_R, beta0_L, beta1_L in terms of beta0_R
+ % Compute beta1_R, beta0_L, beta1_L in terms of beta0_R
     quant1 = (-alpha_L_12/2 + (alpha_L_0*alpha_R_12)/(2*alpha_R_0)) / ...
       (-(alpha_L_1*alpha_R_12)/(2*alpha_R_1) + alpha_L_12/2);
     quant2 = (beta_12-(beta_0*alpha_R_12)/(2*alpha_R_0) - (beta_1*alpha_R_12)/(2*alpha_R_1)) / ...
       (-(alpha_L_1*alpha_R_12)/(2*alpha_R_1) + alpha_L_12/2); 
  
- %beta1_R=a+b*beta0_R,  beta0_L=c+d*beta0_R,  beta1_L=e+f*beta0_R, where
+ % beta1_R=a+b*beta0_R,  beta0_L=c+d*beta0_R,  beta1_L=e+f*beta0_R, where
     a = quant2; b = quant1;
     c = beta_0/alpha_R_0; d = -alpha_L_0/alpha_R_0;
     e = (beta_1-alpha_L_1*quant2)/alpha_R_1; f = -alpha_L_1*quant1/alpha_R_1;
@@ -637,26 +635,25 @@ function [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev
  %We determine beta0_R by minimizing the sum of the norms of beta_R and beta_L
     C1 = ((b-1)^2)/3 + (b-1) + ((f-d)^2)/3 + (f-d)*d + d^2 + 1;
     C2 = 2*a*(b-1)/3 + a + 2*(e-c)*(f-d)/3 + (e-c)*d + (f-d)*c + 2*c*d;
-    beta0(1) = -C2/(2*C1); %R
-    beta1(1) = a + b*beta0(1); %R
-    beta0(2) = c + d*beta0(1); %L
-    beta1(2) = e + f*beta0(1); %L
+    beta0(1) = -C2/(2*C1);
+    beta1(1) = a + b*beta0(1);
+    beta0(2) = c + d*beta0(1);
+    beta1(2) = e + f*beta0(1);
 
   else
- %Computing beta0_L in terms of beta0_R and beta1_L in terms of beta1_R: 
- %beta0_R=a+b*beta0_L,  beta1_R=c+d*beta1_L, where
+ % Compute beta0_L in terms of beta0_R and beta1_L in terms of beta1_R:
+ % beta0_R=a+b*beta0_L,  beta1_R=c+d*beta1_L, where
     a = beta_0/alpha_R_0; b = -alpha_L_0/alpha_R_0;
     c = beta_1/alpha_R_1; d = -alpha_L_1/alpha_R_1;
  
- %We determine beta0_R and beta_1_R by minimizing the sum of the norms of beta_R and beta_L
- %The resuting system is
+ % Determine beta0_R and beta_1_R by minimizing the sum of the norms of beta_R and beta_L
     M2 = [2*(1+b^2) 1+b*d; 1+b*d 2*(1+d^2)];
     M2b = [-b*c-2*a*b; -a*d-2*c*d];
     sol = M2\M2b;
-    beta0(1)= sol(1); %R
-    beta1(1)= sol(2); %R
-    beta0(2)= a + b*beta0(1); %L
-    beta1(2)= c + d*beta1(1); %L
+    beta0(1)= sol(1);
+    beta1(1)= sol(2);
+    beta0(2)= a + b*beta0(1);
+    beta1(2)= c + d*beta1(1);
   end 
   
 end
