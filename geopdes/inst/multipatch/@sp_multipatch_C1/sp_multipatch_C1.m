@@ -181,8 +181,9 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces_all, vertices)
   for ivrt = 1:numel(vertices)
     global_indices = sp.ndof_interior + sp.ndof_edges + sum(ndof_per_vertex(1:ivrt-1)) + (1:ndof_per_vertex(ivrt));
     sp.dofs_on_vertex{ivrt} = global_indices;
-    for iptc = 1:sp.npatch %patches_on_vertex (TO BE CHANGED)
-      Cpatch{iptc}(:,global_indices) = CC_vertices{iptc,ivrt};
+    for iptc = 1:vertices(ivrt).valence_p
+      patch = vertices(ivrt).patches(iptc);
+      Cpatch{patch}(:,global_indices) = CC_vertices{ivrt}{iptc};
     end
   end
 
@@ -212,9 +213,10 @@ function [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices] = compute_
 %      sp.ndof_per_patch(patch) x ndof_per_interface(jj)
 %      with patch = interfaces(jj).patches(ii);
 % ndof_per_vertex: number of vertex functions on each vertex. An array of size numel(vertices). Even if the value is always six.
-% CC_vertices: cell array of size npatch x numel(vertices)
-%   The matrix CC_vertices{ii,jj} has size sp.ndof_per_patch(patch) x ndof_per_vertex{jj}
-%      with patch being the index of the ii-th patch containing vertex jj;
+% CC_vertices: cell array of size 1 x numel(vertices), each entry containin another 
+%   cell-array of size 1 x vertices(ii).valence_p (local number of patches)
+%   The matrix CC_vertices{jj}{ii} has size sp.ndof_per_patch(patch) x ndof_per_vertex(ii)
+%      with patch = vertices(jj).patches(ii).
 
 %Initialize output variables with correct size
 ndof_per_interface = zeros (1, numel(interfaces_all));
@@ -222,11 +224,9 @@ ndof_per_vertex = 6*ones(1,numel(vertices));
 
 CC_edges = cell (2, numel (interfaces_all));
 CC_edges_discarded = cell (2, numel (interfaces_all));
-CC_vertices = cell (space.npatch, numel(vertices));
-for ii = 1:space.npatch
-  for jj = 1:numel(vertices)
-    CC_vertices{ii,jj} = sparse (space.ndof_per_patch(ii), 6);
-  end
+CC_vertices = cell (1, numel(vertices));
+for jj = 1:numel(vertices)
+  CC_vertices{jj} = cell (1,numel(vertices(jj).valence_p));
 end
 
 pp = space.sp_patch{1}.degree(1);
@@ -531,7 +531,7 @@ for kver = 1:numel(vertices)
         jfun = jfun+1;
       end
     end
-    CC_vertices{patches(ipatch),kver} = E_prev*M_prev + E_next*M_next - VV;
+    CC_vertices{kver}{ipatch} = E_prev*M_prev + E_next*M_next - VV;
   end
 end
 
