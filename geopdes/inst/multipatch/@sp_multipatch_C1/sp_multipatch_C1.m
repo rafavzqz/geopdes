@@ -424,7 +424,7 @@ for kver = 1:numel(vertices)
     derivatives_new1{iptc} = msh_der.geo_map_jac; %rdim x ndim x (n_pts{1}x n_pts{2}) (rdim->physical space, ndim->parametric space)
     derivatives_new2{iptc} = msh_der.geo_map_der2; %rdim x ndim x ndim x n_pts{1} x n_pts{2}
     
-    sigma = sigma + norm (derivatives_new1{iptc},2); % FIX: choose which norm
+    sigma = sigma + norm (derivatives_new1{iptc}, Inf);
   end
   sigma = pp*(kk+1)*valence_p/sigma;
   
