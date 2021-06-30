@@ -230,8 +230,8 @@ for jj = 1:numel(vertices)
 end
 
 pp = space.sp_patch{1}.degree(1);
-kk = numel(msh.msh_patch{1}.breaks{1})-2;
 breaks_m = cellfun (@unique, space.sp_patch{1}.knots, 'UniformOutput', false);
+kk = numel(breaks_m{1}) - 2;
 mult = histc(space.sp_patch{1}.knots{1},breaks_m{1});
 reg = pp - max(mult(2:end-1));
 
