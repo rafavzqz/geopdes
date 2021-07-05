@@ -149,7 +149,7 @@ function sp = sp_vector (scalar_spaces, msh, transform)
               sp.boundary(iside) = sp_scalar();
             end
           else % define relevant struct fields
-            sp.boundary(iside) = struct ('ndof', [], 'dofs', [], 'adjacent_dofs', []);
+            sp.boundary(iside) = struct ('ndof', [], 'dofs', []);
           end
           continue;
         else
