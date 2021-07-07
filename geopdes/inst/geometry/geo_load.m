@@ -80,7 +80,7 @@ function geometry = geo_load (in)
   if (isfield (geometry, 'nurbs'))
     if (any (abs(geometry.nurbs.coefs(3,:)) > 1e-12))
       rdim = 3;
-    elseif (any (abs(geometry.nurbs.coefs(2,:)) > 1e-12))
+    elseif (any (abs(geometry.nurbs.coefs(2,:)) > 1e-12) || (isfield(in, 'boundary_flag') && in.boundary_flag))
       rdim = 2;
     else
       rdim = 1;
