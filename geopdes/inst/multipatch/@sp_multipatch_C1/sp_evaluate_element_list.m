@@ -109,7 +109,7 @@ function sp = sp_evaluate_element_list (space, msh, varargin)
         shape_fun_lapl(:,1:nsh(iel),iel) = sp_patch.shape_function_laplacians(:,:,iel) * Cpatch_iel;
       end
       if (isfield (sp_patch, 'shape_function_hessians'))
-        for idim = 1:msh.rdim; 
+        for idim = 1:msh.rdim
           for jdim = 1:msh.rdim
           shape_fun_hess(idim,jdim,:,1:nsh(iel),iel) = ...
             reshape (sp_patch.shape_function_hessians(idim,jdim,:,:,iel), msh_patch.nqn, sp_patch.nsh_max) * Cpatch_iel;
@@ -118,8 +118,22 @@ function sp = sp_evaluate_element_list (space, msh, varargin)
       end
     end
 
+    nsh_max = max(sp.nsh); nsh_max_patch = max(nsh);
     sp.nsh = cat (2, sp.nsh, nsh);
     if (msh_patch.nel > 0)
+      if (nsh_max > nsh_max_patch)
+        connectivity(nsh_max_patch+1:nsh_max,:) = 0;
+        if (isfield (sp_patch, 'shape_functions')); shape_funs(:,nsh_max_patch+1:nsh_max,:) = 0; end
+        if (isfield (sp_patch, 'shape_function_gradients')); shape_fun_grads(:,:,nsh_max_patch+1:nsh_max,:) = 0; end
+        if (isfield (sp_patch, 'shape_function_hessians')); shape_fun_hess(:,:,:,nsh_max_patch+1:nsh_max,:) = 0; end
+        if (isfield (sp_patch, 'shape_function_laplacians')); shape_fun_lapl(:,nsh_max_patch+1:nsh_max,:) = 0; end
+      elseif (nsh_max_patch > nsh_max)
+        sp.connectivity(nsh_max+1:nsh_max_patch,:) = 0;
+        if (isfield (sp_patch, 'shape_functions')); sp.shape_functions(:,nsh_max+1:nsh_max_patch,:) = 0; end
+        if (isfield (sp_patch, 'shape_function_gradients')); sp.shape_function_gradients(:,:,nsh_max+1:nsh_max_patch,:) = 0; end
+        if (isfield (sp_patch, 'shape_function_hessians')); sp.shape_function_hessians(:,:,:,nsh_max+1:nsh_max_patch,:) = 0; end
+        if (isfield (sp_patch, 'shape_function_laplacians')); sp.shape_function_laplacians(:,nsh_max+1:nsh_max_patch,:) = 0; end
+      end
       sp.connectivity = cat (2, sp.connectivity, connectivity);
       if (isfield (sp_patch, 'shape_functions')); sp.shape_functions = cat (3, sp.shape_functions, shape_funs); end
       if (isfield (sp_patch, 'shape_function_gradients')); sp.shape_function_gradients = cat (4, sp.shape_function_gradients, shape_fun_grads); end
