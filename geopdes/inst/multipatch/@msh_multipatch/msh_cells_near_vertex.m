@@ -1,6 +1,6 @@
 % MSH_CELLS_NEAR_VERTEX: Identify the elements adjacent to given vertices
 %
-%     elems_near_vertex = msh_cells_near_vertex (msh, vertices)
+%     [all_adjacent_elemens, elems_near_vertex] = msh_cells_near_vertex (msh, vertices)
 %
 % INPUT:
 %
@@ -9,6 +9,7 @@
 %
 % OUTPUT:
 %
+%    all_adjacent_elements: elements adjacents to any of the input vertices.
 %    elems_near_vertex: for each vertex in the input, list of elements
 %        adjacent to the vertex (cell-array, to allow different valences).
 %
@@ -27,12 +28,13 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function elems_adj_to_vertex = msh_cells_near_vertex (msh, vertices)
+function [all_adj_elems, elems_adj_to_vertex] = msh_cells_near_vertex (msh, vertices)
 
 nvert = numel (vertices);
 elems_adj_to_vertex = cell (nvert, 1);
 shifting_index = cumsum ([0 msh.nel_per_patch]);
 
+all_adj_elems = [];
 for ivert = 1:nvert
   elems = [];
   patches = vertices(ivert).patches;
@@ -51,6 +53,7 @@ for ivert = 1:nvert
     elems = [elems, new_elem];
   end
   elems_adj_to_vertex{ivert} = elems;
+  all_adj_elems = union (all_adj_elems, elems);
 end
 
 end
