@@ -50,6 +50,7 @@
 %                       points only on one boundary side. Useful to apply boundary
 %                       conditions in weak form.
 %     msh_refine:       create a msh_cartesian object with a refined mesh.
+%     msh_get_neighbor_cells: compute the indices of neighbor cells of a given one.
 %
 % Copyright (C) 2009, 2010, 2014 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
