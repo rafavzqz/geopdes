@@ -39,6 +39,7 @@ Mesh: functions to generate and compute quadrature points in the NURBS geometry
  @msh_cartesian/msh_precompute
  @msh_cartesian/msh_boundary_side_from_interior
  @msh_cartesian/msh_refine
+ @msh_cartesian/msh_get_neighbor_cells
 Space: functions to generate and compute discrete spline and NURBS spaces
  sp_h2_error
  sp_h1_error
