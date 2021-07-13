@@ -81,11 +81,11 @@ elem_ind = cell (msh.ndim, 1);
 elem_ind = cell2mat (elem_ind);
 
 nsh = 1;
-for idim = 1:msh.ndim; 
+for idim = 1:msh.ndim
   nsh = nsh .* sp_univ(idim).nsh(elem_ind(idim,:));
 end
 
-for idim = 1:msh.ndim; 
+for idim = 1:msh.ndim
   csize = ones (1, msh.ndim);
   csize(idim) = sp_univ(idim).nsh_max;
   crep = [sp_univ.nsh_max];
@@ -111,63 +111,63 @@ sp = struct('nsh_max', space.nsh_max, 'nsh', nsh, 'ndof', space.ndof,  ...
             'ndof_dir', space.ndof_dir, 'connectivity', connectivity, ...
             'ncomp', 1, 'degree', space.degree);
 
-shp = cell(1,msh.ndim); shg = cell(1,msh.ndim); shh = cell(1,msh.ndim);
-for idim = 1:msh.ndim
-  ssize = ones (1, 2*msh.ndim);
-  ssize([idim, msh.ndim+idim]) = [msh.nqn_dir(idim), sp_univ(idim).nsh_max];
-  srep = [msh.nqn_dir, sp_univ.nsh_max];
-  srep([idim, msh.ndim+idim]) = 1;
-  shp{idim} = reshape (sp_univ(idim).shape_functions(:,:,elem_ind(idim,:)), [ssize, msh.nel]);
-  shp{idim} = repmat (shp{idim}, [srep, 1]);
-  shp{idim} = reshape (shp{idim}, msh.nqn, space.nsh_max, msh.nel);  
-  shg{idim} = reshape (sp_univ(idim).shape_function_gradients(:,:,elem_ind(idim,:)), [ssize, msh.nel]);
-  shg{idim} = repmat (shg{idim}, [srep, 1]);
-  shg{idim} = reshape (shg{idim}, msh.nqn, space.nsh_max, msh.nel);  
-  shh{idim} = reshape (sp_univ(idim).shape_function_hessians(:,:,elem_ind(idim,:)), [ssize, msh.nel]);
-  shh{idim} = repmat (shh{idim}, [srep, 1]);
-  shh{idim} = reshape (shh{idim}, msh.nqn, space.nsh_max, msh.nel);  
-end
-
-if (value)
-  sp.shape_functions = 1;
-  for idim = 1:msh.ndim
-    sp.shape_functions = sp.shape_functions .* shp{idim};
-  end
-end
-
-if (gradient)
-  for idim = 1:msh.ndim
-    shape_fun_grad = shg{idim};
-    for jdim = setdiff (1:msh.ndim, idim)
-      shape_fun_grad = shape_fun_grad .* shp{jdim};
-    end
-    sp.shape_function_gradients(idim,:,:,:) = shape_fun_grad;
-  end
-  sp.shape_function_gradients = reshape (sp.shape_function_gradients, ...
-                                msh.ndim, msh.nqn, sp.nsh_max, msh.nel);
-end
-
-if (hessian && (isfield (msh, 'geo_map_der2') || msh.nel == 0))
-  for idim = 1:msh.ndim
-    shape_fun_hess = shh{idim};
-    for jdim = setdiff (1:msh.ndim, idim)
-      shape_fun_hess = shape_fun_hess .* shp{jdim};
-    end
-    sp.shape_function_hessians(idim,idim,:,:,:) = shape_fun_hess;
-    
-    for jdim = setdiff (1:msh.ndim, idim)
-      shape_fun_hess = shg{idim} .* shg{jdim};
-      for kdim = setdiff (1:msh.ndim, [idim, jdim])
-        shape_fun_hess = shape_fun_hess .* shp{kdim};
-      end
-      sp.shape_function_hessians(idim,jdim,:,:,:) = shape_fun_hess;
-    end
-  end
-end
-
-clear shp shg shh
-
 if (value || gradient || hessian)
+shp = cell(1,msh.ndim); shg = cell(1,msh.ndim); shh = cell(1,msh.ndim);
+  for idim = 1:msh.ndim
+    ssize = ones (1, 2*msh.ndim);
+    ssize([idim, msh.ndim+idim]) = [msh.nqn_dir(idim), sp_univ(idim).nsh_max];
+    srep = [msh.nqn_dir, sp_univ.nsh_max];
+    srep([idim, msh.ndim+idim]) = 1;
+    shp{idim} = reshape (sp_univ(idim).shape_functions(:,:,elem_ind(idim,:)), [ssize, msh.nel]);
+    shp{idim} = repmat (shp{idim}, [srep, 1]);
+    shp{idim} = reshape (shp{idim}, msh.nqn, space.nsh_max, msh.nel);  
+    shg{idim} = reshape (sp_univ(idim).shape_function_gradients(:,:,elem_ind(idim,:)), [ssize, msh.nel]);
+    shg{idim} = repmat (shg{idim}, [srep, 1]);
+    shg{idim} = reshape (shg{idim}, msh.nqn, space.nsh_max, msh.nel);  
+    shh{idim} = reshape (sp_univ(idim).shape_function_hessians(:,:,elem_ind(idim,:)), [ssize, msh.nel]);
+    shh{idim} = repmat (shh{idim}, [srep, 1]);
+    shh{idim} = reshape (shh{idim}, msh.nqn, space.nsh_max, msh.nel);  
+  end
+
+  if (value)
+    sp.shape_functions = 1;
+    for idim = 1:msh.ndim
+      sp.shape_functions = sp.shape_functions .* shp{idim};
+    end
+  end
+
+  if (gradient)
+    for idim = 1:msh.ndim
+      shape_fun_grad = shg{idim};
+      for jdim = setdiff (1:msh.ndim, idim)
+        shape_fun_grad = shape_fun_grad .* shp{jdim};
+      end
+      sp.shape_function_gradients(idim,:,:,:) = shape_fun_grad;
+    end
+    sp.shape_function_gradients = reshape (sp.shape_function_gradients, ...
+                                  msh.ndim, msh.nqn, sp.nsh_max, msh.nel);
+  end
+
+  if (hessian && (isfield (msh, 'geo_map_der2') || msh.nel == 0))
+    for idim = 1:msh.ndim
+      shape_fun_hess = shh{idim};
+      for jdim = setdiff (1:msh.ndim, idim)
+        shape_fun_hess = shape_fun_hess .* shp{jdim};
+      end
+      sp.shape_function_hessians(idim,idim,:,:,:) = shape_fun_hess;
+    
+      for jdim = setdiff (1:msh.ndim, idim)
+        shape_fun_hess = shg{idim} .* shg{jdim};
+        for kdim = setdiff (1:msh.ndim, [idim, jdim])
+          shape_fun_hess = shape_fun_hess .* shp{kdim};
+        end
+        sp.shape_function_hessians(idim,jdim,:,:,:) = shape_fun_hess;
+      end
+    end
+  end
+
+  clear shp shg shh
+
   if (strcmpi (space.space_type, 'NURBS'))
     sp = bsp_2_nrb__ (sp, msh, space.weights);
   end
