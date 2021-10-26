@@ -35,7 +35,7 @@
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
 
-function [errh2, errh1, errl2, errh2s, errh1s] = sp_h2_error (space, msh, u, uex, graduex)
+function [errh2, errh1, errl2, errh2s, errh1s] = sp_h2_error (space, msh, u, uex, graduex, hessuex)
 
   if (space.npatch ~= msh.npatch)
     error ('The number of patches does not coincide') 
