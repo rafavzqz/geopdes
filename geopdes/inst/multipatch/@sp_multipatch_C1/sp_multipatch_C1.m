@@ -149,8 +149,11 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces_all, vertices)
     sp.ndof_interior = sp.ndof_interior + numel (interior_dofs);
   end
   
-  [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices] = ...
+  [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices, v_fun_matrices] = ...
     compute_coefficients (sp, msh, geometry, interfaces_all, vertices);
+
+%Sigmas, K and V matrices used in the construction of vertex functions
+  sp.vertex_function_matrices=v_fun_matrices;
 
 % Total number of functions, and of functions of each type
   sp.ndof_edges = sum (ndof_per_interface);
@@ -205,7 +208,7 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces_all, vertices)
 end
 
 
-function [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices] = compute_coefficients (space, msh, geometry, interfaces_all, vertices)
+function [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices, v_fun_matrices] = compute_coefficients (space, msh, geometry, interfaces_all, vertices)
 % OUTPUT from compute_coefficients  
 % ndof_per_interface: number of edge functions on each interface, array of size 1 x numel(interfaces);
 % CC_edges: cell array of size 2 x numel(interfaces), the two corresponds
@@ -217,6 +220,9 @@ function [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices] = compute_
 %   cell-array of size 1 x vertices(ii).valence_p (local number of patches)
 %   The matrix CC_vertices{jj}{ii} has size sp.ndof_per_patch(patch) x ndof_per_vertex(ii)
 %      with patch = vertices(jj).patches(ii).
+
+% Initialize cell array containing sigma, K and V matrices for each vertex
+v_fun_matrices=cell(2, numel(vertices));
 
 %Initialize output variables with correct size
 ndof_per_interface = zeros (1, numel(interfaces_all));
@@ -410,6 +416,9 @@ for kver = 1:numel(vertices)
   operations = vertices(kver).patch_reorientation;
   edge_orientation = vertices(kver).edge_orientation;
   
+  %Initializing the cell-array containing, for vertex kver, K and V matrices
+  KV_matrices=cell(1,valence_p);
+  
   geo_local = reorientation_patches (operations, geometry(patches));
 
 % Precompute the derivatives and compute sigma
@@ -427,6 +436,8 @@ for kver = 1:numel(vertices)
     sigma = sigma + norm (derivatives_new1{iptc}, Inf);
   end
   sigma = pp*(kk+1)*valence_p/sigma;
+  %Storing sigma for output
+  v_fun_matrices{1,kver}=sigma;
   
   for ipatch = 1:valence_p
     prev_edge = ipatch;
@@ -527,7 +538,12 @@ for kver = 1:numel(vertices)
       end
     end
     CC_vertices{kver}{ipatch} = E_prev*M_prev + E_next*M_next - VV;
+    %Storing the matrices for output
+    KV_matrices{ipatch}.K_prev=M_prev;
+    KV_matrices{ipatch}.K_next=M_next;
+    KV_matrices{ipatch}.V=VV;
   end
+  v_fun_matrices{2,kver}=KV_matrices;
 end
 
 end
