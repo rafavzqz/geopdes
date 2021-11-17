@@ -27,7 +27,7 @@
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
 % Copyright (C) 2013 Elena Bulgarello, Carlo de Falco, Sara Frizziero
-% Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2015, 2021 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ function varargout = geo_nurbs (nurbs, deriv, deriv2, pts, ders, rdim)
 
   ndim = numel (nurbs.order);
 
-  if (nargin < 4)
+  if (nargin < 6)
     if (any (abs(nurbs.coefs(3,:)) > 1e-12))
       rdim = 3;
     elseif (any (abs(nurbs.coefs(2,:)) > 1e-12))
