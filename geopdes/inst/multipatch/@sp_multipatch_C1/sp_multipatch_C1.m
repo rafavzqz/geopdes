@@ -416,7 +416,6 @@ for iref = 1:numel(interfaces_all)
   end
 end
 
-if msh.ndim+1~=msh.rdim
 % Computation of CC_vertices
 % Auxiliary constants to deal with different regularity cases in the M matrices
 if (reg < pp-2)
@@ -459,18 +458,55 @@ for kver = 1:numel(vertices)
   %Storing sigma for output
   v_fun_matrices{1,kver}=sigma;
   
-  %Tangent vectors
-  Du_F = derivatives_new1{ipatch}(:,1);
-  Dv_F = derivatives_new1{ipatch}(:,2);
-  normal=cross(Du_F,Dv_F);
-  unit_normal=normal/norm(normal);
-  r=cross(unit_normal,[0 0 1]');
-  cos_theta=[0 0 1]*unit_normal;
-  sin_theta=norm(r);
+  if msh.ndim+1==msh.rdim
+      %Tangent vectors
+      Du_F = derivatives_new1{1}(:,1);
+      Dv_F = derivatives_new1{1}(:,2);
+      %Normal vector
+      normal=cross(Du_F,Dv_F);
+      unit_normal=normal/norm(normal);
+      %Vector orthogonal to n and z along which the geometry is rotated
+      %(rotation axis)
+      r=cross(unit_normal,[0 0 1]');
+      %Angle between n and z
+      cos_th=[0 0 1]*unit_normal;
+      sin_th=norm(r);
+      %Rotation matrix
+      R=[cos_th + r(1)^2*(1-cos_th),r(1)*r(2)*(1-cos_th)-r(3)*sin_th,r(1)*r(3)*(1-cos_th)+r(2)*sin_th;...
+         r(1)*r(2)*(1-cos_th)+r(3)*sin_th,cos_th + r(2)^2*(1-cos_th),r(2)*r(3)*(1-cos_th)-r(1)*sin_th;...
+         r(1)*r(3)*(1-cos_th)-r(2)*sin_th,r(3)*r(2)*(1-cos_th)+r(1)*sin_th,cos_th + r(3)^2*(1-cos_th)];
+     
+   for ipatch = 1:valence_p
+
+        coeff_hom=geo_local(ipatch).nurbs.coefs;
+        coeff_w=coeff_hom(4,:,:);
+        coeff_eu=coeff_hom(1:3,:,:)./(repmat(coeff_w,3,1,1)); %Euclidean coefficients
+        rot_coeff=ones(4,size(coeff_eu,2),size(coeff_eu,3));
+        for k=1:size(coeff_eu,3)
+           rot_coeff(1:3,:,k)=R*(coeff_eu(:,:,k)-coeff_eu(:,1,1))+coeff_eu(:,1,1);
+        end
+        rot_nrb(ipatch)=geometry(patches(ipatch)).nurbs;
+        rot_nrb(ipatch).coefs=rot_coeff;
+   end
+   
+   rot_geo = mp_geo_load(rot_nrb);
+      
+   for iptc = 1:valence_p
+        knots = space.sp_patch{iptc}.knots;
+        for idim = 1:msh.ndim
+          brk{idim}=[knots{idim}(1) knots{idim}(end)];
+        end
+        rot_msh_pts_der1 = msh_cartesian (brk, {0 0}, [], rot_geo(iptc),'boundary', true, 'der2', true);
+        rot_msh_der = msh_precompute (rot_msh_pts_der1);
+        derivatives_new1{iptc} = rot_msh_der.geo_map_jac; %rdim x ndim x (n_pts{1}x n_pts{2}) (rdim->physical space, ndim->parametric space)
+        derivatives_new2{iptc} = rot_msh_der.geo_map_der2; %rdim x ndim x ndim x n_pts{1} x n_pts{2}
+   end
+  end
   
   for ipatch = 1:valence_p
-    prev_edge = ipatch;
-    next_edge = mod(ipatch, valence_e) + 1;
+      
+      prev_edge = ipatch;
+      next_edge = mod(ipatch, valence_e) + 1;
 
 % Compute gluing data, and edge functions from CC_edges_discarded
     if (edge_orientation(prev_edge) == 1)
@@ -502,11 +538,11 @@ for kver = 1:numel(vertices)
       E_next(:,[4 5]) = -E_next(:,[4 5]);
     end
     
-    Du_F = derivatives_new1{ipatch}(:,1);
-    Dv_F = derivatives_new1{ipatch}(:,2);
-    Duu_F = derivatives_new2{ipatch}(:,1,1);
-    Duv_F = derivatives_new2{ipatch}(:,1,2);
-    Dvv_F = derivatives_new2{ipatch}(:,2,2);
+    Du_F = derivatives_new1{ipatch}(1:2,1);
+    Dv_F = derivatives_new1{ipatch}(1:2,2);
+    Duu_F = derivatives_new2{ipatch}(1:2,1,1)
+    Duv_F = derivatives_new2{ipatch}(1:2,1,2)
+    Dvv_F = derivatives_new2{ipatch}(1:2,2,2)
     
 % Edge information
     t0_prev = Du_F;
@@ -574,7 +610,7 @@ for kver = 1:numel(vertices)
   end
   v_fun_matrices{2,kver}=KV_matrices;
 end
-end
+
 
 end
 
