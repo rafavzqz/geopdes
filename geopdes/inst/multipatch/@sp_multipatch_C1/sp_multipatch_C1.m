@@ -282,7 +282,7 @@ for iref = 1:numel(interfaces_all)
   end
   
 %   if msh.ndim+1~=msh.rdim || planar_surf
-      [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev_pts, sides)
+      [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev_pts, sides);
 %   else
 %       grev_pts_reduced{1}=grev_pts{1}([1 end]);
 %       grev_pts_reduced{2}=grev_pts{2}([1 end]);
@@ -437,6 +437,9 @@ for kver = 1:numel(vertices)
   KV_matrices=cell(1,valence_p);
   
   geo_local = reorientation_patches (operations, geometry(patches));
+  %Here we need to further modify geo_local by rotating the parametrization
+  %of the patches, that is, for each ip in patches, rotate the control points
+  %geometry(ip).nurbs.coefs (4 x (number of control points in dir 1) x (number of control points in dir 2) matrix)
 
 % Precompute the derivatives and compute sigma
   sigma = 0;
@@ -455,6 +458,15 @@ for kver = 1:numel(vertices)
   sigma = pp*(kk+1)*valence_p/sigma;
   %Storing sigma for output
   v_fun_matrices{1,kver}=sigma;
+  
+  %Tangent vectors
+  Du_F = derivatives_new1{ipatch}(:,1);
+  Dv_F = derivatives_new1{ipatch}(:,2);
+  normal=cross(Du_F,Dv_F);
+  unit_normal=normal/norm(normal);
+  r=cross(unit_normal,[0 0 1]');
+  cos_theta=[0 0 1]*unit_normal;
+  sin_theta=norm(r);
   
   for ipatch = 1:valence_p
     prev_edge = ipatch;
