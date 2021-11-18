@@ -540,9 +540,9 @@ for kver = 1:numel(vertices)
     
     Du_F = derivatives_new1{ipatch}(1:2,1);
     Dv_F = derivatives_new1{ipatch}(1:2,2);
-    Duu_F = derivatives_new2{ipatch}(1:2,1,1)
-    Duv_F = derivatives_new2{ipatch}(1:2,1,2)
-    Dvv_F = derivatives_new2{ipatch}(1:2,2,2)
+    Duu_F = derivatives_new2{ipatch}(1:2,1,1);
+    Duv_F = derivatives_new2{ipatch}(1:2,1,2);
+    Dvv_F = derivatives_new2{ipatch}(1:2,2,2);
     
 % Edge information
     t0_prev = Du_F;
@@ -629,78 +629,108 @@ function [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev
     return
   end
   
-  rank_A=6;
-  if size(geo_map_jac{1},1)==3
-      grev_pts_red{1}=grev_pts{1}([1 end]);
-      grev_pts_red{2}=grev_pts{2}([1 end]);
-      for ii=1:length(geo_map_jac)
-        geo_map_jac_red{ii}=geo_map_jac{ii}(:,:,:,[1 end]);
-      end
-      if (side(2)==1 || side(2)==2)
-        v = grev_pts_red{2}(:);
-      else
-        v = grev_pts_red{1}(:);
-      end
-      ngrev = numel(v);
-      DuFR_x = reshape (geo_map_jac_red{1}(1,1,:,:), ngrev, 1);
-      DuFR_y = reshape (geo_map_jac_red{1}(2,1,:,:), ngrev, 1);
-      DuFR_z = reshape (geo_map_jac_red{1}(3,1,:,:), ngrev, 1);
-      DvFL_x = reshape (geo_map_jac_red{2}(1,2,:,:), ngrev, 1);
-      DvFL_y = reshape (geo_map_jac_red{2}(2,2,:,:), ngrev, 1);
-      DvFL_z = reshape (geo_map_jac_red{2}(3,2,:,:), ngrev, 1);
-      DvFR_x = reshape (geo_map_jac_red{1}(1,2,:,:), ngrev, 1);
-      DvFR_y = reshape (geo_map_jac_red{1}(2,2,:,:), ngrev, 1);
-      DvFR_z = reshape (geo_map_jac_red{1}(3,2,:,:), ngrev, 1);
-
-      A_full = [(1-v).*DvFL_x v.*DvFL_x (1-v).*DuFR_x v.*DuFR_x (1-v).^2.*DvFR_x 2*(1-v).*v.*DvFR_x v.^2.*DvFR_x;...
-           (1-v).*DvFL_y v.*DvFL_y (1-v).*DuFR_y v.*DuFR_y (1-v).^2.*DvFR_y 2*(1-v).*v.*DvFR_y v.^2.*DvFR_y;
-           (1-v).*DvFL_z v.*DvFL_z (1-v).*DuFR_z v.*DuFR_z (1-v).^2.*DvFR_z 2*(1-v).*v.*DvFR_z v.^2.*DvFR_z];
-      rank_A=rank(A_full); 
-  end
+%   rank_A=6;
+%   if size(geo_map_jac{1},1)==3
+%       grev_pts_red{1}=grev_pts{1}([1 end]);
+%       grev_pts_red{2}=grev_pts{2}([1 end]);
+%       for ii=1:length(geo_map_jac)
+%         geo_map_jac_red{ii}=geo_map_jac{ii}(:,:,:,[1 end]);
+%       end
+%       if (side(2)==1 || side(2)==2)
+%         v = grev_pts_red{2}(:);
+%       else
+%         v = grev_pts_red{1}(:);
+%       end
+%       ngrev = numel(v);
+%       DuFR_x = reshape (geo_map_jac_red{1}(1,1,:,:), ngrev, 1);
+%       DuFR_y = reshape (geo_map_jac_red{1}(2,1,:,:), ngrev, 1);
+%       DuFR_z = reshape (geo_map_jac_red{1}(3,1,:,:), ngrev, 1);
+%       DvFL_x = reshape (geo_map_jac_red{2}(1,2,:,:), ngrev, 1);
+%       DvFL_y = reshape (geo_map_jac_red{2}(2,2,:,:), ngrev, 1);
+%       DvFL_z = reshape (geo_map_jac_red{2}(3,2,:,:), ngrev, 1);
+%       DvFR_x = reshape (geo_map_jac_red{1}(1,2,:,:), ngrev, 1);
+%       DvFR_y = reshape (geo_map_jac_red{1}(2,2,:,:), ngrev, 1);
+%       DvFR_z = reshape (geo_map_jac_red{1}(3,2,:,:), ngrev, 1);
+% 
+%       A_full = [(1-v).*DvFL_x v.*DvFL_x (1-v).*DuFR_x v.*DuFR_x (1-v).^2.*DvFR_x 2*(1-v).*v.*DvFR_x v.^2.*DvFR_x;...
+%            (1-v).*DvFL_y v.*DvFL_y (1-v).*DuFR_y v.*DuFR_y (1-v).^2.*DvFR_y 2*(1-v).*v.*DvFR_y v.^2.*DvFR_y;
+%            (1-v).*DvFL_z v.*DvFL_z (1-v).*DuFR_z v.*DuFR_z (1-v).^2.*DvFR_z 2*(1-v).*v.*DvFR_z v.^2.*DvFR_z];
+%       rank_A=rank(A_full); 
+%   end
+%   
+%   if rank_A<5 || size(geo_map_jac{1},1)<3
+%   % Assemble and solve G^1 conditions system
+%   if (side(2)==1 || side(2)==2)
+%     v = grev_pts{2}(:);
+%   else
+%     v = grev_pts{1}(:);
+%   end
+%   ngrev = numel(v);
+%   
+%   DuFR_x = reshape (geo_map_jac{1}(1,1,:,:), ngrev, 1);
+%   DuFR_y = reshape (geo_map_jac{1}(2,1,:,:), ngrev, 1);
+%   DvFL_x = reshape (geo_map_jac{2}(1,2,:,:), ngrev, 1);
+%   DvFL_y = reshape (geo_map_jac{2}(2,2,:,:), ngrev, 1);
+%   DvFR_x = reshape (geo_map_jac{1}(1,2,:,:), ngrev, 1);
+%   DvFR_y = reshape (geo_map_jac{1}(2,2,:,:), ngrev, 1);
+%   
+%   A_full = [(1-v).*DvFL_x v.*DvFL_x (1-v).*DuFR_x v.*DuFR_x (1-v).^2.*DvFR_x 2*(1-v).*v.*DvFR_x v.^2.*DvFR_x;...
+%        (1-v).*DvFL_y v.*DvFL_y (1-v).*DuFR_y v.*DuFR_y (1-v).^2.*DvFR_y 2*(1-v).*v.*DvFR_y v.^2.*DvFR_y];
+%   end
+%   if (rank(A_full)==6)
+%     A = A_full(:,2:end);
+%     b = -A_full(:,1);
+%     sols = A\b;
+%     alpha0_n(1) = 1;
+%     alpha1_n(1) = sols(1);
+%     alpha0_n(2) = sols(2);
+%     alpha1_n(2) = sols(3);
+%     beta0_n = sols(4);
+%     beta1_n = sols(5);
+%     beta2_n = sols(6);
+%   else
+%     A = A_full(:,3:end); % FIX: not a square matrix
+%     b = -sum(A_full(:,1:2),2);
+%     sols = A\b;
+%     alpha0_n(1) = 1;
+%     alpha1_n(1) = 1;
+%     alpha0_n(2) = sols(1);
+%     alpha1_n(2) = sols(2);
+%     beta0_n = sols(3);
+%     beta1_n = sols(4);
+%     beta2_n = sols(5);     
+%   end
   
-  if rank_A<5 || size(geo_map_jac{1},1)<3
-  % Assemble and solve G^1 conditions system
   if (side(2)==1 || side(2)==2)
     v = grev_pts{2}(:);
   else
     v = grev_pts{1}(:);
   end
   ngrev = numel(v);
-  
   DuFR_x = reshape (geo_map_jac{1}(1,1,:,:), ngrev, 1);
   DuFR_y = reshape (geo_map_jac{1}(2,1,:,:), ngrev, 1);
+  DuFR_z = reshape (geo_map_jac{1}(3,1,:,:), ngrev, 1);
   DvFL_x = reshape (geo_map_jac{2}(1,2,:,:), ngrev, 1);
   DvFL_y = reshape (geo_map_jac{2}(2,2,:,:), ngrev, 1);
+  DvFL_z = reshape (geo_map_jac{2}(3,2,:,:), ngrev, 1);
   DvFR_x = reshape (geo_map_jac{1}(1,2,:,:), ngrev, 1);
   DvFR_y = reshape (geo_map_jac{1}(2,2,:,:), ngrev, 1);
+  DvFR_z = reshape (geo_map_jac{1}(3,2,:,:), ngrev, 1);
   
   A_full = [(1-v).*DvFL_x v.*DvFL_x (1-v).*DuFR_x v.*DuFR_x (1-v).^2.*DvFR_x 2*(1-v).*v.*DvFR_x v.^2.*DvFR_x;...
-       (1-v).*DvFL_y v.*DvFL_y (1-v).*DuFR_y v.*DuFR_y (1-v).^2.*DvFR_y 2*(1-v).*v.*DvFR_y v.^2.*DvFR_y];
-  end
-  
-  if (rank(A_full)==6)
-    A = A_full(:,2:end);
-    b = -A_full(:,1);
-    sols = A\b;
-    alpha0_n(1) = 1;
-    alpha1_n(1) = sols(1);
-    alpha0_n(2) = sols(2);
-    alpha1_n(2) = sols(3);
-    beta0_n = sols(4);
-    beta1_n = sols(5);
-    beta2_n = sols(6);
-  else
-    A = A_full(:,3:end); % FIX: not a square matrix
-    b = -sum(A_full(:,1:2),2);
-    sols = A\b;
-    alpha0_n(1) = 1;
-    alpha1_n(1) = 1;
-    alpha0_n(2) = sols(1);
-    alpha1_n(2) = sols(2);
-    beta0_n = sols(3);
-    beta1_n = sols(4);
-    beta2_n = sols(5);     
-  end
+           (1-v).*DvFL_y v.*DvFL_y (1-v).*DuFR_y v.*DuFR_y (1-v).^2.*DvFR_y 2*(1-v).*v.*DvFR_y v.^2.*DvFR_y;
+           (1-v).*DvFL_z v.*DvFL_z (1-v).*DuFR_z v.*DuFR_z (1-v).^2.*DvFR_z 2*(1-v).*v.*DvFR_z v.^2.*DvFR_z];
+    
+  A = A_full(:,2:end);
+  b = -A_full(:,1);     
+  sols = A\b; %we arbitrarily set the first unknown to 1 to avoid the null solution
+  alpha0_n(1) = 1;
+  alpha1_n(1) = sols(1);
+  alpha0_n(2) = sols(2);
+  alpha1_n(2) = sols(3);
+  beta0_n = sols(4);
+  beta1_n = sols(5);
+  beta2_n = sols(6);
  
  % Normalize the alphas
   C1 = alpha0_n(2)^2+alpha0_n(2)*alpha1_n(2)+alpha1_n(2)^2+alpha0_n(1)^2+alpha0_n(1)*alpha1_n(1)+alpha1_n(1)^2;
@@ -729,7 +759,7 @@ function [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev
   M = [alpha_R_0 0 alpha_L_0 0; ...
        0 alpha_R_1 0 alpha_L_1; ...
        alpha_R_12/2 alpha_R_12/2 alpha_L_12/2 alpha_L_12/2];
- 
+
   if (rank(M)==3)
  % Compute beta1_R, beta0_L, beta1_L in terms of beta0_R
     quant1 = (-alpha_L_12/2 + (alpha_L_0*alpha_R_12)/(2*alpha_R_0)) / ...
