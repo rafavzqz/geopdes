@@ -542,6 +542,8 @@ for kver = 1:numel(vertices)
     KV_matrices{ipatch}.K_prev=M_prev;
     KV_matrices{ipatch}.K_next=M_next;
     KV_matrices{ipatch}.V=VV;
+    KV_matrices{ipatch}.E_prev=E_prev;
+    KV_matrices{ipatch}.E_next=E_next;
   end
   v_fun_matrices{2,kver}=KV_matrices;
 end
