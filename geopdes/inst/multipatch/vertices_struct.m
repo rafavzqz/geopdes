@@ -169,8 +169,10 @@ function operations = reorientation_edge (interface, geometry)
   nrb_patches = [geometry(patches).nurbs];
   sides = [interface.side1 interface.side2];
 % Change orientation of first patch
-  [~,jac] = nrbdeval (nrb_patches(1), nrbderiv(nrb_patches(1)), {rand(1) rand(1)});
-  jacdet = jac{1}(1) * jac{2}(2) - jac{1}(2) * jac{2}(1);
+  jac = geometry(patches(1)).map_der({rand(1),rand(1)});
+  jacdet = geopdes_det__ (jac);
+%   [~,jac] = nrbdeval (nrb_patches(1), nrbderiv(nrb_patches(1)), {rand(1), rand(1)});
+%   jacdet = jac{1}(1) * jac{2}(2) - jac{1}(2) * jac{2}(1)
   if (sides(1) == 2)
     if (jacdet < 0)
       operations(1,:) = [1 0 0];
@@ -199,8 +201,10 @@ function operations = reorientation_edge (interface, geometry)
 
 % Change orientation of second patch, only for inner edges
   if (numel(nrb_patches) == 2)
-    [~,jac] = nrbdeval (nrb_patches(2), nrbderiv(nrb_patches(2)), {rand(1) rand(1)});
-    jacdet = jac{1}(1) * jac{2}(2) - jac{1}(2) * jac{2}(1);
+    jac = geometry(patches(2)).map_der({rand(1),rand(1)});
+    jacdet = geopdes_det__ (jac);
+%     [~,jac] = nrbdeval (nrb_patches(2), nrbderiv(nrb_patches(2)), {rand(1) rand(1)});
+%     jacdet = jac{1}(1) * jac{2}(2) - jac{1}(2) * jac{2}(1);
     if (sides(2) == 1)
       if (jacdet < 0)
         operations(2,:) = [0 0 1];
@@ -245,7 +249,10 @@ function operations = reorientation_vertex (position, nrb)
       nrb = nrbreverse (nrb, [1 2]);
   end
   [~,jac] = nrbdeval (nrb, nrbderiv(nrb), {rand(1) rand(1)});
-  jacdet = jac{1}(1) * jac{2}(2) - jac{1}(2) * jac{2}(1);
+%   jacdet = jac{1}(1) * jac{2}(2) - jac{1}(2) * jac{2}(1);
+  jac_as_I_want = jac{1};
+  jac_as_I_want(:,2) = jac{2};
+  jacdet = geopdes_det__ (jac_as_I_want);
   
   if (jacdet < 0)
     operations(3) = 1;
