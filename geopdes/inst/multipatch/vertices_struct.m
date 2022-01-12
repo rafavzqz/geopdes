@@ -90,7 +90,11 @@ vertices = struct('valence_p', [], 'valence_e', [], 'edges', [], 'patches', [], 
   'patch_reorientation', [], 'edge_orientation', [], 'boundary_vertex', []);
 % Inner and boundary vertex are done in a different way
 % For inner vertices, I set the patch with lowest number as the first one
-boundary_vertices = space.boundary.dofs(:).';
+if (isempty (space.boundary))
+  boundary_vertices = [];
+else
+  boundary_vertices = space.boundary.dofs(:).';
+end
 for ivert = 1:space.ndof
   boundary_vertex = ismember (ivert, boundary_vertices);
   sp_edges = find(C(:,ivert));
