@@ -64,9 +64,18 @@ for hh = 1:numel(boundaries)
   interfaces_bnd(N_int+hh).side2 = 0;
 end
 
-% Find the operations for reorientation
-for ii = 1:numel(interfaces)
-  interfaces(ii).operations = reorientation_edge (interfaces(ii), geometry);
+% Find the operations for reparametrization
+if (msh.ndim == 2 && msh.rdim == 2)
+  for ii = 1:numel(interfaces)
+    interfaces(ii).operations = reorientation_edge_planar (interfaces(ii), geometry);
+  end
+elseif (msh.ndim == 2 && msh.rdim == 3)
+  % In the case of 3D surfaces, check that all patches have the same orientation as the surface
+  check_orientation (geometry, interfaces)
+  
+  for ii = 1:numel(interfaces)
+    interfaces(ii).operations = reorientation_edge_3dsurface (interfaces(ii), geometry);
+  end
 end
 
 % Correspondence between interfaces and edges of the space
@@ -164,15 +173,35 @@ end
 
 end
 
-function operations = reorientation_edge (interface, geometry)
+
+function check_orientation (geometry, interfaces)
+  Nint = find ([interfaces.patch2]); Nint = Nint(end);
+
+  coords_on_side = {0 0.5; 1 0.5; 0.5 0; 0.5 1}; %4 rows for the sides, 2 columns for the coordinates
+  
+  for iedge = 1:Nint
+    patches = [interfaces(iedge).patch1 interfaces(iedge).patch2];
+    nrb_patches = [geometry(patches).nurbs];
+    sides = [interfaces(iedge).side1 interfaces(iedge).side2];
+    jac_side1 = geometry(patches(1)).map_der(coords_on_side(sides(1),:));
+    jac_side2 = geometry(patches(2)).map_der(coords_on_side(sides(2),:));
+    normal1 = cross (jac_side1(:,1), jac_side1(:,2)); normal1 = normal1 / norm(normal1);
+    normal2 = cross (jac_side2(:,1), jac_side2(:,2)); normal2 = normal2 / norm(normal2);
+    if (max (abs (normal1 - normal2)) > 1e-13)
+      mssg = sprintf('The patches at interface %d do not follow a global orientation. The involved patches are patch %d (side %d), and patch %d (side %d)', iedge, patches(1), sides(1), patches(2), sides(2));
+      error (mssg);
+    end
+  end
+end
+
+
+function operations = reorientation_edge_planar (interface, geometry)
   patches = [interface.patch1 interface.patch2];
   nrb_patches = [geometry(patches).nurbs];
   sides = [interface.side1 interface.side2];
 % Change orientation of first patch
   jac = geometry(patches(1)).map_der({rand(1),rand(1)});
   jacdet = geopdes_det__ (jac);
-%   [~,jac] = nrbdeval (nrb_patches(1), nrbderiv(nrb_patches(1)), {rand(1), rand(1)});
-%   jacdet = jac{1}(1) * jac{2}(2) - jac{1}(2) * jac{2}(1)
   if (sides(1) == 2)
     if (jacdet < 0)
       operations(1,:) = [1 0 0];
@@ -203,8 +232,6 @@ function operations = reorientation_edge (interface, geometry)
   if (numel(nrb_patches) == 2)
     jac = geometry(patches(2)).map_der({rand(1),rand(1)});
     jacdet = geopdes_det__ (jac);
-%     [~,jac] = nrbdeval (nrb_patches(2), nrbderiv(nrb_patches(2)), {rand(1) rand(1)});
-%     jacdet = jac{1}(1) * jac{2}(2) - jac{1}(2) * jac{2}(1);
     if (sides(2) == 1)
       if (jacdet < 0)
         operations(2,:) = [0 0 1];
@@ -229,6 +256,37 @@ function operations = reorientation_edge (interface, geometry)
       else
         operations(2,:) = [1 1 0];
       end
+    end
+  end
+end
+
+function operations = reorientation_edge_3dsurface (interface, geometry)
+  patches = [interface.patch1 interface.patch2];
+  nrb_patches = [geometry(patches).nurbs];
+  sides = [interface.side1 interface.side2];
+% Change orientation of first patch
+  if (sides(1) == 2)
+    operations(1,:) = [1 1 0];
+  elseif (sides(1) == 3)
+    operations(1,:) = [1 0 1];
+  elseif (sides(1) == 4)
+    operations(1,:) = [0 1 1];
+  elseif (sides(1) == 1)
+    operations(1,:) = [0 0 0];
+  end
+
+% Change orientation of second patch, only for inner edges
+  if (numel(nrb_patches) == 2)
+    jac = geometry(patches(2)).map_der({rand(1),rand(1)});
+    jacdet = geopdes_det__ (jac);
+    if (sides(2) == 1)
+      operations(2,:) = [0 1 1];
+    elseif (sides(2) == 2)
+      operations(2,:) = [1 0 1];
+    elseif (sides(2) == 3)
+      operations(2,:) = [0 0 0];
+    elseif (sides(2) == 4)
+      operations(2,:) = [1 1 0];
     end
   end
 end
