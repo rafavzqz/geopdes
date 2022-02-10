@@ -277,8 +277,6 @@ function operations = reorientation_edge_3dsurface (interface, geometry)
 
 % Change orientation of second patch, only for inner edges
   if (numel(nrb_patches) == 2)
-    jac = geometry(patches(2)).map_der({rand(1),rand(1)});
-    jacdet = geopdes_det__ (jac);
     if (sides(2) == 1)
       operations(2,:) = [0 1 1];
     elseif (sides(2) == 2)
