@@ -165,10 +165,14 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces_all, vertices)
   numel_interior_dofs = cellfun (@numel, sp.interior_dofs_per_patch);
   shift_index_patch = cumsum ([0 numel_interior_dofs]);
   for iptc = 1:sp.npatch
-    Cpatch{iptc} = sparse (sp.ndof_per_patch(iptc), sp.ndof);
+%     Cpatch{iptc} = sparse (sp.ndof_per_patch(iptc), sp.ndof);
     global_indices = sum (numel_interior_dofs(1:iptc-1)) + (1:numel_interior_dofs(iptc));
-    Cpatch{iptc}(sp.interior_dofs_per_patch{iptc}, global_indices) = ...
-      speye (numel (sp.interior_dofs_per_patch{iptc}));
+    rows = sp.interior_dofs_per_patch{iptc}; 
+    cols = global_indices; 
+    vals = ones (numel(sp.interior_dofs_per_patch{iptc}), 1);
+    Cpatch{iptc} = sparse (rows, cols, vals, sp.ndof_per_patch(iptc), sp.ndof);
+%     Cpatch{iptc}(sp.interior_dofs_per_patch{iptc}, global_indices) = ...
+%       speye (numel (sp.interior_dofs_per_patch{iptc}));
     sp.dofs_on_patch{iptc} = shift_index_patch(iptc)+1:shift_index_patch(iptc+1);
   end
 
