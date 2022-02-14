@@ -23,7 +23,7 @@
 %             respect to the standard configuration in the vertex
 %      - boundary_vertex: true if the vertex is a boundary vertex
 %
-% Copyright (C) 2019-2021 Rafael Vazquez
+% Copyright (C) 2019-2022 Rafael Vazquez
 % Copyright (C) 2019-2021 Cesare Bracco
 %
 %    This program is free software: you can redistribute it and/or modify
@@ -118,7 +118,7 @@ for ivert = 1:space.ndof
   
   patch_reorientation = zeros (valence, 3);
   for iptc = 1:valence
-    patch_reorientation(iptc,1:3) = reorientation_vertex (position(iptc), geometry(patches(iptc)).nurbs);
+    patch_reorientation(iptc,1:3) = reorientation_vertex (position(iptc), geometry(patches(iptc)).nurbs, msh.rdim);
   end
 
 % Determine the first edge and patch to reorder the patches and edges
@@ -277,8 +277,6 @@ function operations = reorientation_edge_3dsurface (interface, geometry)
 
 % Change orientation of second patch, only for inner edges
   if (numel(nrb_patches) == 2)
-    jac = geometry(patches(2)).map_der({rand(1),rand(1)});
-    jacdet = geopdes_det__ (jac);
     if (sides(2) == 1)
       operations(2,:) = [0 1 1];
     elseif (sides(2) == 2)
@@ -292,7 +290,7 @@ function operations = reorientation_edge_3dsurface (interface, geometry)
 end
 
 
-function operations = reorientation_vertex (position, nrb)
+function operations = reorientation_vertex (position, nrb, rdim)
 
   operations = zeros (1,3);
   switch position
@@ -306,14 +304,18 @@ function operations = reorientation_vertex (position, nrb)
       operations(1:2) = [1 1];
       nrb = nrbreverse (nrb, [1 2]);
   end
-  [~,jac] = nrbdeval (nrb, nrbderiv(nrb), {rand(1) rand(1)});
-%   jacdet = jac{1}(1) * jac{2}(2) - jac{1}(2) * jac{2}(1);
-  jac_as_I_want = jac{1};
-  jac_as_I_want(:,2) = jac{2};
-  jacdet = geopdes_det__ (jac_as_I_want);
   
-  if (jacdet < 0)
-    operations(3) = 1;
+  if (rdim == 2)
+    [~,jac] = nrbdeval (nrb, nrbderiv(nrb), {rand(1) rand(1)});
+%   jacdet = jac{1}(1) * jac{2}(2) - jac{1}(2) * jac{2}(1);
+    jacdet = geopdes_det__ (cell2mat(jac));
+    if (jacdet < 0)
+      operations(3) = 1;
+    end
+  elseif (rdim == 3)
+    if (sum(operations) == 1)
+      operations(3) = 1;
+    end
   end
 
 end
