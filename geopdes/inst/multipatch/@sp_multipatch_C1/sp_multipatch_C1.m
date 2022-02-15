@@ -281,9 +281,11 @@ for iref = 1:numel(interfaces_all)
 %     end
   end
   
-%   if msh.ndim+1~=msh.rdim || planar_surf
+   if msh.ndim+1 == msh.rdim
       [alpha0, alpha1, beta0, beta1] = compute_gluing_data_surf (geo_map_jac, grev_pts, sides);
-%   else
+   else
+      [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev_pts, sides);
+   end
 %       grev_pts_reduced{1}=grev_pts{1}([1 end]);
 %       grev_pts_reduced{2}=grev_pts{2}([1 end]);
 %       [alpha0, alpha1, beta0, beta1] = compute_gluing_data_surf (geo_map_jac_reduced, grev_pts_reduced, sides);
