@@ -1,9 +1,9 @@
-% MP_SOLVE_BILAPLACE: solve the bilaplacian problem in a multipatch geometry.
+% MP_SOLVE_BILAPLACE_C1: solve the bilaplacian problem in a multipatch geometry.
 %
 % USAGE:
 %
 %  [geometry, msh, space, u] = 
-%          mp_solve_bilaplace (problem_data, method_data)
+%          mp_solve_bilaplace_C1 (problem_data, method_data)
 %
 % INPUT:
 %
@@ -11,9 +11,9 @@
 %    - geo_name:     name of the file containing the geometry
 %    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
 %    - drchlt_sides: sides with Dirichlet boundary condition
-%    - c_diff:       diffusion coefficient (epsilon in the equation)
+%    - c_diff:       diffusion coefficient
 %    - f:            source term
-%    - g:            function for Neumann condition (if nmnn_sides is not empty)
+%    - g:            function for Neumann condition
 %    - h:            function for Dirichlet boundary condition
 %
 %  method_data : a structure with discretization data. Its fields are:
@@ -25,13 +25,13 @@
 %
 % OUTPUT:
 %
-%  geometry: array of geometry structures (see geo_load)
+%  geometry: array of geometry structures (see mp_geo_load)
 %  msh:      multipatch mesh, consisting of several Cartesian meshes (see msh_multipatch)
-%  space:    multipatch space, formed by several tensor product spaces plus the connectivity (see sp_multipatch)
+%  space:    multipatch space, formed by several tensor product spaces plus the connectivity (see sp_multipatch_C1)
 %  u:        the computed degrees of freedom
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2010, 2011, 2013, 2015, 2017 Rafael Vazquez
+% Copyright (C) 2010--2022 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function [geometry, msh, space, u] = ...
-              mp_solve_laplace_C1 (problem_data, method_data)
+              mp_solve_bilaplace_C1 (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
 data_names = fieldnames (problem_data);

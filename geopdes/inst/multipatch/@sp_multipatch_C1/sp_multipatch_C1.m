@@ -163,11 +163,17 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces_all, vertices)
 % Store the coefficients for matrix change in Cpatch
   Cpatch = cell (sp.npatch, 1);
   numel_interior_dofs = cellfun (@numel, sp.interior_dofs_per_patch);
+  shift_index_patch = cumsum ([0 numel_interior_dofs]);
   for iptc = 1:sp.npatch
-    Cpatch{iptc} = sparse (sp.ndof_per_patch(iptc), sp.ndof);
+%     Cpatch{iptc} = sparse (sp.ndof_per_patch(iptc), sp.ndof);
     global_indices = sum (numel_interior_dofs(1:iptc-1)) + (1:numel_interior_dofs(iptc));
-    Cpatch{iptc}(sp.interior_dofs_per_patch{iptc}, global_indices) = ...
-      speye (numel (sp.interior_dofs_per_patch{iptc}));    
+    rows = sp.interior_dofs_per_patch{iptc}; 
+    cols = global_indices; 
+    vals = ones (numel(sp.interior_dofs_per_patch{iptc}), 1);
+    Cpatch{iptc} = sparse (rows, cols, vals, sp.ndof_per_patch(iptc), sp.ndof);
+%     Cpatch{iptc}(sp.interior_dofs_per_patch{iptc}, global_indices) = ...
+%       speye (numel (sp.interior_dofs_per_patch{iptc}));
+    sp.dofs_on_patch{iptc} = shift_index_patch(iptc)+1:shift_index_patch(iptc+1);
   end
 
   sp.dofs_on_edge = cell (1, numel(interfaces_all));
@@ -609,6 +615,8 @@ for kver = 1:numel(vertices)
     KV_matrices{ipatch}.K_prev=M_prev;
     KV_matrices{ipatch}.K_next=M_next;
     KV_matrices{ipatch}.V=VV;
+    KV_matrices{ipatch}.E_prev=E_prev;
+    KV_matrices{ipatch}.E_next=E_next;
   end
   v_fun_matrices{2,kver}=KV_matrices;
 end
