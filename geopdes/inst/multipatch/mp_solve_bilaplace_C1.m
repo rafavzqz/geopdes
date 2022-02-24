@@ -90,9 +90,13 @@ clear sp
 stiff_mat = op_gradgradu_gradgradv_mp (space, space, msh, c_diff);
 rhs       = op_f_v_mp (space, msh, f);
 
-
+% Apply boundary conditions
 u = zeros (space.ndof, 1);
-[u_drchlt, drchlt_dofs] = sp_bilaplacian_drchlt_C1 (space, msh, drchlt_sides, h, g);
+if (isfield(problem_data, 'graduex') && isfield(problem_data, 'uex'))
+  [u_drchlt, drchlt_dofs] = sp_bilaplacian_drchlt_C1_exact (space, msh, drchlt_sides, uex, graduex);
+else
+  [u_drchlt, drchlt_dofs] = sp_bilaplacian_drchlt_C1 (space, msh, drchlt_sides, h, g);
+end
 u(drchlt_dofs) = u_drchlt;
 
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
