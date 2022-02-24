@@ -1,4 +1,4 @@
-function [u_drchlt, drchlt_dofs] = sp_bilaplacian_drchlt_C1 (space, msh, refs, h, dudn)
+function [u_drchlt, drchlt_dofs] = sp_bilaplacian_drchlt_C1_exact (space, msh, refs, uex, gradex)
 
 % refs should be the whole boundary, for now
 M = spalloc (space.ndof, space.ndof, space.ndof);
@@ -12,7 +12,7 @@ drchlt_dofs2 = [];
 
 boundaries = msh.boundaries;
 for iref = refs
-  href = @(varargin) h(varargin{:}, iref);
+%   href = @(varargin) h(varargin{:}, iref);
   for bnd_side = 1:boundaries(iref).nsides
     iptc = boundaries(iref).patches(bnd_side);
     iside = boundaries(iref).faces(bnd_side);
@@ -32,10 +32,10 @@ for iref = refs
       x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
     end
     coeff_at_qnodes = ones (size(x{1}));
-    dudn_at_qnodes = dudn (x{:},iref);
+    dudn_at_qnodes = reshape (sum (gradex(x{:}) .* msh_side.normal, 1), msh_side.nqn, msh_side.nel);
 
     M = M + space.Cpatch{iptc}.' * op_u_v (sp_bnd_struct, sp_bnd_struct, msh_side, coeff_at_qnodes) * space.Cpatch{iptc};
-    rhs = rhs + space.Cpatch{iptc}.' * op_f_v (sp_bnd_struct, msh_side, href(x{:}));
+    rhs = rhs + space.Cpatch{iptc}.' * op_f_v (sp_bnd_struct, msh_side, uex(x{:}));
     
     M2 = M2 + space.Cpatch{iptc}.' * op_gradu_n_gradv_n (sp_bnd_struct, sp_bnd_struct, msh_side, coeff_at_qnodes) * space.Cpatch{iptc};
     rhs2 = rhs2 + space.Cpatch{iptc}.' * op_gradv_n_f (sp_bnd_struct, msh_side, dudn_at_qnodes); % I am missing the other part of the vector. It is in M2 :-)
