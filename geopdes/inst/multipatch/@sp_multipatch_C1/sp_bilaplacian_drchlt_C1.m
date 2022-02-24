@@ -14,7 +14,6 @@ boundaries = msh.boundaries;
 for iref = refs
   href = @(varargin) h(varargin{:}, iref);
   for bnd_side = 1:boundaries(iref).nsides
-    iptc_bnd = sum([boundaries(1:iref-1).nsides]) + bnd_side;
     iptc = boundaries(iref).patches(bnd_side);
     iside = boundaries(iref).faces(bnd_side);
 
