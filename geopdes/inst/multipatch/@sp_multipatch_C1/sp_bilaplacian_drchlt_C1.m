@@ -43,18 +43,22 @@ for iref = refs
   end
 end
 
-u_drchlt = M(drchlt_dofs, drchlt_dofs) \ rhs(drchlt_dofs, 1);
-
-uu = sparse (space.ndof, 1);
-uu(drchlt_dofs) = u_drchlt;
-
-drchlt_dofs2 = setdiff (drchlt_dofs2, drchlt_dofs);
-rhs2 = rhs2 - M2 * uu;
-u_drchlt2 = M2(drchlt_dofs2, drchlt_dofs2) \ rhs2(drchlt_dofs2);
-
-uu(drchlt_dofs2) = u_drchlt2;
+% u_drchlt = M(drchlt_dofs, drchlt_dofs) \ rhs(drchlt_dofs, 1);
+% 
+% uu = sparse (space.ndof, 1);
+% uu(drchlt_dofs) = u_drchlt;
+% 
+% drchlt_dofs2 = setdiff (drchlt_dofs2, drchlt_dofs);
+% rhs2 = rhs2 - M2 * uu;
+% u_drchlt2 = M2(drchlt_dofs2, drchlt_dofs2) \ rhs2(drchlt_dofs2);
+% 
+% uu(drchlt_dofs2) = u_drchlt2;
+% 
+% drchlt_dofs = union (drchlt_dofs, drchlt_dofs2);
+% u_drchlt = uu(drchlt_dofs);
 
 drchlt_dofs = union (drchlt_dofs, drchlt_dofs2);
-u_drchlt = uu(drchlt_dofs);
+u_drchlt = (M(drchlt_dofs,drchlt_dofs) + M2(drchlt_dofs, drchlt_dofs)) \ ...
+           (rhs(drchlt_dofs) + rhs2(drchlt_dofs));
 
 end
