@@ -58,6 +58,15 @@ end
 % u_drchlt = uu(drchlt_dofs);
 
 drchlt_dofs = union (drchlt_dofs, drchlt_dofs2);
+
+
+% SET M = M + M2
+% LOOP ON VERTICES
+% RESTRICT TO 6x6 matrix and analyze
+% If null space is not empty:
+%  1) Remove one basis function from drchlt_dofs
+%  2) Get the coefficients of the internal functions (will be given as an output)
+
 u_drchlt = (M(drchlt_dofs,drchlt_dofs) + M2(drchlt_dofs, drchlt_dofs)) \ ...
            (rhs(drchlt_dofs) + rhs2(drchlt_dofs));
 
