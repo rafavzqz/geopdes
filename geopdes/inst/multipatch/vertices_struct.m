@@ -118,7 +118,7 @@ for ivert = 1:space.ndof
   
   patch_reorientation = zeros (valence, 3);
   for iptc = 1:valence
-    patch_reorientation(iptc,1:3) = reorientation_vertex (position(iptc), geometry(patches(iptc)).nurbs, msh.rdim);
+    patch_reorientation(iptc,1:3) = reorientation_vertex (position(iptc), geometry(patches(iptc)));
   end
 
 % Determine the first edge and patch to reorder the patches and edges
@@ -290,29 +290,25 @@ function operations = reorientation_edge_3dsurface (interface, geometry)
 end
 
 
-function operations = reorientation_vertex (position, nrb, rdim)
+function operations = reorientation_vertex (position, geom_patch)
 
   operations = zeros (1,3);
   switch position
     case 2
       operations(1) = 1;
-      nrb = nrbreverse (nrb, 1);
     case 3
       operations(2) = 1;
-      nrb = nrbreverse (nrb, 2);
     case 4
       operations(1:2) = [1 1];
-      nrb = nrbreverse (nrb, [1 2]);
   end
   
-  if (rdim == 2)
-    [~,jac] = nrbdeval (nrb, nrbderiv(nrb), {rand(1) rand(1)});
-%   jacdet = jac{1}(1) * jac{2}(2) - jac{1}(2) * jac{2}(1);
-    jacdet = geopdes_det__ (cell2mat(jac));
-    if (jacdet < 0)
+  if (geom_patch.rdim == 2)
+    jac = geom_patch.map_der({rand(1),rand(1)});
+    jacdet = geopdes_det__ (jac);
+    if ((jacdet > 0 && sum(operations) == 1) || (jacdet < 0 && sum(operations) ~= 1))
       operations(3) = 1;
     end
-  elseif (rdim == 3)
+  elseif (geom_patch.rdim == 3)
     if (sum(operations) == 1)
       operations(3) = 1;
     end
