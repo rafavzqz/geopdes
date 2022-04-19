@@ -286,12 +286,14 @@ for iref = 1:numel(interfaces_all)
 %         DvFR_z = reshape (geo_map_jac_reduced{1}(3,2,:,:), ngrev, 1);
 %     end
   end
-  
-   if msh.ndim+1 == msh.rdim
+    
+   if msh.ndim + 1 == msh.rdim
       [alpha0, alpha1, beta0, beta1] = compute_gluing_data_surf (geo_map_jac, grev_pts, sides);
    else
+      disp('Planar GD');
       [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev_pts, sides);
    end
+   keyboard
 %       grev_pts_reduced{1}=grev_pts{1}([1 end]);
 %       grev_pts_reduced{2}=grev_pts{2}([1 end]);
 %       [alpha0, alpha1, beta0, beta1] = compute_gluing_data_surf (geo_map_jac_reduced, grev_pts_reduced, sides);
@@ -467,6 +469,8 @@ for kver = 1:numel(vertices)
   v_fun_matrices{1,kver}=sigma;
   
   if msh.ndim+1==msh.rdim
+      
+      disp('Surf code');
       %Tangent vectors
       Du_F = derivatives_new1{1}(:,1);
       Dv_F = derivatives_new1{1}(:,2);

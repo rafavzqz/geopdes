@@ -163,11 +163,17 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces_all, vertices)
 % Store the coefficients for matrix change in Cpatch
   Cpatch = cell (sp.npatch, 1);
   numel_interior_dofs = cellfun (@numel, sp.interior_dofs_per_patch);
+  shift_index_patch = cumsum ([0 numel_interior_dofs]);
   for iptc = 1:sp.npatch
-    Cpatch{iptc} = sparse (sp.ndof_per_patch(iptc), sp.ndof);
+%     Cpatch{iptc} = sparse (sp.ndof_per_patch(iptc), sp.ndof);
     global_indices = sum (numel_interior_dofs(1:iptc-1)) + (1:numel_interior_dofs(iptc));
-    Cpatch{iptc}(sp.interior_dofs_per_patch{iptc}, global_indices) = ...
-      speye (numel (sp.interior_dofs_per_patch{iptc}));    
+    rows = sp.interior_dofs_per_patch{iptc}; 
+    cols = global_indices; 
+    vals = ones (numel(sp.interior_dofs_per_patch{iptc}), 1);
+    Cpatch{iptc} = sparse (rows, cols, vals, sp.ndof_per_patch(iptc), sp.ndof);
+%     Cpatch{iptc}(sp.interior_dofs_per_patch{iptc}, global_indices) = ...
+%       speye (numel (sp.interior_dofs_per_patch{iptc}));
+    sp.dofs_on_patch{iptc} = shift_index_patch(iptc)+1:shift_index_patch(iptc+1);
   end
 
   sp.dofs_on_edge = cell (1, numel(interfaces_all));
@@ -281,9 +287,12 @@ for iref = 1:numel(interfaces_all)
 %     end
   end
   
-%   if msh.ndim+1~=msh.rdim || planar_surf
+   if msh.ndim + 1 == msh.rdim
+      [alpha0, alpha1, beta0, beta1] = compute_gluing_data_surf (geo_map_jac, grev_pts, sides);
+   else
+      disp('
       [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev_pts, sides);
-%   else
+   end
 %       grev_pts_reduced{1}=grev_pts{1}([1 end]);
 %       grev_pts_reduced{2}=grev_pts{2}([1 end]);
 %       [alpha0, alpha1, beta0, beta1] = compute_gluing_data_surf (geo_map_jac_reduced, grev_pts_reduced, sides);
@@ -416,7 +425,6 @@ for iref = 1:numel(interfaces_all)
   end
 end
 
-if msh.ndim+1~=msh.rdim
 % Computation of CC_vertices
 % Auxiliary constants to deal with different regularity cases in the M matrices
 if (reg < pp-2)
@@ -437,6 +445,9 @@ for kver = 1:numel(vertices)
   KV_matrices=cell(1,valence_p);
   
   geo_local = reorientation_patches (operations, geometry(patches));
+  %Here we need to further modify geo_local by rotating the parametrization
+  %of the patches, that is, for each ip in patches, rotate the control points
+  %geometry(ip).nurbs.coefs (4 x (number of control points in dir 1) x (number of control points in dir 2) matrix)
 
 % Precompute the derivatives and compute sigma
   sigma = 0;
@@ -456,9 +467,55 @@ for kver = 1:numel(vertices)
   %Storing sigma for output
   v_fun_matrices{1,kver}=sigma;
   
+  if msh.ndim+1==msh.rdim
+      %Tangent vectors
+      Du_F = derivatives_new1{1}(:,1);
+      Dv_F = derivatives_new1{1}(:,2);
+      %Normal vector
+      normal=cross(Du_F,Dv_F);
+      unit_normal=normal/norm(normal);
+      %Vector orthogonal to n and z along which the geometry is rotated
+      %(rotation axis)
+      r=cross(unit_normal,[0 0 1]');
+      %Angle between n and z
+      cos_th=[0 0 1]*unit_normal;
+      sin_th=norm(r);
+      %Rotation matrix
+      R=[cos_th + r(1)^2*(1-cos_th),r(1)*r(2)*(1-cos_th)-r(3)*sin_th,r(1)*r(3)*(1-cos_th)+r(2)*sin_th;...
+         r(1)*r(2)*(1-cos_th)+r(3)*sin_th,cos_th + r(2)^2*(1-cos_th),r(2)*r(3)*(1-cos_th)-r(1)*sin_th;...
+         r(1)*r(3)*(1-cos_th)-r(2)*sin_th,r(3)*r(2)*(1-cos_th)+r(1)*sin_th,cos_th + r(3)^2*(1-cos_th)];
+     
+   for ipatch = 1:valence_p
+
+        coeff_hom=geo_local(ipatch).nurbs.coefs;
+        coeff_w=coeff_hom(4,:,:);
+        coeff_eu=coeff_hom(1:3,:,:)./(repmat(coeff_w,3,1,1)); %Euclidean coefficients
+        rot_coeff=ones(4,size(coeff_eu,2),size(coeff_eu,3));
+        for k=1:size(coeff_eu,3)
+           rot_coeff(1:3,:,k)=R*(coeff_eu(:,:,k)-coeff_eu(:,1,1))+coeff_eu(:,1,1);
+        end
+        rot_nrb(ipatch)=geometry(patches(ipatch)).nurbs;
+        rot_nrb(ipatch).coefs=rot_coeff;
+   end
+   
+   rot_geo = mp_geo_load(rot_nrb);
+      
+   for iptc = 1:valence_p
+        knots = space.sp_patch{iptc}.knots;
+        for idim = 1:msh.ndim
+          brk{idim}=[knots{idim}(1) knots{idim}(end)];
+        end
+        rot_msh_pts_der1 = msh_cartesian (brk, {0 0}, [], rot_geo(iptc),'boundary', true, 'der2', true);
+        rot_msh_der = msh_precompute (rot_msh_pts_der1);
+        derivatives_new1{iptc} = rot_msh_der.geo_map_jac; %rdim x ndim x (n_pts{1}x n_pts{2}) (rdim->physical space, ndim->parametric space)
+        derivatives_new2{iptc} = rot_msh_der.geo_map_der2; %rdim x ndim x ndim x n_pts{1} x n_pts{2}
+   end
+  end
+  
   for ipatch = 1:valence_p
-    prev_edge = ipatch;
-    next_edge = mod(ipatch, valence_e) + 1;
+      
+      prev_edge = ipatch;
+      next_edge = mod(ipatch, valence_e) + 1;
 
 % Compute gluing data, and edge functions from CC_edges_discarded
     if (edge_orientation(prev_edge) == 1)
@@ -490,11 +547,11 @@ for kver = 1:numel(vertices)
       E_next(:,[4 5]) = -E_next(:,[4 5]);
     end
     
-    Du_F = derivatives_new1{ipatch}(:,1);
-    Dv_F = derivatives_new1{ipatch}(:,2);
-    Duu_F = derivatives_new2{ipatch}(:,1,1);
-    Duv_F = derivatives_new2{ipatch}(:,1,2);
-    Dvv_F = derivatives_new2{ipatch}(:,2,2);
+    Du_F = derivatives_new1{ipatch}(1:2,1);
+    Dv_F = derivatives_new1{ipatch}(1:2,2);
+    Duu_F = derivatives_new2{ipatch}(1:2,1,1);
+    Duv_F = derivatives_new2{ipatch}(1:2,1,2);
+    Dvv_F = derivatives_new2{ipatch}(1:2,2,2);
     
 % Edge information
     t0_prev = Du_F;
@@ -559,10 +616,12 @@ for kver = 1:numel(vertices)
     KV_matrices{ipatch}.K_prev=M_prev;
     KV_matrices{ipatch}.K_next=M_next;
     KV_matrices{ipatch}.V=VV;
+    KV_matrices{ipatch}.E_prev=E_prev;
+    KV_matrices{ipatch}.E_next=E_next;
   end
   v_fun_matrices{2,kver}=KV_matrices;
 end
-end
+
 
 end
 
@@ -580,36 +639,7 @@ function [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev
     beta1 = [0 0];
     return
   end
-  
-  if size(geo_map_jac{1},1)==3
-      grev_pts_red{1}=grev_pts{1}([1 end]);
-      grev_pts_red{2}=grev_pts{2}([1 end]);
-      for ii=1:length(geo_map_jac)
-        geo_map_jac_red{ii}=geo_map_jac{ii}(:,:,:,[1 end]);
-      end
-      if (side(2)==1 || side(2)==2)
-        v = grev_pts_red{2}(:);
-      else
-        v = grev_pts_red{1}(:);
-      end
-      ngrev = numel(v);
-      DuFR_x = reshape (geo_map_jac_red{1}(1,1,:,:), ngrev, 1);
-      DuFR_y = reshape (geo_map_jac_red{1}(2,1,:,:), ngrev, 1);
-      DuFR_z = reshape (geo_map_jac_red{1}(3,1,:,:), ngrev, 1);
-      DvFL_x = reshape (geo_map_jac_red{2}(1,2,:,:), ngrev, 1);
-      DvFL_y = reshape (geo_map_jac_red{2}(2,2,:,:), ngrev, 1);
-      DvFL_z = reshape (geo_map_jac_red{2}(3,2,:,:), ngrev, 1);
-      DvFR_x = reshape (geo_map_jac_red{1}(1,2,:,:), ngrev, 1);
-      DvFR_y = reshape (geo_map_jac_red{1}(2,2,:,:), ngrev, 1);
-      DvFR_z = reshape (geo_map_jac_red{1}(3,2,:,:), ngrev, 1);
 
-      A_full = [(1-v).*DvFL_x v.*DvFL_x (1-v).*DuFR_x v.*DuFR_x (1-v).^2.*DvFR_x 2*(1-v).*v.*DvFR_x v.^2.*DvFR_x;...
-           (1-v).*DvFL_y v.*DvFL_y (1-v).*DuFR_y v.*DuFR_y (1-v).^2.*DvFR_y 2*(1-v).*v.*DvFR_y v.^2.*DvFR_y;
-           (1-v).*DvFL_z v.*DvFL_z (1-v).*DuFR_z v.*DuFR_z (1-v).^2.*DvFR_z 2*(1-v).*v.*DvFR_z v.^2.*DvFR_z];
-      rank_A=rank(A_full); 
-  end
-  
-  if rank_A<5 ||
   % Assemble and solve G^1 conditions system
   if (side(2)==1 || side(2)==2)
     v = grev_pts{2}(:);
@@ -617,7 +647,6 @@ function [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev
     v = grev_pts{1}(:);
   end
   ngrev = numel(v);
-  
   DuFR_x = reshape (geo_map_jac{1}(1,1,:,:), ngrev, 1);
   DuFR_y = reshape (geo_map_jac{1}(2,1,:,:), ngrev, 1);
   DvFL_x = reshape (geo_map_jac{2}(1,2,:,:), ngrev, 1);

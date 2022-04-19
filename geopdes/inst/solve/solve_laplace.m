@@ -83,6 +83,9 @@ space    = sp_bspline (knots, degree, msh);
 stiff_mat = op_gradu_gradv_tp (space, space, msh, c_diff);
 rhs       = op_f_v_tp (space, msh, f);
 
+% stiff_mat = op_u_v_tp (space, space, msh, c_diff);
+% rhs       = op_f_v_tp (space, msh, f);
+
 % Apply Neumann boundary conditions
 for iside = nmnn_sides
   if (msh.ndim > 1)

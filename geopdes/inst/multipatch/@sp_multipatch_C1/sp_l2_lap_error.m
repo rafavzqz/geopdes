@@ -4,8 +4,8 @@
 %
 % INPUT:
 %
-%   space: object defining the space of discrete functions (see sp_scalar)
-%   msh:   object defining the domain partition and the quadrature rule (see msh_cartesian)
+%   space: object defining the space of discrete functions (see sp_multipatch)
+%   msh:   object defining the domain partition and the quadrature rule (see msh_multipatch)
 %   u:     vector of dof weights
 %   uex:   function handle to evaluate the exact solution
 %
@@ -13,8 +13,7 @@
 %
 %     errl2:  error in L^2 norm
 %
-% Copyright (C) 2010 Carlo de Falco
-% Copyright (C) 2011, 2015 Rafael Vazquez
+% Copyright (C) 2015 Rafael Vazquez
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -30,21 +29,20 @@
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
 
-function errl2 = sp_l2_error (space, msh, u, uex)
+function errl2_lap = sp_l2_lap_error (space, msh, u, lapuex)
 
-  if (numel(u) ~= space.ndof)
-    error ('Wrong size of the vector of degrees of freedom')
+  if (space.npatch ~= msh.npatch)
+    error ('The number of patches does not coincide') 
   end
 
-  errl2 = 0;
-  
-  for iel = 1:msh.nel_dir(1)
-    msh_col = msh_evaluate_col (msh, iel);
-    sp_col  = sp_evaluate_col (space, msh_col, 'value', true, 'gradient', false, 'laplacian', true);
-    
-    errl2 = errl2 + (sp_l2_error (sp_col, msh_col, u, uex)).^2;
+  for iptc = 1:msh.npatch
+%     if (isempty (space.dofs_ornt))
+    u_ptc = space.Cpatch{iptc} * u;
+%     else
+%       u_ptc = u(space.gnum{iptc}) .* space.dofs_ornt{iptc}.';
+%     end
+    error_l2_lap(iptc) = sp_l2_lap_error (space.sp_patch{iptc}, msh.msh_patch{iptc}, u_ptc, lapuex);
   end
-  
-  errl2 = sqrt (errl2);
+  errl2_lap = sqrt (sum (error_l2_lap .* error_l2_lap));
 
 end

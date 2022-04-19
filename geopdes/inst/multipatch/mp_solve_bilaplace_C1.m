@@ -87,8 +87,15 @@ space = sp_multipatch_C1 (sp, msh, geometry, edges, vertices);
 clear sp
 
 % Compute and assemble the matrices 
-stiff_mat = op_gradgradu_gradgradv_mp (space, space, msh, c_diff);
+% GradGrad operator
+% stiff_mat = op_gradgradu_gradgradv_mp  (space, space, msh, c_diff);
+
+% Laplacian operator (For biharmonic problem)
+stiff_mat = op_laplaceu_laplacev_mp (space, space, msh, c_diff);
 rhs       = op_f_v_mp (space, msh, f);
+
+% stiff_mat = op_u_v_mp (space, space, msh, c_diff);
+% rhs       = op_f_v_mp (space, msh, f);
 
 % Apply boundary conditions
 u = zeros (space.ndof, 1);
