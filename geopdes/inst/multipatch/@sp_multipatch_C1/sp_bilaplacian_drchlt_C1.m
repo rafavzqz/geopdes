@@ -1,4 +1,4 @@
-function [u_drchlt, drchlt_dofs] = sp_bilaplacian_drchlt_C1 (space, msh, refs, h, dudn)
+function [u_drchlt, drchlt_dofs, add_int_dofs] = sp_bilaplacian_drchlt_C1 (space, msh, refs, h, dudn)
 
 % refs should be the whole boundary, for now
 M = spalloc (space.ndof, space.ndof, space.ndof);
@@ -57,7 +57,35 @@ end
 % drchlt_dofs = union (drchlt_dofs, drchlt_dofs2);
 % u_drchlt = uu(drchlt_dofs);
 
-drchlt_dofs = union (drchlt_dofs, drchlt_dofs2);
+% Kernel computation for separating verrtex boundary functions 
+
+% Insert a h-dependent parameter in front of M2
+M_bdy = M + M2;
+dofs_to_remove = [];
+add_int_dofs = {};
+count_vert = 0;
+
+    for iv = 1 : numel(space.vertices)
+        % Loop just over Dirichlet boundary vertices
+        if space.vertices(iv).boundary_vertex
+            M_ker = M_bdy(space.dofs_on_vertex{iv}, space.dofs_on_vertex{iv});
+            ker = null(full(M_ker));
+            if ~isempty(ker)
+                count_vert = count_vert + 1;
+                [~, ind] = max(abs(ker));
+                dofs_to_remove = [dofs_to_remove space.dofs_on_vertex{iv}(ind)];
+                add_int_dofs{count_vert, 1} = iv;
+                add_int_dofs{count_vert, 2} = ker;
+                add_int_dofs{count_vert, 3} = ind;
+
+            end
+            % Pick up the basis function with the max coeff abs val in the ker
+            % Use the other as bdy functions
+            % Check the global index of the removed function, remove it
+            % from dirichlet dofs and add the function in the kernel into
+            % the internal part (it should go in the output)
+        end
+    end
 
 
 % SET M = M + M2
@@ -66,6 +94,8 @@ drchlt_dofs = union (drchlt_dofs, drchlt_dofs2);
 % If null space is not empty:
 %  1) Remove one basis function from drchlt_dofs
 %  2) Get the coefficients of the internal functions (will be given as an output)
+drchlt_dofs = union (drchlt_dofs, drchlt_dofs2);
+drchlt_dofs = setdiff(drchlt_dofs, dofs_to_remove);
 
 u_drchlt = (M(drchlt_dofs,drchlt_dofs) + M2(drchlt_dofs, drchlt_dofs)) \ ...
            (rhs(drchlt_dofs) + rhs2(drchlt_dofs));

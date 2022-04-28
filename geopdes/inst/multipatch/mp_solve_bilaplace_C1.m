@@ -94,17 +94,20 @@ clear sp
 stiff_mat = op_laplaceu_laplacev_mp (space, space, msh, c_diff);
 rhs       = op_f_v_mp (space, msh, f);
 
+% L2 approximation
 % stiff_mat = op_u_v_mp (space, space, msh, c_diff);
 % rhs       = op_f_v_mp (space, msh, f);
 
 % Apply boundary conditions
 u = zeros (space.ndof, 1);
 if (isfield(problem_data, 'graduex') && isfield(problem_data, 'uex'))
-  [u_drchlt, drchlt_dofs] = sp_bilaplacian_drchlt_C1_exact (space, msh, drchlt_sides, uex, graduex);
+  [u_drchlt, drchlt_dofs, add_int_dofs] = sp_bilaplacian_drchlt_C1_exact (space, msh, drchlt_sides, uex, graduex);
 else
-  [u_drchlt, drchlt_dofs] = sp_bilaplacian_drchlt_C1 (space, msh, drchlt_sides, h, g);
+  [u_drchlt, drchlt_dofs, add_int_dofs] = sp_bilaplacian_drchlt_C1 (space, msh, drchlt_sides, h, g);
 end
 u(drchlt_dofs) = u_drchlt;
+
+
 
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
 rhs(int_dofs) = rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt; %zeros(length(int_dofs),1)-(abs(stiff_mat(int_dofs, drchlt_dofs))>1e-14)*ones(length(drchlt_dofs),1);%rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt;

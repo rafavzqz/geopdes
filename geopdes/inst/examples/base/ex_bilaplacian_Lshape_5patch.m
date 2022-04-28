@@ -113,35 +113,35 @@ warning ('off','geopdes:nrbmultipatch')
 
 
 % % 4 patch surf hyperbolic smooth boundary
-% coefs_1(:,1,:)=[-0.5 -0.5 0.0; -0.25 -0.5 -0.25; 0.0 -0.5 -0.25];
-% coefs_1(:,2,:)=[-0.5 -0.2 0.3; -0.2375 -0.25 -0.0125; 0.025 -0.3 -0.05];
-% coefs_1(:,3,:)=[-0.5 0.1 0.24; -0.225 0.0 -0.015; 0.05 -0.1 -0.0075];
-% 
-% coefs_2(:,1,:)=[0.5 -0.5 0.0; 0.5 -0.225 0.275; 0.5 0.05 0.2475];
-% coefs_2(:,2,:)=[0.25 -0.5 -0.25; 0.2625 -0.2625 0.0; 0.275 -0.025 0.03];
-% coefs_2(:,3,:)=[0.0 -0.5 -0.25; 0.025 -0.3 -0.05; 0.05 -0.1 -0.0075];
-% 
-% coefs_3(:,1,:)=[0.05 -0.1 -0.0075; 0.275 -0.025 0.03; 0.5 0.05 0.2475];
-% coefs_3(:,2,:)=[0.0 0.2 0.0475; 0.25 0.2375 0.0125; 0.5 0.275 0.225];
-% coefs_3(:,3,:)=[-0.05 0.5 -0.2475; 0.225 0.5 -0.275; 0.5 0.5 0.0];
-% 
-% coefs_4(:,1,:)=[-0.5 0.5 0.0; -0.5 0.3 0.2; -0.5 0.1 0.24];
-% coefs_4(:,2,:)=[-0.275 0.5 -0.225; -0.25 0.25 0.0; -0.225 0.0 -0.015];
-% coefs_4(:,3,:)=[-0.05 0.5 -0.2475; 0.0 0.2 0.0475; 0.05 -0.1 -0.0075];
-% 
-% knots{1} = [0 0 0 1 1 1];
-% knots{2} = [0 0 0 1 1 1];
-% 
-% butterf1 = nrbmak(permute(coefs_1,[3,2,1]),knots);
-% butterf2 = nrbmak(permute(coefs_2,[3,2,1]),knots);
-% butterf3 = nrbmak(permute(coefs_3,[3,2,1]),knots);
-% butterf4 = nrbmak(permute(coefs_4,[3,2,1]),knots);
-% 
-% nrb(1)=butterf1;
-% nrb(2)=butterf2;
-% nrb(3)=butterf3;
-% nrb(4)=butterf4;
-% problem_data.geo_name = nrb;
+coefs_1(:,1,:)=[-0.5 -0.5 0.0; -0.25 -0.5 -0.25; 0.0 -0.5 -0.25];
+coefs_1(:,2,:)=[-0.5 -0.2 0.3; -0.2375 -0.25 -0.0125; 0.025 -0.3 -0.05];
+coefs_1(:,3,:)=[-0.5 0.1 0.24; -0.225 0.0 -0.015; 0.05 -0.1 -0.0075];
+
+coefs_2(:,1,:)=[0.5 -0.5 0.0; 0.5 -0.225 0.275; 0.5 0.05 0.2475];
+coefs_2(:,2,:)=[0.25 -0.5 -0.25; 0.2625 -0.2625 0.0; 0.275 -0.025 0.03];
+coefs_2(:,3,:)=[0.0 -0.5 -0.25; 0.025 -0.3 -0.05; 0.05 -0.1 -0.0075];
+
+coefs_3(:,1,:)=[0.05 -0.1 -0.0075; 0.275 -0.025 0.03; 0.5 0.05 0.2475];
+coefs_3(:,2,:)=[0.0 0.2 0.0475; 0.25 0.2375 0.0125; 0.5 0.275 0.225];
+coefs_3(:,3,:)=[-0.05 0.5 -0.2475; 0.225 0.5 -0.275; 0.5 0.5 0.0];
+
+coefs_4(:,1,:)=[-0.5 0.5 0.0; -0.5 0.3 0.2; -0.5 0.1 0.24];
+coefs_4(:,2,:)=[-0.275 0.5 -0.225; -0.25 0.25 0.0; -0.225 0.0 -0.015];
+coefs_4(:,3,:)=[-0.05 0.5 -0.2475; 0.0 0.2 0.0475; 0.05 -0.1 -0.0075];
+
+knots{1} = [0 0 0 1 1 1];
+knots{2} = [0 0 0 1 1 1];
+
+butterf1 = nrbmak(permute(coefs_1,[3,2,1]),knots);
+butterf2 = nrbmak(permute(coefs_2,[3,2,1]),knots);
+butterf3 = nrbmak(permute(coefs_3,[3,2,1]),knots);
+butterf4 = nrbmak(permute(coefs_4,[3,2,1]),knots);
+
+nrb(1)=butterf1;
+nrb(2)=butterf2;
+nrb(3)=butterf3;
+nrb(4)=butterf4;
+problem_data.geo_name = nrb;
 
 % 4 patch surf hyperbolic non smooth boundary
 % coefs_1(:,1,:)=[-1.2 -1.0 0.44; -0.65 -1.1 -1.08; -0.1 -1.2 -1.43];
@@ -226,33 +226,33 @@ warning ('off','geopdes:nrbmultipatch')
 
 
 % 3 patch surf hyperbolic non smooth boundary flat 2D
-coefs_1(:,1,:)=[-0.75 -0.5 0.0; -0.5416666666666666 -0.75 0.0; -0.3333333333333333 -1.0 0.0];
-coefs_1(:,2,:)=[-0.625 0.0 0.0; -0.38333333333333336 -0.275 0.0; -0.14166666666666666 -0.55 0.0];
-coefs_1(:,3,:)=[-0.5 0.5 0.0; -0.225 0.2 0.0; 0.05 -0.1 0.0];
-
-coefs_2(:,1,:)=[-0.3333333333333333 -1.0 0.0; 0.3333333333333333 -0.875 0.0; 1.0 -0.75 0.0];
-coefs_2(:,2,:)=[-0.14166666666666666 -0.55 0.0; 0.5125 -0.4625 0.0; 1.1666666666666667 -0.375 0.0];
-coefs_2(:,3,:)=[0.05 -0.1 0.0; 0.6916666666666667 -0.05 0.0; 1.3333333333333333 0.0 0.0];
-
-coefs_3(:,1,:)=[0.05 -0.1 0.0; 0.6916666666666667 -0.05 0.0; 1.3333333333333333 0.0 0.0];
-coefs_3(:,2,:)=[-0.225 0.2 0.0; 0.3458333333333333 0.2875 0.0; 0.9166666666666666 0.375 0.0];
-coefs_3(:,3,:)=[-0.5 0.5 0.0; 0.0 0.625 0.0; 0.5 0.75 0.0];
-
-knots{1} = [0 0 0 1 1 1];
-knots{2} = [0 0 0 1 1 1];
-
-butterf1 = nrbmak(permute(coefs_1,[3,2,1]),knots);
-butterf2 = nrbmak(permute(coefs_2,[3,2,1]),knots);
-butterf3 = nrbmak(permute(coefs_3,[3,2,1]),knots);
-
-nrb(1)=butterf1;
-nrb(2)=butterf2;
+% coefs_1(:,1,:)=[-0.75 -0.5 0.0; -0.5416666666666666 -0.75 0.0; -0.3333333333333333 -1.0 0.0];
+% coefs_1(:,2,:)=[-0.625 0.0 0.0; -0.38333333333333336 -0.275 0.0; -0.14166666666666666 -0.55 0.0];
+% coefs_1(:,3,:)=[-0.5 0.5 0.0; -0.225 0.2 0.0; 0.05 -0.1 0.0];
+% 
+% coefs_2(:,1,:)=[-0.3333333333333333 -1.0 0.0; 0.3333333333333333 -0.875 0.0; 1.0 -0.75 0.0];
+% coefs_2(:,2,:)=[-0.14166666666666666 -0.55 0.0; 0.5125 -0.4625 0.0; 1.1666666666666667 -0.375 0.0];
+% coefs_2(:,3,:)=[0.05 -0.1 0.0; 0.6916666666666667 -0.05 0.0; 1.3333333333333333 0.0 0.0];
+% 
+% coefs_3(:,1,:)=[0.05 -0.1 0.0; 0.6916666666666667 -0.05 0.0; 1.3333333333333333 0.0 0.0];
+% coefs_3(:,2,:)=[-0.225 0.2 0.0; 0.3458333333333333 0.2875 0.0; 0.9166666666666666 0.375 0.0];
+% coefs_3(:,3,:)=[-0.5 0.5 0.0; 0.0 0.625 0.0; 0.5 0.75 0.0];
+% 
+% knots{1} = [0 0 0 1 1 1];
+% knots{2} = [0 0 0 1 1 1];
+% 
+% butterf1 = nrbmak(permute(coefs_1,[3,2,1]),knots);
+% butterf2 = nrbmak(permute(coefs_2,[3,2,1]),knots);
+% butterf3 = nrbmak(permute(coefs_3,[3,2,1]),knots);
+% 
+% nrb(1)=butterf1;
+% nrb(2)=butterf2;
 % nrb(3)=butterf3;
-problem_data.geo_name = nrb;
+% problem_data.geo_name = nrb;
 
 % Type of boundary conditions for each side of the domain
 problem_data.nmnn_sides   = [];
-problem_data.drchlt_sides = [1 2 3 4 5 6];
+problem_data.drchlt_sides = [1 2 3 4 5 6 7 8];
 problem_data.weak_drchlt_sides = [];
         
 % Physical parameters
@@ -319,17 +319,17 @@ problem_data.c_diff  = @(x, y, z) ones(size(x));
 % problem_data.lapuex  = @(x, y, z) -((4*(1 + 2*x.^2 + 2*y.^2))./(1 + 4*x.^2 + 4*y.^2).^2);
 
 % z hyperbolic
-% % problem_data.f = @(x, y, z) z;
-% problem_data.f = @(x, y, z) (64 * (x - y) .* (x + y) .* (13 + 64 *x.^4 + 12 *y.^2 + 64 *y.^4 + x.^2 .*(12 - 768 *y.^2)))./(1 + 4 *x.^2 + 4 *y.^2).^5;
-% % problem_data.g = @(x, y, z, ind) z;
-% problem_data.h = @(x, y, z, ind) z;
-% problem_data.uex     = @(x, y, z) z;
-% problem_data.graduex = @(x, y, z) cat (1, ...
-%                        reshape ((2*x)./(1 + 4*x.^2 + 4*y.^2), [1, size(x)]), ...
-%                        reshape (-((2*y)./(1 + 4*x.^2 + 4*y.^2)), [1, size(x)]), ...
-%                        reshape (((4*(x.^2 + y.^2))./(1 + 4*x.^2 + 4*y.^2)), [1, size(x)]));  
-% % problem_data.hessuex = @(x, y, z) zeros([3, 3, size(x)]);
-% problem_data.lapuex  = @(x, y, z) -((8 .*(x.^2 - y.^2))./(1 + 4 *x.^2 + 4 *y.^2).^2);
+% problem_data.f = @(x, y, z) z;
+problem_data.f = @(x, y, z) (64 * (x - y) .* (x + y) .* (13 + 64 *x.^4 + 12 *y.^2 + 64 *y.^4 + x.^2 .*(12 - 768 *y.^2)))./(1 + 4 *x.^2 + 4 *y.^2).^5;
+% problem_data.g = @(x, y, z, ind) z;
+problem_data.h = @(x, y, z, ind) z;
+problem_data.uex     = @(x, y, z) z;
+problem_data.graduex = @(x, y, z) cat (1, ...
+                       reshape ((2*x)./(1 + 4*x.^2 + 4*y.^2), [1, size(x)]), ...
+                       reshape (-((2*y)./(1 + 4*x.^2 + 4*y.^2)), [1, size(x)]), ...
+                       reshape (((4*(x.^2 + y.^2))./(1 + 4*x.^2 + 4*y.^2)), [1, size(x)]));  
+% problem_data.hessuex = @(x, y, z) zeros([3, 3, size(x)]);
+problem_data.lapuex  = @(x, y, z) -((8 .*(x.^2 - y.^2))./(1 + 4 *x.^2 + 4 *y.^2).^2);
 
 
 % z planar 3d
@@ -359,18 +359,32 @@ problem_data.c_diff  = @(x, y, z) ones(size(x));
 %             reshape (problem_data.uex(x,y).*(y-P(2)), [1, size(x)]), ...
 %             reshape (zeros(size(x)), [1, size(x)])  );
         
-% 2D
-C = 20; P=[0.0, 0.0];%[17/6 1]; %[1.5, 0.5];
-normax2 = @(x,y) ((x-P(1)).^2+(y-P(2)).^2);
-problem_data.f = @(x,y) 4*C*(1-C*normax2(x,y)).*exp(-C*normax2(x,y));
-% problem_data.g = @(x, y, ind) zeros(size(x));
-problem_data.h = @(x, y, ind) exp(-C*normax2(x,y));
+% % 2D
+% C = 20; P=[0.0, 0.0];%[17/6 1]; %[1.5, 0.5];
+% normax2 = @(x,y) ((x-P(1)).^2+(y-P(2)).^2);
+% problem_data.f = @(x,y) 4*C*(1-C*normax2(x,y)).*exp(-C*normax2(x,y));
+% % problem_data.g = @(x, y, ind) zeros(size(x));
+% problem_data.h = @(x, y, ind) exp(-C*normax2(x,y));
+% 
+% % Exact solution (optional)
+% problem_data.uex =@(x,y) exp(-C*normax2(x,y));
+% problem_data.graduex = @(x,y) -2*C*cat (1, ...
+%             reshape (problem_data.uex(x,y).*(x-P(1)), [1, size(x)]), ...
+%             reshape (problem_data.uex(x,y).*(y-P(2)), [1, size(x)]));
 
-% Exact solution (optional)
-problem_data.uex =@(x,y) exp(-C*normax2(x,y));
-problem_data.graduex = @(x,y) -2*C*cat (1, ...
-            reshape (problem_data.uex(x,y).*(x-P(1)), [1, size(x)]), ...
-            reshape (problem_data.uex(x,y).*(y-P(2)), [1, size(x)]));
+
+% 2D
+% C = 20; P=[0.0, 0.0];%[17/6 1]; %[1.5, 0.5];
+% normax2 = @(x,y) ((x-P(1)).^2+(y-P(2)).^2);
+% problem_data.f = @(x,y) 256*cos(4*x);
+% % problem_data.g = @(x, y, ind) zeros(size(x));
+% problem_data.h = @(x, y, ind) cos(4*x);
+% 
+% % Exact solution (optional)
+% problem_data.uex =@(x,y) cos(4*x);
+% problem_data.graduex = @(x,y) cat (1, ...
+%             reshape (-4*sin(4*x), [1, size(x)]), ...
+%             reshape (zeros(size(x)), [1, size(x)]));
 
 % CHOICE OF THE DISCRETIZATION PARAMETERS (Coarse mesh)
 clear method_data
@@ -413,12 +427,6 @@ for i= 1:3
             fprintf('Error in H2 seminorm = %g\n', err_h2s(i)); 
         end
     end
-    
-    [err_h1(i), err_l2(i), err_h1s(i)] = sp_h1_error (hspace, hmsh, u, problem_data.uex, problem_data.graduex);
-    if (plot_data.print_info) 
-            fprintf('Error in L2 seminorm = %g\n', err_l2(i));
-            fprintf('Error in H1 seminorm = %g\n', err_h1(i));
-        end
 end 
 
 
@@ -433,8 +441,8 @@ subplot(1,2,2)
 for iptc = 1:hmsh.npatch
   F = reshape (geometry(iptc).map(vtk_pts), [hmsh.rdim, npts]);
   X = reshape (F(1,:), npts); Y = reshape (F(2,:), npts); 
-%   Z = reshape (F(3,:), npts);
-  surf(X, Y, problem_data.uex(X,Y));
+  Z = reshape (F(3,:), npts);
+  surf(X, Y, Z, problem_data.uex(X,Y,Z));
   hold on; 
   shading interp
 end
@@ -457,8 +465,8 @@ figure
 loglog(h, err_l2,'-o')
 hold on
 loglog(h, err_h1s,'-o')
-% loglog(h, err_h2s,'-o')
+loglog(h, err_h2s,'-o')
 loglog(h, 100*h.^4,'-x')
 loglog(h, 100*h.^3,'-x')
 loglog(h, 10*h.^2,'-x')
-legend("L^2 error", "H^1 error", "h^4", "h^3", "h^2",'Location','southeast');
+legend("L^2 error", "H^1 error", "H^2 error", "h^4", "h^3", "h^2",'Location','southeast');
