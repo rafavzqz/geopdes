@@ -108,11 +108,59 @@ end
 u(drchlt_dofs) = u_drchlt;
 
 
-
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
-rhs(int_dofs) = rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt; %zeros(length(int_dofs),1)-(abs(stiff_mat(int_dofs, drchlt_dofs))>1e-14)*ones(length(drchlt_dofs),1);%rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt;
+
+add_mat = [];
+add_rhs = [];
+add_rb = [];
+add_dofs = [];
+s_vec = zeros(size(add_int_dofs, 1), size(add_int_dofs, 1));
+B_change = speye(space.ndof);
+
+for bv = 1 : size(add_int_dofs, 1)
+%     space.dofs_on_vertex{add_int_dofs{bv, 1}}
+%     b_change = eye(6);
+%     b_change(:, add_int_dofs{bv, 3}) = add_int_dofs{bv, 2}; % To transform from the new basis to the old one
+%     B_change([space.dofs_on_vertex{add_int_dofs{bv, 1}}(add_int_dofs{bv, 3}) ]
+
+    B_change(space.dofs_on_vertex{add_int_dofs{bv, 1}}, space.dofs_on_vertex{add_int_dofs{bv, 1}}) = eye(6); 
+    B_change(space.dofs_on_vertex{add_int_dofs{bv, 1}}, space.dofs_on_vertex{add_int_dofs{bv, 1}}(add_int_dofs{bv, 3})) = add_int_dofs{bv, 2};
+
+    add_mat = [add_mat; add_int_dofs{bv, 2}.' * stiff_mat(space.dofs_on_vertex{add_int_dofs{bv, 1}}, int_dofs) ];
+    add_rhs = [add_rhs; add_int_dofs{bv, 2}.' * rhs(space.dofs_on_vertex{add_int_dofs{bv, 1}})];
+    add_rb = [add_rb; add_int_dofs{bv, 2}.' * stiff_mat(space.dofs_on_vertex{add_int_dofs{bv, 1}}, drchlt_dofs) * u_drchlt];
+    add_dofs = [add_dofs space.dofs_on_vertex{add_int_dofs{bv, 1}}(add_int_dofs{bv, 3})];
+
+    for bv_1 = 1 : size(add_int_dofs, 1)
+        s_vec(bv, bv_1) = add_int_dofs{bv, 2}.' * stiff_mat(space.dofs_on_vertex{add_int_dofs{bv, 1}}, space.dofs_on_vertex{add_int_dofs{bv_1, 1}}) * add_int_dofs{bv_1, 2};
+    end
+    
+            
+end
+
+A = [stiff_mat(int_dofs, int_dofs)   add_mat'; ...
+                add_mat                 s_vec     ];
+            
+r = [rhs(int_dofs); ...
+        add_rhs        ];
+    
+rb = [    stiff_mat(int_dofs, drchlt_dofs)*u_drchlt; ...
+                            add_rb                     ];
+
+% rhs(int_dofs) = rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt; %zeros(length(int_dofs),1)-(abs(stiff_mat(int_dofs, drchlt_dofs))>1e-14)*ones(length(drchlt_dofs),1);%rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt;
 
 % Solve the linear system
-u(int_dofs) = stiff_mat(int_dofs,int_dofs) \ rhs(int_dofs);
+% u(int_dofs) = stiff_mat(int_dofs,int_dofs) \ rhs(int_dofs);
+% size(u)
+
+int_dofs_new = [int_dofs add_dofs];
+
+u_newBasis(int_dofs_new) = A \ (r - rb);
+u_newBasis(drchlt_dofs) = u_drchlt;
+
+% u(int_dofs) = u_int_dofs_newBasis(1:numel(int_dofs));
+% u([add_dofs drchlt_dofs]) = B_change * u_newBasis([ drchlt_dofs]);
+
+u = B_change * u_newBasis';
 
 end

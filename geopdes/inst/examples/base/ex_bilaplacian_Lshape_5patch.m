@@ -402,7 +402,7 @@ plot_data.plot_discrete_sol = false;
 
 h=[];
 
-for i= 1:3
+for i= 1:1
     fprintf ('Loop %d \n', i);
     method_data.nsub       = [2^(i+1) 2^(i+1)];      % Number of subdivisions
     % 3) CALL TO THE SOLVER

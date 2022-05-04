@@ -72,7 +72,7 @@ count_vert = 0;
             ker = null(full(M_ker));
             if ~isempty(ker)
                 count_vert = count_vert + 1;
-                [~, ind] = max(abs(ker));
+                [max_val, ind] = max(abs(ker));
                 dofs_to_remove = [dofs_to_remove space.dofs_on_vertex{iv}(ind)];
                 add_int_dofs{count_vert, 1} = iv;
                 add_int_dofs{count_vert, 2} = ker;
