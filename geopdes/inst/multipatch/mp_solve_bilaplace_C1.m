@@ -101,14 +101,15 @@ rhs       = op_f_v_mp (space, msh, f);
 % Apply boundary conditions
 u = zeros (space.ndof, 1);
 if (isfield(problem_data, 'graduex') && isfield(problem_data, 'uex'))
-  [u_drchlt, drchlt_dofs, add_int_dofs] = sp_bilaplacian_drchlt_C1_exact (space, msh, drchlt_sides, uex, graduex);
+  [u_drchlt, drchlt_dofs, add_int_dofs, dofs_to_remove] = sp_bilaplacian_drchlt_C1_exact (space, msh, drchlt_sides, uex, graduex);
 else
-  [u_drchlt, drchlt_dofs, add_int_dofs] = sp_bilaplacian_drchlt_C1 (space, msh, drchlt_sides, h, g);
+  [u_drchlt, drchlt_dofs, add_int_dofs, dofs_to_remove] = sp_bilaplacian_drchlt_C1 (space, msh, drchlt_sides, h, g);
 end
 u(drchlt_dofs) = u_drchlt;
 
 
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
+int_dofs = setdiff (int_dofs, dofs_to_remove);
 
 add_mat = [];
 add_rhs = [];
@@ -139,7 +140,7 @@ for bv = 1 : size(add_int_dofs, 1)
 end
 
 A = [stiff_mat(int_dofs, int_dofs)   add_mat'; ...
-                add_mat                 s_vec     ];
+                add_mat                s_vec     ];
             
 r = [rhs(int_dofs); ...
         add_rhs        ];

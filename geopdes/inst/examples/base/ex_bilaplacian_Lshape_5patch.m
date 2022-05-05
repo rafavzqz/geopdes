@@ -1,5 +1,6 @@
 close all
 clear all
+clc
 warning ('off','geopdes:nrbmultipatch')
 
 % PHYSICAL DATA OF THE PROBLEM
@@ -402,7 +403,7 @@ plot_data.plot_discrete_sol = false;
 
 h=[];
 
-for i= 1:1
+for i= 1:3
     fprintf ('Loop %d \n', i);
     method_data.nsub       = [2^(i+1) 2^(i+1)];      % Number of subdivisions
     % 3) CALL TO THE SOLVER
@@ -466,7 +467,7 @@ loglog(h, err_l2,'-o')
 hold on
 loglog(h, err_h1s,'-o')
 loglog(h, err_h2s,'-o')
-loglog(h, 100*h.^4,'-x')
-loglog(h, 100*h.^3,'-x')
-loglog(h, 10*h.^2,'-x')
+loglog(h, 0.001*h.^4,'-x')
+loglog(h, 0.01*h.^3,'-x')
+loglog(h, 0.1*h.^2,'-x')
 legend("L^2 error", "H^1 error", "H^2 error", "h^4", "h^3", "h^2",'Location','southeast');
