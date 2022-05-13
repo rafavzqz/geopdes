@@ -44,7 +44,6 @@ for iref = refs
 end
 
 M_bdry = M + M2;
-add_int_dofs = [];
 dofs_to_remove = [];
 count_vert = 0;
 
@@ -70,5 +69,9 @@ drchlt_dofs = union (drchlt_dofs, drchlt_dofs2);
 drchlt_dofs = setdiff(drchlt_dofs, dofs_to_remove);
 
 u_drchlt = M_bdry(drchlt_dofs,drchlt_dofs) \ (rhs(drchlt_dofs) + rhs2(drchlt_dofs));
+
+if (count_vert == 0)
+  add_int_dofs = [];
+end
 
 end

@@ -115,7 +115,7 @@ int_dofs = setdiff (int_dofs, add_dofs);
 add_mat = [];
 add_rhs = [];
 add_rb = [];
-s_vec = numel(size(add_int_dofs, 1), size(add_int_dofs, 1));
+s_vec = zeros(numel(add_int_dofs), numel(add_int_dofs));
 B_change = speye(space.ndof); %basis change matrix
 
 for bv = 1 : numel(add_int_dofs)
