@@ -105,54 +105,36 @@ for bv = 1 : numel(add_int_dofs)
   vertex_number = add_int_dofs(bv).vertex_number;
   add_dofs = [add_dofs space.dofs_on_vertex{vertex_number}(add_int_dofs(bv).function_index)];
 end
-%By subtracting add_dofs (later they will be added again), int_dofs contain ony the "original" interior dofs
-int_dofs = setdiff (int_dofs, add_dofs); 
 
 %We assemble the (pieces of the) stiffness matrix, the rhs (and its correction taking 
 %into account the Dirichlet conditions), and the basis change matrix (we will need it 
 %to go from the basis with kernel vectors obtained when examnining the dirichlet conditions 
 %to the usual basis)
-add_mat = [];
-add_rhs = [];
-add_rb = [];
-s_vec = zeros(numel(add_int_dofs), numel(add_int_dofs));
 B_change = speye(space.ndof); %basis change matrix
+B_change_local = sparse (6*numel(add_dofs), numel(add_dofs)); %basis change matrix
+vertex_dofs = [];
 
 for bv = 1 : numel(add_int_dofs)
   vertex_number = add_int_dofs(bv).vertex_number;
   dofs_on_vertex = space.dofs_on_vertex{vertex_number};
   kernel_coeffs = add_int_dofs(bv).kernel_coeffs;
   B_change(dofs_on_vertex, dofs_on_vertex(add_int_dofs(bv).function_index)) = kernel_coeffs;
+  row_inds = (bv-1)*6 + (1:6);
+  B_change_local(row_inds, bv) = kernel_coeffs;
   
-  add_mat = [add_mat; kernel_coeffs.' * stiff_mat(dofs_on_vertex, int_dofs) ];
-  add_rhs = [add_rhs; kernel_coeffs.' * rhs(dofs_on_vertex)];
-  add_rb = [add_rb; kernel_coeffs.' * stiff_mat(dofs_on_vertex, drchlt_dofs) * u_drchlt];
-
-  for bv_1 = 1 : numel(add_int_dofs)
-    s_vec(bv, bv_1) = kernel_coeffs.' * stiff_mat(dofs_on_vertex, space.dofs_on_vertex{add_int_dofs(bv_1).vertex_number}) * add_int_dofs(bv_1).kernel_coeffs;
-  end         
+  vertex_dofs = union (vertex_dofs, dofs_on_vertex);
 end
 
-%Stiffness matrix (including additional "interior" dofs)
-A = [stiff_mat(int_dofs, int_dofs)   add_mat'; ...
-                add_mat                s_vec     ];
+stiff_mat(:,add_dofs) = stiff_mat(:,vertex_dofs) * B_change_local;
+stiff_mat(add_dofs,:) = B_change_local.' * stiff_mat(vertex_dofs,:);
+rhs(add_dofs) = B_change_local.' * rhs(vertex_dofs);
 
-%Right-hand side (including additional "interior" dofs)...
-r = [rhs(int_dofs); ...
-        add_rhs        ];
-    
-%...and its correction    
-rb = [    stiff_mat(int_dofs, drchlt_dofs)*u_drchlt; ...
-                            add_rb                     ];
+rhs(int_dofs) = rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt;
 
-%"interior" dofs = "original" interior dofs + the discared "boundary" vertex dofs                      
-int_dofs_new = [int_dofs add_dofs];
-
-%Solving the system
-u_newBasis(int_dofs_new) = A \ (r - rb);
-u_newBasis(drchlt_dofs) = u_drchlt;
+% Solve the linear system
+u(int_dofs) = stiff_mat(int_dofs, int_dofs) \ rhs(int_dofs);
 
 %Switching to the usual basis
-u = B_change * u_newBasis';
+u = B_change * u;
 
 end
