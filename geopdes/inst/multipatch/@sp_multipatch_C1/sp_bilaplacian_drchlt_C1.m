@@ -43,7 +43,10 @@ for iref = refs
   end
 end
 
-% Kernel computation for separating verrtex boundary functions 
+M_bdry = M + M2;
+add_int_dofs = [];
+dofs_to_remove = [];
+count_vert = 0;
 
 % Check the kernel of vertex functions on Dirichlet boundary vertices
 % Pick up the basis function with the max. abs. coeff in the kernel, 

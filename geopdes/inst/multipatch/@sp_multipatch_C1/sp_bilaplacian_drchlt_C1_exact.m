@@ -44,9 +44,9 @@ for iref = refs
 end
 
 M_bdry = M + M2;
+add_int_dofs = [];
 dofs_to_remove = [];
 count_vert = 0;
-add_int_dofs = struct ('vertex_number', [], 'function_index', [], 'kernel_coeffs', []);
 
 % Check the kernel of vertex functions on Dirichlet boundary vertices
 % Pick up the basis function with the max. abs. coeff in the kernel, 
