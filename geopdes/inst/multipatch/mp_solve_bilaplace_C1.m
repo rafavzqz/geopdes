@@ -101,67 +101,64 @@ rhs       = op_f_v_mp (space, msh, f);
 % Apply boundary conditions
 u = zeros (space.ndof, 1);
 if (isfield(problem_data, 'graduex') && isfield(problem_data, 'uex'))
-  [u_drchlt, drchlt_dofs, add_int_dofs, dofs_to_remove] = sp_bilaplacian_drchlt_C1_exact (space, msh, drchlt_sides, uex, graduex);
+  [u_drchlt, drchlt_dofs, add_int_dofs] = sp_bilaplacian_drchlt_C1_exact (space, msh, drchlt_sides, uex, graduex);
 else
-  [u_drchlt, drchlt_dofs, add_int_dofs, dofs_to_remove] = sp_bilaplacian_drchlt_C1 (space, msh, drchlt_sides, h, g);
+  [u_drchlt, drchlt_dofs, add_int_dofs] = sp_bilaplacian_drchlt_C1 (space, msh, drchlt_sides, h, g);
 end
 u(drchlt_dofs) = u_drchlt;
 
 
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
-int_dofs = setdiff (int_dofs, dofs_to_remove);
+add_dofs = []; %this will contain the "boundary" vertex dofs which have been removed from drchlt_dofs
+for bv = 1 : size(add_int_dofs, 1)
+    add_dofs = [add_dofs space.dofs_on_vertex{add_int_dofs{bv, 1}}(add_int_dofs{bv, 3})];
+end
+%By subtracting add_dofs (later they will be added again), int_dofs contain ony the "original" interior dofs
+int_dofs = setdiff (int_dofs, add_dofs); 
 
+%We assemble the (pieces of the) stiffness matrix, the rhs (and its correction taking 
+%into account the dirichlet conditions), and the basis change matrix (we will need it 
+%to go from the basis with kernel vectors obtained when examnining the dirichlet conditions 
+%to the usual basis)
 add_mat = [];
 add_rhs = [];
 add_rb = [];
-add_dofs = [];
 s_vec = zeros(size(add_int_dofs, 1), size(add_int_dofs, 1));
-B_change = speye(space.ndof);
+B_change = speye(space.ndof); %basis change matrix
 
 for bv = 1 : size(add_int_dofs, 1)
-%     space.dofs_on_vertex{add_int_dofs{bv, 1}}
-%     b_change = eye(6);
-%     b_change(:, add_int_dofs{bv, 3}) = add_int_dofs{bv, 2}; % To transform from the new basis to the old one
-%     B_change([space.dofs_on_vertex{add_int_dofs{bv, 1}}(add_int_dofs{bv, 3}) ]
-
     B_change(space.dofs_on_vertex{add_int_dofs{bv, 1}}, space.dofs_on_vertex{add_int_dofs{bv, 1}}) = eye(6); 
     B_change(space.dofs_on_vertex{add_int_dofs{bv, 1}}, space.dofs_on_vertex{add_int_dofs{bv, 1}}(add_int_dofs{bv, 3})) = add_int_dofs{bv, 2};
 
     add_mat = [add_mat; add_int_dofs{bv, 2}.' * stiff_mat(space.dofs_on_vertex{add_int_dofs{bv, 1}}, int_dofs) ];
     add_rhs = [add_rhs; add_int_dofs{bv, 2}.' * rhs(space.dofs_on_vertex{add_int_dofs{bv, 1}})];
     add_rb = [add_rb; add_int_dofs{bv, 2}.' * stiff_mat(space.dofs_on_vertex{add_int_dofs{bv, 1}}, drchlt_dofs) * u_drchlt];
-    add_dofs = [add_dofs space.dofs_on_vertex{add_int_dofs{bv, 1}}(add_int_dofs{bv, 3})];
 
     for bv_1 = 1 : size(add_int_dofs, 1)
         s_vec(bv, bv_1) = add_int_dofs{bv, 2}.' * stiff_mat(space.dofs_on_vertex{add_int_dofs{bv, 1}}, space.dofs_on_vertex{add_int_dofs{bv_1, 1}}) * add_int_dofs{bv_1, 2};
-    end
-    
-            
+    end         
 end
 
+%Stiffness matrix (including additional "interior" dofs)
 A = [stiff_mat(int_dofs, int_dofs)   add_mat'; ...
                 add_mat                s_vec     ];
-            
+
+%Right-hand side (including additional "interior" dofs)...
 r = [rhs(int_dofs); ...
         add_rhs        ];
     
+%...and its correction    
 rb = [    stiff_mat(int_dofs, drchlt_dofs)*u_drchlt; ...
                             add_rb                     ];
 
-% rhs(int_dofs) = rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt; %zeros(length(int_dofs),1)-(abs(stiff_mat(int_dofs, drchlt_dofs))>1e-14)*ones(length(drchlt_dofs),1);%rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt;
-
-% Solve the linear system
-% u(int_dofs) = stiff_mat(int_dofs,int_dofs) \ rhs(int_dofs);
-% size(u)
-
+%"interior" dofs = "original" interior dofs + the discared "boundary" vertex dofs                      
 int_dofs_new = [int_dofs add_dofs];
 
+%Solving the system
 u_newBasis(int_dofs_new) = A \ (r - rb);
 u_newBasis(drchlt_dofs) = u_drchlt;
 
-% u(int_dofs) = u_int_dofs_newBasis(1:numel(int_dofs));
-% u([add_dofs drchlt_dofs]) = B_change * u_newBasis([ drchlt_dofs]);
-
+%Switching to the usual basis
 u = B_change * u_newBasis';
 
 end
