@@ -49,8 +49,9 @@
 %       Other methods
 %         sp_refine: generate a refined space, and subdivision matrices for the univariate spaces
 %
-% Copyright (C) 2015-2021 Rafael Vazquez
-% Copyright (C) 2019-2021 Cesare Bracco
+% Copyright (C) 2015-2022 Rafael Vazquez
+% Copyright (C) 2019-2022 Cesare Bracco
+% Copyright (C) 2022 Andrea Farahat
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -76,10 +77,6 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces_all, vertices)
   if (sp.npatch ~= msh.npatch)
     error ('The list of spaces does not correspond to the mesh')
   end
-
-%   if (msh.ndim ~= 2 || msh.rdim ~= 2)
-%     error ('Only implemented for planar surfaces')
-%   end
 
   for iptc = 1:numel(geometry)
     knots = spaces{iptc}.knots;
@@ -198,7 +195,7 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces_all, vertices)
 
   sp.Cpatch = Cpatch;
 
-% I store this for simplicity
+% Store information about the geometry, for simplicity
   sp.interfaces = interfaces_all;
   sp.vertices = vertices;
   sp.geometry = geometry;
@@ -279,26 +276,14 @@ for iref = 1:numel(interfaces_all)
     msh_side_interior = msh_boundary_side_from_interior (msh_grev, sides(ii));
     msh_side_interior = msh_precompute (msh_side_interior);
     geo_map_jac{ii} = msh_side_interior.geo_map_jac; %rdim x ndim x 1 x n_grev_pts (rdim->physical space, ndim->parametric space)
-%     if msh.ndim+1==msh.rdim
-%         geo_map_jac_reduced{ii}=geo_map_jac{ii}(:,:,:,[1 end]);
-%         DuFR_z = reshape (geo_map_jac_reduced{1}(3,1,:,:), ngrev, 1);
-%         DvFL_z = reshape (geo_map_jac_reduced{2}(3,2,:,:), ngrev, 1);
-%         DvFR_z = reshape (geo_map_jac_reduced{1}(3,2,:,:), ngrev, 1);
-%     end
   end
     
    if msh.ndim + 1 == msh.rdim
       [alpha0, alpha1, beta0, beta1] = compute_gluing_data_surf (geo_map_jac, grev_pts, sides);
    else
-      disp('Planar GD');
       [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev_pts, sides);
    end
-%       grev_pts_reduced{1}=grev_pts{1}([1 end]);
-%       grev_pts_reduced{2}=grev_pts{2}([1 end]);
-%       [alpha0, alpha1, beta0, beta1] = compute_gluing_data_surf (geo_map_jac_reduced, grev_pts_reduced, sides);
-%   end    
-  clear geo_map_jac  msh_grev msh_side_interior grev_pts
-  %clear geo_map_jac geo_map_jac_reduced msh_grev msh_side_interior grev_pts
+  clear geo_map_jac msh_grev msh_side_interior grev_pts
 
  %Saving alphas and betas (first column=i_0, second column=i_1)
   all_alpha0(iref,:) = alpha0;
@@ -469,55 +454,52 @@ for kver = 1:numel(vertices)
   
   if msh.ndim+1==msh.rdim
       
-      disp('Surf code');
-      %Tangent vectors
-      Du_F = derivatives_new1{1}(:,1);
-      Dv_F = derivatives_new1{1}(:,2);
-      %Normal vector
-      normal=cross(Du_F,Dv_F);
-      unit_normal=normal/norm(normal);
-      %Vector orthogonal to n and z along which the geometry is rotated
-      %(rotation axis)
-      r=cross(unit_normal,[0 0 1]');
-      %Angle between n and z
-      cos_th=[0 0 1]*unit_normal;
-      sin_th=norm(r);
-      %Rotation matrix
-      R=[cos_th + r(1)^2*(1-cos_th),r(1)*r(2)*(1-cos_th)-r(3)*sin_th,r(1)*r(3)*(1-cos_th)+r(2)*sin_th;...
+    disp('Surf code');
+    %Tangent vectors
+    Du_F = derivatives_new1{1}(:,1);
+    Dv_F = derivatives_new1{1}(:,2);
+    %Normal vector
+    normal = cross(Du_F,Dv_F);
+    unit_normal = normal/norm(normal);
+    %Vector orthogonal to n and z along which the geometry is rotated (rotation axis)
+    r = cross(unit_normal,[0 0 1]');
+    %Angle between n and z
+    cos_th = [0 0 1]*unit_normal;
+    sin_th = norm(r);
+    %Rotation matrix
+    R = [cos_th + r(1)^2*(1-cos_th),r(1)*r(2)*(1-cos_th)-r(3)*sin_th,r(1)*r(3)*(1-cos_th)+r(2)*sin_th;...
          r(1)*r(2)*(1-cos_th)+r(3)*sin_th,cos_th + r(2)^2*(1-cos_th),r(2)*r(3)*(1-cos_th)-r(1)*sin_th;...
          r(1)*r(3)*(1-cos_th)-r(2)*sin_th,r(3)*r(2)*(1-cos_th)+r(1)*sin_th,cos_th + r(3)^2*(1-cos_th)];
      
-   for ipatch = 1:valence_p
-
-        coeff_hom=geo_local(ipatch).nurbs.coefs;
-        coeff_w=coeff_hom(4,:,:);
-        coeff_eu=coeff_hom(1:3,:,:)./(repmat(coeff_w,3,1,1)); %Euclidean coefficients
-        rot_coeff=ones(4,size(coeff_eu,2),size(coeff_eu,3));
-        for k=1:size(coeff_eu,3)
-           rot_coeff(1:3,:,k)=R*(coeff_eu(:,:,k)-coeff_eu(:,1,1))+coeff_eu(:,1,1);
-        end
-        rot_nrb(ipatch)=geometry(patches(ipatch)).nurbs;
-        rot_nrb(ipatch).coefs=rot_coeff;
-   end
+    for ipatch = 1:valence_p
+      coeff_hom = geo_local(ipatch).nurbs.coefs;
+      coeff_w = coeff_hom(4,:,:);
+      coeff_eu = coeff_hom(1:3,:,:)./(repmat(coeff_w,3,1,1)); %Euclidean coefficients
+      rot_coeff = ones(4,size(coeff_eu,2),size(coeff_eu,3));
+      for k = 1:size(coeff_eu,3)
+        rot_coeff(1:3,:,k) = R*(coeff_eu(:,:,k)-coeff_eu(:,1,1))+coeff_eu(:,1,1);
+      end
+      rot_nrb(ipatch) = geometry(patches(ipatch)).nurbs;
+      rot_nrb(ipatch).coefs = rot_coeff;
+    end
    
-   rot_geo = mp_geo_load(rot_nrb);
+    rot_geo = mp_geo_load(rot_nrb);
       
-   for iptc = 1:valence_p
-        knots = space.sp_patch{iptc}.knots;
-        for idim = 1:msh.ndim
-          brk{idim}=[knots{idim}(1) knots{idim}(end)];
-        end
-        rot_msh_pts_der1 = msh_cartesian (brk, {0 0}, [], rot_geo(iptc),'boundary', true, 'der2', true);
-        rot_msh_der = msh_precompute (rot_msh_pts_der1);
-        derivatives_new1{iptc} = rot_msh_der.geo_map_jac; %rdim x ndim x (n_pts{1}x n_pts{2}) (rdim->physical space, ndim->parametric space)
-        derivatives_new2{iptc} = rot_msh_der.geo_map_der2; %rdim x ndim x ndim x n_pts{1} x n_pts{2}
-   end
+    for iptc = 1:valence_p
+      knots = space.sp_patch{iptc}.knots;
+      for idim = 1:msh.ndim
+        brk{idim} = [knots{idim}(1) knots{idim}(end)];
+      end
+      rot_msh_pts_der1 = msh_cartesian (brk, {0 0}, [], rot_geo(iptc),'boundary', true, 'der2', true);
+      rot_msh_der = msh_precompute (rot_msh_pts_der1);
+      derivatives_new1{iptc} = rot_msh_der.geo_map_jac; %rdim x ndim x (n_pts{1}x n_pts{2}) (rdim->physical space, ndim->parametric space)
+      derivatives_new2{iptc} = rot_msh_der.geo_map_der2; %rdim x ndim x ndim x n_pts{1} x n_pts{2}
+    end
   end
   
   for ipatch = 1:valence_p
-      
-      prev_edge = ipatch;
-      next_edge = mod(ipatch, valence_e) + 1;
+    prev_edge = ipatch;
+    next_edge = mod(ipatch, valence_e) + 1;
 
 % Compute gluing data, and edge functions from CC_edges_discarded
     if (edge_orientation(prev_edge) == 1)

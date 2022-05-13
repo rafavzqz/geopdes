@@ -87,16 +87,8 @@ space = sp_multipatch_C1 (sp, msh, geometry, edges, vertices);
 clear sp
 
 % Compute and assemble the matrices 
-% GradGrad operator
-% stiff_mat = op_gradgradu_gradgradv_mp  (space, space, msh, c_diff);
-
-% Laplacian operator (For biharmonic problem)
 stiff_mat = op_laplaceu_laplacev_mp (space, space, msh, c_diff);
 rhs       = op_f_v_mp (space, msh, f);
-
-% L2 approximation
-% stiff_mat = op_u_v_mp (space, space, msh, c_diff);
-% rhs       = op_f_v_mp (space, msh, f);
 
 % Apply boundary conditions
 u = zeros (space.ndof, 1);
@@ -107,36 +99,38 @@ else
 end
 u(drchlt_dofs) = u_drchlt;
 
-
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
 add_dofs = []; %this will contain the "boundary" vertex dofs which have been removed from drchlt_dofs
-for bv = 1 : size(add_int_dofs, 1)
-    add_dofs = [add_dofs space.dofs_on_vertex{add_int_dofs{bv, 1}}(add_int_dofs{bv, 3})];
+for bv = 1 : numel(add_int_dofs)
+  vertex_number = add_int_dofs(bv).vertex_number;
+  add_dofs = [add_dofs space.dofs_on_vertex{vertex_number}(add_int_dofs(bv).function_index)];
 end
 %By subtracting add_dofs (later they will be added again), int_dofs contain ony the "original" interior dofs
 int_dofs = setdiff (int_dofs, add_dofs); 
 
 %We assemble the (pieces of the) stiffness matrix, the rhs (and its correction taking 
-%into account the dirichlet conditions), and the basis change matrix (we will need it 
+%into account the Dirichlet conditions), and the basis change matrix (we will need it 
 %to go from the basis with kernel vectors obtained when examnining the dirichlet conditions 
 %to the usual basis)
 add_mat = [];
 add_rhs = [];
 add_rb = [];
-s_vec = zeros(size(add_int_dofs, 1), size(add_int_dofs, 1));
+s_vec = numel(size(add_int_dofs, 1), size(add_int_dofs, 1));
 B_change = speye(space.ndof); %basis change matrix
 
-for bv = 1 : size(add_int_dofs, 1)
-    B_change(space.dofs_on_vertex{add_int_dofs{bv, 1}}, space.dofs_on_vertex{add_int_dofs{bv, 1}}) = eye(6); 
-    B_change(space.dofs_on_vertex{add_int_dofs{bv, 1}}, space.dofs_on_vertex{add_int_dofs{bv, 1}}(add_int_dofs{bv, 3})) = add_int_dofs{bv, 2};
+for bv = 1 : numel(add_int_dofs)
+  vertex_number = add_int_dofs(bv).vertex_number;
+  dofs_on_vertex = space.dofs_on_vertex{vertex_number};
+  kernel_coeffs = add_int_dofs(bv).kernel_coeffs;
+  B_change(dofs_on_vertex, dofs_on_vertex(add_int_dofs(bv).function_index)) = kernel_coeffs;
+  
+  add_mat = [add_mat; kernel_coeffs.' * stiff_mat(dofs_on_vertex, int_dofs) ];
+  add_rhs = [add_rhs; kernel_coeffs.' * rhs(dofs_on_vertex)];
+  add_rb = [add_rb; kernel_coeffs.' * stiff_mat(dofs_on_vertex, drchlt_dofs) * u_drchlt];
 
-    add_mat = [add_mat; add_int_dofs{bv, 2}.' * stiff_mat(space.dofs_on_vertex{add_int_dofs{bv, 1}}, int_dofs) ];
-    add_rhs = [add_rhs; add_int_dofs{bv, 2}.' * rhs(space.dofs_on_vertex{add_int_dofs{bv, 1}})];
-    add_rb = [add_rb; add_int_dofs{bv, 2}.' * stiff_mat(space.dofs_on_vertex{add_int_dofs{bv, 1}}, drchlt_dofs) * u_drchlt];
-
-    for bv_1 = 1 : size(add_int_dofs, 1)
-        s_vec(bv, bv_1) = add_int_dofs{bv, 2}.' * stiff_mat(space.dofs_on_vertex{add_int_dofs{bv, 1}}, space.dofs_on_vertex{add_int_dofs{bv_1, 1}}) * add_int_dofs{bv_1, 2};
-    end         
+  for bv_1 = 1 : numel(add_int_dofs)
+    s_vec(bv, bv_1) = kernel_coeffs.' * stiff_mat(dofs_on_vertex, space.dofs_on_vertex{add_int_dofs(bv_1).vertex_number}) * add_int_dofs(bv_1).kernel_coeffs;
+  end         
 end
 
 %Stiffness matrix (including additional "interior" dofs)

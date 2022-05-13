@@ -55,13 +55,17 @@ sp_curl = sp_multipatch (sp_curl, msh, interfaces_i, boundary_interfaces);
 N_int = numel (interfaces_i);
 interfaces = interfaces_i;
 interfaces_bnd = interfaces_i;
+icont = 0;
 for hh = 1:numel(boundaries)
-  interfaces(N_int+hh).patch1 = boundaries(hh).patches;
-  interfaces(N_int+hh).side1 = boundaries(hh).faces;
-  interfaces_bnd(N_int+hh).patch1 = boundaries(hh).patches;
-  interfaces_bnd(N_int+hh).side1 = boundaries(hh).faces;
-  interfaces_bnd(N_int+hh).patch2 = 0;
-  interfaces_bnd(N_int+hh).side2 = 0;
+  for jj = 1:numel(boundaries(hh).patches)
+    icont = icont + 1;
+    interfaces(N_int+icont).patch1 = boundaries(hh).patches(jj);
+    interfaces(N_int+icont).side1 = boundaries(hh).faces(jj);
+    interfaces_bnd(N_int+icont).patch1 = boundaries(hh).patches(jj);
+    interfaces_bnd(N_int+icont).side1 = boundaries(hh).faces(jj);
+    interfaces_bnd(N_int+icont).patch2 = 0;
+    interfaces_bnd(N_int+icont).side2 = 0;
+  end
 end
 
 % Find the operations for reparametrization
