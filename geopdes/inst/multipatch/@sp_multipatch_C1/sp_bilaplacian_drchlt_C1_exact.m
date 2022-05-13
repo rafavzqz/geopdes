@@ -1,4 +1,4 @@
-function [u_drchlt, drchlt_dofs, add_int_dofs] = sp_bilaplacian_drchlt_C1_exact (space, msh, refs, uex, gradex)
+function [u_drchlt, drchlt_dofs, kernel_info] = sp_bilaplacian_drchlt_C1_exact (space, msh, refs, uex, gradex)
 
 % refs should be the whole boundary, for now
 M = spalloc (space.ndof, space.ndof, space.ndof);
@@ -45,12 +45,15 @@ end
 
 M_bdry = M + M2;
 dofs_to_remove = [];
+vertices_numbers = [];
+row_indices = [];
 count_vert = 0;
 
 % Check the kernel of vertex functions on Dirichlet boundary vertices
 % Pick up the basis function with the max. abs. coeff in the kernel, 
 %  remove it from drchlt_dofs, and add the function in the kernel into the
 %  internal part (it goes in the output)
+B_change_local = [];
 for iv = 1 : numel(space.vertices)
   % TODO: Loop just over Dirichlet boundary vertices
   if (space.vertices(iv).boundary_vertex)
@@ -59,19 +62,23 @@ for iv = 1 : numel(space.vertices)
     if (~isempty(ker))
       count_vert = count_vert + 1;
       [~, ind] = max(abs(ker));
-      dofs_to_remove = [dofs_to_remove space.dofs_on_vertex{iv}(ind)];
-      add_int_dofs(count_vert) = struct('vertex_number', iv, 'function_index', ind, 'kernel_coeffs', ker);
+
+      row_inds = (count_vert-1)*6 + (1:6);
+      B_change_local = blkdiag (B_change_local, ker(:));
+      
+      dofs_on_vertex = space.dofs_on_vertex{iv};
+      vertices_numbers(count_vert) = iv;
+      dofs_to_remove(count_vert) = dofs_on_vertex(ind);
+      row_indices(row_inds) = dofs_on_vertex;
     end
   end
 end
 
-drchlt_dofs = union (drchlt_dofs, drchlt_dofs2);    
+kernel_info = struct ('vertices_numbers', vertices_numbers, 'all_vertex_dofs', row_indices, 'quasi_interior_dofs', dofs_to_remove, 'B_change_local', sparse(B_change_local));
+
+drchlt_dofs = union (drchlt_dofs, drchlt_dofs2);
 drchlt_dofs = setdiff(drchlt_dofs, dofs_to_remove);
 
 u_drchlt = M_bdry(drchlt_dofs,drchlt_dofs) \ (rhs(drchlt_dofs) + rhs2(drchlt_dofs));
-
-if (count_vert == 0)
-  add_int_dofs = [];
-end
 
 end

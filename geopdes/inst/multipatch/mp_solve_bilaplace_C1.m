@@ -93,41 +93,26 @@ rhs       = op_f_v_mp (space, msh, f);
 % Apply boundary conditions
 u = zeros (space.ndof, 1);
 if (isfield(problem_data, 'graduex') && isfield(problem_data, 'uex'))
-  [u_drchlt, drchlt_dofs, add_int_dofs] = sp_bilaplacian_drchlt_C1_exact (space, msh, drchlt_sides, uex, graduex);
+  [u_drchlt, drchlt_dofs, kernel_dofs] = sp_bilaplacian_drchlt_C1_exact (space, msh, drchlt_sides, uex, graduex);
 else
-  [u_drchlt, drchlt_dofs, add_int_dofs] = sp_bilaplacian_drchlt_C1 (space, msh, drchlt_sides, h, g);
+  [u_drchlt, drchlt_dofs, kernel_dofs] = sp_bilaplacian_drchlt_C1 (space, msh, drchlt_sides, h, g);
 end
 u(drchlt_dofs) = u_drchlt;
 
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
-add_dofs = []; %this will contain the "boundary" vertex dofs which have been removed from drchlt_dofs
-for bv = 1 : numel(add_int_dofs)
-  vertex_number = add_int_dofs(bv).vertex_number;
-  add_dofs = [add_dofs space.dofs_on_vertex{vertex_number}(add_int_dofs(bv).function_index)];
-end
+add_dofs = kernel_dofs.quasi_interior_dofs; %this will contain the "boundary" vertex dofs which have been removed from drchlt_dofs
 
 %We assemble the (pieces of the) stiffness matrix, the rhs (and its correction taking 
 %into account the Dirichlet conditions), and the basis change matrix (we will need it 
 %to go from the basis with kernel vectors obtained when examnining the dirichlet conditions 
 %to the usual basis)
-B_change = speye(space.ndof); %basis change matrix
-B_change_local = sparse (6*numel(add_dofs), numel(add_dofs)); %basis change matrix
-vertex_dofs = [];
+vertex_dofs = kernel_dofs.all_vertex_dofs;
+B_change = speye (space.ndof); %basis change matrix
+B_change(kernel_dofs.all_vertex_dofs,kernel_dofs.quasi_interior_dofs) = kernel_dofs.B_change_local;
 
-for bv = 1 : numel(add_int_dofs)
-  vertex_number = add_int_dofs(bv).vertex_number;
-  dofs_on_vertex = space.dofs_on_vertex{vertex_number};
-  kernel_coeffs = add_int_dofs(bv).kernel_coeffs;
-  B_change(dofs_on_vertex, dofs_on_vertex(add_int_dofs(bv).function_index)) = kernel_coeffs;
-  row_inds = (bv-1)*6 + (1:6);
-  B_change_local(row_inds, bv) = kernel_coeffs;
-  
-  vertex_dofs = union (vertex_dofs, dofs_on_vertex);
-end
-
-stiff_mat(:,add_dofs) = stiff_mat(:,vertex_dofs) * B_change_local;
-stiff_mat(add_dofs,:) = B_change_local.' * stiff_mat(vertex_dofs,:);
-rhs(add_dofs) = B_change_local.' * rhs(vertex_dofs);
+stiff_mat(:,add_dofs) = stiff_mat(:,vertex_dofs) * kernel_dofs.B_change_local;
+stiff_mat(add_dofs,:) = kernel_dofs.B_change_local.' * stiff_mat(vertex_dofs,:);
+rhs(add_dofs) = kernel_dofs.B_change_local.' * rhs(vertex_dofs);
 
 rhs(int_dofs) = rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt;
 
