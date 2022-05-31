@@ -1,6 +1,6 @@
 close all
 clear all
-clc
+% clc
 warning ('off','geopdes:nrbmultipatch')
 
 % PHYSICAL DATA OF THE PROBLEM
@@ -334,7 +334,7 @@ problem_data.lapuex  = @(x, y, z) -((8 .*(x.^2 - y.^2))./(1 + 4 *x.^2 + 4 *y.^2)
 
 
 % z planar 3d
-% % problem_data.f = @(x, y, z) z;-((8 .*(x.^2 - y.^2))./(1 + 4 *x.^2 + 4 *y.^2).^2)
+% problem_data.f = @(x, y, z) z;-((8 .*(x.^2 - y.^2))./(1 + 4 *x.^2 + 4 *y.^2).^2)
 % problem_data.f = @(x, y, z) zeros(size(x));
 % % problem_data.g = @(x, y, z, ind) z;
 % problem_data.h = @(x, y, z, ind) z;
@@ -347,7 +347,7 @@ problem_data.lapuex  = @(x, y, z) -((8 .*(x.^2 - y.^2))./(1 + 4 *x.^2 + 4 *y.^2)
 % problem_data.lapuex  = @(x, y, z) zeros(size(x));
 
 % 3D problem
-% C = 20; P=[0.0, 0.0];%[17/6 1]; %[1.5, 0.5];
+C = 20; P=[0.0, 0.0];%[17/6 1]; %[1.5, 0.5];
 % normax2 = @(x,y) ((x-P(1)).^2+(y-P(2)).^2);
 % problem_data.f = @(x,y,z) 4*C*(1-C*normax2(x,y)).*exp(-C*normax2(x,y));
 % problem_data.g = @(x, y, z, ind) zeros(size(x));
@@ -360,7 +360,7 @@ problem_data.lapuex  = @(x, y, z) -((8 .*(x.^2 - y.^2))./(1 + 4 *x.^2 + 4 *y.^2)
 %             reshape (problem_data.uex(x,y).*(y-P(2)), [1, size(x)]), ...
 %             reshape (zeros(size(x)), [1, size(x)])  );
         
-% % 2D
+% % 2D with coefficients
 % C = 20; P=[0.0, 0.0];%[17/6 1]; %[1.5, 0.5];
 % normax2 = @(x,y) ((x-P(1)).^2+(y-P(2)).^2);
 % problem_data.f = @(x,y) 4*C*(1-C*normax2(x,y)).*exp(-C*normax2(x,y));
@@ -374,7 +374,7 @@ problem_data.lapuex  = @(x, y, z) -((8 .*(x.^2 - y.^2))./(1 + 4 *x.^2 + 4 *y.^2)
 %             reshape (problem_data.uex(x,y).*(y-P(2)), [1, size(x)]));
 
 
-% 2D
+% 2D cos
 % C = 20; P=[0.0, 0.0];%[17/6 1]; %[1.5, 0.5];
 % normax2 = @(x,y) ((x-P(1)).^2+(y-P(2)).^2);
 % problem_data.f = @(x,y) 256*cos(4*x);

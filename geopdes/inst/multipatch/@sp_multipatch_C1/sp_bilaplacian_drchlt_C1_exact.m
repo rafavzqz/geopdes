@@ -54,23 +54,28 @@ count_vert = 0;
 %  remove it from drchlt_dofs, and add the function in the kernel into the
 %  internal part (it goes in the output)
 B_change_local = [];
-for iv = 1 : numel(space.vertices)
-  % TODO: Loop just over Dirichlet boundary vertices
-  if (space.vertices(iv).boundary_vertex)
-    M_ker = M_bdry(space.dofs_on_vertex{iv}, space.dofs_on_vertex{iv});
-    ker = null(full(M_ker));
-    if (~isempty(ker))
-      count_vert = count_vert + 1;
-      [~, ind] = max(abs(ker));
+n_boundaries = numel(msh.boundaries); % number of boundary edges
+global_refs = numel(space.interfaces) - n_boundaries + refs; % global numbering of Dirichlet boundary edges
 
-      row_inds = (count_vert-1)*6 + (1:6);
-      B_change_local = blkdiag (B_change_local, ker(:));
-      
-      dofs_on_vertex = space.dofs_on_vertex{iv};
-      vertices_numbers(count_vert) = iv;
-      dofs_to_remove(count_vert) = dofs_on_vertex(ind);
-      row_indices(row_inds) = dofs_on_vertex;
-    end
+for iv = 1 : numel(space.vertices)
+  % Loop just over Dirichlet boundary vertices
+  if ~isempty(intersect(global_refs, space.vertices(iv).edges))
+      if (space.vertices(iv).boundary_vertex)
+        M_ker = M_bdry(space.dofs_on_vertex{iv}, space.dofs_on_vertex{iv});
+        ker = null(full(M_ker));
+        if (~isempty(ker))
+          count_vert = count_vert + 1;
+          [~, ind] = max(abs(ker));
+
+          row_inds = (count_vert-1)*6 + (1:6);
+          B_change_local = blkdiag (B_change_local, ker(:));
+
+          dofs_on_vertex = space.dofs_on_vertex{iv};
+          vertices_numbers(count_vert) = iv;
+          dofs_to_remove(count_vert) = dofs_on_vertex(ind);
+          row_indices(row_inds) = dofs_on_vertex;
+        end
+      end
   end
 end
 

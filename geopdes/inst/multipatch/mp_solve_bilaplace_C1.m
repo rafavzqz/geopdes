@@ -107,8 +107,8 @@ add_dofs = kernel_dofs.quasi_interior_dofs; %this will contain the "boundary" ve
 %to go from the basis with kernel vectors obtained when examnining the dirichlet conditions 
 %to the usual basis)
 vertex_dofs = kernel_dofs.all_vertex_dofs;
-B_change = speye (space.ndof); %basis change matrix
-B_change(kernel_dofs.all_vertex_dofs,kernel_dofs.quasi_interior_dofs) = kernel_dofs.B_change_local;
+% B_change = speye (space.ndof); %basis change matrix
+% B_change(kernel_dofs.all_vertex_dofs,kernel_dofs.quasi_interior_dofs) = kernel_dofs.B_change_local;
 
 stiff_mat(:,add_dofs) = stiff_mat(:,vertex_dofs) * kernel_dofs.B_change_local;
 stiff_mat(add_dofs,:) = kernel_dofs.B_change_local.' * stiff_mat(vertex_dofs,:);
@@ -119,7 +119,11 @@ rhs(int_dofs) = rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt;
 % Solve the linear system
 u(int_dofs) = stiff_mat(int_dofs, int_dofs) \ rhs(int_dofs);
 
-%Switching to the usual basis
-u = B_change * u;
+% Switching to the usual basis using the local matrix for the vertex dofs
+u_old = u(setdiff(kernel_dofs.all_vertex_dofs, add_dofs)); % Coefficients of the vertex functions that were already in the old basis
+u(kernel_dofs.all_vertex_dofs) = kernel_dofs.B_change_local * u(kernel_dofs.quasi_interior_dofs);
+u(setdiff(kernel_dofs.all_vertex_dofs, add_dofs)) = u(setdiff(kernel_dofs.all_vertex_dofs, add_dofs)) + u_old;
+
+% u = B_change * u;
 
 end
