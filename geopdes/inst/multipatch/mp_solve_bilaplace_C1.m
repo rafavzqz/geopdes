@@ -102,10 +102,10 @@ u(drchlt_dofs) = u_drchlt;
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
 add_dofs = kernel_dofs.quasi_interior_dofs; %this will contain the "boundary" vertex dofs which have been removed from drchlt_dofs
 
-%We assemble the (pieces of the) stiffness matrix, the rhs (and its correction taking 
-%into account the Dirichlet conditions), and the basis change matrix (we will need it 
-%to go from the basis with kernel vectors obtained when examnining the dirichlet conditions 
-%to the usual basis)
+% We assemble the (pieces of the) stiffness matrix, the rhs (and its correction taking 
+% into account the Dirichlet conditions), and the basis change matrix (we will need it 
+% to go from the basis with kernel vectors obtained when examnining the dirichlet conditions 
+% to the usual basis)
 vertex_dofs = kernel_dofs.all_vertex_dofs;
 % B_change = speye (space.ndof); %basis change matrix
 % B_change(kernel_dofs.all_vertex_dofs,kernel_dofs.quasi_interior_dofs) = kernel_dofs.B_change_local;

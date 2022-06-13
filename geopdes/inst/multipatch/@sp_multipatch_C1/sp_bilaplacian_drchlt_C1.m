@@ -58,32 +58,64 @@ n_boundaries = numel(msh.boundaries); % number of boundary edges
 global_refs = numel(space.interfaces) - n_boundaries + refs; % global numbering of Dirichlet boundary edges
 
 for iv = 1 : numel(space.vertices)
+  if numel(space.vertices(iv).patches)>1
   % Loop just over Dirichlet boundary vertices
-  if ~isempty(intersect(global_refs, space.vertices(iv).edges))
-      if (space.vertices(iv).boundary_vertex)
-        M_ker = M_bdry(space.dofs_on_vertex{iv}, space.dofs_on_vertex{iv});
-        ker = null(full(M_ker));
-        if (~isempty(ker))
-          count_vert = count_vert + 1;
-          [~, ind] = max(abs(ker));
+      if ~isempty(intersect(global_refs, space.vertices(iv).edges))
+          if (space.vertices(iv).boundary_vertex)
 
-          row_inds = (count_vert-1)*6 + (1:6);
-          B_change_local = blkdiag (B_change_local, ker(:));
+            patches = space.vertices(iv).patches([1 end]);
 
-          dofs_on_vertex = space.dofs_on_vertex{iv};
-          vertices_numbers(count_vert) = iv;
-          dofs_to_remove(count_vert) = dofs_on_vertex(ind);
-          row_indices(row_inds) = dofs_on_vertex;
-        end
+            operations = space.vertices(iv).patch_reorientation([1 end], :);
+            indices_loc_R = indices_reorientation(space.sp_patch{patches(1)}.ndof_dir, operations(1, :));
+            indices_loc_L = indices_reorientation(space.sp_patch{patches(2)}.ndof_dir, operations(2, :));
+
+            indices_loc_R = indices_loc_R(:);
+            indices_loc_L = indices_loc_L(:);
+
+            Cpatch_ind_R = indices_loc_R([2 3 space.sp_patch{patches(1)}.ndof_dir(1)+2]);
+            Cpatch_ind_L = indices_loc_L([space.sp_patch{patches(1)}.ndof_dir(1)+1 space.sp_patch{patches(1)}.ndof_dir(1)+2 2*space.sp_patch{patches(1)}.ndof_dir(1)+1]);
+
+            M_ker = [space.Cpatch{patches(1)}(Cpatch_ind_R, space.dofs_on_vertex{iv}); ...
+                     space.Cpatch{patches(2)}(Cpatch_ind_L, space.dofs_on_vertex{iv})];
+
+%             M_ker = M_bdry(space.dofs_on_vertex{iv}, space.dofs_on_vertex{iv});
+            ker = null(full(M_ker));
+            if (~isempty(ker))
+              count_vert = count_vert + 1;
+              [~, ind] = max(abs(ker));
+
+              row_inds = (count_vert-1)*6 + (1:6);
+              B_change_local = blkdiag (B_change_local, ker(:));
+
+              dofs_on_vertex = space.dofs_on_vertex{iv};
+              vertices_numbers(count_vert) = iv;
+              dofs_to_remove(count_vert) = dofs_on_vertex(ind);
+              row_indices(row_inds) = dofs_on_vertex;
+            end
+          end
       end
   end
 end
 
 kernel_info = struct ('vertices_numbers', vertices_numbers, 'all_vertex_dofs', row_indices, 'quasi_interior_dofs', dofs_to_remove, 'B_change_local', sparse(B_change_local));
 
-drchlt_dofs = union (drchlt_dofs, drchlt_dofs2);    
+drchlt_dofs = union (drchlt_dofs, drchlt_dofs2);
 drchlt_dofs = setdiff(drchlt_dofs, dofs_to_remove);
 
 u_drchlt = M_bdry(drchlt_dofs,drchlt_dofs) \ (rhs(drchlt_dofs) + rhs2(drchlt_dofs));
 
+end
+
+function indices = indices_reorientation (ndof_dir, operations)
+  ndof = prod (ndof_dir);
+  indices = reshape (1:ndof, ndof_dir);
+  if (operations(1))
+    indices = flipud (indices);
+  end
+  if (operations(2))
+    indices = fliplr (indices);
+  end
+  if (operations(3))
+    indices = indices.';
+  end   
 end
