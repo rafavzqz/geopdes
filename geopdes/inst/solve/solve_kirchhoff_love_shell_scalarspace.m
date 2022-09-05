@@ -1,9 +1,9 @@
-% SOLVE_KIRCHHOFF_LOVE_SHELL: Solve the Kirchhoff-Love shell model in a NURBS domain.
+% SOLVE_KIRCHHOFF_LOVE_SHELL_SCALARSPACE: Solve the Kirchhoff-Love shell model in a NURBS domain.
 %  It uses an object space of type sp_scalar, instead of sp_vector.
 %
 % USAGE:
 %
-%  [geometry, msh, space, u] = solve_kirchhoff_love_shell (problem_data, method_data)
+%  [geometry, msh, space, u] = solve_kirchhoff_love_shell_scalarspace (problem_data, method_data)
 %
 % INPUT:
 %
@@ -35,6 +35,7 @@
 % See also EX_KL_SHELL_SCORDELIS_LO_ROOF for an example.
 %
 % Copyright (C) 2017-2019 Pablo Antolin, Luca Coradello, Rafael Vazquez
+% Copyright (C) 2022 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by

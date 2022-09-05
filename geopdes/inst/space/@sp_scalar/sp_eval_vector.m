@@ -163,7 +163,8 @@ function [eu, F] = sp_eval_vector (u, space, geometry, npts, options, lambda_lam
 %          'laplacian', laplacian, 'hessian', hessian);
     sp_col = sp_scalar2vector (sp_col, msh_col, 'value', value, 'gradient', grad, 'divergence', divergence, 'curl', curl);
 
-    eu_aux = sp_eval_msh (u, sp_col, msh_col, options);
+    eu_aux = sp_eval_msh (u, sp_col, msh_col, options, lambda_lame, mu_lame);
+%     eu_aux = sp_eval_msh (u, sp_col, msh_col, options);
     
     F(:,:,msh_col.elem_list) = msh_col.geo_map;
     for iopt = 1:nopts

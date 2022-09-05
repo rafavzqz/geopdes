@@ -1,5 +1,5 @@
 % OP_F_V_TP_VECTOR: assemble the right-hand side vector r = [r(i)], with r(i) = (f, v_i), 
-%  where f is a vector-valued, and the basis functions in each component belong to the same scalar space.
+%  where f is vector-valued, and the basis functions in each component belong to the same scalar space.
 %
 %   rhs = op_f_v_tp_vector (spv, msh, coeff);
 %

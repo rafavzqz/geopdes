@@ -5,8 +5,8 @@
 %
 % INPUT:
 %
-%  spu:   object representing the space of trial functions (see sp_vector)
-%  spv:   object representing the space of test functions (see sp_vector)
+%  spu:   object representing the space of trial functions (see sp_scalar)
+%  spv:   object representing the space of test functions (see sp_scalar)
 %  msh:   object defining the domain partition and the quadrature rule (see msh_cartesian)
 %  E_coeff:  function handle to compute the Young's modulus
 %  nu_coeff: function handle to compute the Poisson's ratio
