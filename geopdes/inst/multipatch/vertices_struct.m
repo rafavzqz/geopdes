@@ -61,6 +61,9 @@ for hh = 1:numel(boundaries)
     icont = icont + 1;
     interfaces(N_int+icont).patch1 = boundaries(hh).patches(jj);
     interfaces(N_int+icont).side1 = boundaries(hh).faces(jj);
+    interfaces(N_int+icont).patch2 = [];
+    interfaces(N_int+icont).side2 = [];
+    interfaces(N_int+icont).ornt = [];    
     interfaces_bnd(N_int+icont).patch1 = boundaries(hh).patches(jj);
     interfaces_bnd(N_int+icont).side1 = boundaries(hh).faces(jj);
     interfaces_bnd(N_int+icont).patch2 = 0;
@@ -179,7 +182,12 @@ end
 
 
 function check_orientation (geometry, interfaces)
-  Nint = find ([interfaces.patch2]); Nint = Nint(end);
+  Nint = find ([interfaces.patch2]); 
+  if (~isempty (Nint))
+    Nint = Nint(end);
+  else
+    Nint = 0;
+  end
 
   coords_on_side = {0 0.5; 1 0.5; 0.5 0; 0.5 1}; %4 rows for the sides, 2 columns for the coordinates
   
