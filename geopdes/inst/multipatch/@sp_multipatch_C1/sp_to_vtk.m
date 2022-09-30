@@ -67,6 +67,8 @@ function sp_to_vtk (u, space, geometry, npts, filename, fieldname, varargin)
     filename_patch_without_path = cat (2, filename(ind:end), '_', num2str (iptc));
     filename_patch = cat (2, filename, '_', num2str (iptc));
     fprintf (fid, str2, iptc, filename_patch_without_path);
+
+    if (numel(u) == space.ndof)
 %     if (isempty (space.dofs_ornt))
       sp_to_vtk (space.Cpatch{iptc} * u, space.sp_patch{iptc}, geometry(iptc), npts, ...
                            filename_patch, fieldname, varargin{:})
@@ -74,6 +76,12 @@ function sp_to_vtk (u, space, geometry, npts, filename, fieldname, varargin)
 %       sp_to_vtk (u(space.gnum{iptc}) .* space.dofs_ornt{iptc}', space.sp_patch{iptc}, geometry(iptc), npts, ...
 %                            filename_patch, fieldname, varargin{:})
 %     end
+    elseif (numel(u) == space.ndof*geometry(iptc).rdim)
+      Cpatch_repmat = repmat (space.Cpatch(iptc), 1, geometry(iptc).rdim);
+      Cpatch_vector = blkdiag (Cpatch_repmat{:});
+      sp_to_vtk (Cpatch_vector * u, space.sp_patch{iptc}, geometry(iptc), npts, ...
+                           filename_patch, fieldname, varargin{:})
+    end
   end
   fprintf (fid, str3);
 

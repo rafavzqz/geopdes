@@ -40,6 +40,7 @@ function space_vec = sp_scalar2vector_param (space, msh, varargin)
 value = true;
 gradient = false;
 hessian = false;
+divergence = false;
   if (~isempty (varargin))
     if (~rem (length (varargin), 2) == 0)
       error ('sp_scalar2vector: options must be passed in the [option, value] format');
@@ -49,6 +50,8 @@ hessian = false;
         value = varargin {ii+1};
       elseif (strcmpi (varargin {ii}, 'gradient'))
         gradient = varargin {ii+1};
+      elseif (strcmpi (varargin {ii}, 'divergence'))
+        divergence = varargin {ii+1};
       elseif (strcmpi (varargin {ii}, 'hessian'))
         hessian = varargin {ii+1};
       else
@@ -82,6 +85,14 @@ hessian = false;
     for icomp = 1:ncomp
       fun_inds = (icomp-1)*space.nsh_max+1:icomp*space.nsh_max;
       space_vec.shape_function_gradients(icomp,:,:,fun_inds,:) = space.shape_function_gradients;
+    end
+  end
+  
+  if (divergence)
+    space_vec.shape_function_divs = zeros (msh.nqn, space_vec.nsh_max, msh.nel);
+    for icomp = 1:ncomp
+      fun_inds = (icomp-1)*space.nsh_max+1:icomp*space.nsh_max;
+      space_vec.shape_function_divs(:,fun_inds,:) = space.shape_function_gradients (icomp,:,:,:);
     end
   end
 
