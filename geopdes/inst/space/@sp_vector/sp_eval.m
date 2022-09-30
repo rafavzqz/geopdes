@@ -67,7 +67,7 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options, lambda_lame, mu_l
   elseif (isfield (struct(space.scalar_spaces{1}), 'knots'))
     degree = space.scalar_spaces{1}.degree;
     for idim=1:ndim
-      endpoints(:,idim) = space.knots{idim}([degree(idim)+1, end-degree(idim)]);
+      endpoints(:,idim) = space.scalar_spaces{1}.knots{idim}([degree(idim)+1, end-degree(idim)]);
     end
   else
     endpoints(2,:) = 1;

@@ -1,6 +1,6 @@
 % SP_BSPLINE: Constructor of the class of tensor-product spaces of B-Splines.
 %
-%     sp = sp_bspline (knots, degree, msh, [transform])
+%     sp = sp_bspline (knots, degree, msh, [transform, periodic_directions])
 %
 % INPUTS:
 %     
@@ -29,12 +29,18 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp = sp_bspline (knots, degree, msh, transform)
+function sp = sp_bspline (knots, degree, msh, transform, periodic_directions)
 
-if (nargin == 3)
-  transform = 'grad-preserving';
-end
+  if (nargin < 5)
+    periodic_directions  = [];
+  else
+    periodic_directions = sort(periodic_directions);
+  end
+  
+  if (nargin == 3 || isempty (transform))
+    transform = 'grad-preserving';
+  end
 
-sp = sp_scalar (knots, degree, [], msh, transform);
+  sp = sp_scalar (knots, degree, [], msh, transform, periodic_directions);
 
 end

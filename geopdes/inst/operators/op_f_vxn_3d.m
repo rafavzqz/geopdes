@@ -28,8 +28,6 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
 function rhs = op_f_vxn_3d (spv, msh, coeff)
   
   rhs = zeros(spv.ndof, 1);
@@ -39,7 +37,7 @@ function rhs = op_f_vxn_3d (spv, msh, coeff)
 
       rhs_loc = zeros (spv.nsh_max, 1);
       for idof = 1:spv.nsh_max
-        ishp = squeeze(spv.shape_functions(:,:,idof,iel));
+        ishp = reshape (spv.shape_functions(:,:,idof,iel), spv.ncomp, msh.nqn);
         ishp_x_n = [ishp(2,:) .* msh.normal(3,:,iel) - ...
                        ishp(3,:) .* msh.normal(2,:,iel); ...
                     ishp(3,:) .* msh.normal(1,:,iel) - ...

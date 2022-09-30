@@ -16,6 +16,7 @@
 %           ------------+-----------------+-----------------------------------
 %            gradient   |      true       |  compute shape_function_gradients
 %            hessian    |     false       |  compute shape_function_hessians
+%            periodic   |     false       |  make space connectivity periodic 
 %
 % OUTPUT:
 %
@@ -42,6 +43,8 @@ function sp = sp_bspline_1d_param (knots, degree, nodes, varargin)
 
 gradient = true; 
 hessian  = false; 
+periodic = false;
+
 if (~isempty (varargin))
   if (~rem (length (varargin), 2) == 0)
     error ('sp_bspline_1d_param: options must be passed in the [option, value] format');
@@ -51,6 +54,8 @@ if (~isempty (varargin))
       gradient = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'hessian'))
       hessian = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'periodic'))
+      periodic = varargin{ii+1};
     else 
       error ('sp_bspline_1d_param: unknown option %s', varargin {ii});
     end
@@ -73,15 +78,14 @@ ndof   = mcp + 1;
 nel = size (nodes, 2);
 nqn = size (nodes, 1);
 
-nsh = zeros (1, nel);
 connectivity = zeros (p+1, nel);
 for iel=1:nel
   s = findspan (mcp, p, nodes(:, iel)', knots);
   c = numbasisfun (s, nodes(:, iel)', p, knots);
   c = unique(c(:))+1;
   connectivity(1:numel(c), iel) = c;
-  nsh(iel) = nnz (connectivity(:,iel));
 end
+nsh = sum(connectivity ~= 0,1);
 
 nsh_max = max (nsh);
 
@@ -97,13 +101,35 @@ for inqn = 1:numel(nodes)
   ders(inqn,:,ind:ind+p) = tders(inqn,:,:);
 end
 
-supp = cell (ndof, 1);
-for ii = 1:ndof
-  [dummy, supp{ii}] = find (connectivity == ii);
-end
-
 shape_functions = reshape (ders(:, 1, :), nqn, nel, []);
 shape_functions = permute (shape_functions, [1, 3, 2]);
+
+if (periodic)
+  regularity = degree - nnz(knots == knots(degree+1));
+  
+  n_extra_dofs = regularity + 1;
+  ndof = ndof - n_extra_dofs;
+
+  filter = (connectivity == 0);
+  connectivity = mod(connectivity-1,ndof) + 1;
+  connectivity(filter) = 0;
+  
+  nsh = sum(connectivity ~= 0,1);
+  nsh_max = max (nsh);
+  
+  [~,dummy_supp] = find (connectivity == 1);
+  if (numel(unique(dummy_supp)) < numel(dummy_supp))
+    error (['sp_bspline_1d_param: too few mesh elements to ensure', ...
+            ' single-valued B-splines on periodic domain']);
+  end
+    
+end
+
+supp = cell (ndof, 1);
+for ii = 1:ndof
+  [~, supp{ii}] = find (connectivity == ii);
+end
+
 
 sp = struct ('nsh_max', nsh_max, 'nsh', nsh, 'ndof', ndof,  ...
              'connectivity', connectivity, ...
@@ -124,7 +150,6 @@ if (hessian)
 end
 
 end
-
 
 %!test
 %! knots = [0 0 0 .5 1 1 1];

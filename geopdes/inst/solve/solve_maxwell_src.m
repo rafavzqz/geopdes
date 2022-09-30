@@ -16,6 +16,7 @@
 %    - geo_name:     name of the file containing the geometry
 %    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
 %    - drchlt_sides: sides with Dirichlet boundary condition
+%    - periodic_directions: parametric directions along which to apply periodic conditions (may be empty)
 %    - c_mass:       coefficient for the mass matrix (mu in the equation)
 %    - c_stiff:      coefficient for the stiffness matrix (epsilon in the equation)
 %    - f:            source term
@@ -38,7 +39,8 @@
 %
 % See also EX_MAXWELL_SRC_LSHAPED for an example.
 %
-% Copyright (C) 2010, 2011, 2015 Rafael Vazquez
+% Copyright (C) 2010, 2011, 2015, 2021 Rafael Vazquez
+% Copyright (C) 2021 Bernard Kapidani
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -70,6 +72,18 @@ end
 geometry = geo_load (geo_name);
 
 [knots, zeta] = kntrefine (geometry.nurbs.knots, nsub-1, degree, regularity);
+
+% Check for periodic conditions, and consistency with other boundary conditions
+if (exist('periodic_directions', 'var'))
+  knots = kntunclamp (knots, degree, regularity, periodic_directions);
+  per_sides = union (periodic_directions*2 - 1, periodic_directions*2);
+  if (~isempty (intersect(per_sides, [nmnn_sides, drchlt_sides])))
+    error ('Neumann or Dirichlet conditions cannot be imposed on periodic sides')
+  end
+else
+  periodic_directions = [];
+end
+
 [knots_hcurl, degree_hcurl] = knt_derham (knots, degree, 'Hcurl');
 
 % Construct msh structure
@@ -80,7 +94,8 @@ msh      = msh_cartesian (zeta, qn, qw, geometry);
 % Construct space structure
 scalar_spaces = cell (msh.ndim, 1);
 for idim = 1:msh.ndim
-  scalar_spaces{idim} = sp_bspline (knots_hcurl{idim}, degree_hcurl{idim}, msh);
+  scalar_spaces{idim} = sp_bspline (knots_hcurl{idim}, degree_hcurl{idim}, msh,...
+                                    [], periodic_directions);
 end
 space = sp_vector (scalar_spaces, msh, 'curl-preserving');
 clear scalar_spaces

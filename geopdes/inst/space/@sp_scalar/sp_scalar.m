@@ -1,15 +1,17 @@
 % SP_SCALAR: Constructor of the class of scalar tensor-product spaces (B-Splines or NURBS).
 %
-%     sp = sp_scalar (knots, degree, weights, msh, [transform])
+%     sp = sp_scalar (knots, degree, weights, msh, [transform, periodic_dir])
 %
 % INPUTS:
 %     
-%     knots:     open knot vector (cell array of size [1, ndim])
-%     degree:    spline polynomial degree (vector of size [1, ndim])
-%     weights:   weights associated to the basis functions. For B-splines it should be empty
-%     msh:       msh object that defines the quadrature rule (see msh_cartesian)
-%     transform: string with the transformation to the physical domain, one of 
-%                 'grad-preserving' (default) and 'integral-preserving', for N-forms.
+%     knots:               open knot vector (cell array of size [1, ndim])
+%     degree:              spline polynomial degree (vector of size [1, ndim])
+%     weights:             weights associated to the basis functions. For B-splines it should be empty
+%     msh:                 msh object that defines the quadrature rule (see msh_cartesian)
+%     transform:           string with the transformation to the physical domain, one of 
+%                          'grad-preserving' (default) and 'integral-preserving', for N-forms
+%     periodic_dir:        Cartesian directions in which the space should be made periodic. By default it is empty.
+%     
 %
 % OUTPUT:
 %
@@ -59,6 +61,7 @@
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011, 2015 Rafael Vazquez
+% Copyright (C) 2020, 2021 Bernard Kapidani, Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -73,8 +76,20 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp = sp_scalar (knots, degree, weights, msh, transform)
+function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_dir)
 
+  if (nargin < 1)
+    sp = struct ('space_type', [], 'knots', [], 'degree', [], 'weights', [], 'sp_univ', [], ...
+                 'nsh_dir', [], 'nsh_max', [], 'ndof_dir', [], 'ndof', [], 'ncomp', [], ...
+                 'boundary', [], 'dofs', [], 'adjacent_dofs', [], 'transform', [], 'periodic_dir', [], ...
+                 'constructor', @(MSH) sp_scalar());
+    sp = class (sp, 'sp_scalar');
+    return
+  end
+
+  if (nargin < 6)
+    periodic_dir  = [];
+  end
   if (nargin == 4)
     transform = 'grad-preserving';
   end
@@ -93,14 +108,16 @@ function sp = sp_scalar (knots, degree, weights, msh, transform)
   if (numel (knots) ~= msh.ndim)
     error ('The dimension of the mesh and the space do not correspond to each other')
   end
-
+  
   sp.knots = knots;
   sp.degree = degree;
   sp.weights = weights;
-
+  
   nodes = msh.qn;
   for idim = 1:msh.ndim
-    sp.sp_univ(idim) = sp_bspline_1d_param (knots{idim}, degree(idim), nodes{idim}, 'gradient', true, 'hessian', true);
+    sp.sp_univ(idim) = sp_bspline_1d_param (knots{idim}, degree(idim), nodes{idim},...
+                         'gradient', true, 'hessian', true,...
+                         'periodic',ismember(idim,periodic_dir));
   end
 
   sp.nsh_dir  = [sp.sp_univ.nsh_max];
@@ -121,45 +138,59 @@ function sp = sp_scalar (knots, degree, weights, msh, transform)
 %%    ind2 = [1 1 2 2 3 3] in 3D,                  %ind2 = [1 1 2 2] in 2D
       ind2 = ceil (iside/2);
       ind = setdiff (1:msh.ndim, ind2);
-
-      if (~isempty (msh.boundary))
-        if (strcmpi (sp.space_type, 'spline'))
-          weights = [];
-        elseif (strcmpi (sp.space_type, 'nurbs'))
-          indices = arrayfun (@(x) 1:x, sp.ndof_dir, 'UniformOutput', false);
-          if (rem (iside, 2) == 0)
-            indices{ind2} = sp.ndof_dir(ind2);
-          else
-            indices{ind2} = 1;
+      
+      if (~ismember(ind2,periodic_dir))
+        if (~isempty (msh.boundary))
+          if (strcmpi (sp.space_type, 'spline'))
+            weights = [];
+          elseif (strcmpi (sp.space_type, 'nurbs'))
+            indices = arrayfun (@(x) 1:x, sp.ndof_dir, 'UniformOutput', false);
+            if (rem (iside, 2) == 0)
+              indices{ind2} = sp.ndof_dir(ind2);
+            else
+              indices{ind2} = 1;
+            end
+            weights = squeeze (sp.weights(indices{:}));
           end
-          weights = squeeze (sp.weights(indices{:}));
+          
+          [~,bnd_periodic_dir] = ismember(periodic_dir,ind);
+          bnd_periodic_dir = nonzeros(bnd_periodic_dir);
+          
+          sp.boundary(iside) = sp_scalar (sp.knots(ind), sp.degree(ind), weights, msh.boundary(iside),...
+              'grad-preserving',bnd_periodic_dir);
         end
-        sp.boundary(iside) = sp_scalar (sp.knots(ind), sp.degree(ind), weights, msh.boundary(iside));
-      end
       
-      bnd_ndof_dir = sp.ndof_dir(ind);
-      bnd_ndof = prod (bnd_ndof_dir);
-      [ind_univ{ind}] = ind2sub (bnd_ndof_dir, 1:bnd_ndof);
-      if (rem (iside, 2) == 0)
-        ind_univ{ind2} = sp.ndof_dir(ind2) * ones (1, bnd_ndof);
-      else
-        ind_univ{ind2} = ones (1, bnd_ndof);
-      end
-      sp.boundary(iside).dofs = sub2ind (sp.ndof_dir, ind_univ{:});
-      sp.boundary(iside).ndof = numel (sp.boundary(iside).dofs);
-
-      if (sp.ndof_dir(ind2) > 1)
+        bnd_ndof_dir = sp.ndof_dir(ind);
+        bnd_ndof = prod (bnd_ndof_dir);
+        [ind_univ{ind}] = ind2sub (bnd_ndof_dir, 1:bnd_ndof);
         if (rem (iside, 2) == 0)
-          ind_univ{ind2} = (sp.ndof_dir(ind2) - 1) * ones (1, bnd_ndof);
+          ind_univ{ind2} = sp.ndof_dir(ind2) * ones (1, bnd_ndof);
         else
-          ind_univ{ind2} = 2 * ones (1, bnd_ndof);
+          ind_univ{ind2} = ones (1, bnd_ndof);
         end
-        sp.boundary(iside).adjacent_dofs = sub2ind (sp.ndof_dir, ind_univ{:});
-      end
+        sp.boundary(iside).dofs = sub2ind (sp.ndof_dir, ind_univ{:});
+        sp.boundary(iside).ndof = numel (sp.boundary(iside).dofs);
+
+        if (sp.ndof_dir(ind2) > 1)
+          if (rem (iside, 2) == 0)
+            ind_univ{ind2} = (sp.ndof_dir(ind2) - 1) * ones (1, bnd_ndof);
+          else
+            ind_univ{ind2} = 2 * ones (1, bnd_ndof);
+          end
+          sp.boundary(iside).adjacent_dofs = sub2ind (sp.ndof_dir, ind_univ{:});
+        end
       
+      else
+        if (~isempty (msh.boundary))
+          sp.boundary(iside) = sp_scalar();
+        else % define relevant struct fields
+          sp.boundary(iside) = struct ('ndof', [], 'dofs', [], 'adjacent_dofs', []);
+        end
+          
+      end
     end
         
-  elseif (msh.ndim == 1)
+  elseif (msh.ndim == 1 && isempty(periodic_dir) )
     sp.boundary(1).dofs = 1;
     sp.boundary(2).dofs = sp.ndof;
     if (sp.ndof > 1)
@@ -177,8 +208,11 @@ function sp = sp_scalar (knots, degree, weights, msh, transform)
   sp.adjacent_dofs = [];
   
   sp.transform = transform;
-
-  sp.constructor = @(MSH) sp_scalar (sp.knots, sp.degree, sp.weights, MSH, sp.transform);
+  
+  sp.periodic_dir = periodic_dir;
+  
+  sp.constructor = @(MSH) sp_scalar (sp.knots, sp.degree, sp.weights, MSH, sp.transform,...
+                                     sp.periodic_dir);
   sp = class (sp, 'sp_scalar');
 
 end

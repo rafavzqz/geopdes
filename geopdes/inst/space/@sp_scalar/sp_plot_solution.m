@@ -54,9 +54,10 @@ if (ndim == 3)
   end
 end
 
+degree = space.degree;
 if (~exist ('vtk_pts', 'var'))
   for idim = 1:ndim
-    vtk_pts{idim} = linspace (space.knots{idim}(1), space.knots{idim}(end), npts(idim));
+    vtk_pts{idim} = linspace (space.knots{idim}(1+degree(idim)), space.knots{idim}(end-degree(idim)), npts(idim));
   end
 end
 
@@ -84,7 +85,7 @@ elseif (ndim == 3)
 
   for idim = 1:ndim
     plot_pts = vtk_pts;
-    plot_pts{idim} = linspace(space.knots{idim}(1), space.knots{idim}(end), ncuts(idim)+2);
+    plot_pts{idim} = linspace(space.knots{idim}(1+degree(idim)), space.knots{idim}(end-degree(idim)), ncuts(idim)+2);
     [eu, F] = sp_eval (u, space, geometry, plot_pts);
     indices = {1:npts(1), 1:npts(2), 1:npts(3)};
     
