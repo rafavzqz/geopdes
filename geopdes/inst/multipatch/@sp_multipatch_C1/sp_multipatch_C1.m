@@ -69,15 +69,21 @@
 function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces_all, vertices)
 
   if (~all (cellfun (@(x) isa (x, 'sp_scalar'), spaces)))
-    error ('All the spaces in the array should be of the same class')
+    error ('All the spaces in the array should be of the sp_scalar class')
   end
-  aux = struct ([spaces{:}]);
+  ndof_all = cellfun (@(x) x.ndof, spaces);
+  degree_all = cellfun (@(x) x.degree, spaces, 'UniformOutput', false);
+  degree_all = cell2mat (degree_all.');
 
   sp.npatch = numel (spaces);
   if (sp.npatch ~= msh.npatch)
     error ('The list of spaces does not correspond to the mesh')
   end
 
+  if (~all (all (degree_all == spaces{1}.degree, 2), 1))
+    error ('All the patches should have the same degree, at least for now.')
+  end
+  
   for iptc = 1:numel(geometry)
     knots = spaces{iptc}.knots;
     breaks = cellfun (@unique, knots, 'UniformOutput', false);
@@ -85,19 +91,19 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces_all, vertices)
     if (any ([mult{:}] < 2))
       error ('The regularity should be at most degree minus two')
     end
-    for idim = 1:2
+    for idim = 1:msh.ndim
       if (any (mult{idim}(2:end-1) > spaces{iptc}.degree(idim) - 1))
         error ('The regularity should not be lower than one')
       end
+    end
+    if (numel(breaks{1}) ~= numel(breaks{2}))
+      error ('The number of internal knots should be the same in every patch and every coordinate, at least for now.')
     end
   end
 
   sp.ncomp = spaces{1}.ncomp;
   sp.transform = spaces{1}.transform;
   
-  if (~all ([aux.ncomp] == 1))
-    error ('The number of components should be the same for all the spaces, and equal to one')  
-  end
   for iptc = 1:sp.npatch
     if (~strcmpi (spaces{iptc}.transform, 'grad-preserving'))
       error ('The transform to the physical domain should be the same for all the spaces, and the grad-preserving one')
@@ -108,7 +114,7 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces_all, vertices)
   end
 
   sp.ndof = 0;
-  sp.ndof_per_patch = [aux.ndof];
+  sp.ndof_per_patch = ndof_all;
   sp.sp_patch = spaces;
   
 % Knot vectors of auxiliary spaces
@@ -241,12 +247,24 @@ for jj = 1:numel(vertices)
   end
 end
 
-pp = space.sp_patch{1}.degree(1);
-breaks_m = cellfun (@unique, space.sp_patch{1}.knots, 'UniformOutput', false);
-kk = numel(breaks_m{1}) - 2;
-mult = histc(space.sp_patch{1}.knots{1},breaks_m{1});
-% reg = pp - max(mult(2:end-1));
-reg = pp - max(mult([2 end-1]));
+deg_aux = space.sp_patch{1}.degree(1);
+breaks_m = unique (space.sp_patch{1}.knots{1});
+nbrk_aux = numel(breaks_m) - 1; % This is k+1 in the paper
+mult = histc (space.sp_patch{1}.knots{1},breaks_m);
+% reg_aux = deg_aux - max(mult(2:end-1));
+reg_aux = deg_aux - max(mult([2 end-1]));
+
+% Check that regularity of the first knot is the same in all patches and directions
+for iptc = 1:space.npatch
+  for idim = 1:msh.ndim
+    breaks_m = cellfun (@unique, space.sp_patch{iptc}.knots, 'UniformOutput', false);
+    mult = histc(space.sp_patch{iptc}.knots{1},breaks_m{1});
+    reg{idim} = space.sp_patch{iptc}.degree(1) - max(mult([2 end-1]));
+  end
+  if (any (reg{1} ~= reg{2}))
+    error ('The regularity of the first internal knot should always be the same, at least for now.')
+  end
+end
 
 all_alpha0 = zeros(numel(interfaces_all),2);
 all_alpha1 = zeros(numel(interfaces_all),2);
@@ -279,11 +297,11 @@ for iref = 1:numel(interfaces_all)
     geo_map_jac{ii} = msh_side_interior.geo_map_jac; %rdim x ndim x 1 x n_grev_pts (rdim->physical space, ndim->parametric space)
   end
     
-   if msh.ndim + 1 == msh.rdim
-      [alpha0, alpha1, beta0, beta1] = compute_gluing_data_surf (geo_map_jac, grev_pts, sides);
-   else
-      [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev_pts, sides);
-   end
+  if (msh.ndim + 1 == msh.rdim)
+    [alpha0, alpha1, beta0, beta1] = compute_gluing_data_surf (geo_map_jac, grev_pts, sides);
+  else
+    [alpha0, alpha1, beta0, beta1] = compute_gluing_data (geo_map_jac, grev_pts, sides);
+  end
   clear geo_map_jac msh_grev msh_side_interior grev_pts
 
  %Saving alphas and betas (first column=i_0, second column=i_1)
@@ -413,7 +431,7 @@ end
 
 % Computation of CC_vertices
 % Auxiliary constants to deal with different regularity cases in the M matrices
-if (reg < pp-2)
+if (reg_aux < deg_aux-2)
   const1 = 2; const2 = 1;
 else
   const1 = 3; const2 = 2;
@@ -440,7 +458,7 @@ for kver = 1:numel(vertices)
   for iptc = 1:valence_p
     knots = space.sp_patch{iptc}.knots;
     for idim = 1:msh.ndim
-      brk{idim}=[knots{idim}(1) knots{idim}(end)];
+      brk{idim} = [knots{idim}(1) knots{idim}(end)];
     end
     msh_pts_der1 = msh_cartesian (brk, {0 0}, [], geo_local(iptc),'boundary', true, 'der2', true);
     msh_der = msh_precompute (msh_pts_der1);
@@ -449,13 +467,11 @@ for kver = 1:numel(vertices)
     
     sigma = sigma + norm (derivatives_new1{iptc}, Inf);
   end
-  sigma = pp*(kk+1)*valence_p/sigma;
+  sigma = deg_aux * nbrk_aux * valence_p / sigma;
   %Storing sigma for output
-  v_fun_matrices{1,kver}=sigma;
+  v_fun_matrices{1,kver} = sigma;
   
-  if msh.ndim+1==msh.rdim
-      
-    disp('Surf code');
+  if (msh.ndim+1 == msh.rdim)
     %Tangent vectors
     Du_F = derivatives_new1{1}(:,1);
     Dv_F = derivatives_new1{1}(:,2);
@@ -578,21 +594,21 @@ for kver = 1:numel(vertices)
         d1_b = t0_next.'*mat_deltas*d0_next + vec_deltas.'*d0p_next;
 
         M_prev(:,jfun) = sigma^(j1+j2)*[c0, ...
-                                        c0+c1_a/(pp*(kk+1)), ...
-                                        c0+const1*c1_a/(pp*(kk+1))+const2*c2_a/(pp*(pp-1)*(kk+1)^2), ...
-                                        d0_a/(pp*(kk+1)), ...
-                                        d0_a/(pp*(kk+1))+d1_a/(pp*(pp-1)*(kk+1)^2)].';
+                                        c0+c1_a/(deg_aux*nbrk_aux), ...
+                                        c0+const1*c1_a/(deg_aux*nbrk_aux)+const2*c2_a/(deg_aux*(deg_aux-1)*nbrk_aux^2), ...
+                                        d0_a/(deg_aux*nbrk_aux), ...
+                                        d0_a/(deg_aux*nbrk_aux)+d1_a/(deg_aux*(deg_aux-1)*nbrk_aux^2)].';
         M_next(:,jfun) = sigma^(j1+j2)*[c0, ...
-                                        c0+c1_b/(pp*(kk+1)), ...
-                                        c0+const1*c1_b/(pp*(kk+1))+const2*c2_b/(pp*(pp-1)*(kk+1)^2), ...
-                                        d0_b/(pp*(kk+1)), ...
-                                        d0_b/(pp*(kk+1))+d1_b/(pp*(pp-1)*(kk+1)^2)].';
+                                        c0+c1_b/(deg_aux*nbrk_aux), ...
+                                        c0+const1*c1_b/(deg_aux*nbrk_aux)+const2*c2_b/(deg_aux*(deg_aux-1)*nbrk_aux^2), ...
+                                        d0_b/(deg_aux*nbrk_aux), ...
+                                        d0_b/(deg_aux*nbrk_aux)+d1_b/(deg_aux*(deg_aux-1)*nbrk_aux^2)].';
         %V_{i_m,i}  
         e11 = t0_prev.'*mat_deltas*t0_next + vec_deltas.'*Duv_F;
         VV(corner_4dofs,jfun) = sigma^(j1+j2)*[c0, ...
-                                               c0+c1_a/(pp*(kk+1)), ...
-                                               c0+c1_b/(pp*(kk+1)), ...
-                                               c0+(c1_a+c1_b+e11/(pp*(kk+1)))/(pp*(kk+1))]'; 
+                                               c0+c1_a/(deg_aux*nbrk_aux), ...
+                                               c0+c1_b/(deg_aux*nbrk_aux), ...
+                                               c0+(c1_a+c1_b+e11/(deg_aux*nbrk_aux))/(deg_aux*nbrk_aux)]'; 
         jfun = jfun+1;
       end
     end
