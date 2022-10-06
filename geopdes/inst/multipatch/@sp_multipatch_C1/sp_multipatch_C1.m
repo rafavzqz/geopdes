@@ -245,7 +245,8 @@ pp = space.sp_patch{1}.degree(1);
 breaks_m = cellfun (@unique, space.sp_patch{1}.knots, 'UniformOutput', false);
 kk = numel(breaks_m{1}) - 2;
 mult = histc(space.sp_patch{1}.knots{1},breaks_m{1});
-reg = pp - max(mult(2:end-1));
+% reg = pp - max(mult(2:end-1));
+reg = pp - max(mult([2 end-1]));
 
 all_alpha0 = zeros(numel(interfaces_all),2);
 all_alpha1 = zeros(numel(interfaces_all),2);
