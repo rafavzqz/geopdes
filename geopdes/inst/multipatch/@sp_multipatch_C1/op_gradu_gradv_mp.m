@@ -40,7 +40,6 @@ function A = op_gradu_gradv_mp (spu, spv, msh, coeff, patch_list)
   end
 
   A = sparse (spv.ndof, spu.ndof);
-  A2 = sparse (spv.ndof, spu.ndof);
 
   for iptc = patch_list
     if (nargin < 4 || isempty (coeff))
