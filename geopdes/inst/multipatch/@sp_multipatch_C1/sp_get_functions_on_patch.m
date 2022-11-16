@@ -29,7 +29,7 @@
 
 function [Cpatch_cols, dofs_interior, dofs_edge, dofs_vertex] = sp_get_functions_on_patch (space, iptc_ind)
 
-  numel_interior_dofs = cellfun (@numel, space.interior_dofs_per_patch);
+  numel_interior_dofs = space.ndof_interior_per_patch;
   ndof_per_interface = cellfun (@numel, space.dofs_on_edge);
   ndof_per_vertex = cellfun (@numel, space.dofs_on_vertex);
 

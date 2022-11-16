@@ -19,6 +19,7 @@
 %        ncomp           (scalar)                        number of components of the functions of the space (always equal to one)
 %        ndof            (scalar)                        total number of degrees of freedom after gluing patches together
 %        ndof_per_patch  (1 x npatch array)              number of degrees of freedom per patch, without gluing
+%        ndof_interior_per_patch  (1 x npatch array)     number of interior basis functions on each patch
 %        ndof_interior   (scalar)                        total number of interior degrees of freedom
 %        ndof_edges      (scalar)                        total number of edge degrees of freedom
 %        ndof_vertices   (scalar)                        total number of vertex degrees of freedom
@@ -138,18 +139,22 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces_all, vertices)
 % See the function compute_coefficients below for details.  
   sp.ndof_interior = 0;
   for iptc = 1:sp.npatch
-    interior_dofs = 1:spaces{iptc}.ndof;
-    for intrfc = 1:numel(interfaces_all)
-      patches = [interfaces_all(intrfc).patch1, interfaces_all(intrfc).patch2];
-      sides = [interfaces_all(intrfc).side1, interfaces_all(intrfc).side2];
-      [is_interface,position] = ismember (iptc, patches);
-      if (is_interface)
-        sp_bnd = spaces{iptc}.boundary(sides(position));
-        interior_dofs = setdiff (interior_dofs, [sp_bnd.dofs, sp_bnd.adjacent_dofs]);
-      end
-    end
-    sp.interior_dofs_per_patch{iptc} = interior_dofs;
+    [ii,jj] = ndgrid (3:spaces{iptc}.ndof_dir(1)-2, 3:spaces{iptc}.ndof_dir(2)-2);
+    interior_dofs = sub2ind (spaces{iptc}.ndof_dir, ii(:)', jj(:)');
+    
+%     interior_dofs = 1:spaces{iptc}.ndof;
+%     for intrfc = 1:numel(interfaces_all)
+%       patches = [interfaces_all(intrfc).patch1, interfaces_all(intrfc).patch2];
+%       sides = [interfaces_all(intrfc).side1, interfaces_all(intrfc).side2];
+%       [is_interface,position] = ismember (iptc, patches);
+%       if (is_interface)
+%         sp_bnd = spaces{iptc}.boundary(sides(position));
+%         interior_dofs = setdiff (interior_dofs, [sp_bnd.dofs, sp_bnd.adjacent_dofs]);
+%       end
+%     end
+%     sp.interior_dofs_per_patch{iptc} = interior_dofs;
     sp.ndof_interior = sp.ndof_interior + numel (interior_dofs);
+    sp.ndof_interior_per_patch(iptc) = numel (interior_dofs);
   end
   
   [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices, v_fun_matrices] = ...

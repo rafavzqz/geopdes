@@ -30,13 +30,13 @@
 
 function [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc_ind)
 
-  numel_interior_dofs = cellfun (@numel, space.interior_dofs_per_patch);
+  numel_interior_dofs = space.ndof_interior_per_patch;
   ndof_per_interface = cellfun (@numel, space.dofs_on_edge);
   ndof_per_vertex = cellfun (@numel, space.dofs_on_vertex);
 
 % Interior basis functions
   global_indices = sum (numel_interior_dofs(1:iptc_ind-1)) + (1:numel_interior_dofs(iptc_ind));
-  rows = space.interior_dofs_per_patch{iptc_ind}; 
+  rows = sp_get_local_interior_functions (space, iptc_ind);%space.interior_dofs_per_patch{iptc_ind}; 
   cols = 1:numel_interior_dofs(iptc_ind);%global_indices; 
   vals = ones (numel_interior_dofs(iptc_ind), 1);
   Cpatch = sparse (rows, cols, vals, space.ndof_per_patch(iptc_ind), numel_interior_dofs(iptc_ind));
