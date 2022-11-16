@@ -39,7 +39,7 @@
 %  u:        the computed degrees of freedom
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
-% Copyright (C) 2010, 2011, 2013, 2015, 2017 Rafael Vazquez
+% Copyright (C) 2010, 2011, 2013, 2015, 2017, 2022 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -108,7 +108,8 @@ for iref = nmnn_sides
     msh_side = msh.msh_patch{iptc}.boundary(iside);
     sp_side = space.sp_patch{iptc}.boundary(iside);
     rhs_nmnn = op_f_v_tp (sp_side, msh_side, gref);
-    rhs = rhs + space.Cpatch{iptc}(sp_side.dofs,:).' * rhs_nmnn;
+    rhs(space.Cpatch_cols{iptc}) = rhs(space.Cpatch_cols{iptc}) + ...
+      space.Cpatch{iptc}(sp_side.dofs,:).' * rhs_nmnn;
   end
 end
 
