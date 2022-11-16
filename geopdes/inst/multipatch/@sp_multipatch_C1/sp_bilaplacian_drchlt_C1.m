@@ -25,8 +25,8 @@ for iref = refs
     [~,icol] = find (space.Cpatch{iptc}(sp_bnd.boundary(iside).dofs,:));
     [~,jcol] = find (space.Cpatch{iptc}(sp_bnd.boundary(iside).adjacent_dofs,:));
     
-    drchlt_dofs = union (drchlt_dofs, icol);
-    drchlt_dofs2 = union (drchlt_dofs2, jcol);
+    drchlt_dofs = union (drchlt_dofs, space.Cpatch_cols{iptc}(icol));
+    drchlt_dofs2 = union (drchlt_dofs2, space.Cpatch_cols{iptc}(jcol));
     
     for idim = 1:msh.rdim
       x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
@@ -34,12 +34,13 @@ for iref = refs
     coeff_at_qnodes = ones (size(x{1}));
     dudn_at_qnodes = dudn (x{:},iref) .* msh_side.charlen;
 
-    M = M + space.Cpatch{iptc}.' * op_u_v (sp_bnd_struct, sp_bnd_struct, msh_side, coeff_at_qnodes) * space.Cpatch{iptc};
-    rhs = rhs + space.Cpatch{iptc}.' * op_f_v (sp_bnd_struct, msh_side, href(x{:}));
+    M(space.Cpatch_cols{iptc},space.Cpatch_cols{iptc}) = M(space.Cpatch_cols{iptc}, space.Cpatch_cols{iptc}) + ...
+      space.Cpatch{iptc}.' * op_u_v (sp_bnd_struct, sp_bnd_struct, msh_side, coeff_at_qnodes) * space.Cpatch{iptc};
+    rhs(space.Cpatch_cols{iptc}) = rhs(space.Cpatch_cols{iptc}) + space.Cpatch{iptc}.' * op_f_v (sp_bnd_struct, msh_side, href(x{:}));
     
-    M2 = M2 + space.Cpatch{iptc}.' * op_gradu_n_gradv_n (sp_bnd_struct, sp_bnd_struct, msh_side, coeff_at_qnodes.*msh_side.charlen) * space.Cpatch{iptc};
-    rhs2 = rhs2 + space.Cpatch{iptc}.' * op_gradv_n_f (sp_bnd_struct, msh_side, dudn_at_qnodes); % I am missing the other part of the vector. It is in M2 :-)
-    
+    M2(space.Cpatch_cols{iptc},space.Cpatch_cols{iptc}) = M2(space.Cpatch_cols{iptc},space.Cpatch_cols{iptc}) + ...
+      space.Cpatch{iptc}.' * op_gradu_n_gradv_n (sp_bnd_struct, sp_bnd_struct, msh_side, coeff_at_qnodes.*msh_side.charlen) * space.Cpatch{iptc};
+    rhs2(space.Cpatch_cols{iptc}) = rhs2(space.Cpatch_cols{iptc}) + space.Cpatch{iptc}.' * op_gradv_n_f (sp_bnd_struct, msh_side, dudn_at_qnodes); % I am missing the other part of the vector. It is in M2 :-)
   end
 end
 
@@ -73,11 +74,13 @@ for iv = 1 : numel(space.vertices)
             indices_loc_L = indices_loc_L(:);
 
             Cpatch_ind_R = indices_loc_R([2 3 space.sp_patch{patches(1)}.ndof_dir(1)+2]);
-            Cpatch_ind_L = indices_loc_L([space.sp_patch{patches(1)}.ndof_dir(1)+1 space.sp_patch{patches(1)}.ndof_dir(1)+2 2*space.sp_patch{patches(1)}.ndof_dir(1)+1]);
+            Cpatch_ind_L = indices_loc_L([space.sp_patch{patches(2)}.ndof_dir(1)+1 space.sp_patch{patches(2)}.ndof_dir(1)+2 2*space.sp_patch{patches(2)}.ndof_dir(1)+1]);
 
-            M_ker = [space.Cpatch{patches(1)}(Cpatch_ind_R, space.dofs_on_vertex{iv}); ...
-                     space.Cpatch{patches(2)}(Cpatch_ind_L, space.dofs_on_vertex{iv})];
+            [~,~,inds1] = intersect (space.dofs_on_vertex{iv}, space.Cpatch_cols{patches(1)});
+            [~,~,inds2] = intersect (space.dofs_on_vertex{iv}, space.Cpatch_cols{patches(2)});
 
+            M_ker = [space.Cpatch{patches(1)}(Cpatch_ind_R, inds1); ...
+                     space.Cpatch{patches(2)}(Cpatch_ind_L, inds2)];
 %             M_ker = M_bdry(space.dofs_on_vertex{iv}, space.dofs_on_vertex{iv});
             ker = null(full(M_ker));
             if (~isempty(ker))

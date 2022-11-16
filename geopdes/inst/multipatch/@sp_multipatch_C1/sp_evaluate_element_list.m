@@ -32,7 +32,7 @@
 %    connectivity    (nsh_max x nel)           global numbering of the non-vanishing functions on each element
 %    shape_functions, shape_function_gradients... (see sp_evaluate_col for details)
 %
-% Copyright (C) 2015, 2017 Rafael Vazquez
+% Copyright (C) 2015, 2017, 2022 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -90,11 +90,12 @@ function sp = sp_evaluate_element_list (space, msh, varargin)
     
     for iel = 1:msh_patch.nel
       conn_iel = sp_patch.connectivity(:,iel);
-      [ii,jj] = find (Cpatch(conn_iel,:));
-      funs = unique (jj);
+      [~,jj] = find (Cpatch(conn_iel,:));
+      col_indices = unique(jj);
+      funs = space.Cpatch_cols{iptc}(col_indices);
       nsh(iel) = numel (funs);
       connectivity(1:nsh(iel),iel) = funs;
-      Cpatch_iel = Cpatch(conn_iel, funs);
+      Cpatch_iel = Cpatch(conn_iel, col_indices);
 
       if (isfield (sp_patch, 'shape_functions'))
         shape_funs(:,1:nsh(iel),iel) = sp_patch.shape_functions(:,:,iel) * Cpatch_iel;

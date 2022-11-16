@@ -44,7 +44,7 @@ end
 hold_flag = ishold ;
 for iptc = 1:space.npatch
 %   if (isempty (space.dofs_ornt))
-    sp_plot_solution (space.Cpatch{iptc}* u, space.sp_patch{iptc}, geometry(iptc), npts, ncuts);
+    sp_plot_solution (space.Cpatch{iptc}* u(space.Cpatch_cols{iptc}), space.sp_patch{iptc}, geometry(iptc), npts, ncuts);
 %   else
 %     sp_plot_solution (u(space.gnum{iptc}) .* space.dofs_ornt{iptc}.', space.sp_patch{iptc}, geometry(iptc), npts, ncuts);
 %   end

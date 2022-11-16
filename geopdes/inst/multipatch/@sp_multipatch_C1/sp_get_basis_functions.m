@@ -10,7 +10,7 @@
 % OUTPUT:
 %    fun_indices: indices of the basis functions acting on the cells.
 %
-% Copyright (C) 2015, 2016, 2017 Rafael Vazquez
+% Copyright (C) 2015, 2016, 2017, 2022 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ for iptc = 1:space.npatch
   if (~isempty (local_cell_indices))
     aux_indices = sp_get_basis_functions (space.sp_patch{iptc}, msh.msh_patch{iptc}, local_cell_indices);
     [~,dofs] = find (space.Cpatch{iptc}(aux_indices,:));
-    function_indices = union (function_indices, dofs);
+    function_indices = union (function_indices, space.Cpatch_cols{iptc}(dofs));
   end
 end
 

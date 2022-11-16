@@ -11,7 +11,7 @@
 %    cell_indices: indices of the cells within the support of the basis functions.
 %    indices_per_function: indices of the cells within the support of each basis function.
 %
-% Copyright (C) 2015, 2016 Rafael Vazquez
+% Copyright (C) 2015, 2016, 2022 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -35,7 +35,8 @@ cell_indices = [];
 
 Nelem = cumsum ([0 msh.nel_per_patch]);
 for iptc = 1:space.npatch
-  [patch_indices,local_funs] = find (space.Cpatch{iptc}(:,fun_indices));
+  [~,loc_f_inds,fun_indices_on_patch] = intersect (fun_indices, space.Cpatch_cols{iptc});
+  [patch_indices,local_funs] = find (space.Cpatch{iptc}(:,fun_indices_on_patch));
   if (~isempty (patch_indices))
     patch_indices = patch_indices(:).';
     [aux_cell_indices, ind_per_fun] = sp_get_cells (space.sp_patch{iptc}, msh.msh_patch{iptc}, patch_indices);
@@ -45,8 +46,10 @@ for iptc = 1:space.npatch
     if (nargout == 2)
       local_funs = local_funs(:).';
       for ifun = 1:numel(patch_indices)
-        indices_per_function{local_funs(ifun)} = union (indices_per_function{local_funs(ifun)}, Nelem(iptc)+ind_per_fun{ifun});
+        indices_per_function{loc_f_inds(local_funs(ifun))} = union (indices_per_function{loc_f_inds(local_funs(ifun))}, Nelem(iptc)+ind_per_fun{ifun});
       end
     end
   end
+end
+
 end

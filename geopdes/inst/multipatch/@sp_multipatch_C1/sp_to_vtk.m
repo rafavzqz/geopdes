@@ -21,7 +21,7 @@
 %    none    
 % 
 % Copyright (C) 2010 Carlo de Falco, Rafael Vazquez
-% Copyright (C) 2011, 2012, 2015 Rafael Vazquez
+% Copyright (C) 2011, 2012, 2015, 2022 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@ function sp_to_vtk (u, space, geometry, npts, filename, fieldname, varargin)
 
     if (numel(u) == space.ndof)
 %     if (isempty (space.dofs_ornt))
-      sp_to_vtk (space.Cpatch{iptc} * u, space.sp_patch{iptc}, geometry(iptc), npts, ...
+      sp_to_vtk (space.Cpatch{iptc} * u(space.Cpatch_cols{iptc}), space.sp_patch{iptc}, geometry(iptc), npts, ...
                            filename_patch, fieldname, varargin{:})
 %     else
 %       sp_to_vtk (u(space.gnum{iptc}) .* space.dofs_ornt{iptc}', space.sp_patch{iptc}, geometry(iptc), npts, ...

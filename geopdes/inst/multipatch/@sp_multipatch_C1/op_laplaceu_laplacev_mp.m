@@ -14,7 +14,7 @@
 %
 %  mat:    assembled matrix
 % 
-% Copyright (C) 2015, 2016, 2017 Rafael Vazquez
+% Copyright (C) 2015, 2016, 2017, 2022 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -48,7 +48,8 @@ function A = op_laplaceu_laplacev_mp (spu, spv, msh, coeff, patch_list)
       Ap = op_laplaceu_laplacev_tp (spu.sp_patch{iptc}, spv.sp_patch{iptc}, msh.msh_patch{iptc}, coeff);
     end
     
-    A = A + spv.Cpatch{iptc}.' * Ap * spu.Cpatch{iptc};
+    A(spv.Cpatch_cols{iptc},spu.Cpatch_cols{iptc}) = ...
+      A(spv.Cpatch_cols{iptc},spu.Cpatch_cols{iptc}) + spv.Cpatch{iptc}.' * Ap * spu.Cpatch{iptc};
     
   end
 

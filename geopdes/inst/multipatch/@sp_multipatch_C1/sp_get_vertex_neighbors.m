@@ -13,7 +13,7 @@
 % OUTPUT:
 %    cell_indices: indices of the functions that interact with the given ones.
 %
-% Copyright (C) 2021 Rafael Vazquez
+% Copyright (C) 2021, 2022 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -38,7 +38,8 @@ cell_indices = cell (numel(patch_indices), 1);
 Nelem = cumsum ([0 msh.nel_per_patch]);
 for iptc = 1:numel(patch_indices)
   patch = space.vertices(vertex_index).patches(patch_indices(iptc));
-  [bsp_indices, ~] = find (space.Cpatch{patch}(:,space.dofs_on_vertex{vertex_index}));
+  [~,~,inds] = intersect (space.dofs_on_vertex{vertex_index}, space.Cpatch_cols{patch});
+  [bsp_indices, ~] = find (space.Cpatch{patch}(:,inds));
   [aux_cell_indices, ~] = sp_get_cells (space.sp_patch{patch}, msh.msh_patch{patch}, bsp_indices(:)');
   cell_indices{iptc} = Nelem(patch) + aux_cell_indices(:).';
 end

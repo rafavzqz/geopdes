@@ -13,7 +13,7 @@
 %
 %   rhs: assembled right-hand side
 % 
-% Copyright (C) 2015, 2017 Rafael Vazquez
+% Copyright (C) 2015, 2017, 2022 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ function rhs = op_f_v_mp (space, msh, coeff, patch_list)
 %     if (~isempty (space.dofs_ornt))
 %       rhs_loc = space.dofs_ornt{iptc}(:) .* rhs_loc(:);
 %     end
-    rhs = rhs + space.Cpatch{iptc}.' * rhs_loc;
+    rhs(space.Cpatch_cols{iptc}) = rhs(space.Cpatch_cols{iptc}) + space.Cpatch{iptc}.' * rhs_loc;
   end
 
 end

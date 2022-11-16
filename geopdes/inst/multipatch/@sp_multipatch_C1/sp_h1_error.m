@@ -16,7 +16,7 @@
 %   errl2:  error in L^2 norm
 %   errh1s: error in H^1 seminorm
 %
-% Copyright (C) 2015, 2017 Rafael Vazquez
+% Copyright (C) 2015, 2017, 2022 Rafael Vazquez
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ function [errh1, errl2, errh1s] = sp_h1_error (space, msh, u, uex, graduex)
 
   for iptc = 1:msh.npatch
 %     if (isempty (space.dofs_ornt))
-    u_ptc = space.Cpatch{iptc} * u;
+    u_ptc = space.Cpatch{iptc} * u(space.Cpatch_cols{iptc});
 %     else
 %       u_ptc = u(space.gnum{iptc}) .* space.dofs_ornt{iptc}.';
 %     end

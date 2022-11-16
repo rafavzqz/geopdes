@@ -84,8 +84,11 @@ function [A, rhs] = sp_weak_drchlt_bc_laplace (space, msh, refs, bnd_func, coeff
       g_times_coeff = bnd_func(x{:}, iref) .* coeff_at_qnodes;
       g_cdot_v = op_f_v (sp_bnd, msh_side, g_times_coeff);
 
-      A = A + space.Cpatch{iptc}.' * (B + B' - C) * space.Cpatch{iptc};
-      rhs = rhs + space.Cpatch{iptc}.' * (-gradv_n_g + g_cdot_v);
+      A(space.Cpatch_cols{iptc},space.Cpatch_cols{iptc}) = ...
+        A(space.Cpatch_cols{iptc},space.Cpatch_cols{iptc}) + ...
+        space.Cpatch{iptc}.' * (B + B.' - C) * space.Cpatch{iptc};
+      rhs(space.Cpatch_cols{iptc}) = rhs(space.Cpatch_cols{iptc}) + ...
+        space.Cpatch{iptc}.' * (-gradv_n_g + g_cdot_v);
 %       dofs = space.gnum{iptc};
 %       A(dofs,dofs) = A(dofs,dofs) + (B + B' - C);
 %       rhs(dofs) = rhs(dofs) - gradv_n_g + g_cdot_v;
