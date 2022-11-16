@@ -43,7 +43,9 @@ function [errh2, errh1, errl2, errh2s, errh1s] = sp_h2_error (space, msh, u, uex
 
   for iptc = 1:msh.npatch
 %     if (isempty (space.dofs_ornt))
-    u_ptc = space.Cpatch{iptc} * u(space.Cpatch_cols{iptc});
+%     u_ptc = space.Cpatch{iptc} * u(space.Cpatch_cols{iptc});
+    [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
+    u_ptc = Cpatch * u(Cpatch_cols);
 %     else
 %       u_ptc = u(space.gnum{iptc}) .* space.dofs_ornt{iptc}.';
 %     end

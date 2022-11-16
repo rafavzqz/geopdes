@@ -33,8 +33,9 @@ for iptc = 1:space.npatch
   [~,local_cell_indices,~] = intersect ((Nelem(iptc)+1):Nelem(iptc+1), cell_indices);
   if (~isempty (local_cell_indices))
     aux_indices = sp_get_basis_functions (space.sp_patch{iptc}, msh.msh_patch{iptc}, local_cell_indices);
-    [~,dofs] = find (space.Cpatch{iptc}(aux_indices,:));
-    function_indices = union (function_indices, space.Cpatch_cols{iptc}(dofs));
+    [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
+    [~,dofs] = find (Cpatch(aux_indices,:));
+    function_indices = union (function_indices, Cpatch_cols(dofs));
   end
 end
 

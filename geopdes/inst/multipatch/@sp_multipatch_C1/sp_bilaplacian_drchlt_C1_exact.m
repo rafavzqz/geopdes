@@ -22,6 +22,7 @@ for iref = refs
     sp_bnd = space.sp_patch{iptc}.constructor (msh_side_from_interior);
     sp_bnd_struct = sp_precompute (sp_bnd, msh_side_from_interior, 'value', true, 'gradient', true);
 
+    [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
     [~,icol] = find (space.Cpatch{iptc}(sp_bnd.boundary(iside).dofs,:));
     [~,jcol] = find (space.Cpatch{iptc}(sp_bnd.boundary(iside).adjacent_dofs,:));
     
@@ -34,13 +35,13 @@ for iref = refs
     coeff_at_qnodes = ones (size(x{1}));
     dudn_at_qnodes = reshape (sum (gradex(x{:}) .* msh_side.normal, 1), msh_side.nqn, msh_side.nel) .* msh_side.charlen;
 
-    M(space.Cpatch_cols{iptc},space.Cpatch_cols{iptc}) = M(space.Cpatch_cols{iptc}, space.Cpatch_cols{iptc}) + ...
-      space.Cpatch{iptc}.' * op_u_v (sp_bnd_struct, sp_bnd_struct, msh_side, coeff_at_qnodes) * space.Cpatch{iptc};
-    rhs(space.Cpatch_cols{iptc}) = rhs(space.Cpatch_cols{iptc}) + space.Cpatch{iptc}.' * op_f_v (sp_bnd_struct, msh_side, uex(x{:}));
+    M(Cpatch_cols,Cpatch_cols) = M(Cpatch_cols, Cpatch_cols) + ...
+      Cpatch.' * op_u_v (sp_bnd_struct, sp_bnd_struct, msh_side, coeff_at_qnodes) * Cpatch;
+    rhs(Cpatch_cols) = rhs(Cpatch_cols) + Cpatch.' * op_f_v (sp_bnd_struct, msh_side, uex(x{:}));
     
-    M2(space.Cpatch_cols{iptc},space.Cpatch_cols{iptc}) = M2(space.Cpatch_cols{iptc},space.Cpatch_cols{iptc}) + ...
-      space.Cpatch{iptc}.' * op_gradu_n_gradv_n (sp_bnd_struct, sp_bnd_struct, msh_side, coeff_at_qnodes.*msh_side.charlen) * space.Cpatch{iptc};
-    rhs2(space.Cpatch_cols{iptc}) = rhs2(space.Cpatch_cols{iptc}) + space.Cpatch{iptc}.' * op_gradv_n_f (sp_bnd_struct, msh_side, dudn_at_qnodes); % I am missing the other part of the vector. It is in M2 :-)
+    M2(Cpatch_cols,Cpatch_cols) = M2(Cpatch_cols,Cpatch_cols) + ...
+      Cpatch.' * op_gradu_n_gradv_n (sp_bnd_struct, sp_bnd_struct, msh_side, coeff_at_qnodes.*msh_side.charlen) * Cpatch;
+    rhs2(Cpatch_cols) = rhs2(Cpatch_cols) + Cpatch.' * op_gradv_n_f (sp_bnd_struct, msh_side, dudn_at_qnodes); % I am missing the other part of the vector. It is in M2 :-)    
   end
 end
 
@@ -76,11 +77,15 @@ for iv = 1 : numel(space.vertices)
             Cpatch_ind_R = indices_loc_R([2 3 space.sp_patch{patches(1)}.ndof_dir(1)+2]);
             Cpatch_ind_L = indices_loc_L([space.sp_patch{patches(2)}.ndof_dir(1)+1 space.sp_patch{patches(2)}.ndof_dir(1)+2 2*space.sp_patch{patches(2)}.ndof_dir(1)+1]);
 
-            [~,~,inds1] = intersect (space.dofs_on_vertex{iv}, space.Cpatch_cols{patches(1)});
-            [~,~,inds2] = intersect (space.dofs_on_vertex{iv}, space.Cpatch_cols{patches(2)});
+% TODO: it is probably enough to use CC_vertices (and CC_edges)
+            [Cpatch1, Cpatch_cols1] = sp_compute_Cpatch (space, patches(1));
+            [Cpatch2, Cpatch_cols2] = sp_compute_Cpatch (space, patches(2));
 
-            M_ker = [space.Cpatch{patches(1)}(Cpatch_ind_R, inds1); ...
-                     space.Cpatch{patches(2)}(Cpatch_ind_L, inds2)];
+            [~,~,inds1] = intersect (space.dofs_on_vertex{iv}, Cpatch_cols1);
+            [~,~,inds2] = intersect (space.dofs_on_vertex{iv}, Cpatch_cols2);
+
+            M_ker = [Cpatch1(Cpatch_ind_R, inds1); ...
+                     Cpatch2(Cpatch_ind_L, inds2)];
 %             M_ker = M_bdry(space.dofs_on_vertex{iv}, space.dofs_on_vertex{iv});
             ker = null(full(M_ker));
             if (~isempty(ker))

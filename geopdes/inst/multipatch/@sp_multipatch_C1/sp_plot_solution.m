@@ -13,7 +13,7 @@
 %     ncuts:       only for volumetric domains, number of internal "cuts" in each parametric direction.
 %                    The zero value will plot the solution on the boundary.
 %
-% Copyright (C) 2016, 2017 Rafael Vazquez
+% Copyright (C) 2016, 2017, 2022 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -44,7 +44,8 @@ end
 hold_flag = ishold ;
 for iptc = 1:space.npatch
 %   if (isempty (space.dofs_ornt))
-    sp_plot_solution (space.Cpatch{iptc}* u(space.Cpatch_cols{iptc}), space.sp_patch{iptc}, geometry(iptc), npts, ncuts);
+    [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
+    sp_plot_solution (Cpatch* u(Cpatch_cols), space.sp_patch{iptc}, geometry(iptc), npts, ncuts);
 %   else
 %     sp_plot_solution (u(space.gnum{iptc}) .* space.dofs_ornt{iptc}.', space.sp_patch{iptc}, geometry(iptc), npts, ncuts);
 %   end

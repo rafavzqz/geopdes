@@ -68,9 +68,10 @@ function sp_to_vtk (u, space, geometry, npts, filename, fieldname, varargin)
     filename_patch = cat (2, filename, '_', num2str (iptc));
     fprintf (fid, str2, iptc, filename_patch_without_path);
 
+    [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
     if (numel(u) == space.ndof)
 %     if (isempty (space.dofs_ornt))
-      sp_to_vtk (space.Cpatch{iptc} * u(space.Cpatch_cols{iptc}), space.sp_patch{iptc}, geometry(iptc), npts, ...
+      sp_to_vtk (Cpatch * u(Cpatch_cols), space.sp_patch{iptc}, geometry(iptc), npts, ...
                            filename_patch, fieldname, varargin{:})
 %     else
 %       sp_to_vtk (u(space.gnum{iptc}) .* space.dofs_ornt{iptc}', space.sp_patch{iptc}, geometry(iptc), npts, ...

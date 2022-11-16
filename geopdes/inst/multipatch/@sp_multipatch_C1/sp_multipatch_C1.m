@@ -210,7 +210,10 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces_all, vertices)
   sp.Cpatch = Cpatch;
 %   sp.Cpatch2 = Cpatch2;
   sp.Cpatch_cols = Cpatch_cols;
-
+  
+  sp.CC_edges = CC_edges;
+  sp.CC_vertices = CC_vertices;
+  
 % Store information about the geometry, for simplicity
   sp.interfaces = interfaces_all;
   sp.vertices = vertices;

@@ -108,8 +108,10 @@ for iref = nmnn_sides
     msh_side = msh.msh_patch{iptc}.boundary(iside);
     sp_side = space.sp_patch{iptc}.boundary(iside);
     rhs_nmnn = op_f_v_tp (sp_side, msh_side, gref);
-    rhs(space.Cpatch_cols{iptc}) = rhs(space.Cpatch_cols{iptc}) + ...
-      space.Cpatch{iptc}(sp_side.dofs,:).' * rhs_nmnn;
+    [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
+    rhs(Cpatch_cols) = rhs(Cpatch_cols) + Cpatch(sp_side.dofs,:).' * rhs_nmnn;
+%     rhs(space.Cpatch_cols{iptc}) = rhs(space.Cpatch_cols{iptc}) + ...
+%       space.Cpatch{iptc}(sp_side.dofs,:).' * rhs_nmnn;
   end
 end
 

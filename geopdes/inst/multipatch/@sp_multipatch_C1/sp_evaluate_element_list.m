@@ -79,7 +79,7 @@ function sp = sp_evaluate_element_list (space, msh, varargin)
     msh_patch = msh_restrict_to_patch (msh, iptc);
 
     sp_patch = sp_evaluate_element_list (space.sp_patch{iptc}, msh_patch, varargin{:});
-    Cpatch = space.Cpatch{iptc};
+    [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
     
     nsh = zeros (1, msh_patch.nel);
     connectivity = zeros (sp_patch.nsh_max, msh_patch.nel);
@@ -92,7 +92,7 @@ function sp = sp_evaluate_element_list (space, msh, varargin)
       conn_iel = sp_patch.connectivity(:,iel);
       [~,jj] = find (Cpatch(conn_iel,:));
       col_indices = unique(jj);
-      funs = space.Cpatch_cols{iptc}(col_indices);
+      funs = Cpatch_cols(col_indices);
       nsh(iel) = numel (funs);
       connectivity(1:nsh(iel),iel) = funs;
       Cpatch_iel = Cpatch(conn_iel, col_indices);
