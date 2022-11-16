@@ -48,8 +48,6 @@ function A = op_gradgradu_gradgradv_mp (spu, spv, msh, coeff, patch_list)
       Ap = op_gradgradu_gradgradv_tp (spu.sp_patch{iptc}, spv.sp_patch{iptc}, msh.msh_patch{iptc}, coeff);
     end
     
-%     A(spv.Cpatch_cols{iptc},spu.Cpatch_cols{iptc}) = ...
-%       A(spv.Cpatch_cols{iptc},spu.Cpatch_cols{iptc}) + spv.Cpatch{iptc}.' * Ap * spu.Cpatch{iptc};
     [Cpatch_u, Cpatch_cols_u] = sp_compute_Cpatch (spu, iptc);
     [Cpatch_v, Cpatch_cols_v] = sp_compute_Cpatch (spv, iptc);
     A(Cpatch_cols_v,Cpatch_cols_u) = ...

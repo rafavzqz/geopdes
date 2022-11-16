@@ -45,7 +45,6 @@ function rhs = op_f_v_mp (space, msh, coeff, patch_list)
 %     if (~isempty (space.dofs_ornt))
 %       rhs_loc = space.dofs_ornt{iptc}(:) .* rhs_loc(:);
 %     end
-%     rhs(space.Cpatch_cols{iptc}) = rhs(space.Cpatch_cols{iptc}) + space.Cpatch{iptc}.' * rhs_loc;
     [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
     rhs(Cpatch_cols) = rhs(Cpatch_cols) + Cpatch.' * rhs_loc;
   end
