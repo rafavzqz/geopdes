@@ -167,19 +167,19 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces_all, vertices)
 %   Cpatch = cell (sp.npatch, 1);
 %   Cpatch2 = cell (sp.npatch, 1);
 %   Cpatch_cols = cell (sp.npatch, 1);
-  numel_interior_dofs = cellfun (@numel, sp.interior_dofs_per_patch);
-  for iptc = 1:sp.npatch
+%   numel_interior_dofs = cellfun (@numel, sp.interior_dofs_per_patch);
+%   for iptc = 1:sp.npatch
 %     Cpatch2{iptc} = sparse (sp.ndof_per_patch(iptc), sp.ndof);
-    global_indices = sum (numel_interior_dofs(1:iptc-1)) + (1:numel_interior_dofs(iptc));
+%     global_indices = sum (numel_interior_dofs(1:iptc-1)) + (1:numel_interior_dofs(iptc));
 %     rows = sp.interior_dofs_per_patch{iptc}; 
 %     cols = 1:numel_interior_dofs(iptc);%global_indices; 
 %     vals = ones (numel(sp.interior_dofs_per_patch{iptc}), 1);
 %     Cpatch{iptc} = sparse (rows, cols, vals, sp.ndof_per_patch(iptc), numel_interior_dofs(iptc));
 %     Cpatch2{iptc}(sp.interior_dofs_per_patch{iptc}, global_indices) = ...
 %       speye (numel (sp.interior_dofs_per_patch{iptc}));
-    sp.dofs_on_patch{iptc} = global_indices;
+%     sp.dofs_on_patch{iptc} = global_indices;
 %     Cpatch_cols{iptc} = global_indices;
-  end
+%   end
 
   sp.dofs_on_edge = cell (1, numel(interfaces_all));
   for intrfc = 1:numel(interfaces_all)
