@@ -30,7 +30,7 @@
 %   N_rhs:     the computed right hand-side
 %
 % Copyright (C) 2014 Adriano Cortes, Rafael Vazquez
-% Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2015, 2022 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
