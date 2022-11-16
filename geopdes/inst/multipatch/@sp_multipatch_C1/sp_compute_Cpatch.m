@@ -9,8 +9,9 @@
 %
 % OUTPUT:
 %    Cpatch:      coefficients of the linear combination of basis functions as standard B-splines,
-%                 The matrix has size ndof_per_patch(iptc) x numel(Cpatch_cols).
-%    Cpatch_cols: indices of the C^1 basis functions that do not vanish on the patch.
+%                   The matrix has size ndof_per_patch(iptc) x numel(Cpatch_cols).
+%    Cpatch_cols: indices of the C^1 basis functions that do not vanish on the patch
+%                   (see also sp_get_functions_on_patch)
 %
 % Copyright (C) 2022 Cesare Bracco, Rafael Vazquez
 %
