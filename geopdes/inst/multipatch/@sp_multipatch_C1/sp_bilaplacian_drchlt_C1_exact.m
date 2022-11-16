@@ -23,11 +23,11 @@ for iref = refs
     sp_bnd_struct = sp_precompute (sp_bnd, msh_side_from_interior, 'value', true, 'gradient', true);
 
     [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
-    [~,icol] = find (space.Cpatch{iptc}(sp_bnd.boundary(iside).dofs,:));
-    [~,jcol] = find (space.Cpatch{iptc}(sp_bnd.boundary(iside).adjacent_dofs,:));
+    [~,icol] = find (Cpatch(sp_bnd.boundary(iside).dofs,:));
+    [~,jcol] = find (Cpatch(sp_bnd.boundary(iside).adjacent_dofs,:));
     
-    drchlt_dofs = union (drchlt_dofs, space.Cpatch_cols{iptc}(icol));
-    drchlt_dofs2 = union (drchlt_dofs2, space.Cpatch_cols{iptc}(jcol));
+    drchlt_dofs = union (drchlt_dofs, Cpatch_cols(icol));
+    drchlt_dofs2 = union (drchlt_dofs2, Cpatch_cols(jcol));
     
     for idim = 1:msh.rdim
       x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
