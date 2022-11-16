@@ -23,12 +23,12 @@
 %        ndof_interior   (scalar)                        total number of interior degrees of freedom
 %        ndof_edges      (scalar)                        total number of edge degrees of freedom
 %        ndof_vertices   (scalar)                        total number of vertex degrees of freedom
-%        interior_dofs_per_patch (1 x npatch cell-array) local number of interior functions on each patch
 %        dofs_on_edge    (1 x nedges cell-array)         global numbering of edge functions on each edge
 %        dofs_on_vertex  (1 x nvertices cell-array)      global numbering of the six functions on each vertex
 %        sp_patch        (1 x npatch cell-array)         the input spaces, one space object for each patch (see sp_scalar)
-%        Cpatch          (1 x npatch cell-array)         coefficients of the linear combination of basis functions as standard B-splines,
-%                                                         on each patch. The matrix Cpatch{iptc} has size ndof_per_patch(iptc) x ndof
+%        CC_edges        (2 x nedges cell-array)         matrices for B-spline representation of edge basis functions
+%        CC_vertices     (1 x nvertices cell-array)      matrices for B-spline representation of vertex basis functions, 
+%                                                         as many as the valence for each vertex
 %        constructor     function handle                 function handle to construct the same discrete space in a different msh
 %
 %       METHODS
@@ -46,9 +46,12 @@
 %         sp_get_basis_functions: compute the functions that do not vanish in a given list of elements
 %         sp_get_cells:           compute the cells on which a list of functions do not vanish
 %         sp_get_neighbors:       compute the neighbors, functions that share at least one element with a given one
+%         sp_get_functions_on_patch: compute the indices of non-vanishing C^1 functions on a patch
+%         sp_get_local_interior_functions: compute the local indices of interior functions on a patch
 %
 %       Other methods
 %         sp_refine: generate a refined space, and subdivision matrices for the univariate spaces
+%         sp_compute_Cpatch: compute the matrix for B-splines representation on a patch
 %
 % Copyright (C) 2015-2022 Rafael Vazquez
 % Copyright (C) 2019-2022 Cesare Bracco
@@ -142,20 +145,10 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces_all, vertices)
     [ii,jj] = ndgrid (3:spaces{iptc}.ndof_dir(1)-2, 3:spaces{iptc}.ndof_dir(2)-2);
     interior_dofs = sub2ind (spaces{iptc}.ndof_dir, ii(:)', jj(:)');
     
-%     interior_dofs = 1:spaces{iptc}.ndof;
-%     for intrfc = 1:numel(interfaces_all)
-%       patches = [interfaces_all(intrfc).patch1, interfaces_all(intrfc).patch2];
-%       sides = [interfaces_all(intrfc).side1, interfaces_all(intrfc).side2];
-%       [is_interface,position] = ismember (iptc, patches);
-%       if (is_interface)
-%         sp_bnd = spaces{iptc}.boundary(sides(position));
-%         interior_dofs = setdiff (interior_dofs, [sp_bnd.dofs, sp_bnd.adjacent_dofs]);
-%       end
-%     end
-%     sp.interior_dofs_per_patch{iptc} = interior_dofs;
     sp.ndof_interior = sp.ndof_interior + numel (interior_dofs);
     sp.ndof_interior_per_patch(iptc) = numel (interior_dofs);
   end
+  clear interior_dofs
   
   [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices, v_fun_matrices] = ...
     compute_coefficients (sp, msh, geometry, interfaces_all, vertices);
@@ -168,53 +161,17 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces_all, vertices)
   sp.ndof_vertices = sum (ndof_per_vertex);
   sp.ndof = sp.ndof_interior + sp.ndof_edges + sp.ndof_vertices;
   
-% Store the coefficients for matrix change in Cpatch
-%   Cpatch = cell (sp.npatch, 1);
-%   Cpatch2 = cell (sp.npatch, 1);
-%   Cpatch_cols = cell (sp.npatch, 1);
-%   numel_interior_dofs = cellfun (@numel, sp.interior_dofs_per_patch);
-%   for iptc = 1:sp.npatch
-%     Cpatch2{iptc} = sparse (sp.ndof_per_patch(iptc), sp.ndof);
-%     global_indices = sum (numel_interior_dofs(1:iptc-1)) + (1:numel_interior_dofs(iptc));
-%     rows = sp.interior_dofs_per_patch{iptc}; 
-%     cols = 1:numel_interior_dofs(iptc);%global_indices; 
-%     vals = ones (numel(sp.interior_dofs_per_patch{iptc}), 1);
-%     Cpatch{iptc} = sparse (rows, cols, vals, sp.ndof_per_patch(iptc), numel_interior_dofs(iptc));
-%     Cpatch2{iptc}(sp.interior_dofs_per_patch{iptc}, global_indices) = ...
-%       speye (numel (sp.interior_dofs_per_patch{iptc}));
-%     sp.dofs_on_patch{iptc} = global_indices;
-%     Cpatch_cols{iptc} = global_indices;
-%   end
-
   sp.dofs_on_edge = cell (1, numel(interfaces_all));
   for intrfc = 1:numel(interfaces_all)
     global_indices = sp.ndof_interior + sum(ndof_per_interface(1:intrfc-1)) + (1:ndof_per_interface(intrfc));
     sp.dofs_on_edge{intrfc} = global_indices;
-%     patches = [interfaces_all(intrfc).patch1 interfaces_all(intrfc).patch2];
-%     for iptc = 1:numel(patches)
-% %       Cpatch2{patches(iptc)}(:,global_indices) = CC_edges{iptc,intrfc};
-%       indices = size(Cpatch{patches(iptc)},2) + (1:numel(global_indices));
-% %       Cpatch{patches(iptc)}(:,indices) = CC_edges{iptc,intrfc};
-% %       Cpatch_cols{patches(iptc)} = union (Cpatch_cols{patches(iptc)}, global_indices);
-%     end
   end
 
   sp.dofs_on_vertex = cell (1, numel(vertices));
   for ivrt = 1:numel(vertices)
     global_indices = sp.ndof_interior + sp.ndof_edges + sum(ndof_per_vertex(1:ivrt-1)) + (1:ndof_per_vertex(ivrt));
     sp.dofs_on_vertex{ivrt} = global_indices;
-%     for iptc = 1:vertices(ivrt).valence_p
-%       patch = vertices(ivrt).patches(iptc);
-% %       Cpatch2{patch}(:,global_indices) = CC_vertices{ivrt}{iptc};
-% %       indices = size(Cpatch{patch},2) + (1:numel(global_indices));
-% %       Cpatch{patch}(:,indices) = CC_vertices{ivrt}{iptc};
-% %       Cpatch_cols{patch} = union (Cpatch_cols{patch}, global_indices);
-%     end
   end
-
-%   sp.Cpatch = Cpatch;
-% %   sp.Cpatch2 = Cpatch2;
-%   sp.Cpatch_cols = Cpatch_cols;
   
   sp.CC_edges = CC_edges;
   sp.CC_vertices = CC_vertices;
