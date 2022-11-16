@@ -164,52 +164,52 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces_all, vertices)
   sp.ndof = sp.ndof_interior + sp.ndof_edges + sp.ndof_vertices;
   
 % Store the coefficients for matrix change in Cpatch
-  Cpatch = cell (sp.npatch, 1);
+%   Cpatch = cell (sp.npatch, 1);
 %   Cpatch2 = cell (sp.npatch, 1);
-  Cpatch_cols = cell (sp.npatch, 1);
+%   Cpatch_cols = cell (sp.npatch, 1);
   numel_interior_dofs = cellfun (@numel, sp.interior_dofs_per_patch);
   for iptc = 1:sp.npatch
 %     Cpatch2{iptc} = sparse (sp.ndof_per_patch(iptc), sp.ndof);
     global_indices = sum (numel_interior_dofs(1:iptc-1)) + (1:numel_interior_dofs(iptc));
-    rows = sp.interior_dofs_per_patch{iptc}; 
-    cols = 1:numel_interior_dofs(iptc);%global_indices; 
-    vals = ones (numel(sp.interior_dofs_per_patch{iptc}), 1);
-    Cpatch{iptc} = sparse (rows, cols, vals, sp.ndof_per_patch(iptc), numel_interior_dofs(iptc));
+%     rows = sp.interior_dofs_per_patch{iptc}; 
+%     cols = 1:numel_interior_dofs(iptc);%global_indices; 
+%     vals = ones (numel(sp.interior_dofs_per_patch{iptc}), 1);
+%     Cpatch{iptc} = sparse (rows, cols, vals, sp.ndof_per_patch(iptc), numel_interior_dofs(iptc));
 %     Cpatch2{iptc}(sp.interior_dofs_per_patch{iptc}, global_indices) = ...
 %       speye (numel (sp.interior_dofs_per_patch{iptc}));
     sp.dofs_on_patch{iptc} = global_indices;
-    Cpatch_cols{iptc} = global_indices;
+%     Cpatch_cols{iptc} = global_indices;
   end
 
   sp.dofs_on_edge = cell (1, numel(interfaces_all));
   for intrfc = 1:numel(interfaces_all)
     global_indices = sp.ndof_interior + sum(ndof_per_interface(1:intrfc-1)) + (1:ndof_per_interface(intrfc));
     sp.dofs_on_edge{intrfc} = global_indices;
-    patches = [interfaces_all(intrfc).patch1 interfaces_all(intrfc).patch2];
-    for iptc = 1:numel(patches)
-%       Cpatch2{patches(iptc)}(:,global_indices) = CC_edges{iptc,intrfc};
-      indices = size(Cpatch{patches(iptc)},2) + (1:numel(global_indices));
-      Cpatch{patches(iptc)}(:,indices) = CC_edges{iptc,intrfc};
-      Cpatch_cols{patches(iptc)} = union (Cpatch_cols{patches(iptc)}, global_indices);
-    end
+%     patches = [interfaces_all(intrfc).patch1 interfaces_all(intrfc).patch2];
+%     for iptc = 1:numel(patches)
+% %       Cpatch2{patches(iptc)}(:,global_indices) = CC_edges{iptc,intrfc};
+%       indices = size(Cpatch{patches(iptc)},2) + (1:numel(global_indices));
+% %       Cpatch{patches(iptc)}(:,indices) = CC_edges{iptc,intrfc};
+% %       Cpatch_cols{patches(iptc)} = union (Cpatch_cols{patches(iptc)}, global_indices);
+%     end
   end
 
   sp.dofs_on_vertex = cell (1, numel(vertices));
   for ivrt = 1:numel(vertices)
     global_indices = sp.ndof_interior + sp.ndof_edges + sum(ndof_per_vertex(1:ivrt-1)) + (1:ndof_per_vertex(ivrt));
     sp.dofs_on_vertex{ivrt} = global_indices;
-    for iptc = 1:vertices(ivrt).valence_p
-      patch = vertices(ivrt).patches(iptc);
-%       Cpatch2{patch}(:,global_indices) = CC_vertices{ivrt}{iptc};
-      indices = size(Cpatch{patch},2) + (1:numel(global_indices));
-      Cpatch{patch}(:,indices) = CC_vertices{ivrt}{iptc};
-      Cpatch_cols{patch} = union (Cpatch_cols{patch}, global_indices);
-    end
+%     for iptc = 1:vertices(ivrt).valence_p
+%       patch = vertices(ivrt).patches(iptc);
+% %       Cpatch2{patch}(:,global_indices) = CC_vertices{ivrt}{iptc};
+% %       indices = size(Cpatch{patch},2) + (1:numel(global_indices));
+% %       Cpatch{patch}(:,indices) = CC_vertices{ivrt}{iptc};
+% %       Cpatch_cols{patch} = union (Cpatch_cols{patch}, global_indices);
+%     end
   end
 
-  sp.Cpatch = Cpatch;
-%   sp.Cpatch2 = Cpatch2;
-  sp.Cpatch_cols = Cpatch_cols;
+%   sp.Cpatch = Cpatch;
+% %   sp.Cpatch2 = Cpatch2;
+%   sp.Cpatch_cols = Cpatch_cols;
   
   sp.CC_edges = CC_edges;
   sp.CC_vertices = CC_vertices;
