@@ -38,11 +38,16 @@ cell_indices = cell (numel(patch_indices), 1);
 Nelem = cumsum ([0 msh.nel_per_patch]);
 for iptc = 1:numel(patch_indices)
   patch = space.vertices(vertex_index).patches(patch_indices(iptc));
-  [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, patch);
+  Cpatch_cols = sp_get_functions_on_patch (space, patch);
   [~,~,inds] = intersect (space.dofs_on_vertex{vertex_index}, Cpatch_cols);
-  [bsp_indices, ~] = find (Cpatch(:,inds));
-  [aux_cell_indices, ~] = sp_get_cells (space.sp_patch{patch}, msh.msh_patch{patch}, bsp_indices(:)');
-  cell_indices{iptc} = Nelem(patch) + aux_cell_indices(:).';
+  if (~isempty (inds))
+    Cpatch = sp_compute_Cpatch (space, patch);
+    [bsp_indices, ~] = find (Cpatch(:,inds));
+    [aux_cell_indices, ~] = sp_get_cells (space.sp_patch{patch}, msh.msh_patch{patch}, bsp_indices(:)');
+    cell_indices{iptc} = Nelem(patch) + aux_cell_indices(:).';
+  else
+    cell_indices{iptc} = [];
+  end
 end
 
 end

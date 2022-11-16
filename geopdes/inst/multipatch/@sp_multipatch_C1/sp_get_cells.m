@@ -35,10 +35,11 @@ cell_indices = [];
 
 Nelem = cumsum ([0 msh.nel_per_patch]);
 for iptc = 1:space.npatch
-  [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
+  Cpatch_cols = sp_get_functions_on_patch (space, iptc);
   [~,loc_f_inds,fun_indices_on_patch] = intersect (fun_indices, Cpatch_cols);
-  [patch_indices,local_funs] = find (Cpatch(:,fun_indices_on_patch));
-  if (~isempty (patch_indices))
+  if (~isempty (fun_indices_on_patch))
+    Cpatch = sp_compute_Cpatch (space, iptc);
+    [patch_indices,local_funs] = find (Cpatch(:,fun_indices_on_patch));
     patch_indices = patch_indices(:).';
     [aux_cell_indices, ind_per_fun] = sp_get_cells (space.sp_patch{iptc}, msh.msh_patch{iptc}, patch_indices);
 

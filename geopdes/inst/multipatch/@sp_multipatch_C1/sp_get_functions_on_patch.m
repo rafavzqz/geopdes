@@ -56,6 +56,6 @@ function [Cpatch_cols, dofs_interior, dofs_edge, dofs_vertex] = sp_get_functions
     end
   end
   
-  Cpatch_cols = union (union (dofs_interior, dofs_on_edge), dofs_on_vertex);
+  Cpatch_cols = union (union (dofs_interior, dofs_edge), dofs_vertex);
 
 end

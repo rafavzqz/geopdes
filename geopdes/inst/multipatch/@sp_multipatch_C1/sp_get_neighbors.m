@@ -30,10 +30,11 @@ function neighbors_indices = sp_get_neighbors (space, msh, fun_indices)
 neighbors_indices = [];
 
 for iptc = 1:space.npatch
-  [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
+  Cpatch_cols = sp_get_functions_on_patch (space, iptc);
   [~,~,fun_indices_on_patch] = intersect (fun_indices, Cpatch_cols);
-  [patch_indices,~] = find (Cpatch(:,fun_indices_on_patch));
-  if (~isempty (patch_indices))
+  if (~isempty (fun_indices_on_patch))
+    Cpatch = sp_compute_Cpatch (space, iptc);
+    [patch_indices,~] = find (Cpatch(:,fun_indices_on_patch));
     aux_indices = sp_get_neighbors (space.sp_patch{iptc}, msh.msh_patch{iptc}, patch_indices);
     [~,global_indices] = find (Cpatch(aux_indices,:));
     neighbors_indices = union (neighbors_indices, space.Cpatch_cols{iptc}(global_indices));
