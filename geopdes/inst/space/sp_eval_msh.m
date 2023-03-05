@@ -9,7 +9,8 @@
 %     msh:         struct defining the points where to evaluate (see msh_cartesian/msh_evaluate_col)
 %     options:     cell array with the fields to plot
 %                   accepted options are 'value' (default), 'gradient',
-%                   and for vectors also 'curl', 'divergence', 'stress'
+%                   'laplacian, 'bilaplacian' and for vectors also 'curl',
+%                   'divergence', 'stress'
 %     lambda_lame: function handle to the first Lame coefficient (only needed to compute 'stress')
 %     mu_lame:     function handle for the second Lame coefficient (only needed to compute 'stress')
 %
@@ -20,6 +21,7 @@
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011, 2013, 2015 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin, Luca Coradello
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -87,6 +89,14 @@ function [eu, F] = sp_eval_msh (u, space, msh, options, lambda_lame, mu_lame)
         wsize{iopt} = [1 1];
         shp_size{iopt} = space.ncomp;
         field{iopt} = 'shape_function_laplacians';
+        ind(iopt) = 3;
+        eusize{iopt} = {1:space.ncomp, 1:msh.nqn};
+                    
+      case 'bilaplacian'
+        eu{iopt} = zeros (space.ncomp, msh.nqn, msh.nel);
+        wsize{iopt} = [1 1];
+        shp_size{iopt} = space.ncomp;
+        field{iopt} = 'shape_function_bilaplacians';
         ind(iopt) = 3;
         eusize{iopt} = {1:space.ncomp, 1:msh.nqn};
         
@@ -181,7 +191,7 @@ function [eu, F] = sp_eval_msh (u, space, msh, options, lambda_lame, mu_lame)
   if (space.ncomp == 1)
     for iopt = 1:nopts
       switch (lower (options{iopt}))
-        case {'value', 'laplacian'}
+        case {'value', 'laplacian', 'bilaplacian'}
           eu{iopt} = reshape (eu{iopt}, msh.nqn, msh.nel);
         case {'gradient'}
           eu{iopt} = reshape (eu{iopt}, msh.rdim, msh.nqn, msh.nel);

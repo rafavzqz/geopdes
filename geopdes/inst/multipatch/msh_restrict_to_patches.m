@@ -29,9 +29,10 @@
 %     nel_per_patch      (1 x npatch)            number of selected elements on each patch
 %     elem_list_of_patch (1 x npatch cell-array) selected elements on the patch, with local numbering
 %     nel_dir_of_patch   (1 x npatch cell-array) the total number of elements in each direction, for each patch
-%     quad_weights, geo_map, geo_map_jac, deo_map_der2, jacdet, element_size (see msh_evaluate_col for details)
+%     quad_weights, geo_map, geo_map_jac, geo_map_der2, geo_map_der3, geo_map_der4, jacdet, element_size (see msh_evaluate_col for details)
 %
 % Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -83,5 +84,12 @@ function msh_col = msh_restrict_to_patches (msh, patches)
   msh_col.geo_map_der2 = msh.geo_map_der2(:,:,:,:,global_elem_list);
   msh_col.jacdet       = msh.jacdet(:,global_elem_list);
   msh_col.element_size = msh.element_size(:,global_elem_list);
+
+  if (isfield(msh, 'geo_map_der3') && ~isempty(msh.geo_map_der3))
+    msh_col.geo_map_der3 = msh.geo_map_der3(:,:,:,:,:,global_elem_list);
+  end
   
+  if (isfield(msh, 'geo_map_der4') && ~isempty(msh.geo_map_der4))
+    msh_col.geo_map_der4 = msh.geo_map_der4(:,:,:,:,:,:,global_elem_list);
+  end
 end

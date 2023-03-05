@@ -25,6 +25,8 @@
 %     geo_map_jac   (rdim x ndim x nqn x nel) Jacobian matrix of the map evaluated at the quadrature nodes
 %     jacdet        (nqn x nel)               element of length, area, volume (if rdim = ndim, determinant of the Jacobian)
 %     geo_map_der2  (rdim x ndim x ndim x nqn x nel]) Hessian matrix of the map evaluated at the quadrature nodes
+%     geo_map_der3  (rdim x ndim x ndim x ndim x nqn x nel]) Third derivatives tensor of the map evaluated at the quadrature nodes
+%     geo_map_der4  (rdim x ndim x ndim x ndim x ndim x nqn x nel]) Fourth derivatives tensor of the map evaluated at the quadrature nodes
 %     normal        (rdim x ndim x nqn x nel]) for 3D surfaces, the exterior normal to the surface
 %
 %  For more details, see the documentation
@@ -32,6 +34,7 @@
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
 % Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -70,6 +73,8 @@ function msh_col = msh_evaluate_element_list (msh, elem_list, varargin)
     msh_col.geo_map = [];
     msh_col.geo_map_jac = [];
     msh_col.geo_map_der2 = [];
+    msh_col.geo_map_der3 = [];
+    msh_col.geo_map_der4 = [];
     msh_col.jacdet = [];
     msh_col.element_size = [];
     return
@@ -101,23 +106,45 @@ function msh_col = msh_evaluate_element_list (msh, elem_list, varargin)
 
   msh_col.geo_map = zeros (msh.rdim, msh.nqn, msh_col.nel);
   msh_col.geo_map_jac  = zeros (msh.rdim, msh.ndim, msh.nqn, msh_col.nel);
-
   if (msh.der2)
     msh_col.geo_map_der2 = zeros (msh.rdim, msh.ndim, msh.ndim, msh.nqn, msh_col.nel);
-    [F, jac, hess] = cellfun (@(x) feval (msh.map_der2, x), qqn, 'UniformOutput', false);
-    for iel = 1:numel(elem_list)
-      msh_col.geo_map(:,:,iel) = reshape (F{iel}, msh.rdim, msh.nqn);
-      msh_col.geo_map_jac(:,:,:,iel) = reshape (jac{iel}, msh.rdim, msh.ndim, msh.nqn);
-      msh_col.geo_map_der2(:,:,:,:,iel) = reshape (hess{iel}, msh.rdim, msh.ndim, msh.ndim, msh.nqn);
+    if (msh.der3)
+      msh_col.geo_map_der3 = zeros (msh.rdim, msh.ndim, msh.ndim, msh.ndim, msh.nqn, msh_col.nel);
+      if (msh.der4)
+        msh_col.geo_map_der4 = zeros (msh.rdim, msh.ndim, msh.ndim, msh.ndim, msh.ndim, msh.nqn, msh_col.nel);
+        [F, jac, hess, der3, der4] = cellfun (@(x) feval (msh.map_der4, x), qqn, 'UniformOutput', false);
+      else
+        [F, jac, hess, der3] = cellfun (@(x) feval (msh.map_der3, x), qqn, 'UniformOutput', false);
+      end
+    else
+      [F, jac, hess] = cellfun (@(x) feval (msh.map_der2, x), qqn, 'UniformOutput', false);
     end
   else
     [F, jac] = cellfun (@(x) feval (msh.map_der, x), qqn, 'UniformOutput', false);
+  end
+
+  for iel = 1:numel(elem_list)
+    msh_col.geo_map(:,:,iel) = reshape (F{iel}, msh.rdim, msh.nqn);
+    msh_col.geo_map_jac(:,:,:,iel) = reshape (jac{iel}, msh.rdim, msh.ndim, msh.nqn);
+  end
+
+  if (msh.der2)
     for iel = 1:numel(elem_list)
-      msh_col.geo_map(:,:,iel) = reshape (F{iel}, msh.rdim, msh.nqn);
-      msh_col.geo_map_jac(:,:,:,iel) = reshape (jac{iel}, msh.rdim, msh.ndim, msh.nqn);
+      msh_col.geo_map_der2(:,:,:,:,iel) = reshape (hess{iel}, msh.rdim, msh.ndim, msh.ndim, msh.nqn);
     end
   end
-  
+  if (msh.der3)
+    for iel = 1:numel(elem_list)
+      msh_col.geo_map_der3(:,:,:,:,:,iel) = reshape (der3{iel}, msh.rdim, msh.ndim, msh.ndim, msh.ndim, msh.nqn);
+    end
+  end
+  if (msh.der4)
+    for iel = 1:numel(elem_list)
+      msh_col.geo_map_der4(:,:,:,:,:,:,iel) = reshape (der4{iel}, msh.rdim, msh.ndim, msh.ndim, msh.ndim, msh.ndim, msh.nqn);
+    end
+  end
+
+
   msh_col.jacdet = abs (geopdes_det__ (msh_col.geo_map_jac));
   msh_col.jacdet = reshape (msh_col.jacdet, [msh_col.nqn, msh_col.nel]);
 

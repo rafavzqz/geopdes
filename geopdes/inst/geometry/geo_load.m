@@ -17,12 +17,15 @@
 %             map:      a function handle to evaluate the parameterization
 %             map_der:  a function handle to evaluate the derivatives of the parameterization
 %             map_der2: a function handle to evaluate the second derivatives of the parameterization
+%             map_der3: a function handle to evaluate the third derivatives of the parameterization
+%             map_der4: a function handle to evaluate the fourth derivatives of the parameterization
 %   The structure may contain further information. See the documentation.
 %
 % Copyright (C) 2010 Carlo de Falco
 % Copyright (C) 2013 Rafael Vazquez
 % Copyright (C) 2014 Elena Bulgarello, Carlo de Falco, Sara Frizziero
 % Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin
 % 
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -65,12 +68,20 @@ function geometry = geo_load (in)
     if (length (in) > 2)
       geometry.map_der2 =  in{3};
     end
+    if (length (in) > 3)
+      geometry.map_der3 =  in{4};
+    end
+    if (length (in) > 4)
+      geometry.map_der4 =  in{5};
+    end
     
   elseif (isnumeric (in) && all (size (in) == [4, 4]))  
 %% geometry is given as a 4x4 matrix representing an affine transformation
     geometry.map = @(ps) affine_map  (ps, in);
     geometry.map_der = @(ps) affine_map_der  (ps, in);
     geometry.map_der2 = @affine_map_der2;
+    geometry.map_der3 = @affine_map_der3;
+    geometry.map_der4 = @affine_map_der4;
   else
     error ('geo_load: wrong input type');
   end
@@ -89,25 +100,33 @@ function geometry = geo_load (in)
 
     wrn_struct = warning ('query', 'nrbderiv:SecondDerivative');
     warning ('off', 'nrbderiv:SecondDerivative')
-    [deriv, deriv2] = nrbderiv (geometry.nurbs);
+    [deriv, deriv2, deriv3, deriv4] = nrbderiv (geometry.nurbs);
     geometry.dnurbs = deriv;
     geometry.dnurbs2 = deriv2;
+    geometry.dnurbs3 = deriv3;
+    geometry.dnurbs4 = deriv4;
 
-    geometry.map      =  @(PTS) geo_nurbs (geometry.nurbs, deriv, deriv2, PTS, 0, rdim);
-    geometry.map_der  =  @(PTS) geo_nurbs (geometry.nurbs, deriv, deriv2, PTS, 1, rdim);
-    geometry.map_der2 =  @(PTS) geo_nurbs (geometry.nurbs, deriv, deriv2, PTS, 2, rdim);
+    geometry.map      =  @(PTS) geo_nurbs (geometry.nurbs, deriv, deriv2, deriv3, deriv4, PTS, 0, rdim);
+    geometry.map_der  =  @(PTS) geo_nurbs (geometry.nurbs, deriv, deriv2, deriv3, deriv4, PTS, 1, rdim);
+    geometry.map_der2 =  @(PTS) geo_nurbs (geometry.nurbs, deriv, deriv2, deriv3, deriv4, PTS, 2, rdim);
+    geometry.map_der3 =  @(PTS) geo_nurbs (geometry.nurbs, deriv, deriv2, deriv3, deriv4, PTS, 3, rdim);
+    geometry.map_der4 =  @(PTS) geo_nurbs (geometry.nurbs, deriv, deriv2, deriv3, deriv4, PTS, 4, rdim);
 
     if (numel (geometry.nurbs.order) > 1)
       bnd = nrbextract (geometry.nurbs);
       for ibnd = 1:numel (bnd)
-        [deriv, deriv2] = nrbderiv (bnd(ibnd));
+        [deriv, deriv2, deriv3, deriv4] = nrbderiv (bnd(ibnd));
         geometry.boundary(ibnd).nurbs    = bnd(ibnd);
         geometry.boundary(ibnd).dnurbs   = deriv;
         geometry.boundary(ibnd).dnurbs2  = deriv2;
+        geometry.boundary(ibnd).dnurbs3  = deriv3;
+        geometry.boundary(ibnd).dnurbs4  = deriv4;
         geometry.boundary(ibnd).rdim     = rdim;
-        geometry.boundary(ibnd).map      = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 0, rdim);
-        geometry.boundary(ibnd).map_der  = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 1, rdim);
-        geometry.boundary(ibnd).map_der2 = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 2, rdim);
+        geometry.boundary(ibnd).map      = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, deriv3, deriv4, PTS, 0, rdim);
+        geometry.boundary(ibnd).map_der  = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, deriv3, deriv4, PTS, 1, rdim);
+        geometry.boundary(ibnd).map_der2 = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, deriv3, deriv4, PTS, 2, rdim);
+        geometry.boundary(ibnd).map_der3 = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, deriv3, deriv4, PTS, 3, rdim);
+        geometry.boundary(ibnd).map_der4 = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, deriv3, deriv4, PTS, 4, rdim);
       end
     end
     if (strcmpi (wrn_struct.state, 'on'))
@@ -115,8 +134,11 @@ function geometry = geo_load (in)
     end
   else
     for ibnd = 1:6 % This loop should be until 2*ndim, but ndim is not known
-      geometry.boundary(ibnd).map     = @(PTS) boundary_map (geometry.map, ibnd, PTS);
-      geometry.boundary(ibnd).map_der = @(PTS) boundary_map_der (geometry.map, geometry.map_der, ibnd, PTS);
+      geometry.boundary(ibnd).map      = @(PTS) boundary_map (geometry.map, ibnd, PTS);
+      geometry.boundary(ibnd).map_der  = @(PTS) boundary_map_der (geometry.map, geometry.map_der, ibnd, PTS);
+      geometry.boundary(ibnd).map_der2 = @(PTS) boundary_map_der2 (geometry.map_der2, ibnd, PTS);
+      geometry.boundary(ibnd).map_der3 = @(PTS) boundary_map_der3 (geometry.map_der3, ibnd, PTS);
+      geometry.boundary(ibnd).map_der4 = @(PTS) boundary_map_der4 (geometry.map_der4, ibnd, PTS);
     end
   end
 
@@ -184,6 +206,27 @@ function mps = affine_map_der2  (ps)
   mps  = zeros (ndim, ndim, ndim, nps);
 end
 
+function mps = affine_map_der3  (ps)
+  if (iscell (ps))
+    ndim = numel (ps);
+    nps = prod (cellfun (@numel, ps));
+  else
+    ndim = size (ps, 1);
+    nps  = size (ps, 2);
+  end
+  mps  = zeros (ndim, ndim, ndim, ndim, nps);
+end
+
+function mps = affine_map_der4  (ps)
+  if (iscell (ps))
+    ndim = numel (ps);
+    nps = prod (cellfun (@numel, ps));
+  else
+    ndim = size (ps, 1);
+    nps  = size (ps, 2);
+  end
+  mps  = zeros (ndim, ndim, ndim, ndim, ndim, nps);
+end
 
 % These two functions are to compute boundary entities from the global ones
 function F = boundary_map (map, iside, pts)
@@ -242,6 +285,108 @@ function varargout = boundary_map_der (map, map_der, iside, pts)
 
 end
 
+
+function D2F = boundary_map_der2 (map_der2, iside, pts)
+
+%%    ind  = [2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind  = [2 2 1 1] in 2D;
+%%    ind2 = [1 1 2 2 3 3] in 3D,                  %ind2 = [1 1 2 2] in 2D
+  ind2 = ceil (iside/2);
+  
+  if (iscell (pts))
+    ndim = numel (pts) + 1;
+    ind = setdiff (1:ndim, ind2);
+
+    pts_aux(ind) = pts;
+    if (mod (iside, 2) == 1)
+      pts_aux{ind2} = 0;
+    else
+      pts_aux{ind2} = 1;
+    end
+  else
+    error ('For the boundary, a cell array should be passed as the argument')
+  end
+
+  D2F = map_der2 (pts_aux);
+  D2F = D2F(:,ind,:,:);
+
+end
+
+
+function D3F = boundary_map_der3 (map_der3, iside, pts)
+
+%%    ind  = [2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind  = [2 2 1 1] in 2D;
+%%    ind2 = [1 1 2 2 3 3] in 3D,                  %ind2 = [1 1 2 2] in 2D
+  ind2 = ceil (iside/2);
+  
+  if (iscell (pts))
+    ndim = numel (pts) + 1;
+    ind = setdiff (1:ndim, ind2);
+
+    pts_aux(ind) = pts;
+    if (mod (iside, 2) == 1)
+      pts_aux{ind2} = 0;
+    else
+      pts_aux{ind2} = 1;
+    end
+  else
+    error ('For the boundary, a cell array should be passed as the argument')
+  end
+
+  D3F = map_der3 (pts_aux);
+  D3F = D3F(:,ind,:,:,:);
+
+end
+
+function D2F = boundary_map_der2 (map_der2, iside, pts)
+
+%%    ind  = [2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind  = [2 2 1 1] in 2D;
+%%    ind2 = [1 1 2 2 3 3] in 3D,                  %ind2 = [1 1 2 2] in 2D
+  ind2 = ceil (iside/2);
+  
+  if (iscell (pts))
+    ndim = numel (pts) + 1;
+    ind = setdiff (1:ndim, ind2);
+
+    pts_aux(ind) = pts;
+    if (mod (iside, 2) == 1)
+      pts_aux{ind2} = 0;
+    else
+      pts_aux{ind2} = 1;
+    end
+  else
+    error ('For the boundary, a cell array should be passed as the argument')
+  end
+
+  D2F = map_der2 (pts_aux);
+  D2F = D2F(:,ind,:,:);
+
+end
+
+
+function D4F = boundary_map_der4 (map_der4, iside, pts)
+
+%%    ind  = [2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind  = [2 2 1 1] in 2D;
+%%    ind2 = [1 1 2 2 3 3] in 3D,                  %ind2 = [1 1 2 2] in 2D
+  ind2 = ceil (iside/2);
+  
+  if (iscell (pts))
+    ndim = numel (pts) + 1;
+    ind = setdiff (1:ndim, ind2);
+
+    pts_aux(ind) = pts;
+    if (mod (iside, 2) == 1)
+      pts_aux{ind2} = 0;
+    else
+      pts_aux{ind2} = 1;
+    end
+  else
+    error ('For the boundary, a cell array should be passed as the argument')
+  end
+
+  D4F = map_der4 (pts_aux);
+  D4F = D4F(:,ind,:,:,:);
+
+end
 
 %!shared g1,g2,x
 %!test

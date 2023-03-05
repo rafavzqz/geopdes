@@ -10,11 +10,13 @@
 %               (see msh_cartesian/msh_evaluate_element_list)
 %   'option', value: additional optional parameters, currently available options are:
 %            
-%              Name     |   Default value |  Meaning
-%           ------------+-----------------+----------------------------------
-%            value      |      true       |  compute shape_functions
-%            gradient   |      false      |  compute shape_function_gradients
-%            hessian    |      false      |  compute shape_function_hessians
+%              Name             |   Default value |  Meaning
+%           --------------------+-----------------+----------------------------------
+%            value              |      true       |  compute shape_functions
+%            gradient           |      false      |  compute shape_function_gradients
+%            hessian            |      false      |  compute shape_function_hessians
+%            third_derivative   |      false      |  compute shape_function_third_derivatives
+%            fourth_derivative  |      false      |  compute shape_function_fourth_derivatives
 %
 % OUTPUT:
 %
@@ -33,9 +35,14 @@
 %         (ndim x msh_elems.nqn x nsh_max x msh_elems.nel)         basis function gradients evaluated at each quadrature node in each element
 %    shape_function_hessians
 %         (ndim x ndim x msh_elems.nqn x nsh_max x msh_elems.nel)  basis function hessians evaluated at each quadrature node in each element
+%    shape_function_third_derivatives
+%       (ndim x ndim x ndim x msh_col.nqn x nsh_max x msh_elems.nel) basis function third derivatives evaluated at each quadrature node in each element
+%    shape_function_fourth_derivatives
+%       (ndim x ndim x ndim x rdim x msh_col.nqn x nsh_max x msh_elems.nel) basis function fourth derivatives evaluated at each quadrature node in each element
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011, 2015, 2019 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin, Luca Coradello
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -55,6 +62,9 @@ function sp = sp_evaluate_element_list_param (space, msh, varargin)
 value = true;
 gradient = false;
 hessian = false;
+third_derivative = false;
+fourth_derivative = false;
+
 if (~isempty (varargin))
   if (~rem (length (varargin), 2) == 0)
     error ('sp_evaluate_element_list_param: options must be passed in the [option, value] format');
@@ -66,6 +76,10 @@ if (~isempty (varargin))
       gradient = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'hessian'))
       hessian = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'third_derivative'))
+      third_derivative = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'fourth_derivative'))
+      fourth_derivative = varargin {ii+1};      
     else
       warning ('Ignoring unknown option %s', varargin {ii});
     end
@@ -111,8 +125,8 @@ sp = struct('nsh_max', space.nsh_max, 'nsh', nsh, 'ndof', space.ndof,  ...
             'ndof_dir', space.ndof_dir, 'connectivity', connectivity, ...
             'ncomp', 1, 'degree', space.degree);
 
-if (value || gradient || hessian)
-shp = cell(1,msh.ndim); shg = cell(1,msh.ndim); shh = cell(1,msh.ndim);
+if (value || gradient || hessian || third_derivative || fourth_derivative)
+  shp = cell(1,msh.ndim); shg = cell(1,msh.ndim); shh = cell(1,msh.ndim); shtd = cell(1,msh.ndim); shft = cell(1,msh.ndim);
   for idim = 1:msh.ndim
     ssize = ones (1, 2*msh.ndim);
     ssize([idim, msh.ndim+idim]) = [msh.nqn_dir(idim), sp_univ(idim).nsh_max];
@@ -127,6 +141,13 @@ shp = cell(1,msh.ndim); shg = cell(1,msh.ndim); shh = cell(1,msh.ndim);
     shh{idim} = reshape (sp_univ(idim).shape_function_hessians(:,:,elem_ind(idim,:)), [ssize, msh.nel]);
     shh{idim} = repmat (shh{idim}, [srep, 1]);
     shh{idim} = reshape (shh{idim}, msh.nqn, space.nsh_max, msh.nel);  
+
+    shtd{idim} = reshape (sp_univ(idim).shape_function_third_derivatives(:,:,elem_ind(idim,:)), [ssize, msh.nel]);
+    shtd{idim} = repmat (shtd{idim}, [srep, 1]);
+    shtd{idim} = reshape (shtd{idim}, msh.nqn, space.nsh_max, msh.nel);  
+    shft{idim} = reshape (sp_univ(idim).shape_function_fourth_derivatives(:,:,elem_ind(idim,:)), [ssize, msh.nel]);
+    shft{idim} = repmat (shft{idim}, [srep, 1]);
+    shft{idim} = reshape (shft{idim}, msh.nqn, space.nsh_max, msh.nel);  
   end
 
   if (value)
@@ -148,7 +169,7 @@ shp = cell(1,msh.ndim); shg = cell(1,msh.ndim); shh = cell(1,msh.ndim);
                                   msh.ndim, msh.nqn, sp.nsh_max, msh.nel);
   end
 
-  if (hessian && (isfield (msh, 'geo_map_der2') || msh.nel == 0))
+  if (hessian)
     for idim = 1:msh.ndim
       shape_fun_hess = shh{idim};
       for jdim = setdiff (1:msh.ndim, idim)
@@ -166,7 +187,60 @@ shp = cell(1,msh.ndim); shg = cell(1,msh.ndim); shh = cell(1,msh.ndim);
     end
   end
 
-  clear shp shg shh
+  if (third_derivative)
+    for idim = 1:msh.ndim
+      shape_fun_third = shtd{idim};
+      for jdim = setdiff (1:msh.ndim, idim)
+        shape_fun_third = shape_fun_third .* shp{jdim};
+      end
+      sp.shape_function_third_derivatives(idim,idim,idim,:,:,:) = shape_fun_third;
+      
+      for jdim = setdiff (1:msh.ndim, idim)
+        shape_fun_third = shh{idim} .* shg{jdim};
+        for kdim = setdiff (1:msh.ndim, [idim, jdim])
+          shape_fun_third = shape_fun_third .* shp{kdim};
+        end
+        sp.shape_function_third_derivatives(idim,idim,jdim,:,:,:) = shape_fun_third;
+        sp.shape_function_third_derivatives(idim,jdim,idim,:,:,:) = shape_fun_third;
+        sp.shape_function_third_derivatives(jdim,idim,idim,:,:,:) = shape_fun_third;
+      end
+    end
+  end
+
+  if (fourth_derivative)    
+    for idim = 1:msh.ndim
+      shape_fun_fourth = shft{idim};
+      for jdim = setdiff (1:msh.ndim, idim)
+        shape_fun_fourth = shape_fun_fourth .* shp{jdim};
+      end
+      sp.shape_function_fourth_derivatives(idim,idim,idim,idim,:,:,:) = shape_fun_fourth;
+      
+      for jdim = setdiff (1:msh.ndim, idim)
+        shape_fun_fourth = shh{idim} .* shh{jdim};
+        for kdim = setdiff (1:msh.ndim, [idim, jdim])
+          shape_fun_fourth = shape_fun_fourth .* shp{kdim};
+        end
+        sp.shape_function_fourth_derivatives(idim,idim,jdim,jdim,:,:,:) = shape_fun_fourth;
+        sp.shape_function_fourth_derivatives(idim,jdim,idim,jdim,:,:,:) = shape_fun_fourth;
+        sp.shape_function_fourth_derivatives(jdim,idim,idim,jdim,:,:,:) = shape_fun_fourth;
+        sp.shape_function_fourth_derivatives(jdim,idim,jdim,idim,:,:,:) = shape_fun_fourth;
+      end
+      
+      for jdim = setdiff (1:msh.ndim, idim)
+        shape_fun_fourth = shtd{idim} .* shg{jdim};
+        for kdim = setdiff (1:msh.ndim, [idim, jdim])
+          shape_fun_fourth = shape_fun_fourth .* shp{kdim};
+        end
+        sp.shape_function_fourth_derivatives(idim,idim,idim,jdim,:,:,:) = shape_fun_fourth;
+        sp.shape_function_fourth_derivatives(idim,idim,jdim,idim,:,:,:) = shape_fun_fourth;
+        sp.shape_function_fourth_derivatives(idim,jdim,idim,idim,:,:,:) = shape_fun_fourth;
+        sp.shape_function_fourth_derivatives(jdim,idim,idim,idim,:,:,:) = shape_fun_fourth;
+        
+      end
+    end
+  end
+
+  clear shp shg shh shtd shft
 
   if (strcmpi (space.space_type, 'NURBS'))
     sp = bsp_2_nrb__ (sp, msh, space.weights);

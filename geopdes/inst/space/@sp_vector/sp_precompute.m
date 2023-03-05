@@ -10,12 +10,15 @@
 %    msh: mesh object containing the quadrature information (see msh_cartesian)
 %   'option', value: additional optional parameters, currently available options are:
 %            
-%              Name     |   Default value |  Meaning
-%           ------------+-----------------+----------------------------------
-%            value      |      true       |  compute shape_functions
-%            gradient   |      false      |  compute shape_function_gradients
-%            divergence |      false      |  compute shape_function_divs
-%            curl       |      false      |  compute shape_function_curls
+%              Name             |   Default value |  Meaning
+%           --------------------+-----------------+----------------------------------
+%            value              |      true       |  compute shape_functions
+%            gradient           |      false      |  compute shape_function_gradients
+%            divergence         |      false      |  compute shape_function_divs
+%            curl               |      false      |  compute shape_function_curls
+%            hessian            |      false      |  compute shape_function_hessians
+%            third_derivative   |      false      |  compute shape_function_third_derivatives
+%            fourth_derivative  |      false      |  compute shape_function_fourth_derivatives
 %
 % OUTPUT:
 %
@@ -38,9 +41,17 @@
 %    shape_function_curls
 %         2D:  (msh.nqn x nsh_max x msh.nel)               basis function curl evaluated at each quadrature node in each element
 %         3D:  (3 x msh.nqn x nsh_max x msh.nel)        
+%    shape_function_hessians
+%          (ncomp x rdim x rdim x msh.nqn x nsh_max x msh.nel)  basis function hessians evaluated at each quadrature node in each element
+%    shape_function_third_derivatives
+%       (ncomp x rdim x rdim x rdim x msh.nqn x nsh_max x msh.nel) basis function third derivatives evaluated at each quadrature node in each element
+%    shape_function_fourth_derivatives
+%       (ncomp x rdim x rdim x rdim x rdim x msh.nqn x nsh_max x msh.nel) basis function fourth derivatives evaluated at each quadrature node in each element
+
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2015, 2019 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin, Luca Coradello
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -62,6 +73,8 @@ gradient = false;
 divergence = false;
 curl = false;
 hessian = false;
+third_derivative = false;
+fourth_derivative = false;
 
 if (~isempty (varargin))
   if (~rem (length (varargin), 2) == 0)
@@ -78,6 +91,10 @@ if (~isempty (varargin))
       divergence = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'hessian'))
       hessian = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'third_derivative'))
+      third_derivative = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'fourth_derivative'))
+      fourth_derivative = varargin {ii+1};
     else
       warning ('Ignoring unknown option %s', varargin {ii});
     end
@@ -87,10 +104,15 @@ end
 if (~isstruct (msh))
   msh = msh_precompute (msh);
 end
-  
-grad_param = gradient || divergence || curl || hessian;
+
+
+fourth_param = fourth_derivative;
+third_param = third_derivative || fourth_param;
+hessian_param = hessian || third_param;
+grad_param = gradient || hessian_param || divergence || curl;
 value_param = value || grad_param;
 div_param = false; curl_param = false;
+
 switch (lower (sp.transform))
   case {'curl-preserving'}
     curl_param = curl;
@@ -98,20 +120,23 @@ switch (lower (sp.transform))
     div_param = divergence;
 end
 
-sp_out = sp_precompute_param (sp, msh, 'value', value_param, 'gradient', grad_param, 'divergence', div_param, 'curl', curl_param, 'hessian', hessian);
+sp_out = sp_precompute_param (sp, msh, 'value', value_param, 'gradient', grad_param, 'divergence', div_param, ...
+                              'curl', curl_param, 'hessian', hessian, 'third_derivative', third_param, ...
+                              'fourth_derivative', fourth_param);
+
 
 switch (lower (sp.transform))
   case {'grad-preserving'}
-    sp_out = sp_vector_grad_preserving_transform (sp_out, msh, value, gradient, curl, divergence, hessian);
+    sp_out = sp_vector_grad_preserving_transform (sp_out, msh, value, gradient, curl, divergence, hessian, third_derivative, fourth_derivative);
   case {'curl-preserving'}
     sp_out = sp_vector_curl_preserving_transform (sp_out, msh, value, curl);
-    if (gradient || divergence || hessian)
-      warning ('Gradient, divergence and hessian not implemented for curl-preserving transformation')
+    if (gradient || divergence || hessian || third_derivative || fourth_derivative)
+      warning ('Gradient, divergence, hessian, and third and fourth derivatives not implemented for curl-preserving transformation')
     end
   case {'div-preserving'}
     sp_out = sp_vector_div_preserving_transform (sp_out, msh, value, gradient, curl, divergence);
-    if (hessian)
-      warning ('Hessian not implemented for div-preserving transformation')
+    if (hessian || third_derivative || fourth_derivative)
+      warning ('Hessian and third and fourth derivatives not implemented for div-preserving transformation')
     end
 end
 

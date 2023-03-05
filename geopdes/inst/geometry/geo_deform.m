@@ -14,6 +14,7 @@
 %     new_geometry: geometry structure for the deformed domain.
 % 
 % Copyright (C) 2011 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -50,6 +51,8 @@ function new_geom = geo_deform (u, space, geometry);
     new_geom.map      = @(PTS) geo_2d_nurbs (new_geom.nurbs, PTS, 0);
     new_geom.map_der  = @(PTS) geo_2d_nurbs (new_geom.nurbs, PTS, 1);
     new_geom.map_der2 = @(PTS) geo_2d_nurbs (new_geom.nurbs, PTS, 2);
+    new_geom.map_der3 = @(PTS) geo_2d_nurbs (new_geom.nurbs, PTS, 3);
+    new_geom.map_der4 = @(PTS) geo_2d_nurbs (new_geom.nurbs, PTS, 4);
 
   elseif (space.ncomp == 3)
     nurbs = geometry.nurbs;

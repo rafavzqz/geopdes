@@ -14,6 +14,7 @@
 %     msh_side: mesh object, with quadrature points only on the chosen side (see msh_cartesian)
 %
 % Copyright (C) 2014, 2015 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -43,7 +44,7 @@ function msh_side_from_interior = msh_boundary_side_from_interior (msh, iside)
     qw_bnd{ind2} = 1;
   end
   
-  geo.map = msh.map; geo.map_der = msh.map_der; geo.map_der2 = msh.map_der2;
+  geo.map = msh.map; geo.map_der = msh.map_der; geo.map_der2 = msh.map_der2; geo.map_der3 = msh.map_der3; geo.map_der4 = msh.map_der4;
   geo.rdim = msh.rdim;
 
   on_off = warning ('query', 'geopdes:check_quadrature');

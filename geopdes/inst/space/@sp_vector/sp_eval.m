@@ -11,7 +11,7 @@
 %     pts:         cell array with coordinates of points along each parametric direction
 %     npts:        number of points along each parametric direction
 %     options:     cell array with the fields to plot
-%                   accepted options are 'value' (default), 'gradient', 'curl', 'divergence', 'stress'
+%                   accepted options are 'value' (default), 'gradient', 'curl', 'divergence', 'stress', 'laplacian', 'bilaplacian', 'hessian', 'third_derivative', 'fourth_derivative'
 %     lambda_lame: function handle to the first Lame coefficient (only needed to compute 'stress')
 %     mu_lame:     function handle for the second Lame coefficient (only needed to compute 'stress')
 %
@@ -22,6 +22,7 @@
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011, 2012, 2014, 2015, 2018 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin, Luca Coradello
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -94,12 +95,14 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options, lambda_lame, mu_l
     end
   end
 
+  
+  value = false; grad = false; laplacian = false;
+  curl = false; divergence = false; laplacian = false; bilaplacian = false;
+  hessian = false; third_derivative = false; fourth_derivative = false;
+
   msh = msh_cartesian (brk, pts, [], geometry, 'boundary', false);
   sp  = space.constructor (msh);
 
-  
-  value = false; grad = false; laplacian = false;
-  curl = false; divergence = false;
   
   for iopt = 1:nopts
     switch (lower (options{iopt}))
@@ -115,12 +118,12 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options, lambda_lame, mu_l
         eusize{iopt} = [space.ncomp, msh.rdim, npts];
         grad = true;
         
-%       case 'laplacian'
-%         eu{iopt} = zeros (space.ncomp, msh.nqn, msh.nel);
-%         eunum{iopt} = {1:space.ncomp, 1:msh.nqn};
-%         eusize{iopt} = [space.ncomp, npts];
-%         laplacian = true;
-% 
+      case 'laplacian'
+        eu{iopt} = zeros (space.ncomp, msh.nqn, msh.nel);
+        eunum{iopt} = {1:space.ncomp, 1:msh.nqn};
+        eusize{iopt} = [space.ncomp, npts];
+        laplacian = true;
+
       case 'curl'
         if (msh.ndim == 2 && msh.rdim == 2)
           eu{iopt} = zeros (msh.nqn, msh.nel);
@@ -138,6 +141,31 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options, lambda_lame, mu_l
         eunum{iopt} = {1:msh.nqn};
         eusize{iopt} = npts;
         divergence = true;
+        
+      case 'bilaplacian'
+        eu{iopt} = zeros (msh.nqn, msh.nel);
+        eunum{iopt} = {1:msh.nqn};
+        eusize{iopt} = npts;
+        bilaplacian = true;
+        fourth_derivative = true;
+
+      case 'hessian'
+        eu{iopt} = zeros (space.ncomp, msh.rdim, msh.rdim, msh.nqn, msh.nel);
+        eunum{iopt} = {1:space.ncomp, 1:msh.rdim, 1:msh.rdim, 1:msh.nqn};
+        eusize{iopt} = [space.ncomp, msh.rdim, msh.rdim, npts];
+        hessian = true;
+
+      case 'third_derivative'
+        eu{iopt} = zeros (space.ncomp, msh.rdim, msh.rdim, msh.rdim, msh.nqn, msh.nel);
+        eunum{iopt} = {1:space.ncomp, 1:msh.rdim, 1:msh.rdim, 1:msh.rdim, 1:msh.nqn};
+        eusize{iopt} = [space.ncomp, msh.rdim, msh.rdim, msh.rdim, npts];
+        third_derivative = true;
+
+      case 'fourth_derivative'
+        eu{iopt} = zeros (space.ncomp, msh.rdim, msh.rdim, msh.rdim, msh.rdim, msh.nqn, msh.nel);
+        eunum{iopt} = {1:space.ncomp, 1:msh.rdim, 1:msh.rdim, 1:msh.rdim, 1:msh.rdim, 1:msh.nqn};
+        eusize{iopt} = [space.ncomp, msh.rdim, msh.rdim, msh.rdim, msh.rdim, npts];
+        fourth_derivative = true;
 
       case 'stress'
         if (nargin < 6)
@@ -150,13 +178,18 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options, lambda_lame, mu_l
     end
   end
 
-  F = zeros (msh.rdim, msh.nqn, msh.nel);
+  F = zeros (msh.rdim, msh.nqn, msh.nel);     
   
   for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
-    sp_col  = sp_evaluate_col (sp, msh_col, 'value', value, 'gradient', grad, ...
-                  'curl', curl, 'divergence', divergence);
-% 'laplacian', laplacian, 
+    if (sp.ncomp == 1)
+      sp_col  = sp_evaluate_col (sp, msh_col, 'value', value, 'gradient', grad, ...
+                    'curl', curl, 'divergence', divergence, 'laplacian', laplacian, ...
+                    'bilaplacian', bilaplacian);
+    else
+      sp_col  = sp_evaluate_col (sp, msh_col, 'value', value, 'gradient', grad, ...
+                    'curl', curl, 'divergence', divergence);
+    end
 
     eu_aux = sp_eval_msh (u, sp_col, msh_col, options, lambda_lame, mu_lame);
     

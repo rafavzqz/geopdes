@@ -10,12 +10,15 @@
 %               (see msh_cartesian/msh_evaluate_element_list)
 %   'option', value: additional optional parameters, currently available options are:
 %            
-%              Name     |   Default value |  Meaning
-%           ------------+-----------------+----------------------------------
-%            value      |      true       |  compute shape_functions
-%            gradient   |      false      |  compute shape_function_gradients
-%            hessian    |      false      |  compute shape_function_hessians
-%            laplacian  |      false      |  compute shape_function_laplacians
+%              Name             |   Default value |  Meaning
+%           --------------------+-----------------+----------------------------------
+%            value              |      true       |  compute shape_functions
+%            gradient           |      false      |  compute shape_function_gradients
+%            hessian            |      false      |  compute shape_function_hessians
+%            laplacian          |      false      |  compute shape_function_laplacians
+%            third_derivative   |      false      |  compute shape_function_third_derivatives
+%            fourth_derivative  |      false      |  compute shape_function_fourth_derivatives
+%            bilaplacian        |      false      |  compute shape_function_bilaplacians
 %
 % OUTPUT:
 %
@@ -36,9 +39,16 @@
 %        rdim x rdim x msh_elems.nqn x nsh_max x msh_elems.nel) basis function hessians evaluated at each quadrature node in each element
 %    shape_function_laplacians 
 %       (msh_elems.nqn x nsh_max x msh_elems.nel)               basis functions laplacians evaluated at each quadrature node in each element
+%    shape_function_third_derivatives
+%       (rdim x rdim x rdim x msh_elems.nqn x nsh_max x msh_elems.nel) basis function third derivatives evaluated at each quadrature node in each element
+%    shape_function_fourth_derivatives
+%       (rdim x rdim x rdim x rdim x msh_elems.nqn x nsh_max x msh_elems.nel) basis function fourth derivatives evaluated at each quadrature node in each element
+%    shape_function_bilaplacians
+%       (msh_elems.nqn x nsh_max x msh_elems.nel)                 basis function bilaplacians evaluated at each quadrature node in each element
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011, 2015, 2019 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin, Luca Coradello
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -59,6 +69,10 @@ value = true;
 gradient = false;
 hessian = false;
 laplacian = false;
+third_derivative = false;
+fourth_derivative = false;
+bilaplacian = false;
+
 if (~isempty (varargin))
   if (~rem (length (varargin), 2) == 0)
     error ('sp_evaluate_element_list: options must be passed in the [option, value] format');
@@ -72,17 +86,26 @@ if (~isempty (varargin))
       hessian = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'laplacian'))
       laplacian = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'third_derivative'))
+      third_derivative = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'fourth_derivative'))
+      fourth_derivative = varargin {ii+1};            
+    elseif (strcmpi (varargin {ii}, 'bilaplacian'))
+      bilaplacian = varargin {ii+1};            
     else
       warning ('Ignoring unknown option %s', varargin {ii});
     end
   end
 end
 
-hessian_param = hessian || laplacian;
+fourth_param = fourth_derivative || bilaplacian;
+third_param = third_derivative || fourth_param;
+hessian_param = hessian || laplacian || third_param;
 grad_param = gradient || hessian_param;
 value_param = value || grad_param;
 
-sp = sp_evaluate_element_list_param (space, msh, 'value', value_param, 'gradient', grad_param, 'hessian', hessian_param);
+sp = sp_evaluate_element_list_param (space, msh, 'value', value_param, 'gradient', grad_param, 'hessian', hessian_param, ...
+                            'third_derivative', third_param, 'fourth_derivative', fourth_param);
 
 if (isempty (msh.elem_list))
   return
@@ -90,7 +113,7 @@ end
 
 switch (lower (space.transform))
   case {'grad-preserving'}
-    sp = sp_grad_preserving_transform (sp, msh, value, gradient, hessian, laplacian);
+    sp = sp_grad_preserving_transform (sp, msh, value, gradient, hessian, laplacian, third_derivative, fourth_derivative, bilaplacian);
   case {'integral-preserving'}
     sp = sp_integral_preserving_transform (sp, msh, value);
     if (gradient || hessian || laplacian)

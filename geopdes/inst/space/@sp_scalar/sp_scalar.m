@@ -62,6 +62,7 @@
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011, 2015 Rafael Vazquez
 % Copyright (C) 2020, 2021 Bernard Kapidani, Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin, Luca Coradello
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -117,6 +118,7 @@ function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_dir)
   for idim = 1:msh.ndim
     sp.sp_univ(idim) = sp_bspline_1d_param (knots{idim}, degree(idim), nodes{idim},...
                          'gradient', true, 'hessian', true,...
+                         'third_derivative', true, 'fourth_derivative', true,...
                          'periodic',ismember(idim,periodic_dir));
   end
 

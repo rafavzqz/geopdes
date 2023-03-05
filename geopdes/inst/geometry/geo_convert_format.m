@@ -11,6 +11,7 @@
 % Copyright (C) 2009 Carlo de Falco
 % Copyright (C) 2010, 2011, 2015 Rafael Vazquez
 % Copyright (C) 2014 Elena Bulgarello, Carlo de Falco, Sara Frizziero
+% Copyright (C) 2023 Pablo Antolin
 % 
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -174,6 +175,8 @@ function [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs_07 (file
     geom(iptc).map      = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 0);
     geom(iptc).map_der  = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 1);
     geom(iptc).map_der2 = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 2);
+    geom(iptc).map_der3 = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 3);
+    geom(iptc).map_der4 = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 4);
   end
   
   for intrfc = 1:nintrfc

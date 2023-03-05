@@ -31,6 +31,8 @@
 %     geo_map_jac   (rdim x ndim x nqn x nel)  Jacobian matrix of the map evaluated at the quadrature nodes
 %     jacdet        (nqn x nel)                element of length, area, volume (if rdim = ndim, determinant of the Jacobian)
 %     geo_map_der2  (rdim x ndim x ndim x nqn x nel]) Hessian matrix of the map evaluated at the quadrature nodes
+%     geo_map_der3  (rdim x ndim x ndim x ndim x nqn x nel]) Third derivatives tensor of the map evaluated at the quadrature nodes
+%     geo_map_der4  (rdim x ndim x ndim x ndim x ndim x nqn x nel]) Fourth derivatives tensor of the map evaluated at the quadrature nodes
 %     normal        (rdim x ndim x nqn x nel]) for 3D surfaces, the exterior normal to the surface
 %     element_size  (1 x nel)                  the size of the element in the physical domain
 %
@@ -38,6 +40,7 @@
 % Copyright (C) 2011 Rafael Vazquez
 % Copyright (C) 2014 Elena Bulgarello, Carlo de Falco, Sara Frizziero
 % Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -60,6 +63,8 @@ function msh = msh_precompute (msh, varargin)
     geo_map = true;
     geo_map_jac = true;
     geo_map_der2 = true;
+    geo_map_der3 = false;
+    geo_map_der4 = false;
     jacdet = true;
     normal = true;
   else
@@ -71,6 +76,8 @@ function msh = msh_precompute (msh, varargin)
     geo_map = false;
     geo_map_jac = false;
     geo_map_der2 = false;
+    geo_map_der3 = false;
+    geo_map_der4 = false;
     jacdet = false;
     normal = false;
     for ii=1:2:length(varargin)-1
@@ -85,7 +92,11 @@ function msh = msh_precompute (msh, varargin)
       elseif (strcmpi (varargin{ii}, 'jacdet'))
         jacdet = varargin{ii+1};
       elseif (strcmpi (varargin{ii}, 'geo_map_der2'))
-        geo_map_der2 = varargin{ii+1};
+        geo_map_der2 = varargin{ii+1};      
+      elseif (strcmpi (varargin{ii}, 'geo_map_der3'))
+        geo_map_der3 = varargin{ii+1};
+      elseif (strcmpi (varargin{ii}, 'geo_map_der4'))
+        geo_map_der4 = varargin{ii+1};
       elseif (strcmpi (varargin{ii}, 'normal'))
         normal = varargin{ii+1};
       else
@@ -151,6 +162,20 @@ function msh = msh_precompute (msh, varargin)
     hess = reshape (hess, [msh.rdim, msh.ndim, msh.ndim, psize]);
     hess = permute (hess, [1 2 3 vorder+3]);
     msh.geo_map_der2 = reshape (hess, [msh.rdim, msh.ndim, msh.ndim, msh.nqn, msh.nel]);
+  end
+
+  if (~isempty (msh.map_der3) && geo_map_der3)
+    der3 = feval (msh.map_der3, cellfun (reorder, msh.qn, 'UniformOutput', false));
+    der3 = reshape (der3, [msh.rdim, msh.ndim, msh.ndim, msh.ndim, psize]);
+    der3 = permute (der3, [1 2 3 4 vorder+4]);
+    msh.geo_map_der3 = reshape (der3, [msh.rdim, msh.ndim, msh.ndim, msh.ndim, msh.nqn, msh.nel]);
+  end
+
+  if (~isempty (msh.map_der4) && geo_map_der4)
+    der4 = feval (msh.map_der4, cellfun (reorder, msh.qn, 'UniformOutput', false));
+    der4 = reshape (der4, [msh.rdim, msh.ndim, msh.ndim, msh.ndim, msh.ndim, psize]);
+    der4 = permute (der4, [1 2 3 4 5 vorder+5]);
+    msh.geo_map_der4 = reshape (der4, [msh.rdim, msh.ndim, msh.ndim, msh.ndim, msh.ndim, msh.nqn, msh.nel]);
   end
 
   if (msh.ndim == 2 && msh.rdim == 3 && normal)

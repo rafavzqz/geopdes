@@ -9,9 +9,12 @@
 % OUTPUT:
 %
 %   geometry:   an array of structures that contain the following fields
-%               map:     a function handle to evaluate the parametrization
-%               map_der: a function handle to evaluate the derivatives of the parametrization
-%               nurbs:   a structure compatible with the NURBS toolbox
+%               map:      a function handle to evaluate the parametrization
+%               map_der:  a function handle to evaluate the derivatives of the parametrization
+%               map_der2: a function handle to evaluate the second derivatives of the parametrization
+%               map_der3: a function handle to evaluate the third derivatives of the parametrization
+%               map_der4: a function handle to evaluate the fourth derivatives of the parametrization
+%               nurbs:    a structure compatible with the NURBS toolbox
 %
 %   boundaries: an array of structures that contain the following fields
 %               nsides:  number of faces conforming each boundary
@@ -44,6 +47,7 @@
 %
 % Copyright (C) 2009 Carlo de Falco
 % Copyright (C) 2010, 2011, 2015 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin
 % 
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -149,6 +153,8 @@ function [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs (filenam
     geom(iptc).map      = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 0);
     geom(iptc).map_der  = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 1);
     geom(iptc).map_der2 = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 2);
+    geom(iptc).map_der3 = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 3);
+    geom(iptc).map_der4 = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 4);
   end
 
   interfaces = [];

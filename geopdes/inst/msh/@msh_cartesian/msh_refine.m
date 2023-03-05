@@ -13,6 +13,7 @@
 %     msh_fine: an object of the class msh_cartesian (see msh_cartesian)
 %
 % Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -38,6 +39,12 @@ function msh_fine = msh_refine (msh, nsub)
   auxiliary_geometry.map_der = msh.map_der;
   if (isfield (struct (msh), 'map_der2'))
     auxiliary_geometry.map_der2 = msh.map_der2;
+  end
+  if (isfield (struct (msh), 'map_der3'))
+    auxiliary_geometry.map_der3 = msh.map_der3;
+  end
+  if (isfield (struct (msh), 'map_der4'))
+    auxiliary_geometry.map_der4 = msh.map_der4;
   end
 
   boundary = ~isempty (msh.boundary);

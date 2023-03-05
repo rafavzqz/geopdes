@@ -13,6 +13,7 @@
 %     msh_fine: the refined mesh, an object of the class msh_multipatch (see msh_multipatch)
 %
 % Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -43,12 +44,21 @@ function msh_fine = msh_refine (msh, nsub)
     if (isfield (struct (msh_ptc), 'map_der2'))
       auxiliary_geometry.map_der2 = msh_ptc.map_der2;
     end
+    if (isfield (struct (msh_ptc), 'map_der3'))
+      auxiliary_geometry.map_der3 = msh_ptc.map_der3;
+    end
+    if (isfield (struct (msh_ptc), 'map_der4'))
+      auxiliary_geometry.map_der4 = msh_ptc.map_der4;
+    end
 
     bnd = [];
     for ii = 1:numel (msh_ptc.boundary)
       bnd(ii).rdim = msh_ptc.boundary(ii).rdim;
       bnd(ii).map = msh_ptc.boundary(ii).map;
       bnd(ii).map_der = msh_ptc.boundary(ii).map_der;
+      bnd(ii).map_der2 = msh_ptc.boundary(ii).map_der2;
+      bnd(ii).map_der3 = msh_ptc.boundary(ii).map_der4;
+      bnd(ii).map_der4 = msh_ptc.boundary(ii).map_der4;
     end
     auxiliary_geometry.boundary = bnd;
     msh_patch{iptc} = msh_cartesian (zeta, qn, qw, auxiliary_geometry, 'boundary', boundary);

@@ -12,8 +12,7 @@
 %    msh:       mesh struct, computed with msh_cartesian/msh_evaluate_col(element_list)
 %    elem_list: numbering of the elements, a subset of msh.elem_list.
 %
-% OUTPUT:
-%
+% OUTPU3
 %     msh_elems: structure containing the quadrature rule in the given elements of the physical domain, which contains the following fields
 %
 %     FIELD_NAME         (SIZE)                  DESCRIPTION
@@ -23,9 +22,10 @@
 %     elem_list          (1 x nel)               numbering of the elements in the sublist
 %     nqn                (scalar)                number of quadrature points per element (must be the same for every patch)
 %     nqn_dir            (1 x ndim)              number of quadrature points in each direction (must be the same for every patch)
-%     quad_weights, geo_map, geo_map_jac, deo_map_der2, jacdet, element_size (see msh_evaluate_col for details)
+%     quad_weights, geo_map, geo_map_jac, geo_map_der2, geo_map_der3, geo_map_der4, jacdet, element_size (see msh_evaluate_col for details)
 %
 % Copyright (C) 2017 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -60,6 +60,8 @@ function msh_col = msh_restrict_to_cells (msh, elems)
   msh_col.geo_map      = msh.geo_map(:,:,global_elem_list);
   msh_col.geo_map_jac  = msh.geo_map_jac(:,:,:,global_elem_list);
   msh_col.geo_map_der2 = msh.geo_map_der2(:,:,:,:,global_elem_list);
+  msh_col.geo_map_der3 = msh.geo_map_der3(:,:,:,:,:,global_elem_list);
+  msh_col.geo_map_der4 = msh.geo_map_der4(:,:,:,:,:,:,global_elem_list);
   msh_col.jacdet       = msh.jacdet(:,global_elem_list);
   msh_col.element_size = msh.element_size(:,global_elem_list);
   

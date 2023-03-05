@@ -9,13 +9,15 @@
 %              in the points where basis functions have to be computed (see msh_cartesian/msh_evaluate_col)
 %    value, gradient, curl, divergence: additional optional parameters, either true or false
 %            
-%              Name     |   Default value |  Meaning
-%           ------------+-----------------+----------------------------------
-%            value      |      true       |  compute shape_functions
-%            gradient   |      false      |  compute shape_function_gradients
-%            curl       |      false      |  compute shape_function_curls
-%            divergence |      false      |  compute shape_function_divs
-%            hessian    |      false      |  compute shape_function_hessians
+%              Name             |   Default value |  Meaning
+%           --------------------+-----------------+----------------------------------
+%            value              |      true       |  compute shape_functions
+%            gradient           |      false      |  compute shape_function_gradients
+%            curl               |      false      |  compute shape_function_curls
+%            divergence         |      false      |  compute shape_function_divs
+%            hessian            |      false      |  compute shape_function_hessians
+%            third_derivative   |      false      |  compute shape_function_third_derivatives
+%            fourth_derivative  |      false      |  compute shape_function_fourth_derivatives
 %
 % OUTPUT:
 %
@@ -36,8 +38,13 @@
 %    shape_function_curls 
 %         2D:  (msh_col.nqn x nsh_max x msh_col.nel)            basis function curl evaluated at each quadrature node in each element
 %         3D:  (3 x msh_col.nqn x nsh_max x msh_col.nel)        
+%    shape_function_third_derivatives
+%       (ncomp x rdim x rdim x rdim x msh.nqn x nsh_max x msh.nel) basis function third derivatives evaluated at each quadrature node in each element
+%    shape_function_fourth_derivatives
+%       (ncomp x rdim x rdim x rdim x rdim x msh.nqn x nsh_max x msh.nel) basis function fourth derivatives evaluated at each quadrature node in each element
 %
 % Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin, Luca Coradello
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -52,7 +59,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp = sp_vector_grad_preserving_transform (sp, msh, value, gradient, curl, divergence, hessian)
+function sp = sp_vector_grad_preserving_transform (sp, msh, value, gradient, curl, divergence, hessian, third_derivative, fourth_derivative)
 
   if (nargin < 3)
     value = true;
@@ -68,6 +75,16 @@ function sp = sp_vector_grad_preserving_transform (sp, msh, value, gradient, cur
   end
   if (nargin < 7)
     hessian = false;
+  end
+  if (nargin < 8)
+    third_derivative = false;
+  end
+  if (nargin < 9)
+    fourth_derivative = false;
+  end
+
+  if (third_derivative || fourth_derivative)
+    error('sp_vector_grad_preserving_transform: not implemented for third and fourth derivatives.')
   end
 
   if (hessian)

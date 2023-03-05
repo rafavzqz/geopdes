@@ -2,6 +2,7 @@
 %
 % Copyright (C) 2010 Carlo de Falco
 % Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin, Luca Coradello
 % 
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -23,6 +24,8 @@ function sp = bsp_2_nrb__ (sp, msh, W)
   if (isstruct (sp))
     gradient = isfield (sp, 'shape_function_gradients');
     hessian  = isfield (sp, 'shape_function_hessians');
+    third_derivative  = isfield (sp, 'shape_function_third_derivatives');
+    fourth_derivative  = isfield (sp, 'shape_function_fourth_derivatives');
   end
 
   W = repmat (reshape (W(sp.connectivity), 1, sp.nsh_max, msh.nel), [msh.nqn, 1, 1]);
@@ -48,6 +51,40 @@ function sp = bsp_2_nrb__ (sp, msh, W)
         Ddir2 = repmat (reshape (sum (Bdir2, 2), msh.nqn, 1, msh.nel), [1, sp.nsh_max, 1]);
         sp.shape_function_hessians(idim,jdim,:,:,:) = (Bdir2 - sp.shape_functions .* Ddir2 ...
             - aux_grad{idim} .* Ddir{jdim} - aux_grad{jdim} .* Ddir{idim}) ./ D;
+      end
+    end
+  end
+
+  if (third_derivative)
+    for idim = 1:msh.ndim
+      for jdim = 1:msh.ndim
+          for kdim = 1:msh.ndim
+            Bdir3 = W .* reshape (sp.shape_function_third_derivatives(idim,jdim,kdim,:,:,:), [msh.nqn, sp.nsh_max, msh.nel]);
+            Ddir3{idim,jdim,kdim} = repmat (reshape (sum (Bdir3, 2), msh.nqn, 1, msh.nel), [1, sp.nsh_max, 1]);
+            aux_third{idim,jdim,kdim} = (Bdir3 - sp.shape_functions .* Ddir3{idim,jdim,kdim} ...
+                - aux_grad{idim} .* Ddir2{jdim,kdim} - aux_grad{jdim} .* Ddir2{idim,kdim} - aux_grad{kdim} .* Ddir2{idim,jdim} ...
+                - aux_hes{idim,jdim} .* Ddir{kdim} - aux_hes{idim,kdim} .* Ddir{jdim} - aux_hes{jdim,kdim} .* Ddir{idim}) ./ D;
+            sp.shape_function_third_derivatives(idim,jdim,kdim,:,:,:) = aux_third{idim,jdim,kdim};
+          end
+      end
+    end
+  end
+ 
+  if (fourth_derivative)
+    for idim = 1:msh.ndim
+      for jdim = 1:msh.ndim
+          for kdim = 1:msh.ndim
+              for ldim = 1:msh.ndim
+                Bdir4 = W .* reshape (sp.shape_function_fourth_derivatives(idim,jdim,kdim,ldim,:,:,:), [msh.nqn, sp.nsh_max, msh.nel]);
+                Ddir4 = repmat (reshape (sum (Bdir4, 2), msh.nqn, 1, msh.nel), [1, sp.nsh_max, 1]);
+                sp.shape_function_fourth_derivatives(idim,jdim,kdim,ldim,:,:,:) = (Bdir4 - sp.shape_functions .* Ddir4 ...
+                    - aux_grad{idim} .* Ddir3{jdim,kdim,ldim} - aux_grad{jdim} .* Ddir3{idim,kdim,ldim} - aux_grad{kdim} .* Ddir3{idim,jdim,ldim} ...
+                    - aux_grad{ldim} .* Ddir3{idim,jdim,kdim} - aux_hes{idim,jdim} .* Ddir2{kdim,ldim} - aux_hes{idim,kdim} .* Ddir2{jdim,ldim} ...
+                    - aux_hes{idim,ldim} .* Ddir2{jdim,kdim} - aux_hes{jdim,kdim} .* Ddir2{idim,ldim} - aux_hes{jdim,ldim} .* Ddir2{idim,kdim} ...
+                    - aux_hes{kdim,ldim} .* Ddir2{idim,jdim} - aux_third{idim,jdim,kdim} .* Ddir{ldim} - aux_third{idim,jdim,ldim} .* Ddir{kdim} ...
+                    - aux_third{idim,kdim,ldim} .* Ddir{jdim} - aux_third{jdim,kdim,ldim} .* Ddir{idim} ) ./ D;
+              end
+          end
       end
     end
   end

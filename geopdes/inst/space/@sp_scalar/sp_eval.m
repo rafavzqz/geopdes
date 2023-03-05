@@ -11,7 +11,8 @@
 %     pts:         cell array with coordinates of points along each parametric direction
 %     npts:        number of points along each parametric direction
 %     options:     cell array with the fields to plot
-%                   accepted options are 'value' (default), 'gradient' and 'laplacian'
+%                  accepted options are 'value' (default), 'gradient', 'laplacian',
+%                  'hessian', 'third_derivative', 'fourth_derivative', and 'bilplacian'. 
 %
 % OUTPUT:
 %
@@ -20,6 +21,7 @@
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011, 2012, 2014, 2015, 2018 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin, Luca Coradello
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -95,6 +97,7 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options)
 
   
   value = false; grad = false; laplacian = false; hessian = false;
+  third_derivative = false; fourth_derivative = false; bilaplacian = false;
   
   for iopt = 1:nopts
     switch (lower (options{iopt}))
@@ -121,6 +124,24 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options)
         eunum{iopt} = {1:msh.rdim, 1:msh.rdim, 1:msh.nqn};
         eusize{iopt} = [msh.rdim, msh.rdim, npts];
         hessian = true;
+
+      case 'third_derivative'
+        eu{iopt} = zeros (msh.rdim, msh.rdim, msh.rdim, msh.nqn, msh.nel);
+        eunum{iopt} = {1:msh.rdim, 1:msh.rdim, 1:msh.rdim, 1:msh.nqn};
+        eusize{iopt} = [msh.rdim, msh.rdim, msh.rdim, npts];
+        third_derivative = true;
+
+      case 'fourth_derivative'
+        eu{iopt} = zeros (msh.rdim, msh.rdim, msh.rdim, msh.rdim, msh.nqn, msh.nel);
+        eunum{iopt} = {1:msh.rdim, 1:msh.rdim, 1:msh.rdim, 1:msh.rdim, 1:msh.nqn};
+        eusize{iopt} = [msh.rdim, msh.rdim, msh.rdim, msh.rdim, npts];
+        fourth_derivative = true;
+        
+      case 'bilaplacian'
+        eu{iopt} = zeros (msh.nqn, msh.nel);
+        eunum{iopt} = {1:msh.nqn};
+        eusize{iopt} = npts;
+        bilaplacian = true;
     end
   end
 
@@ -129,7 +150,10 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options)
   for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
     sp_col  = sp_evaluate_col (sp, msh_col, 'value', value, 'gradient', grad, ...
-          'laplacian', laplacian, 'hessian', hessian);
+          'laplacian', laplacian, 'hessian', hessian, ...
+          'third_derivative', third_derivative, ...
+          'fourth_derivative', fourth_derivative, ...
+          'bilaplacian', bilaplacian);
 
     eu_aux = sp_eval_msh (u, sp_col, msh_col, options);
     

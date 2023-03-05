@@ -14,11 +14,14 @@
 %            map:      a function handle to evaluate the parametrization
 %            map_der:  a function handle to evaluate the derivatives of the parametrization
 %            map_der2: a function handle to evaluate the second derivatives of the parametrization
+%            map_der3: a function handle to evaluate the third derivatives of the parametrization
+%            map_der4: a function handle to evaluate the fourth derivatives of the parametrization
 %            nurbs:    a structure compatible with the NURBS toolbox
 %
 % Copyright (C) 2009 Carlo de Falco
 % Copyright (C) 2010, 2011, 2015 Rafael Vazquez
 % Copyright (C) 2014 Elena Bulgarello, Carlo de Falco, Sara Frizziero
+% Copyright (C) 2023 Pablo Antolin
 % 
 % An explanation of the file format can be found in the file
 %  geopdes_base/doc/geo_specs_v10.txt
@@ -127,6 +130,8 @@ for iptc = 1:npatches
   geom(iptc).map      = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 0, rdim);
   geom(iptc).map_der  = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 1, rdim);
   geom(iptc).map_der2 = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 2, rdim);
+  geom(iptc).map_der3 = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 3, rdim);
+  geom(iptc).map_der4 = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 4, rdim);
 end
 
 fclose (fid);

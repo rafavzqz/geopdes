@@ -1,13 +1,15 @@
 % GEO_NURBS: construct a geometry map from a structure of the NURBS toolbox.
 %
-%   output = geo_nurbs (nurbs, dnurbs, dnurbs2, pts, ders)
-%   output = geo_nurbs (nurbs, dnurbs, dnurbs2, pts, ders, rdim)
+%   output = geo_nurbs (nurbs, dnurbs, dnurbs2, dnurbs3, dnurbs4, pts, ders)
+%   output = geo_nurbs (nurbs, dnurbs, dnurbs2, dnurbs3, dnurbs4, pts, ders, rdim)
 %
 % INPUTS:
 %
 %   nurbs:    NURBS structure that defines the geometry
 %   dnurbs:   NURBS structure for the derivatives (see nrbderiv)
 %   dnurbs2:  NURBS structure for the second derivatives (see nrbderiv)
+%   dnurbs3:  NURBS structure for the third derivatives (see nrbderiv)
+%   dnurbs4:  NURBS structure for the fourth derivatives (see nrbderiv)
 %   pts    :  points where the map has to be evaluated
 %   ders   :  number of derivatives to be evaluated (from 0 to 2)
 %   rdim   :  the dimension of the physical domain
@@ -17,17 +19,22 @@
 %   output: for ders = 0, the parametrization F evaluated at pts
 %           for ders = 1, the Jacobian of the parametrization, evaluated at pts
 %           for ders = 2, the Hessian of the parametrization, evaluated at pts
+%           for ders = 3, the third derivatives of the parametrization, evaluated at pts
+%           for ders = 4, the fourth derivatives of the parametrization, evaluated at pts
 %
 %   Multiple outputs are also allowed, for more efficient computations. For instance
 %
 %     [F, jac] = geo_nurbs (nurbs, pts, 1);
 %     [F, jac, hess] = geo_nurbs (nurbs, pts, 2);
+%     [F, jac, hess, der3] = geo_nurbs (nurbs, pts, 3);
+%     [F, jac, hess, der3, der4] = geo_nurbs (nurbs, pts, 4);
 %
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011 Rafael Vazquez
 % Copyright (C) 2013 Elena Bulgarello, Carlo de Falco, Sara Frizziero
 % Copyright (C) 2015, 2021 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -42,11 +49,11 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function varargout = geo_nurbs (nurbs, deriv, deriv2, pts, ders, rdim)
+function varargout = geo_nurbs (nurbs, deriv, deriv2, deriv3, deriv4, pts, ders, rdim)
 
   ndim = numel (nurbs.order);
 
-  if (nargin < 6)
+  if (nargin < 7)
     if (any (abs(nurbs.coefs(3,:)) > 1e-12))
       rdim = 3;
     elseif (any (abs(nurbs.coefs(2,:)) > 1e-12))
@@ -117,6 +124,113 @@ function varargout = geo_nurbs (nurbs, deriv, deriv2, pts, ders, rdim)
         varargout{2} = map_jac;
         varargout{3} = hess;
       end
+
+    case 3
+      [F, jac, hessian, der3] = nrbdeval (nurbs, deriv, deriv2, deriv3, pts);
+
+      if (iscell (pts))
+        npts = prod (cellfun (@numel, pts));
+        map_jac = zeros (rdim, ndim, npts);
+        hess = zeros (rdim, ndim, ndim, npts);
+        map_der3 = zeros (rdim, ndim, ndim, ndim, npts);
+        for idim = 1:ndim
+          map_jac(1:rdim, idim, :) = reshape (jac{idim}(1:rdim,:,:), rdim, 1, npts);
+          for jdim = 1:ndim
+            hess(1:rdim, idim, jdim, :) = reshape (hessian{idim,jdim}(1:rdim,:,:), rdim, 1, 1, npts);
+            for kdim = 1:ndim
+              map_der3(1:rdim, idim, jdim, kdim, :) = reshape (der3{idim,jdim,kdim}(1:rdim,:,:), rdim, 1, 1, 1, npts);
+            end
+          end
+        end
+      else
+        map_jac = zeros (rdim, ndim, size (pts, 2));
+        hess = zeros (rdim, ndim, ndim, size (pts, 2));
+        map_der3 = zeros (rdim, ndim, ndim, ndim, size (pts, 2));
+        for idim = 1:ndim
+          map_jac(1:rdim, idim, :) = reshape (jac{idim}(1:rdim, :), rdim, 1, size (pts, 2));
+          for jdim = 1:ndim
+            hess(1:rdim, idim, jdim, :) = reshape (hessian{idim,jdim}(1:rdim,:), rdim, 1, 1, size (pts, 2));
+            for kdim = 1:ndim
+              map_der3(1:rdim, idim, jdim, kdim, :) = reshape (hessian{idim,jdim,kdim}(1:rdim,:), rdim, 1, 1, 1, size (pts, 2));
+            end
+          end
+        end
+      end
+      if (nargout == 1)
+        if (ders == 2)
+          varargout{1} = hess;
+        else % (ders == 3)
+          varargout{1} = map_der3;
+        end
+      elseif (nargout >= 3)
+        varargout{1} = F(1:rdim, :);
+        varargout{2} = map_jac;
+        varargout{3} = hess;
+        if (nargout == 4)
+          varargout{4} = map_der3;
+        end
+      end
+
+
+    case 4
+      [F, jac, hessian, der3, der4] = nrbdeval (nurbs, deriv, deriv2, deriv3, deriv4, pts);
+
+      if (iscell (pts))
+        npts = prod (cellfun (@numel, pts));
+        map_jac = zeros (rdim, ndim, npts);
+        hess = zeros (rdim, ndim, ndim, npts);
+        map_der3 = zeros (rdim, ndim, ndim, ndim, npts);
+        map_der4 = zeros (rdim, ndim, ndim, ndim, ndim, npts);
+        for idim = 1:ndim
+          map_jac(1:rdim, idim, :) = reshape (jac{idim}(1:rdim,:,:), rdim, 1, npts);
+          for jdim = 1:ndim
+            hess(1:rdim, idim, jdim, :) = reshape (hessian{idim,jdim}(1:rdim,:,:), rdim, 1, 1, npts);
+            for kdim = 1:ndim
+              map_der3(1:rdim, idim, jdim, kdim, :) = reshape (der3{idim,jdim,kdim}(1:rdim,:,:), rdim, 1, 1, 1, npts);
+              for mdim = 1:ndim
+                map_der4(1:rdim, idim, jdim, kdim, mdim, :) = reshape (der4{idim,jdim,kdim, mdim}(1:rdim,:,:), rdim, 1, 1, 1, 1, npts);
+              end
+            end
+          end
+        end
+      else
+        map_jac = zeros (rdim, ndim, size (pts, 2));
+        hess = zeros (rdim, ndim, ndim, size (pts, 2));
+        map_der3 = zeros (rdim, ndim, ndim, ndim, size (pts, 2));
+        map_der4 = zeros (rdim, ndim, ndim, ndim, ndim, size (pts, 2));
+        for idim = 1:ndim
+          map_jac(1:rdim, idim, :) = reshape (jac{idim}(1:rdim, :), rdim, 1, size (pts, 2));
+          for jdim = 1:ndim
+            hess(1:rdim, idim, jdim, :) = reshape (hessian{idim,jdim}(1:rdim,:), rdim, 1, 1, size (pts, 2));
+            for kdim = 1:ndim
+              map_der3(1:rdim, idim, jdim, kdim, :) = reshape (der3{idim,jdim,kdim}(1:rdim,:), rdim, 1, 1, 1, size (pts, 2));
+              for mdim = 1:ndim
+                map_der4(1:rdim, idim, jdim, mdim, :) = reshape (der4{idim,jdim,kdim,mdim}(1:rdim,:), rdim, 1, 1, 1, 1, size (pts, 2));
+              end
+            end
+          end
+        end
+      end
+      if (nargout == 1)
+        if (ders == 2)
+          varargout{1} = hess;
+        elseif (ders == 3)
+          varargout{1} = map_der3;
+        else
+          varargout{1} = map_der4;
+        end
+      elseif (nargout >= 3)
+        varargout{1} = F(1:rdim, :);
+        varargout{2} = map_jac;
+        varargout{3} = hess;
+        if (nargout >= 4)
+          varargout{4} = map_der3;
+        end
+        if (nargout == 5)
+          varargout{5} = map_der4;
+        end
+      end
+
     otherwise
       error ('geo_nurbs: number of derivatives limited to two')
   end

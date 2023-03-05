@@ -17,6 +17,8 @@
 %            gradient   |      true       |  compute shape_function_gradients
 %            hessian    |     false       |  compute shape_function_hessians
 %            periodic   |     false       |  make space connectivity periodic 
+%            der3       |     false       |  compute shape_function_third_derivatives
+%            der4       |     false       |  compute shape_function_fourth_derivatives
 %
 % OUTPUT:
 %
@@ -25,6 +27,7 @@
 %
 % 
 % Copyright (C) 2009, 2010 Carlo de Falco
+% Copyright (C) 2023 Pablo Antolin, Luca Coradello
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -44,6 +47,8 @@ function sp = sp_bspline_1d_param (knots, degree, nodes, varargin)
 gradient = true; 
 hessian  = false; 
 periodic = false;
+third_derivative = false;
+fourth_derivative = false;
 
 if (~isempty (varargin))
   if (~rem (length (varargin), 2) == 0)
@@ -54,6 +59,10 @@ if (~isempty (varargin))
       gradient = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'hessian'))
       hessian = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'third_derivative'))
+      third_derivative = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'fourth_derivative'))
+      fourth_derivative = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'periodic'))
       periodic = varargin{ii+1};
     else 
@@ -62,7 +71,11 @@ if (~isempty (varargin))
   end
 end
 
-if (hessian)
+if (fourth_derivative)
+  nders=4;
+elseif (third_derivative)
+  nders=3;
+elseif (hessian)
   nders=2;
 elseif (gradient)
   nders=1;
@@ -149,7 +162,20 @@ if (hessian)
   sp.('shape_function_hessians') = shape_function_hessians;
 end
 
+if (third_derivative)
+  shape_function_third_derivative = reshape (ders(:, 4, :), nqn, nel, []);
+  shape_function_third_derivative = permute (shape_function_third_derivative, [1, 3, 2]);
+  sp.('shape_function_third_derivatives') = shape_function_third_derivative;
 end
+
+if (fourth_derivative)
+  shape_function_fourth_derivative = reshape (ders(:, 5, :), nqn, nel, []);
+  shape_function_fourth_derivative = permute (shape_function_fourth_derivative, [1, 3, 2]);
+  sp.('shape_function_fourth_derivatives') = shape_function_fourth_derivative;
+end
+
+end
+
 
 %!test
 %! knots = [0 0 0 .5 1 1 1];

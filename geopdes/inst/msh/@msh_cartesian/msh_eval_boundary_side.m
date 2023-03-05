@@ -22,6 +22,9 @@
 %     quad_weights  (nqn x nel vector)        weights associated to the quadrature nodes
 %     geo_map       (rdim x nqn x nel vector) physical coordinates of the quadrature nodes
 %     geo_map_jac   (rdim x ndim x nqn x nel) Jacobian matrix of the map evaluated at the quadrature nodes
+%     geo_map_der2  (rdim x ndim x ndim x nqn x nel) Hessian matrix of the map evaluated at the quadrature nodes
+%     geo_map_der3  (rdim x ndim x ndim x ndim x nqn x nel) Third derivatives tensor of the map evaluated at the quadrature nodes
+%     geo_map_der4  (rdim x ndim x ndim x ndim x ndim x nqn x nel) Fourth derivatives tensor of the map evaluated at the quadrature nodes
 %     jacdet        (nqn x nel)               element of length, area, volume (if rdim = ndim, determinant of the Jacobian)
 %
 %     msh_side_from_interior: mesh structure that contains quadrature
@@ -31,6 +34,7 @@
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2011, 2014, 2015, 2017 Rafael Vazquez
 % Copyright (C) 2017 Luca Coradello
+% Copyright (C) 2023 Pablo Antolin
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -133,6 +137,8 @@ elseif (nargin == 3)
     msh_side.geo_map = [];
     msh_side.geo_map_jac = [];
     msh_side.geo_map_der2 = [];
+    msh_side.geo_map_der3 = [];
+    msh_side.geo_map_der4 = [];
     msh_side.jacdet = [];
     msh_side.element_size = [];
     msh_side.normal = [];
@@ -201,7 +207,7 @@ if (nargout == 2)
     qw_bnd{ind2} = 1;
   end
 
-  geo.map = msh.map; geo.map_der = msh.map_der; geo.map_der2 = msh.map_der2;
+  geo.map = msh.map; geo.map_der = msh.map_der; geo.map_der2 = msh.map_der2; geo.map_der3 = msh.map_der3; geo.map_der4 = msh.map_der4;
   geo.rdim = msh.rdim;
   msh_side_from_interior = msh_cartesian (brk_bnd, qn_bnd, qw_bnd, geo, 'boundary', false);
   if (nargin == 2)

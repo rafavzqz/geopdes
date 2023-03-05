@@ -10,14 +10,17 @@
 %               (see msh_multipatch/msh_evaluate_element_list)
 %   'option', value: additional optional parameters, currently available options are:
 %            
-%              Name     |   Default value |  Meaning
-%           ------------+-----------------+----------------------------------
-%            value      |      true       |  compute shape_functions
-%            gradient   |      false      |  compute shape_function_gradients
-%            hessian    |      false      |  compute shape_function_hessians (only scalars)
-%            laplacian  |      false      |  compute shape_function_laplacians (only scalars)
-%            div        |      false      |  compute shape_function_divs (only vectors)
-%            curl       |      false      |  compute shape_function_curls (only vectors)
+%              Name             |   Default value |  Meaning
+%           --------------------+-----------------+----------------------------------
+%            value              |      true       |  compute shape_functions
+%            gradient           |      false      |  compute shape_function_gradients
+%            hessian            |      false      |  compute shape_function_hessians
+%            laplacian          |      false      |  compute shape_function_laplacians (only scalars)
+%            div                |      false      |  compute shape_function_divs (only vectors)
+%            curl               |      false      |  compute shape_function_curls (only vectors)
+%            third_derivative   |      false      |  compute shape_function_third_derivatives
+%            fourth_derivative  |      false      |  compute shape_function_fourth_derivatives
+%            bilaplacian        |      false      |  compute shape_function_bilaplacians (only scalars)
 %
 % OUTPUT:
 %
@@ -33,6 +36,7 @@
 %    shape_functions, shape_function_gradients... (see sp_evaluate_col for details)
 %
 % Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin, Luca Coradello
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -59,15 +63,16 @@ function sp = sp_evaluate_element_list (space, msh, varargin)
 
   sp.nsh_max = [];
   if (is_scalar)
-    fields = {'nsh', 'connectivity', 'shape_functions', 'shape_function_gradients', 'shape_function_hessians', 'shape_function_laplacians'};
-    cat_position = [2, 2, 3, 4, 5, 3];
+    fields = {'nsh', 'connectivity', 'shape_functions', 'shape_function_gradients', 'shape_function_hessians', 'shape_function_laplacians', 'shape_function_third_derivatives', 'shape_function_fourth_derivatives'};
+    cat_position = [2, 2, 3, 4, 5, 3, 6, 7];
   else
     fields = {'nsh', 'connectivity', 'shape_functions', 'shape_function_gradients', 'shape_function_hessians', ...
-      'shape_function_laplacians', 'shape_function_divs', 'shape_function_curls'};
+      'shape_function_laplacians', 'shape_function_divs', 'shape_function_curls', 'shape_function_third_derivatives', ...
+      'shape_function_fourth_derivatives', 'shape_function_bilaplacians'};
     if (msh.ndim == 2 || msh.ndim == 1)
-      cat_position = [2, 2, 4, 5, 6, 4, 3, 3];
+      cat_position = [2, 2, 4, 5, 6, 4, 3, 3, 7, 8, 3];
     elseif (msh.ndim == 3)
-      cat_position = [2, 2, 4, 5, 6, 4, 3, 4];
+      cat_position = [2, 2, 4, 5, 6, 4, 3, 4, 7, 8, 3];
     end
   end
   for ii = 1:numel(fields)

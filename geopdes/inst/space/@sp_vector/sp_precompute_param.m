@@ -9,13 +9,15 @@
 %    msh: mesh object containing the quadrature information (see msh_cartesian)
 %   'option', value: additional optional parameters, currently available options are:
 %            
-%              Name     |   Default value |  Meaning
-%           ------------+-----------------+----------------------------------
-%            value      |      true       |  compute shape_functions
-%            gradient   |      false      |  compute shape_function_gradients
-%            divergence |      false      |  compute shape_function_divs
-%            curl       |      false      |  compute shape_function_curls
-%            hessian    |      false      |  compute shape_function_hessians
+%              Name             |   Default value |  Meaning
+%           --------------------+-----------------+----------------------------------
+%            value              |      true       |  compute shape_functions
+%            gradient           |      false      |  compute shape_function_gradients
+%            divergence         |      false      |  compute shape_function_divs
+%            curl               |      false      |  compute shape_function_curls
+%            hessian            |      false      |  compute shape_function_hessians
+%            third_derivative   |      false      |  compute shape_function_third_derivatives
+%            fourth_derivative  |      false      |  compute shape_function_fourth_derivatives
 %
 % OUTPUT:
 %
@@ -40,9 +42,14 @@
 %    shape_function_curls
 %         2D:  (msh.nqn x nsh_max x msh.nel)                     basis function curl evaluated at each quadrature node in each element
 %         3D:  (3 x msh.nqn x nsh_max x msh.nel)        
+%    shape_function_third_derivatives
+%       (ncomp_param x ndim x ndim x ndim x msh.nqn x nsh_max x msh.nel) basis function third derivatives evaluated at each quadrature node in each element
+%    shape_function_fourth_derivatives
+%       (ncomp_param x ndim x ndim x ndim x rdim x msh.nqn x nsh_max x msh.nel) basis function fourth derivatives evaluated at each quadrature node in each element
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2015, 2019 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin, Luca Coradello
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -63,6 +70,9 @@ gradient = false;
 divergence = false;
 curl = false;
 hessian = false;
+third_derivative = false;
+fourth_derivative = false;
+
 if (isempty (varargin))
   value = true;
 else
@@ -81,6 +91,10 @@ else
       divergence = varargin {ii+1};
     elseif (strcmpi (varargin {ii}, 'hessian'))
       hessian = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'third_derivative'))
+      third_derivative = varargin {ii+1};
+    elseif (strcmpi (varargin {ii}, 'fourth_derivative'))
+      fourth_derivative = varargin {ii+1};      
     else
       warning ('Ignoring unknown option %s', varargin {ii});
     end
@@ -93,7 +107,8 @@ end
   
 first_der = gradient || divergence || curl;
 for icomp = 1:sp.ncomp_param
-  sp_scalar(icomp) = sp_precompute_param (sp.scalar_spaces{icomp}, msh, 'value', value, 'gradient', first_der, 'hessian', hessian);
+  sp_scalar(icomp) = sp_precompute_param (sp.scalar_spaces{icomp}, msh, 'value', value, 'gradient', first_der, 'hessian', hessian, ...
+                                          'third_derivative', third_derivative, 'fourth_derivative', fourth_derivative);
 end
 
 ndof_scalar = [sp_scalar.ndof];
@@ -167,6 +182,22 @@ if (hessian)
   for icomp = 1:sp.ncomp_param
     indices = sp.cumsum_nsh(icomp)+(1:sp_scalar(icomp).nsh_max);
     sp_out.shape_function_hessians(icomp,:,:,:,indices,:) = sp_scalar(icomp).shape_function_hessians;
+  end
+end
+
+if (third_derivative)
+  sp_out.shape_third_derivatives = zeros (sp.ncomp, msh.ndim, msh.ndim, msh.ndim, msh.nqn, sp_out.nsh_max, msh.nel);
+  for icomp = 1:sp.ncomp_param
+    indices = sp.cumsum_nsh(icomp)+(1:sp_scalar(icomp).nsh_max);
+    sp_out.shape_function_third_derivatives(icomp,:,:,:,:,indices,:) = sp_scalar(icomp).shape_function_third_derivatives;
+  end
+end
+
+if (fourth_derivative)
+  sp_out.shape_fourth_derivatives = zeros (sp.ncomp, msh.ndim, msh.ndim, msh.ndim, msh.ndim, msh.nqn, sp_out.nsh_max, msh.nel);
+  for icomp = 1:sp.ncomp_param
+    indices = sp.cumsum_nsh(icomp)+(1:sp_scalar(icomp).nsh_max);
+    sp_out.shape_function_fourth_derivatives(icomp,:,:,:,:,:,indices,:) = sp_scalar(icomp).shape_function_third_derivatives;
   end
 end
 

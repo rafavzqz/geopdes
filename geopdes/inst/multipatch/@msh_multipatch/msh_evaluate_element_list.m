@@ -22,11 +22,12 @@
 %     nel_per_patch      (1 x npatch)            number of selected elements on each patch
 %     elem_list_of_patch (1 x npatch cell-array) selected elements on the patch, with local numbering
 %     nel_dir_of_patch   (1 x npatch cell-array) the total number of elements in each direction, for each patch
-%     quad_weights, geo_map, geo_map_jac, deo_map_der2, jacdet, element_size (see msh_evaluate_col for details)
+%     quad_weights, geo_map, geo_map_jac, geo_map_der2, geo_map_der3, geo_map_der4, jacdet, element_size (see msh_evaluate_col for details)
 %
 % The function only works if the number of quadrature points is the same for all the patches and all directions.
 %
 % Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -54,8 +55,8 @@ function msh_col = msh_evaluate_element_list (msh, elem_list, varargin)
 
   if (isempty (elem_list)), return, end
   
-  fields = {'quad_weights', 'geo_map', 'geo_map_jac', 'geo_map_der2', 'jacdet', 'element_size'};
-  cat_position = [2 3 4 5 2 2];
+  fields = {'quad_weights', 'geo_map', 'geo_map_jac', 'geo_map_der2', 'geo_map_der3', 'geo_map_der4', 'jacdet', 'element_size'};
+  cat_position = [2 3 4 5 6 7 2 2];
   for ii = 1:numel (fields)
     msh_col.(fields{ii}) = [];
   end

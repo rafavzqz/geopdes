@@ -26,6 +26,8 @@
 %     geo_map_jac   (rdim x ndim x nqn x nel) Jacobian matrix of the map evaluated at the quadrature nodes
 %     jacdet        (nqn x nel)               element of length, area, volume (if rdim = ndim, determinant of the Jacobian)
 %     geo_map_der2  (rdim x ndim x ndim x nqn x nel) Hessian matrix of the map evaluated at the quadrature nodes
+%     geo_map_der3  (rdim x ndim x ndim x ndim  x nqn x nel) Third derivatives tensor of the map evaluated at the quadrature nodes
+%     geo_map_der4  (rdim x ndim x ndim x ndim  x ndim x nqn x nel) Fourth derivatives tensor of the map evaluated at the quadrature nodes
 %     element_size  (1 x nel)                 characteristic size of the elements
 %     normal        (rdim x ndim x nqn x nel) for 3D surfaces, the exterior normal to the surface
 %
@@ -35,6 +37,7 @@
 % Copyright (C) 2011 Rafael Vazquez
 % Copyright (C) 2014 Elena Bulgarello, Carlo de Falco, Sara Frizziero
 % Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -127,7 +130,21 @@ function msh_col = msh_evaluate_col (msh, colnum, varargin)
     msh_col.geo_map_der2 = permute (msh_col.geo_map_der2, [1 2 3 vorder+3]);
     msh_col.geo_map_der2 = reshape (msh_col.geo_map_der2, [msh.rdim, msh.ndim, msh.ndim, msh.nqn, msh_col.nel]);
   end
-  
+
+  if (msh.der3)
+    msh_col.geo_map_der3 = feval (msh.map_der3, cellfun (reorder, msh_col.qn, 'UniformOutput', false));
+    msh_col.geo_map_der3 = reshape (msh_col.geo_map_der3, [msh.rdim, msh.ndim, msh.ndim, msh.ndim, psize]);
+    msh_col.geo_map_der3 = permute (msh_col.geo_map_der3, [1 2 3 4 vorder+4]);
+    msh_col.geo_map_der3 = reshape (msh_col.geo_map_der3, [msh.rdim, msh.ndim, msh.ndim, msh.ndim, msh.nqn, msh_col.nel]);
+  end
+
+  if (msh.der4)
+    msh_col.geo_map_der4 = feval (msh.map_der4, cellfun (reorder, msh_col.qn, 'UniformOutput', false));
+    msh_col.geo_map_der4 = reshape (msh_col.geo_map_der4, [msh.rdim, msh.ndim, msh.ndim, msh.ndim, msh.ndim, psize]);
+    msh_col.geo_map_der4 = permute (msh_col.geo_map_der4, [1 2 3 4 5 vorder+5]);
+    msh_col.geo_map_der4 = reshape (msh_col.geo_map_der4, [msh.rdim, msh.ndim, msh.ndim, msh.ndim, msh.ndim, msh.nqn, msh_col.nel]);
+  end
+
   if (isfield(msh_col, 'quad_weights') && isfield(msh_col, 'jacdet'))
     msh_col.element_size = (sum (msh_col.quad_weights .* ...
                              abs (msh_col.jacdet), 1)).^(1/msh.ndim);

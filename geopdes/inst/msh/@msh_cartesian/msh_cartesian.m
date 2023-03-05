@@ -15,6 +15,8 @@
 %             boundary  |      true           | compute the quadrature rule
 %                       |                     |   also on the boundary
 %             der2      | depends on geometry | compute second derivatives
+%             der3      | depends on geometry | compute third derivatives
+%             der4      | depends on geometry | compute fourth derivatives
 %   
 % OUTPUT:
 %
@@ -34,6 +36,8 @@
 %     map           (function handle)         a copy of the map handle of the geometry structure
 %     map_der       (function handle)         a copy of the map_der handle of the geometry structure
 %     map_der2      (function handle)         a copy of the map_der2 handle of the geometry structure
+%     map_der3      (function handle)         a copy of the map_der3 handle of the geometry structure
+%     map_der4      (function handle)         a copy of the map_der4 handle of the geometry structure
 %
 %     METHOD NAME
 %     msh_evaluate_col: compute the parameterization (and its derivatives) at
@@ -56,6 +60,7 @@
 % Copyright (C) 2011 Rafael Vazquez
 % Copyright (C) 2014 Elena Bulgarello, Sara Frizziero
 % Copyright (C) 2015 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -85,7 +90,19 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
   else
     msh.der2 = true;
   end
-  
+
+  if (~isfield (geo, 'map_der3'))
+    msh.der3 = false;
+  else
+    msh.der3 = true;
+  end
+
+  if (~isfield (geo, 'map_der4'))
+    msh.der4= false;
+  else
+    msh.der4 = true;
+  end
+
   if (~isempty (varargin))
     if (~rem (length (varargin), 2) == 0)
       error ('msh_cartesian: options must be passed in the [option, value] format');
@@ -93,6 +110,16 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
     for ii=1:2:length(varargin)-1
       if (strcmpi (varargin {ii}, 'der2'))
         msh.der2 = varargin {ii+1};
+      elseif (strcmpi (varargin {ii}, 'der3'))
+        msh.der3 = varargin {ii+1};
+        if (msh.der3 && ~isfield (geo, 'map_der3'))
+          error ('msh_cartesian: third derivatives not computable. Third derivative of the geometry not available.');
+        end
+      elseif (strcmpi (varargin {ii}, 'der4'))
+        msh.der4 = varargin {ii+1};
+        if (msh.der4 && ~isfield (geo, 'map_der4'))
+          error ('msh_cartesian: fourth derivatives not computable. Third derivative of the geometry not available.');
+        end
       elseif (strcmpi (varargin {ii}, 'boundary'))
         boundary = varargin {ii+1};
       else
@@ -161,6 +188,24 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
     msh.map_der2 = [];
     if (msh.der2)
       warning ('msh_cartesian: a function to compute second order derivatives has not been provided')
+    end
+  end
+
+  if (isfield (geo, 'map_der3'))
+    msh.map_der3 = geo.map_der3;
+  else
+    msh.map_der3 = [];
+    if (msh.der3)
+      warning ('msh_cartesian: a function to compute third order derivatives has not been provided')
+    end
+  end
+
+  if (isfield (geo, 'map_der4'))
+    msh.map_der4 = geo.map_der4;
+  else
+    msh.map_der4 = [];
+    if (msh.der4)
+      warning ('msh_cartesian: a function to compute fourth order derivatives has not been provided')
     end
   end
   
