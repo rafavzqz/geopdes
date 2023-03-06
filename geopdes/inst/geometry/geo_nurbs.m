@@ -151,7 +151,7 @@ function varargout = geo_nurbs (nurbs, deriv, deriv2, deriv3, deriv4, pts, ders,
           for jdim = 1:ndim
             hess(1:rdim, idim, jdim, :) = reshape (hessian{idim,jdim}(1:rdim,:), rdim, 1, 1, size (pts, 2));
             for kdim = 1:ndim
-              map_der3(1:rdim, idim, jdim, kdim, :) = reshape (hessian{idim,jdim,kdim}(1:rdim,:), rdim, 1, 1, 1, size (pts, 2));
+              map_der3(1:rdim, idim, jdim, kdim, :) = reshape (der3{idim,jdim,kdim}(1:rdim,:), rdim, 1, 1, 1, size (pts, 2));
             end
           end
         end
