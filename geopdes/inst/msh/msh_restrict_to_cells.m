@@ -22,6 +22,9 @@
 %     elem_list          (1 x nel)               numbering of the elements in the sublist
 %     nqn                (scalar)                number of quadrature points per element (must be the same for every patch)
 %     nqn_dir            (1 x ndim)              number of quadrature points in each direction (must be the same for every patch)
+%     der2               (scalar)                wether second derivatives must be computed
+%     der3               (scalar)                wether third derivatives must be computed
+%     der4               (scalar)                wether fourth derivatives must be computed
 %     quad_weights, geo_map, geo_map_jac, geo_map_der2, geo_map_der3, geo_map_der4, jacdet, element_size (see msh_evaluate_col for details)
 %
 % Copyright (C) 2017 Rafael Vazquez
@@ -54,6 +57,9 @@ function msh_col = msh_restrict_to_cells (msh, elems)
   
   msh_col.nqn_dir = msh.nqn_dir;
   msh_col.nqn = msh.nqn;
+  msh_col.der2 = msh.der2;
+  msh_col.der3 = msh.der3;
+  msh_col.der4 = msh.der4;
   msh_col.elem_list = elem_list(:)';
 
   msh_col.quad_weights = msh.quad_weights(:,global_elem_list);

@@ -20,6 +20,9 @@
 %     nqn                (scalar)                number of quadrature points per element (must be the same for every patch)
 %     nqn_dir            (1 x ndim)              number of quadrature points in each direction (must be the same for every patch)
 %     nel_per_patch      (1 x npatch)            number of selected elements on each patch
+%     der2               (scalar)                wether second derivatives must be computed
+%     der3               (scalar)                wether third derivatives must be computed
+%     der4               (scalar)                wether fourth derivatives must be computed
 %     elem_list_of_patch (1 x npatch cell-array) selected elements on the patch, with local numbering
 %     nel_dir_of_patch   (1 x npatch cell-array) the total number of elements in each direction, for each patch
 %     quad_weights, geo_map, geo_map_jac, geo_map_der2, geo_map_der3, geo_map_der4, jacdet, element_size (see msh_evaluate_col for details)
@@ -92,5 +95,8 @@ function msh_col = msh_evaluate_element_list (msh, elem_list, varargin)
   end
   msh_col.nqn = msh.msh_patch{active_patches(1)}.nqn;
   msh_col.nqn_dir = msh.msh_patch{active_patches(1)}.nqn_dir;
+  msh_col.der2 = msh.msh_patch{active_patches(1)}.der2;
+  msh_col.der3 = msh.msh_patch{active_patches(1)}.der3;
+  msh_col.der4 = msh.msh_patch{active_patches(1)}.der4;
 
 end

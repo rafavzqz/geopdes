@@ -337,30 +337,6 @@ function D3F = boundary_map_der3 (map_der3, iside, pts)
 
 end
 
-function D2F = boundary_map_der2 (map_der2, iside, pts)
-
-%%    ind  = [2 3; 2 3; 1 3; 1 3; 1 2; 1 2] in 3D, %ind  = [2 2 1 1] in 2D;
-%%    ind2 = [1 1 2 2 3 3] in 3D,                  %ind2 = [1 1 2 2] in 2D
-  ind2 = ceil (iside/2);
-  
-  if (iscell (pts))
-    ndim = numel (pts) + 1;
-    ind = setdiff (1:ndim, ind2);
-
-    pts_aux(ind) = pts;
-    if (mod (iside, 2) == 1)
-      pts_aux{ind2} = 0;
-    else
-      pts_aux{ind2} = 1;
-    end
-  else
-    error ('For the boundary, a cell array should be passed as the argument')
-  end
-
-  D2F = map_der2 (pts_aux);
-  D2F = D2F(:,ind,:,:);
-
-end
 
 
 function D4F = boundary_map_der4 (map_der4, iside, pts)
@@ -384,7 +360,7 @@ function D4F = boundary_map_der4 (map_der4, iside, pts)
   end
 
   D4F = map_der4 (pts_aux);
-  D4F = D4F(:,ind,:,:,:);
+  D4F = D4F(:,ind,:,:,:,:);
 
 end
 

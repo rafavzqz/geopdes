@@ -58,6 +58,10 @@ function [A, rhs] = sp_weak_drchlt_bc_stokes (space, msh, bnd_sides, bnd_func, c
     msh_side_from_interior = msh_boundary_side_from_interior (msh, iside);
 
     sp_bnd = space.constructor (msh_side_from_interior);
+
+    % Second derivative required for Piola transform.
+    msh_side_from_interior = msh_precompute (msh_side_from_interior, 'geo_map_der2', true);
+    
     sp_bnd = sp_precompute (sp_bnd, msh_side_from_interior, 'value', true, 'gradient', true);
 
     for idim = 1:msh.rdim

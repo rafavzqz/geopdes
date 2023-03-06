@@ -19,14 +19,20 @@
 %     nel_dir       (1 x ndim vector)         number of elements in each parametric direction for the entire mesh
 %     nqn           (scalar)                  number of quadrature nodes per element
 %     nqn_dir       (1 x ndim vector)         number of quadrature nodes per element in each parametric direction for the entire mesh
+%     der2          (scalar)                  wether second derivatives must be computed
+%     der3          (scalar)                  wether third derivatives must be computed
+%     der4          (scalar)                  wether fourth derivatives must be computed
 %     quad_nodes    (ndim x nqn x nel vector) coordinates of the quadrature nodes in parametric space
 %     quad_weights  (nqn x nel vector)        weights associated to the quadrature nodes
 %     geo_map       (rdim x nqn x nel vector) physical coordinates of the quadrature nodes
 %     geo_map_jac   (rdim x ndim x nqn x nel) Jacobian matrix of the map evaluated at the quadrature nodes
 %     jacdet        (nqn x nel)               element of length, area, volume (if rdim = ndim, determinant of the Jacobian)
-%     geo_map_der2  (rdim x ndim x ndim x nqn x nel]) Hessian matrix of the map evaluated at the quadrature nodes
-%     geo_map_der3  (rdim x ndim x ndim x ndim x nqn x nel]) Third derivatives tensor of the map evaluated at the quadrature nodes
-%     geo_map_der4  (rdim x ndim x ndim x ndim x ndim x nqn x nel]) Fourth derivatives tensor of the map evaluated at the quadrature nodes
+%     geo_map_der2  (rdim x ndim x ndim x nqn x nel])
+%                                             Hessian tensor of the map evaluated at the quadrature nodes
+%     geo_map_der3  (rdim x ndim x ndim x ndim x nqn x nel])
+%                                             Third derivatives tensor of the map evaluated at the quadrature nodes
+%     geo_map_der4  (rdim x ndim x ndim x ndim x ndim x nqn x nel])
+%                                             Fourth derivatives tensor of the map evaluated at the quadrature nodes
 %     normal        (rdim x ndim x nqn x nel]) for 3D surfaces, the exterior normal to the surface
 %
 %  For more details, see the documentation
@@ -63,6 +69,10 @@ function msh_col = msh_evaluate_element_list (msh, elem_list, varargin)
 
   msh_col.nqn_dir = msh.nqn_dir;
   msh_col.nqn  = msh.nqn;
+
+  msh_col.der2 = msh.der2;
+  msh_col.der3 = msh.der3;
+  msh_col.der4 = msh.der4;
 
   indices = cell (msh.ndim, 1);
   [indices{:}] = ind2sub (msh.nel_dir, elem_list);

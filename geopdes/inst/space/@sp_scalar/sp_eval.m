@@ -92,12 +92,11 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options)
     end
   end
 
-  msh = msh_cartesian (brk, pts, [], geometry, 'boundary', false);
-  sp  = space.constructor (msh);
-
   
   value = false; grad = false; laplacian = false; hessian = false;
   third_derivative = false; fourth_derivative = false; bilaplacian = false;
+
+  msh = msh_cartesian (brk, pts, [], geometry, 'boundary', false);
   
   for iopt = 1:nopts
     switch (lower (options{iopt}))
@@ -144,6 +143,14 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options)
         bilaplacian = true;
     end
   end
+
+  der4 = fourth_derivative || bilaplacian;
+  der3 = third_derivative || fourth_derivative;
+  der2 = laplacian || hessian || third_derivative;
+
+
+  msh = msh_cartesian (brk, pts, [], geometry, 'boundary', false, 'der2', der2, 'der3', der3, 'der4', der4);
+  sp  = space.constructor (msh);
 
   F = zeros (msh.rdim, msh.nqn, msh.nel);
   

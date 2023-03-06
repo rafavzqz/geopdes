@@ -45,6 +45,7 @@
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2010, 2011, 2015, 2020 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -83,13 +84,15 @@ npatch = numel (geometry);
 msh = cell (1, npatch);
 spv = cell (1, npatch);
 spp = cell (1, npatch);
+
+der2 = true;
 for iptc = 1:npatch
 % Construct msh structure using the finest mesh
   msh_breaks = msh_set_breaks (element_name, ...
                                        geometry(iptc).nurbs.knots, nsub);
   rule      = msh_gauss_nodes (nquad);
   [qn, qw]  = msh_set_quad_nodes (msh_breaks, rule);
-  msh{iptc} = msh_cartesian (msh_breaks, qn, qw, geometry(iptc));
+  msh{iptc} = msh_cartesian (msh_breaks, qn, qw, geometry(iptc), 'der2', der2);
 
 % Construct space structure
   [spv{iptc}, spp{iptc}] = sp_bspline_fluid (element_name, ...

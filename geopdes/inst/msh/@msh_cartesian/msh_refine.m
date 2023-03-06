@@ -48,15 +48,22 @@ function msh_fine = msh_refine (msh, nsub)
   end
 
   boundary = ~isempty (msh.boundary);
+  der2 = msh.der2;
+  der3 = msh.der3;
+  der4 = msh.der4;
   if (msh.ndim > 1)
     bnd = [];
     for ii = 1:numel (msh.boundary)
       bnd(ii).rdim = msh.boundary(ii).rdim;
       bnd(ii).map = msh.boundary(ii).map;
       bnd(ii).map_der = msh.boundary(ii).map_der;
+      bnd(ii).map_der2 = msh.boundary(ii).map_der2;
+      bnd(ii).map_der3 = msh.boundary(ii).map_der3;
+      bnd(ii).map_der4 = msh.boundary(ii).map_der4;
     end
     auxiliary_geometry.boundary = bnd;
   end
-  msh_fine = msh_cartesian (zeta, qn, qw, auxiliary_geometry, 'boundary', boundary);
+  msh_fine = msh_cartesian (zeta, qn, qw, auxiliary_geometry, 'boundary', boundary,...
+      'der2', der2, 'der3', der3, 'der4', der4);
 
 end

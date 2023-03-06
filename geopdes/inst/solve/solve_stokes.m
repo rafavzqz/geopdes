@@ -89,9 +89,15 @@ switch (upper(element_name))
   otherwise
     error ('Unknown element type: %s', element_name)
 end
+
+msh_der2 = false;
+if (strcmpi(element_name, 'RT') || strcmpi(element_name, 'NDL'))
+    msh_der2 = true;
+end
+
 rule       = msh_gauss_nodes (nquad);
 [qn, qw]   = msh_set_quad_nodes (zeta, rule);
-msh        = msh_cartesian (zeta, qn, qw, geometry);
+msh        = msh_cartesian (zeta, qn, qw, geometry, 'der2', msh_der2);
 
 % Compute the space structures
 [space_v, space_p] = sp_bspline_fluid (element_name, ...

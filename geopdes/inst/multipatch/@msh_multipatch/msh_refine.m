@@ -50,6 +50,9 @@ function msh_fine = msh_refine (msh, nsub)
     if (isfield (struct (msh_ptc), 'map_der4'))
       auxiliary_geometry.map_der4 = msh_ptc.map_der4;
     end
+    der2 = msh.msh_patch{1}.der2;
+    der3 = msh.msh_patch{1}.der3;
+    der4 = msh.msh_patch{1}.der4;
 
     bnd = [];
     for ii = 1:numel (msh_ptc.boundary)
@@ -61,7 +64,8 @@ function msh_fine = msh_refine (msh, nsub)
       bnd(ii).map_der4 = msh_ptc.boundary(ii).map_der4;
     end
     auxiliary_geometry.boundary = bnd;
-    msh_patch{iptc} = msh_cartesian (zeta, qn, qw, auxiliary_geometry, 'boundary', boundary);
+    msh_patch{iptc} = msh_cartesian (zeta, qn, qw, auxiliary_geometry, 'boundary', boundary, ...
+    'der2', der2, 'der3', der3, 'der4', der4);
   end
 
   msh_fine = msh_multipatch (msh_patch, msh.boundaries);

@@ -10,13 +10,13 @@
 %     geometry: structure representing the geometrical mapping
 %    'option', value: additional optional parameters, currently available options are:
 %            
-%              Name     |   Default value     |  Meaning
-%           ------------+---------------------+-----------
-%             boundary  |      true           | compute the quadrature rule
-%                       |                     |   also on the boundary
-%             der2      | depends on geometry | compute second derivatives
-%             der3      | depends on geometry | compute third derivatives
-%             der4      | depends on geometry | compute fourth derivatives
+%              Name     |   Default value  |  Meaning
+%           ------------+------------------+-----------
+%             boundary  |      true        | compute the quadrature rule
+%                       |                  |   also on the boundary
+%             der2      |      false       | compute second derivatives
+%             der3      |      false       | compute third derivatives
+%             der4      |      false       | compute fourth derivatives
 %   
 % OUTPUT:
 %
@@ -29,6 +29,9 @@
 %     nel_dir       (1 x ndim vector)         number of elements in each parametric direction
 %     nqn           (scalar)                  number of quadrature nodes per element
 %     nqn_dir       (1 x ndim vector)         number of quadrature nodes per element in each parametric direction
+%     der2          (scalar)                  wether second derivatives must be computed
+%     der3          (scalar)                  wether third derivatives must be computed
+%     der4          (scalar)                  wether fourth derivatives must be computed
 %     breaks        (1 x ndim cell-array)     unique(breaks)
 %     qn            (1 x ndim cell-array)     quadrature nodes along each direction in parametric domain
 %     qw            (1 x ndim cell-array)     quadrature weights along each direction in parametric space
@@ -85,23 +88,9 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
   breaks = cellfun (@unique, breaks, 'UniformOutput', false);
 
   boundary = true;
-  if (~isfield (geo, 'map_der2'))
-    msh.der2 = false;
-  else
-    msh.der2 = true;
-  end
-
-  if (~isfield (geo, 'map_der3'))
-    msh.der3 = false;
-  else
-    msh.der3 = true;
-  end
-
-  if (~isfield (geo, 'map_der4'))
-    msh.der4= false;
-  else
-    msh.der4 = true;
-  end
+  msh.der2 = false;
+  msh.der3 = false;
+  msh.der4 = false;
 
   if (~isempty (varargin))
     if (~rem (length (varargin), 2) == 0)
@@ -110,6 +99,9 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
     for ii=1:2:length(varargin)-1
       if (strcmpi (varargin {ii}, 'der2'))
         msh.der2 = varargin {ii+1};
+        if (msh.der2 && ~isfield (geo, 'map_der2'))
+          error ('msh_cartesian: second derivatives not computable. Second derivative of the geometry not available.');
+        end
       elseif (strcmpi (varargin {ii}, 'der3'))
         msh.der3 = varargin {ii+1};
         if (msh.der3 && ~isfield (geo, 'map_der3'))
@@ -166,9 +158,11 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
       ind = setdiff (1:msh.ndim, ceil(iside/2)); 
 
       if (isempty (qw))
-        msh.boundary(iside) = msh_cartesian (msh.breaks(ind), msh.qn(ind), [], geo.boundary(iside), 'boundary', false);
+        msh.boundary(iside) = msh_cartesian (msh.breaks(ind), msh.qn(ind), [], geo.boundary(iside), 'boundary', false,...
+            'der2', msh.der2, 'der3', msh.der3, 'der4', msh.der4);
       else
-        msh.boundary(iside) = msh_cartesian (msh.breaks(ind), msh.qn(ind), msh.qw(ind), geo.boundary(iside), 'boundary', false);
+        msh.boundary(iside) = msh_cartesian (msh.breaks(ind), msh.qn(ind), msh.qw(ind), geo.boundary(iside), 'boundary', false,...
+            'der2', msh.der2, 'der3', msh.der3, 'der4', msh.der4);
       end
       msh.boundary(iside).rdim = msh.rdim;
     end
@@ -182,7 +176,7 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
   msh.map = geo.map;
   msh.map_der = geo.map_der;
 
-  if (isfield (geo, 'map_der2'))
+  if (msh.der2 && isfield (geo, 'map_der2'))
     msh.map_der2 = geo.map_der2;
   else
     msh.map_der2 = [];
@@ -191,7 +185,7 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
     end
   end
 
-  if (isfield (geo, 'map_der3'))
+  if (msh.der3 && isfield (geo, 'map_der3'))
     msh.map_der3 = geo.map_der3;
   else
     msh.map_der3 = [];
@@ -200,7 +194,7 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
     end
   end
 
-  if (isfield (geo, 'map_der4'))
+  if (msh.der4 && isfield (geo, 'map_der4'))
     msh.map_der4 = geo.map_der4;
   else
     msh.map_der4 = [];

@@ -178,6 +178,14 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options, lambda_lame, mu_l
     end
   end
 
+
+  der4 = fourth_derivative || bilaplacian;
+  der3 = third_derivative || der4;
+  der2 = hessian || laplacian || der3;
+
+  msh = msh_cartesian (brk, pts, [], geometry, 'boundary', false, 'der2', der2, 'der3', der3, 'der4', der4);
+  sp  = space.constructor (msh);
+
   F = zeros (msh.rdim, msh.nqn, msh.nel);     
   
   for iel = 1:msh.nel_dir(1)

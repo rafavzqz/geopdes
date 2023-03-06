@@ -25,6 +25,9 @@
 %     nel_dir       (1 x ndim vector)          number of elements in each parametric direction for the entire mesh
 %     nqn           (scalar)                   number of quadrature nodes per element
 %     nqn_dir       (1 x ndim vector)          number of quadrature nodes per element in each parametric direction for the entire mesh
+%     der2          (scalar)                   wether second derivatives must be computed
+%     der3          (scalar)                   wether third derivatives must be computed
+%     der4          (scalar)                   wether fourth derivatives must be computed
 %     quad_nodes    (ndim x nqn x nel vector)  coordinates of the quadrature nodes in parametric space
 %     quad_weights  (nqn x nel vector)         weights associated to the quadrature nodes
 %     geo_map       (rdim x nqn x nel vector)  physical coordinates of the quadrature nodes
@@ -62,7 +65,7 @@ function msh = msh_precompute (msh, varargin)
     quad_weights = true;
     geo_map = true;
     geo_map_jac = true;
-    geo_map_der2 = true;
+    geo_map_der2 = false;
     geo_map_der3 = false;
     geo_map_der4 = false;
     jacdet = true;
@@ -104,6 +107,16 @@ function msh = msh_precompute (msh, varargin)
       end
     end
     
+  end
+
+  if (geo_map_der4)
+      geo_map_der3 = true;
+  end
+  if (geo_map_der3)
+      geo_map_der2 = true;
+  end
+    if (geo_map_der2)
+      geo_map_jac = true;
   end
 
   msh = struct (msh);

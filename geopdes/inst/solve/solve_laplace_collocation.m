@@ -49,6 +49,7 @@
 %  Comput. Methods Appl. Mech. Engrg., 2016.
 %
 % Copyright (C) 2016, 2017 Monica Montardini, Lorenzo Tamellini, Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -127,7 +128,7 @@ for idim = 1:ndim
   end
 end
 
-msh_coll = msh_cartesian (brk, coll_pts, [], geometry, 'boundary', true,'der2',true);
+msh_coll = msh_cartesian (brk, coll_pts, [], geometry, 'boundary', true, 'der2', true);
 space = sp_nurbs (geometry.nurbs, msh_coll);
 
 % Evaluate each spline in the collocation points and collect everything into the design matrix, i.e. a
@@ -136,7 +137,7 @@ space = sp_nurbs (geometry.nurbs, msh_coll);
 tot_nb_coll_pts = msh_coll.nel;
 
 % Evaluate parameterization and basis functions
-coll_mesh_eval = msh_precompute (msh_coll);
+coll_mesh_eval = msh_precompute (msh_coll, 'geo_map', true, 'geo_map_der2', true);
 sp_evals  = sp_precompute (space, coll_mesh_eval, 'gradient', true, 'laplacian', true);
 
 % SEPARATE BOUNDARY AND INTERNAL COLLOCATION POINTS

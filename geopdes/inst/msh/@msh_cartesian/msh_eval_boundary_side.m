@@ -18,13 +18,19 @@
 %     nel_dir       (1 x ndim vector)         number of elements in each parametric direction
 %     nqn           (scalar)                  number of quadrature nodes per element
 %     nqn_dir       (1 x ndim vector)         number of quadrature nodes per element in each parametric direction
+%     der2          (scalar)                  wether second derivatives must be computed
+%     der3          (scalar)                  wether third derivatives must be computed
+%     der4          (scalar)                  wether fourth derivatives must be computed
 %     quad_nodes    (ndim x nqn x nel vector) coordinates of the quadrature nodes in parametric domain
 %     quad_weights  (nqn x nel vector)        weights associated to the quadrature nodes
 %     geo_map       (rdim x nqn x nel vector) physical coordinates of the quadrature nodes
 %     geo_map_jac   (rdim x ndim x nqn x nel) Jacobian matrix of the map evaluated at the quadrature nodes
-%     geo_map_der2  (rdim x ndim x ndim x nqn x nel) Hessian matrix of the map evaluated at the quadrature nodes
-%     geo_map_der3  (rdim x ndim x ndim x ndim x nqn x nel) Third derivatives tensor of the map evaluated at the quadrature nodes
-%     geo_map_der4  (rdim x ndim x ndim x ndim x ndim x nqn x nel) Fourth derivatives tensor of the map evaluated at the quadrature nodes
+%     geo_map_der2  (rdim x ndim x ndim x nqn x nel)
+%                                             Hessian matrix of the map evaluated at the quadrature nodes
+%     geo_map_der3  (rdim x ndim x ndim x ndim x nqn x nel)
+%                                             Third derivatives tensor of the map evaluated at the quadrature nodes
+%     geo_map_der4  (rdim x ndim x ndim x ndim x ndim x nqn x nel)
+%                                             Fourth derivatives tensor of the map evaluated at the quadrature nodes
 %     jacdet        (nqn x nel)               element of length, area, volume (if rdim = ndim, determinant of the Jacobian)
 %
 %     msh_side_from_interior: mesh structure that contains quadrature
@@ -209,7 +215,11 @@ if (nargout == 2)
 
   geo.map = msh.map; geo.map_der = msh.map_der; geo.map_der2 = msh.map_der2; geo.map_der3 = msh.map_der3; geo.map_der4 = msh.map_der4;
   geo.rdim = msh.rdim;
-  msh_side_from_interior = msh_cartesian (brk_bnd, qn_bnd, qw_bnd, geo, 'boundary', false);
+  der2 = msh.der2;
+  der3 = msh.der3;
+  der4 = msh.der4;
+  msh_side_from_interior = msh_cartesian (brk_bnd, qn_bnd, qw_bnd, geo, 'boundary', false, ...
+    'der2', der2, 'der3', der3, 'der4', der4);
   if (nargin == 2)
     msh_side_from_interior = msh_precompute (msh_side_from_interior);
   elseif (nargin == 3)

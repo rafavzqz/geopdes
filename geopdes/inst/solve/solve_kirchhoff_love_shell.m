@@ -34,6 +34,7 @@
 % See also EX_KL_SHELL_SCORDELIS_LO_ROOF for an example.
 %
 % Copyright (C) 2017-2019 Pablo Antolin, Luca Coradello, Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -75,7 +76,7 @@ geometry = geo_load (nurbs);
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (geometry.nurbs.knots, rule);
-msh      = msh_cartesian (geometry.nurbs.knots, qn, qw, geometry);
+msh      = msh_cartesian (geometry.nurbs.knots, qn, qw, geometry, 'der2', true);
 
 % Construct space structure
 sp_scalar = sp_nurbs (geometry.nurbs, msh);

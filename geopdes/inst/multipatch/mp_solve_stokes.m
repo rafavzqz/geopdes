@@ -44,6 +44,7 @@
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
 % Copyright (C) 2010, 2011, 2015, 2020 Rafael Vazquez
+% Copyright (C) 2023 Pablo Antolin
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -75,6 +76,11 @@ if (strcmpi ('element_name', 'RT') || strcmpi ('element_name', 'NDL'))
   error ('For RT and NDL spaces, use mp_solve_stokes_div_conforming');
 end
 
+msh_der2 = false;
+if (strcmpi(element_name, 'RT') || strcmpi(element_name, 'NDL'))
+    msh_der2 = true;
+end
+
 % Construct geometry structure, and information for interfaces and boundaries
 [geometry, boundaries, interfaces, ~, boundary_interfaces] = mp_geo_load (geo_name);
 npatch = numel (geometry);
@@ -87,7 +93,7 @@ for iptc = 1:npatch
   msh_breaks = msh_set_breaks (element_name, geometry(iptc).nurbs.knots, nsub);
   rule      = msh_gauss_nodes (nquad);
   [qn, qw]  = msh_set_quad_nodes (msh_breaks, rule);
-  msh{iptc} = msh_cartesian (msh_breaks, qn, qw, geometry(iptc));
+  msh{iptc} = msh_cartesian (msh_breaks, qn, qw, geometry(iptc), 'der2', msh_der2);
 
 % Construct space structure
   [spv{iptc}, spp{iptc}] = sp_bspline_fluid (element_name, ...

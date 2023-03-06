@@ -38,7 +38,8 @@
 %
 % Copyright (C) 2009, 2010, 2011 Carlo de Falco
 % Copyright (C) 2011, 2013, 2015 Rafael Vazquez
-% Copyright (C) 2013, Marco Pingaro
+% Copyright (C) 2013 Marco Pingaro
+% Copyright (C) 2023 Pablo Antolin
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -81,7 +82,7 @@ geometry = geo_load (nurbs);
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (zeta, rule);
-msh      = msh_cartesian (zeta, qn, qw, geometry,'der2', true);
+msh      = msh_cartesian (zeta, qn, qw, geometry, 'der2', true);
   
 % Construct space structure
 space = sp_nurbs (geometry.nurbs, msh);

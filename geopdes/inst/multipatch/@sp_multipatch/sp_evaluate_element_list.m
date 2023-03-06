@@ -129,6 +129,9 @@ function msh_ptc = msh_restrict_to_patch (msh, patch)
   msh_ptc.nel_dir = msh.nel_dir_of_patch{patch};
   msh_ptc.nqn = msh.nqn;
   msh_ptc.nqn_dir = msh.nqn_dir;
+  msh_ptc.der2 = msh.der2;
+  msh_ptc.der3 = msh.der3;
+  msh_ptc.der4 = msh.der4;
 
   if (isempty (msh_ptc.elem_list)), return, end
   

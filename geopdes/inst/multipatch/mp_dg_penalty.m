@@ -62,9 +62,15 @@ for iref = 1:numel(interfaces)
   msh_side_int(2) = msh_boundary_side_from_interior (msh.msh_patch{patch(2)}, side(2));
 
   sp_aux = space.sp_patch{patch(1)}.constructor (msh_side_int(1));
-  sp_bnd(1) = struct (sp_precompute (sp_aux, msh_side_int(1), 'value', true, 'gradient', true));
+
+  msh_aux = msh_precompute(msh_side_int(1), 'geo_map_der2', true);
+  sp_bnd(1) = struct (sp_precompute (sp_aux, msh_aux, 'value', true, 'gradient', true));
+
   sp_aux = space.sp_patch{patch(2)}.constructor (msh_side_int(2));
-  sp_bnd(2) = struct (sp_precompute (sp_aux, msh_side_int(2), 'value', true, 'gradient', true));
+
+  msh_aux = msh_precompute(msh_side_int(2), 'geo_map_der2', true);
+
+  sp_bnd(2) = struct (sp_precompute (sp_aux, msh_aux, 'value', true, 'gradient', true));
   
   [sp_bnd(2), msh_side(2)] = reorder_elements_and_quad_points (sp_bnd(2), msh_side(2), interfaces(iref), ndim);
   
