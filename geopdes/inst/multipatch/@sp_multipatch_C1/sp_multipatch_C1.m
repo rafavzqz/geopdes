@@ -501,12 +501,12 @@ for kver = 1:numel(vertices)
       beta_der_prev = -all_beta0(edges(prev_edge),2) + all_beta1(edges(prev_edge),2);
       E_prev = CC_edges_discarded{2,edges(prev_edge)}(:,[1 2 3 7 8]);
     else
-      alpha_prev = all_alpha1(edges(prev_edge),1);
+      alpha_prev = -all_alpha1(edges(prev_edge),1);
       beta_prev = -all_beta1(edges(prev_edge),1);
-      alpha_der_prev = all_alpha0(edges(prev_edge),1) - all_alpha1(edges(prev_edge),1);
+      alpha_der_prev = -all_alpha0(edges(prev_edge),1) + all_alpha1(edges(prev_edge),1);
       beta_der_prev = -all_beta0(edges(prev_edge),1) + all_beta1(edges(prev_edge),1);
       E_prev = CC_edges_discarded{1,edges(prev_edge)}(:,[6 5 4 10 9]);
-      E_prev(:,[4 5]) = -E_prev(:,[4 5]);
+      E_prev(:,[4 5]) = E_prev(:,[4 5]);
     end
     if (edge_orientation(next_edge) == 1)
       alpha_next = all_alpha0(edges(next_edge),1);
@@ -515,12 +515,12 @@ for kver = 1:numel(vertices)
       beta_der_next = -all_beta0(edges(next_edge),1) + all_beta1(edges(next_edge),1);
       E_next = CC_edges_discarded{1,edges(next_edge)}(:,[1 2 3 7 8]);
     else
-      alpha_next = all_alpha1(edges(next_edge),2);
+      alpha_next = -all_alpha1(edges(next_edge),2);
       beta_next = -all_beta1(edges(next_edge),2);
-      alpha_der_next = all_alpha0(edges(next_edge),2) - all_alpha1(edges(next_edge),2);
+      alpha_der_next = -all_alpha0(edges(next_edge),2) + all_alpha1(edges(next_edge),2);
       beta_der_next = -all_beta0(edges(next_edge),2) + all_beta1(edges(next_edge),2);
       E_next = CC_edges_discarded{2,edges(next_edge)}(:,[6 5 4 10 9]);
-      E_next(:,[4 5]) = -E_next(:,[4 5]);
+      E_next(:,[4 5]) = E_next(:,[4 5]);
     end
     
     Du_F = derivatives_new1{ipatch}(1:2,1);
