@@ -1,10 +1,10 @@
-% OP_F_CURLV_MP: assemble the right-hand side vector r = [r(i)], with  r(i) = (f, v_i), in a multipatch domain.
+% OP_F_CURLV_MP: assemble the right-hand side vector r = [r(i)], with  r(i) = (f, curl v_i), in a multipatch domain.
 %
-%   rhs = op_f_v_mp (spv, msh, coeff, [patches]);
+%   rhs = op_f_curlv_mp (spv, msh, coeff, [patches]);
 %
 % INPUT:
 %     
-%   spv:     object representing the function space (see sp_multipatch)
+%   spv:     object representing the vector-valued function space (see sp_multipatch)
 %   msh:     object defining the domain partition and the quadrature rule (see msh_multipatch)
 %   coeff:   function handle to compute the source function
 %   patches: list of patches where the integrals have to be computed. By default, all patches are selected.
