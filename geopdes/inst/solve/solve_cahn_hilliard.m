@@ -2,11 +2,11 @@
 %
 % The functions solves the problem of finding u such that
 %
-%  du/dt - Delta (f(u) - lambda*Delta u) = 0
+%  du/dt - Delta (mu(u) - lambda*Delta u) = 0
 %
-% with Delta the Laplacian, and f(u) = alpha u^3 - beta u, and periodic boundary conditions.
+% with Delta the Laplacian, and mu(u) = alpha u^3 - beta u, and periodic boundary conditions.
 %
-% The values of alpha and beta (or f itself) can be changed in op_gradmu_gradv_tp.
+% The values of alpha and beta (or mu itself) can be changed in op_gradmu_gradv_tp.
 %
 % For details on the problem and the formulation, see
 %  H. Gomez, V.M. Calo, Y. Bazilevs, T.J.R. Hughes, CMAME 197 (2008), 4333-4352.
