@@ -53,8 +53,8 @@
 %         sp_refine: generate a refined space, and subdivision matrices for the univariate spaces
 %         sp_compute_Cpatch: compute the matrix for B-splines representation on a patch
 %
-% Copyright (C) 2015-2022 Rafael Vazquez
-% Copyright (C) 2019-2022 Cesare Bracco
+% Copyright (C) 2015-2023 Rafael Vazquez
+% Copyright (C) 2019-2023 Cesare Bracco
 % Copyright (C) 2022 Andrea Farahat
 %
 %    This program is free software: you can redistribute it and/or modify
@@ -335,7 +335,7 @@ for iref = 1:numel(interfaces_all)
       A(jj,spn_struct.connectivity(:,jj)) = spn_struct.shape_functions(:,:,jj);
     end
 
-%alphas and betas
+% alphas and betas (gluing data)
     alpha = alpha0(ii)*(1-grev_pts{3-ii}') + alpha1(ii)*grev_pts{3-ii}';
     beta = beta0(ii)*(1-grev_pts{3-ii}') + beta1(ii)*grev_pts{3-ii}';
 
@@ -506,7 +506,6 @@ for kver = 1:numel(vertices)
       alpha_der_prev = -all_alpha0(edges(prev_edge),1) + all_alpha1(edges(prev_edge),1);
       beta_der_prev = -all_beta0(edges(prev_edge),1) + all_beta1(edges(prev_edge),1);
       E_prev = CC_edges_discarded{1,edges(prev_edge)}(:,[6 5 4 10 9]);
-      E_prev(:,[4 5]) = E_prev(:,[4 5]);
     end
     if (edge_orientation(next_edge) == 1)
       alpha_next = all_alpha0(edges(next_edge),1);
@@ -520,7 +519,6 @@ for kver = 1:numel(vertices)
       alpha_der_next = -all_alpha0(edges(next_edge),2) + all_alpha1(edges(next_edge),2);
       beta_der_next = -all_beta0(edges(next_edge),2) + all_beta1(edges(next_edge),2);
       E_next = CC_edges_discarded{2,edges(next_edge)}(:,[6 5 4 10 9]);
-      E_next(:,[4 5]) = E_next(:,[4 5]);
     end
     
     Du_F = derivatives_new1{ipatch}(1:2,1);
@@ -544,7 +542,7 @@ for kver = 1:numel(vertices)
 
 % Compute M and V matrices
     ndof = space.sp_patch{patches(ipatch)}.ndof;
-    M_prev = sparse (5,6); M_next = sparse (5,6);
+    K_prev = sparse (5,6); K_next = sparse (5,6);
     VV = sparse (ndof,6);
     
     ndof_dir = space.sp_patch{patches(ipatch)}.ndof_dir;
@@ -568,12 +566,12 @@ for kver = 1:numel(vertices)
         d0_b = vec_deltas.'*d0_next;
         d1_b = t0_next.'*mat_deltas*d0_next + vec_deltas.'*d0p_next;
 
-        M_prev(:,jfun) = sigma^(j1+j2)*[c0, ...
+        K_prev(:,jfun) = sigma^(j1+j2)*[c0, ...
                                         c0+c1_a/(deg_aux*nbrk_aux), ...
                                         c0+const1*c1_a/(deg_aux*nbrk_aux)+const2*c2_a/(deg_aux*(deg_aux-1)*nbrk_aux^2), ...
                                         d0_a/(deg_aux*nbrk_aux), ...
                                         d0_a/(deg_aux*nbrk_aux)+d1_a/(deg_aux*(deg_aux-1)*nbrk_aux^2)].';
-        M_next(:,jfun) = sigma^(j1+j2)*[c0, ...
+        K_next(:,jfun) = sigma^(j1+j2)*[c0, ...
                                         c0+c1_b/(deg_aux*nbrk_aux), ...
                                         c0+const1*c1_b/(deg_aux*nbrk_aux)+const2*c2_b/(deg_aux*(deg_aux-1)*nbrk_aux^2), ...
                                         d0_b/(deg_aux*nbrk_aux), ...
@@ -587,13 +585,13 @@ for kver = 1:numel(vertices)
         jfun = jfun+1;
       end
     end
-    CC_vertices{kver}{ipatch} = E_prev*M_prev + E_next*M_next - VV;
+    CC_vertices{kver}{ipatch} = E_prev*K_prev + E_next*K_next - VV;
     %Storing the matrices for output
-    KV_matrices{ipatch}.K_prev=M_prev;
-    KV_matrices{ipatch}.K_next=M_next;
-    KV_matrices{ipatch}.V=VV;
-    KV_matrices{ipatch}.E_prev=E_prev;
-    KV_matrices{ipatch}.E_next=E_next;
+    KV_matrices{ipatch}.K_prev = K_prev;
+    KV_matrices{ipatch}.K_next = K_next;
+    KV_matrices{ipatch}.V = VV;
+    KV_matrices{ipatch}.E_prev = E_prev;
+    KV_matrices{ipatch}.E_next = E_next;
   end
   v_fun_matrices{2,kver}=KV_matrices;
 end
