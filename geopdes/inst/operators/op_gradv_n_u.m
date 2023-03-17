@@ -1,4 +1,4 @@
-% OP_GRADV_N_U: assemble the matrix A = [a(i,j)], a(i,j) = (epsilon (grad v n)_j, u_i), with n the normal vector.
+% OP_GRADV_N_U: assemble the matrix A = [a(i,j)], a(i,j) = (u_j, epsilon (grad v n)_i), with n the normal vector.
 %
 %   mat = op_gradv_n_u (spu, spv, msh, epsilon);
 %   [rows, cols, values] = op_gradv_n_u (spu, spv, msh, epsilon);
