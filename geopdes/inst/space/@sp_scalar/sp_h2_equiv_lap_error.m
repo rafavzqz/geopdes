@@ -1,6 +1,6 @@
-% SP_H2_ERROR: Evaluate the error in H^2 norm, H^1 and L^2 norms.
+% SP_H2_EQUIV_LAP_ERROR: Evaluate the error in H^2 equivalent seminorm with laplacian, H^1 and L^2 norms.
 %
-%   [errh2, errh1, errl2, errh2s, errh1s] = sp_h2_error (sp, msh, u, uex, graduex, hessuex)
+%   [errh2, errh1, errl2, errh2s, errh1s] = sp_h2_equiv_lap_error (sp, msh, u, uex, graduex, lapuex)
 %
 % INPUT:
 %
@@ -9,11 +9,11 @@
 %    u:       vector of dof weights
 %    uex:     function handle to evaluate the exact solution
 %    graduex: function handle to evaluate the gradient of the exact solution
-%    hessuex: function handle to evaluate the hessian of the exact solution
+%    lapuex:  function handle to evaluate the laplacian of the exact solution
 %
 % OUTPUT:
 %
-%     errh2: error in H^2 norm
+%     errh2: error in (equivalent) H^2 norm
 %     errh1: error in H^1 norm
 %     errl2: error in L^2 norm
 %     errh2s: error in H^2 seminorm
@@ -22,6 +22,7 @@
 % Copyright (C) 2010 Carlo de Falco
 % Copyright (C) 2011, 2016, 2017 Rafael Vazquez
 % Copyright (C) 2015, 2016 Viacheslav Balobanov
+% Copyright (C) 2022 Andrea Farahat
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by

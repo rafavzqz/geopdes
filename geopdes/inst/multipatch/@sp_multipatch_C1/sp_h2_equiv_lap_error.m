@@ -1,21 +1,21 @@
-% SP_H2_ERROR: Evaluate the error in H^2 equivalent seminorm with laplacian, H^1 and L^2 norms.
+% SP_H2_EQUIV_LAP_ERROR: Evaluate the error in H^2 equivalent seminorm with laplacian, H^1 and L^2 norms.
 %
 %   [errh2, errh1, errl2, errh2s, errh1s] = sp_h2_error (sp, msh, u, uex, graduex, lapuex)
 %
 % INPUT:
 %
-%   space: object defining the space of discrete functions (see sp_multipatch_C1)
-%   msh:   object defining the domain partition and the quadrature rule (see msh_multipatch)
-%   u:     vector of dof weights
-%   uex:   function handle to evaluate the exact solution
+%   space:   object defining the space of discrete functions (see sp_multipatch_C1)
+%   msh:     object defining the domain partition and the quadrature rule (see msh_multipatch)
+%   u:       vector of dof weights
+%   uex:     function handle to evaluate the exact solution
 %   graduex: function handle to evaluate the gradient of the exact solution
-%   lapuex: function handle to evaluate the laplacian of the exact solution
+%   lapuex:  function handle to evaluate the laplacian of the exact solution
 %
 % OUTPUT:
 %
-%   errh2: error in H^2 norm
-%   errh1: error in H^1 norm
-%   errl2: error in L^2 norm
+%   errh2:  error in (equivalent) H^2 norm
+%   errh1:  error in H^1 norm
+%   errl2:  error in L^2 norm
 %   errh2s: error in H^2 seminorm
 %   errh1s: error in H^1 seminorm
 %
