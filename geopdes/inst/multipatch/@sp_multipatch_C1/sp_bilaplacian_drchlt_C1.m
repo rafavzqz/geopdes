@@ -60,48 +60,51 @@ n_boundaries = numel(msh.boundaries); % number of boundary edges
 global_refs = numel(space.interfaces) - n_boundaries + refs; % global numbering of Dirichlet boundary edges
 
 for iv = 1 : numel(space.vertices)
-  if numel(space.vertices(iv).patches)>1
+  if (space.vertices(iv).boundary_vertex && space.vertices(iv).valence_p>1)
   % Loop just over Dirichlet boundary vertices
-      if ~isempty(intersect(global_refs, space.vertices(iv).edges))
-          if (space.vertices(iv).boundary_vertex)
+    if (~isempty(intersect(global_refs, space.vertices(iv).edges)))
+      patches = space.vertices(iv).patches([1 end]);
 
-            patches = space.vertices(iv).patches([1 end]);
+      operations = space.vertices(iv).patch_reorientation([1 end], :);
+      indices_loc_R = indices_reorientation(space.sp_patch{patches(1)}.ndof_dir, operations(1, :));
+      indices_loc_L = indices_reorientation(space.sp_patch{patches(2)}.ndof_dir, operations(2, :));
 
-            operations = space.vertices(iv).patch_reorientation([1 end], :);
-            indices_loc_R = indices_reorientation(space.sp_patch{patches(1)}.ndof_dir, operations(1, :));
-            indices_loc_L = indices_reorientation(space.sp_patch{patches(2)}.ndof_dir, operations(2, :));
+      indices_loc_R = indices_loc_R(:);
+      indices_loc_L = indices_loc_L(:);
 
-            indices_loc_R = indices_loc_R(:);
-            indices_loc_L = indices_loc_L(:);
-
-            Cpatch_ind_R = indices_loc_R([2 3 space.sp_patch{patches(1)}.ndof_dir(1)+2]);
-            Cpatch_ind_L = indices_loc_L([space.sp_patch{patches(2)}.ndof_dir(1)+1 space.sp_patch{patches(2)}.ndof_dir(1)+2 2*space.sp_patch{patches(2)}.ndof_dir(1)+1]);
+%       Cpatch_ind_R = indices_loc_R([2 3 space.sp_patch{patches(1)}.ndof_dir(1)+2]);
+%       Cpatch_ind_L = indices_loc_L([space.sp_patch{patches(2)}.ndof_dir(1)+1 space.sp_patch{patches(2)}.ndof_dir(1)+2 2*space.sp_patch{patches(2)}.ndof_dir(1)+1]);
+      Cpatch_ind_R = indices_loc_R([1 2 3 space.sp_patch{patches(1)}.ndof_dir(1)+[1 2]]);
+      if (space.vertices(iv).valence_p == 2)
+        Cpatch_ind_L = indices_loc_L([space.sp_patch{patches(2)}.ndof_dir(1)+[1 2] 2*space.sp_patch{patches(2)}.ndof_dir(1)+1]);
+      else
+        Cpatch_ind_L = indices_loc_L([space.sp_patch{patches(2)}.ndof_dir(1)+[1 2] 2*space.sp_patch{patches(2)}.ndof_dir(1)+1]);
+      end
 
 % TODO: it is probably enough to use CC_vertices (and CC_edges)
-            [Cpatch1, Cpatch_cols1] = sp_compute_Cpatch (space, patches(1));
-            [Cpatch2, Cpatch_cols2] = sp_compute_Cpatch (space, patches(2));
+      [Cpatch1, Cpatch_cols1] = sp_compute_Cpatch (space, patches(1));
+      [Cpatch2, Cpatch_cols2] = sp_compute_Cpatch (space, patches(2));
 
-            [~,~,inds1] = intersect (space.dofs_on_vertex{iv}, Cpatch_cols1);
-            [~,~,inds2] = intersect (space.dofs_on_vertex{iv}, Cpatch_cols2);
+      [~,~,inds1] = intersect (space.dofs_on_vertex{iv}, Cpatch_cols1);
+      [~,~,inds2] = intersect (space.dofs_on_vertex{iv}, Cpatch_cols2);
 
-            M_ker = [Cpatch1(Cpatch_ind_R, inds1); ...
-                     Cpatch2(Cpatch_ind_L, inds2)];
-%             M_ker = M_bdry(space.dofs_on_vertex{iv}, space.dofs_on_vertex{iv});
-            ker = null(full(M_ker));
-            if (~isempty(ker))
-              count_vert = count_vert + 1;
-              [~, ind] = max(abs(ker));
+      M_ker = [Cpatch1(Cpatch_ind_R, inds1); ...
+               Cpatch2(Cpatch_ind_L, inds2)];
+%       M_ker = M_bdry(space.dofs_on_vertex{iv}, space.dofs_on_vertex{iv});
+      ker = null(full(M_ker));
+      if (~isempty(ker))
+        count_vert = count_vert + 1;
+        [~, ind] = max(abs(ker));
 
-              row_inds = (count_vert-1)*6 + (1:6);
-              B_change_local = blkdiag (B_change_local, ker(:));
+        row_inds = (count_vert-1)*6 + (1:6);
+        B_change_local = blkdiag (B_change_local, ker(:));
 
-              dofs_on_vertex = space.dofs_on_vertex{iv};
-              vertices_numbers(count_vert) = iv;
-              dofs_to_remove(count_vert) = dofs_on_vertex(ind);
-              row_indices(row_inds) = dofs_on_vertex;
-            end
-          end
+        dofs_on_vertex = space.dofs_on_vertex{iv};
+        vertices_numbers(count_vert) = iv;
+        dofs_to_remove(count_vert) = dofs_on_vertex(ind);
+        row_indices(row_inds) = dofs_on_vertex;
       end
+    end
   end
 end
 
