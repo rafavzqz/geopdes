@@ -78,7 +78,7 @@ for iv = 1 : numel(space.vertices)
       if (space.vertices(iv).valence_p == 2)
         Cpatch_ind_L = indices_loc_L([space.sp_patch{patches(2)}.ndof_dir(1)+[1 2] 2*space.sp_patch{patches(2)}.ndof_dir(1)+1]);
       else
-        Cpatch_ind_L = indices_loc_L([space.sp_patch{patches(2)}.ndof_dir(1)+[1 2] 2*space.sp_patch{patches(2)}.ndof_dir(1)+1]);
+        Cpatch_ind_L = indices_loc_L([2 space.sp_patch{patches(2)}.ndof_dir(1)+[1 2] 2*space.sp_patch{patches(2)}.ndof_dir(1)+1]);
       end
 
 % TODO: it is probably enough to use CC_vertices (and CC_edges)
