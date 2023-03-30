@@ -1,4 +1,4 @@
-function [u_drchlt, drchlt_dofs, kernel_info] = sp_bilaplacian_drchlt_C1_exact_rafa_mp (space, msh, refs, uex, gradex)
+function [u_drchlt, drchlt_dofs, kernel_info] = sp_bilaplacian_drchlt_C1_exact (space, msh, refs, uex, gradex)
 
 % refs should be the whole boundary, for now
 M = spalloc (space.ndof, space.ndof, space.ndof);
