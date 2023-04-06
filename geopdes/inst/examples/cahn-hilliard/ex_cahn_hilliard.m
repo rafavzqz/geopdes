@@ -8,26 +8,31 @@ lambda = (1/(4*sqrt(2)*pi))^2;
 problem_data.lambda  = @(x, y) lambda* ones(size(x));
 
 % Periodic directions and boundary conditions
-problem_data.periodic_directions = [1 2];
+problem_data.periodic_directions = [];
 
 % Time and time step size
-Time_max = .02;
-dt = 1e-3;
+Time_max = .08;
+dt = 1e-2;
 time_step_save = linspace(dt,Time_max,20);
 problem_data.time = 0;
 problem_data.Time_max = Time_max;
 
-% Initial conditions
-mean = 0.0;
-var = 0.2;
+
+% Penalty parameters
+problem_data.pen_nitsche = 1e4 * lambda; % Nitsche's method parameter
+problem_data.pen_projection = 1000;      % parameter of the penalized L2 projection (see initial conditions)
+
+% 2) INITIAL CONDITIONS
+% mean = 0.0;
+% var = 0.2;
 % ic_fun = @(x, y) mean + (rand(size(x))*2-1)*var; % Random initial condition
 ic_fun = @(x, y) 0.1 * cos(2*pi*x) .* cos(2*pi*y); % Condition as in Gomes, Reali, Sangalli, JCP (2014).
 problem_data.fun_u = ic_fun;
 % problem_data.fun_udot = [];
 
-% 2) CHOICE OF THE DISCRETIZATION PARAMETERS
+% 3) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
-deg = 3; nel = 20;
+deg = 2; nel = 10;
 method_data.degree     = [deg deg];    % Degree of the splines
 method_data.regularity = [deg-1 deg-1];    % Regularity of the splines
 method_data.nsub       = [nel nel];  % Number of subdivisions
@@ -37,14 +42,12 @@ method_data.nquad      = [deg+1 deg+1];    % Points for the Gaussian quadrature 
 method_data.rho_inf_gen_alpha = 0.5; % Parameter for generalized-alpha method
 method_data.dt = dt;                 % Time step size
 
-% % 3) INITIAL CONDITIONS
-% clear initial_condition
-% initial_condition.fun_u = ic_fun;
 
-% 3) CALL TO THE SOLVER
+
+% 4) CALL TO THE SOLVER
 [geometry, msh, space, results] = solve_cahn_hilliard (problem_data, method_data, time_step_save);
 
-% 4) POST-PROCESSING        
+% 5) POST-PROCESSING        
 vtk_pts = {linspace(0, 1, nel*4), linspace(0, 1, nel*4)};
 folder_name = strcat('results_CH_p',num2str(deg),'_nel',num2str(nel),'_lambda',num2str(lambda));
 status = mkdir(folder_name);
