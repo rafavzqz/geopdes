@@ -1,6 +1,46 @@
+% SP_BILAPLACIAN_DRCHLT_C1: assign the degrees of freedom of essential boundary conditions (value and normal derivative) through a projection.
+%  On boundary vertices, the kernel is computed to remove linear dependencies when restricting the functions to the boundary.
+%
+%   [u, dofs] = sp_drchlt_l2_proj (sp, msh, refs, h, dudn)
+%
+% INPUT:
+%
+%  sp:         object representing the multipatch space of trial functions (see sp_multipatch)
+%  msh:        object containing the domain partition and the quadrature rule (see msh_multipatch)
+%  refs:       boundary references on which the conditions are imposed
+%  h:          function handle to compute the Dirichlet condition
+%  dudn:       function handle to compute the Neumann condition
+%
+% OUTPUT:
+%
+%  u:           assigned value to the degrees of freedom
+%  dofs:        global numbering of the corresponding basis functions
+%  kernel_info: a struct with information of kernel computation, containing:
+%              - vertices_numbers: vertices which contain a function in the kernel
+%              - all_vertex_dofs:  all functions on those vertices
+%              - quasi_interior_dofs: functions that will be treated as
+%                                     internal ones (as many as in the kernel)
+%              - B_change_local: coefficients of the functions in the kernel,
+%                                in terms of vertex basis functions. Matrix of size
+%                                numel(all_vertex_dofs) x numel (quasi_interior_dofs)
+%
+% Copyright (C) 2022-2023 Cesare Bracco, Andrea Farahat, Rafael Vazquez
+%
+%    This program is free software: you can redistribute it and/or modify
+%    it under the terms of the GNU General Public License as published by
+%    the Free Software Foundation, either version 3 of the License, or
+%    (at your option) any later version.
+
+%    This program is distributed in the hope that it will be useful,
+%    but WITHOUT ANY WARRANTY; without even the implied warranty of
+%    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+%    GNU General Public License for more details.
+%
+%    You should have received a copy of the GNU General Public License
+%    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 function [u_drchlt, drchlt_dofs, kernel_info] = sp_bilaplacian_drchlt_C1 (space, msh, refs, h, dudn)
 
-% refs should be the whole boundary, for now
 M = spalloc (space.ndof, space.ndof, space.ndof);
 rhs = zeros (space.ndof, 1);
 

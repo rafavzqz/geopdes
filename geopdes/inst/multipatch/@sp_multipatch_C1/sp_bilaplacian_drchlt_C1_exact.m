@@ -1,3 +1,44 @@
+% SP_BILAPLACIAN_DRCHLT_C1_EXACT: assign the degrees of freedom of essential boundary conditions (value and normal derivative) through a projection.
+%  On boundary vertices, the kernel is computed to remove linear dependencies when restricting the functions to the boundary.
+%
+%   [u, dofs] = sp_drchlt_l2_proj (sp, msh, refs, h, dudn)
+%
+% INPUT:
+%
+%  sp:         object representing the multipatch space of trial functions (see sp_multipatch)
+%  msh:        object containing the domain partition and the quadrature rule (see msh_multipatch)
+%  refs:       boundary references on which the conditions are imposed
+%  uex:        function handle to compute the Dirichlet condition from the exact solution
+%  graduex:    function handle to compute the Neumann condition from the exact gradient
+%
+% OUTPUT:
+%
+%  u:           assigned value to the degrees of freedom
+%  dofs:        global numbering of the corresponding basis functions
+%  kernel_info: a struct with information of kernel computation, containing:
+%              - vertices_numbers: vertices which contain a function in the kernel
+%              - all_vertex_dofs:  all functions on those vertices
+%              - quasi_interior_dofs: functions that will be treated as
+%                                     internal ones (as many as in the kernel)
+%              - B_change_local: coefficients of the functions in the kernel,
+%                                in terms of vertex basis functions. Matrix of size
+%                                numel(all_vertex_dofs) x numel (quasi_interior_dofs)
+%
+% Copyright (C) 2022-2023 Cesare Bracco, Andrea Farahat, Rafael Vazquez
+%
+%    This program is free software: you can redistribute it and/or modify
+%    it under the terms of the GNU General Public License as published by
+%    the Free Software Foundation, either version 3 of the License, or
+%    (at your option) any later version.
+
+%    This program is distributed in the hope that it will be useful,
+%    but WITHOUT ANY WARRANTY; without even the implied warranty of
+%    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+%    GNU General Public License for more details.
+%
+%    You should have received a copy of the GNU General Public License
+%    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 function [u_drchlt, drchlt_dofs, kernel_info] = sp_bilaplacian_drchlt_C1_exact (space, msh, refs, uex, gradex)
 
 % refs should be the whole boundary, for now
@@ -80,6 +121,8 @@ for iv = 1 : numel(space.vertices)
       else
         Cpatch_ind_L = indices_loc_L([2 space.sp_patch{patches(2)}.ndof_dir(1)+[1 2] 2*space.sp_patch{patches(2)}.ndof_dir(1)+1]);
       end
+%       Cpatch_ind_R = indices_loc_R([1 2 3 space.sp_patch{patches(1)}.ndof_dir(1)+2]);
+%       Cpatch_ind_L = indices_loc_L([space.sp_patch{patches(2)}.ndof_dir(1)+[1 2] 2*space.sp_patch{patches(2)}.ndof_dir(1)+1]);
 
 % TODO: it is probably enough to use CC_vertices (and CC_edges)
       [Cpatch1, Cpatch_cols1] = sp_compute_Cpatch (space, patches(1));
