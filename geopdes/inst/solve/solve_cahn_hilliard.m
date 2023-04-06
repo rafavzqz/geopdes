@@ -4,7 +4,7 @@
 %
 %  du/dt - Delta (mu(u) - lambda*Delta u) = 0
 %
-% with Delta the Laplacian, and mu(u) = alpha u^3 - beta u, and periodic boundary conditions.
+% with Delta the Laplacian, and mu(u) = alpha u^3 - beta u, and periodic or Neumann boundary conditions.
 %
 % The values of alpha and beta (or mu itself) can be changed in op_gradmu_gradv_tp.
 %
