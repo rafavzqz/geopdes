@@ -288,7 +288,7 @@ for iref = 1:numel(interfaces_all)
 % Compute the Greville points, and the auxiliary mesh and space objects for
 %  functions with reduced degree or increased regularity
   for ii = 1:npatches_on_edge
-%%    %ind1  = [2 2 1 1]; ind2 = [1 1 2 2]
+%    %ind1  = [2 2 1 1]; ind2 = [1 1 2 2]
     ind2 = ceil (sides(ii)/2);
     ind1 = setdiff (1:msh.ndim, ind2);
 
@@ -424,9 +424,9 @@ for kver = 1:numel(vertices)
   KV_matrices=cell(1,valence_p);
   
   geo_local = reorientation_patches (operations, geometry(patches));
-  %Here we need to further modify geo_local by rotating the parametrization
-  %of the patches, that is, for each ip in patches, rotate the control points
-  %geometry(ip).nurbs.coefs (4 x (number of control points in dir 1) x (number of control points in dir 2) matrix)
+  % Here we need to further modify geo_local by rotating the parametrization
+  %  of the patches, that is, for each ip in patches, rotate the control points
+  %  geometry(ip).nurbs.coefs (4 x (number of control points in dir 1) x (number of control points in dir 2) matrix)
 
 % Precompute the derivatives and compute sigma
   sigma = 0;
@@ -443,22 +443,22 @@ for kver = 1:numel(vertices)
     sigma = sigma + norm (derivatives_new1{iptc}, Inf);
   end
   sigma = deg_aux * nbrk_aux * valence_p / sigma;
-  %Storing sigma for output
+% Store sigma for output
   v_fun_matrices{1,kver} = sigma;
   
   if (msh.ndim+1 == msh.rdim)
-    %Tangent vectors
+    % Tangent vectors
     Du_F = derivatives_new1{1}(:,1);
     Dv_F = derivatives_new1{1}(:,2);
-    %Normal vector
+    % Normal vector
     normal = cross(Du_F,Dv_F);
     unit_normal = normal/norm(normal);
-    %Vector orthogonal to n and z along which the geometry is rotated (rotation axis)
+    % Vector orthogonal to n and z along which the geometry is rotated (rotation axis)
     r = cross(unit_normal,[0 0 1]');
-    %Angle between n and z
+    % Angle between n and z
     cos_th = [0 0 1]*unit_normal;
     sin_th = norm(r);
-    %Rotation matrix
+    % Rotation matrix
     R = [cos_th + r(1)^2*(1-cos_th),r(1)*r(2)*(1-cos_th)-r(3)*sin_th,r(1)*r(3)*(1-cos_th)+r(2)*sin_th;...
          r(1)*r(2)*(1-cos_th)+r(3)*sin_th,cos_th + r(2)^2*(1-cos_th),r(2)*r(3)*(1-cos_th)-r(1)*sin_th;...
          r(1)*r(3)*(1-cos_th)-r(2)*sin_th,r(3)*r(2)*(1-cos_th)+r(1)*sin_th,cos_th + r(3)^2*(1-cos_th)];
@@ -554,13 +554,11 @@ for kver = 1:numel(vertices)
         mat_deltas = [(j1==2)*(j2==0), (j1==1)*(j2==1); (j1==1)*(j2==1), (j1==0)*(j2==2)];
         vec_deltas = [(j1==1)*(j2==0); (j1==0)*(j2==1)];
         c0 = (j1==0)*(j2==0);
-        %M_{i_{m-1},i}
         c1_a = vec_deltas.'*t0_prev;
         c2_a = t0_prev.'*mat_deltas*t0_prev + vec_deltas.'*t0p_prev;
         d0_a = vec_deltas.'*d0_prev;
         d1_a = t0_prev.'*mat_deltas*d0_prev + vec_deltas.'*d0p_prev;
  
-        %M_{i_{m+1},i}
         c1_b = vec_deltas.'*t0_next;
         c2_b = t0_next.'*mat_deltas*t0_next + vec_deltas.'*t0p_next;
         d0_b = vec_deltas.'*d0_next;
@@ -576,7 +574,6 @@ for kver = 1:numel(vertices)
                                         c0+const1*c1_b/(deg_aux*nbrk_aux)+const2*c2_b/(deg_aux*(deg_aux-1)*nbrk_aux^2), ...
                                         d0_b/(deg_aux*nbrk_aux), ...
                                         d0_b/(deg_aux*nbrk_aux)+d1_b/(deg_aux*(deg_aux-1)*nbrk_aux^2)].';
-        %V_{i_m,i}  
         e11 = t0_prev.'*mat_deltas*t0_next + vec_deltas.'*Duv_F;
         VV(corner_4dofs,jfun) = sigma^(j1+j2)*[c0, ...
                                                c0+c1_a/(deg_aux*nbrk_aux), ...
@@ -586,7 +583,7 @@ for kver = 1:numel(vertices)
       end
     end
     CC_vertices{kver}{ipatch} = E_prev*K_prev + E_next*K_next - VV;
-    %Storing the matrices for output
+% Store the matrices for output
     KV_matrices{ipatch}.K_prev = K_prev;
     KV_matrices{ipatch}.K_next = K_next;
     KV_matrices{ipatch}.V = VV;
