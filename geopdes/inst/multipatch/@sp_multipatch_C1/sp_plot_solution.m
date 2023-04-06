@@ -28,14 +28,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp_plot_solution (u, space, geometry, npts, ncuts)
-
-if (nargin < 4)
-  npts = [];
-end
-if (nargin < 5)
-  ncuts = [];
-end
+function sp_plot_solution (u, space, geometry, varargin)
 
 % if (isa (space.sp_patch{1}, 'sp_vector'))
 %   disp ('Warning: a different scaling is used for each patch')
@@ -45,7 +38,7 @@ hold_flag = ishold ;
 for iptc = 1:space.npatch
 %   if (isempty (space.dofs_ornt))
     [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
-    sp_plot_solution (Cpatch* u(Cpatch_cols), space.sp_patch{iptc}, geometry(iptc), npts, ncuts);
+    sp_plot_solution (Cpatch* u(Cpatch_cols), space.sp_patch{iptc}, geometry(iptc), varargin{:});
 %   else
 %     sp_plot_solution (u(space.gnum{iptc}) .* space.dofs_ornt{iptc}.', space.sp_patch{iptc}, geometry(iptc), npts, ncuts);
 %   end
