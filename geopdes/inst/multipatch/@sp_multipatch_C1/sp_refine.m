@@ -1,7 +1,7 @@
 % SP_REFINE: construct a refined space from a given one. The function only
 %                refines the space, the mesh must be refined separately.
 %
-%     [sp_fine, Proj] = sp_refine (space, msh, nsub, [degree], [regularity]);
+%     [sp_fine, Proj, Proj0, Proj1] = sp_refine (space, msh, nsub, [degree], [regularity]);
 %
 % The same number of subdivisions, degree and regularity is applied to every patch
 %
@@ -19,8 +19,10 @@
 %     Proj:    the coefficients relating 1D splines of the coarse and the fine spaces for each patch. 
 %                A cell-array of size 1 x npatch, each entry containing the
 %                coefficients for the patch (either for scalar or vector-valued spaces).
+%     Proj0:   similar to Proj, for degree p and regularity r+1.
+%     Proj1:   similar to Proj, for degree p-1 and regularity r.
 %
-% Copyright (C) 2015, 2016 Rafael Vazquez
+% Copyright (C) 2015-2023 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
