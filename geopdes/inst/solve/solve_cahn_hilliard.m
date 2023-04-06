@@ -35,6 +35,8 @@
 %    - nquad:      number of points for Gaussian quadrature rule
 %    - dt:         time step size for generalized-alpha method
 %    - rho_inf_gen_alpha: parameter in [0,1], which governs numerical damping of the generalized alpha method
+%    - Cpen_nitsche: penalization parameter for Nitsche's method, to impose Neumann conditions
+%    - Cpen_projection: penalization parameter to impose zero flux for the initial condition
 %
 % OUTPUT:
 %
@@ -133,7 +135,7 @@ lapl_mat = op_laplaceu_laplacev_tp (space, space, msh, lambda);
 bnd_mat = int_boundary_term (space, msh, lambda, nmnn_sides);
 
 % Compute the penalty matrix
-[Pen, pen_rhs] = penalty_matrix (space, msh, nmnn_sides, pen_nitsche);
+[Pen, pen_rhs] = penalty_matrix (space, msh, nmnn_sides, Cpen_nitsche);
 
 
 %%-------------------------------------------------------------------------
@@ -141,14 +143,14 @@ bnd_mat = int_boundary_term (space, msh, lambda, nmnn_sides);
 time = 0;
 if (exist('fun_u', 'var') && ~isempty(fun_u))
   rhs = op_f_v_tp (space, msh, fun_u);
-  u_n = (mass_mat + pen_projection/pen_nitsche * Pen)\rhs;
+  u_n = (mass_mat + Cpen_projection/Cpen_nitsche * Pen)\rhs;
 else
   u_n = zeros(space.ndof, 1);
 end
 
 if (exist('fun_udot', 'var') && ~isempty(fun_udot))
   rhs = op_f_v_tp(space, msh, fun_udot);
-  udot_n = (mass_mat + pen_projection/pen_nitsche * Pen)\rhs;
+  udot_n = (mass_mat + Cpen_projection/Cpen_nitsche * Pen)\rhs;
 else
   udot_n = zeros(space.ndof, 1);
 end
@@ -374,65 +376,6 @@ function [A] = int_boundary_term (space, msh,  lambda, nmnn_sides)
   else
     A = [];
   end
-end
-
-%--------------------------------------------------------------------------
-% Operator grav_n_laplaceu
-%--------------------------------------------------------------------------
-
-function varargout = op_gradv_n_laplaceu (spu, spv, msh, coeff)
-
-  gradv = reshape (spv.shape_function_gradients, spv.ncomp, [], ...
-		   msh.nqn, spv.nsh_max, msh.nel);
-
-  ndim = size (gradv, 2);
-
-  shpu = reshape (spu.shape_function_laplacians, spu.ncomp, msh.nqn, spu.nsh_max, msh.nel);
-
-  rows = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
-  cols = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
-  values = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
-
-  jacdet_weights = msh.jacdet .* msh.quad_weights .* coeff;
-  
-  ncounter = 0;
-  for iel = 1:msh.nel
-    if (all (msh.jacdet(:,iel)))
-      gradv_iel = gradv(:,:,:,:,iel);
-      normal_iel = reshape (msh.normal(:,:,iel), [1, ndim, msh.nqn]);
-
-      gradv_n = reshape (sum (bsxfun (@times, gradv_iel, normal_iel), 2), spv.ncomp, msh.nqn, spv.nsh_max, 1);
-      shpu_iel = reshape (shpu(:, :, :, iel), spu.ncomp, msh.nqn, 1, spu.nsh_max);
-
-      jacdet_iel = reshape (jacdet_weights(:,iel), [1,msh.nqn,1,1]);
-
-      gradv_n_times_jw = bsxfun (@times, jacdet_iel, gradv_n);
-      tmp1 = sum (bsxfun (@times, gradv_n_times_jw, shpu_iel), 1);
-      elementary_values = reshape (sum (tmp1, 2), spv.nsh_max, spu.nsh_max);
-      
-      [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
-      indices = rows_loc & cols_loc;
-      rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc(indices);
-      cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc(indices);
-      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = elementary_values(indices);
-      ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);
-      
-    else
-      warning ('geopdes:jacdet_zero_at_quad_node', 'op_gradv_n_u: singular map in element number %d', iel)
-    end
-  end
-  
-
-  if (nargout == 1 || nargout == 0)
-    varargout{1} = sparse (rows, cols, values, spv.ndof, spu.ndof);
-  elseif (nargout == 3)
-    varargout{1} = rows;
-    varargout{2} = cols;
-    varargout{3} = values;
-  else
-    error ('op_gradv_n_u: wrong number of output arguments')
-  end
-
 end
 
 %--------------------------------------------------------------------------
