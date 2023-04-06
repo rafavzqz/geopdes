@@ -130,7 +130,7 @@ mass_mat = op_u_v_tp(space,space,msh);
 lapl_mat = op_laplaceu_laplacev_tp (space, space, msh, lambda);
 
 % Compute the boundary term
-term4 = int_term_4 (space, msh, lambda, nmnn_sides);
+bnd_mat = int_boundary_term (space, msh, lambda, nmnn_sides);
 
 % Compute the penalty matrix
 [Pen, pen_rhs] = penalty_matrix (space, msh, nmnn_sides, pen_nitsche);
@@ -176,7 +176,7 @@ while time < Time_max
   disp(strcat('time step t=',num2str(time)))
 
   [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gamma, ...
-                    mass_mat, lapl_mat, term4, Pen, pen_rhs, space, msh);
+                    mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, space, msh);
 
   % check flux through the boundary
   flux = check_flux_phase_field(space, msh, u_n1, zeros(size(u_n1)));
@@ -227,7 +227,7 @@ end
 %--------------------------------------------------------------------------
 
 function [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gamma, ...
-                       mass_mat, lapl_mat, term4, Pen, pen_rhs, space, msh)
+                       mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, space, msh)
 
 % Convergence criteria
   n_max_iter = 20;
@@ -247,8 +247,7 @@ function [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gam
 
   % Compute the residual (internal)
     [Res_gl, stiff_mat] = Res_K_cahn_hilliard (space, msh, ...
-                          mass_mat, lapl_mat, term4, Pen, pen_rhs, ...
-                          u_a, udot_a);
+                          mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, u_a, udot_a);
 
   % Convergence check
     if iter == 0
@@ -278,7 +277,7 @@ function [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gam
 
     udot_n1 = udot_n1 + d_udot;
     u_n1 = u_n1 + gamma * dt* d_udot;
-end
+  end
 
 end
 
@@ -287,23 +286,22 @@ end
 %--------------------------------------------------------------------------
 
 function [Res_gl, stiff_mat] = Res_K_cahn_hilliard(space, msh, ...
-                          mass_mat, lapl_mat, term4, Pen, pen_rhs, ...
-                          u_a, udot_a)
+                          mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, u_a, udot_a)
 
-    % Double well (matrices)
-    [term2, term2K] = op_gradmu_gradv_tp(space, msh, u_a);    
+  % Double well (matrices)
+  [term2, term2K] = op_gradmu_gradv_tp(space, msh, u_a);    
  
-    % Residual
-    Res_gl = mass_mat*udot_a + term2*u_a  + lapl_mat*u_a;
+  % Residual
+  Res_gl = mass_mat*udot_a + term2*u_a  + lapl_mat*u_a;
 
-    % Tangent stiffness matrix (mass is not considered here)
-    stiff_mat = term2 + term2K + lapl_mat;
+  % Tangent stiffness matrix (mass is not considered here)
+  stiff_mat = term2 + term2K + lapl_mat;
 
-    % in case of neumann BC, add boundary terms
-    if isempty(term4) == 0
-         Res_gl = Res_gl - (term4 + term4') * u_a + Pen*u_a - pen_rhs;
-         stiff_mat = stiff_mat - (term4 + term4') + Pen;
-    end
+  % In case of neumann BC, add boundary terms
+  if (~isempty(bnd_mat))
+    Res_gl = Res_gl - (bnd_mat + bnd_mat.') * u_a + Pen*u_a - pen_rhs;
+    stiff_mat = stiff_mat - (bnd_mat + bnd_mat.') + Pen;
+  end
 end
 
 %--------------------------------------------------------------------------
@@ -349,37 +347,33 @@ function [A, B] = op_gradmu_gradv_tp (space, msh,  uhat)
 end
 
 %--------------------------------------------------------------------------
-% term 4, boundary term
+% Boundary term, \int_\Gamma (\Delta u) (\partial v / \partial n)
 %--------------------------------------------------------------------------
 
-function [A] = int_term_4 (space, msh,  lambda, nmnn_sides)
+function [A] = int_boundary_term (space, msh,  lambda, nmnn_sides)
 
-  if length(nmnn_sides)>0
+  if (~isempty(nmnn_sides))
 
     A =  spalloc (space.ndof, space.ndof, 3*space.ndof);
 
+    for iside=1:numel(nmnn_sides)   
 
-    for iside=1:length(nmnn_sides)   
+      msh_side = msh_eval_boundary_side (msh, nmnn_sides(iside) ) ;
+      msh_side_int = msh_boundary_side_from_interior (msh, nmnn_sides(iside) ) ;
+      sp_side = space.constructor ( msh_side_int) ;
+      sp_side = sp_precompute ( sp_side , msh_side_int , 'gradient' , true, 'laplacian', true );
 
-        msh_side = msh_eval_boundary_side (msh, nmnn_sides(iside) ) ;
-        msh_side_int = msh_boundary_side_from_interior (msh, nmnn_sides(iside) ) ;
-        sp_side = space.constructor ( msh_side_int) ;
-        sp_side = sp_precompute ( sp_side , msh_side_int , 'gradient' , true, 'laplacian', true );
+      for idim = 1:msh.rdim
+        x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
+      end
+      coe_side = lambda (x{:});
 
-        for idim = 1:msh.rdim
-            x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
-        end
-        coe_side = lambda (x{:});
-
-        A =  A + op_gradv_n_laplaceu(sp_side ,sp_side ,msh_side, coe_side);
+      A =  A + op_gradv_n_laplaceu(sp_side ,sp_side ,msh_side, coe_side);
     end
 
-
-else
+  else
     A = [];
-end
-
-
+  end
 end
 
 %--------------------------------------------------------------------------
@@ -438,25 +432,23 @@ function varargout = op_gradv_n_laplaceu (spu, spv, msh, coeff)
   else
     error ('op_gradv_n_u: wrong number of output arguments')
   end
-  
-  
+
 end
 
 %--------------------------------------------------------------------------
-% penalty term
+% Penalty term
 %--------------------------------------------------------------------------
 
 function [P, rhs] = penalty_matrix (space, msh, nmnn_sides, pen)
 
-    P =  spalloc (space.ndof, space.ndof, 3*space.ndof);
-    rhs = zeros(space.ndof,1);
+  P =  spalloc (space.ndof, space.ndof, 3*space.ndof);
+  rhs = zeros(space.ndof,1);
 
-    for iside = 1:length(nmnn_sides)
-        [mass_pen, rhs_pen] = penalty_grad (space, msh, nmnn_sides(iside), pen);
-        P = P + mass_pen; 
-        rhs = rhs + rhs_pen;
-
-    end
+  for iside = 1:numel(nmnn_sides)
+    [mass_pen, rhs_pen] = penalty_grad (space, msh, nmnn_sides(iside), pen);
+    P = P + mass_pen; 
+    rhs = rhs + rhs_pen;
+  end
 
 end
 
@@ -472,13 +464,12 @@ sp_side = sp_precompute ( sp_side , msh_side_int , 'gradient', true );
 coe_side = pen .* msh_side.charlen; 
 mass_pen = op_gradu_n_gradv_n(sp_side, sp_side, msh_side, coe_side);
 
-
-rhs_pen  = zeros(space.ndof,1); % no flux
+rhs_pen  = zeros(space.ndof,1);
 
 end
 
 %--------------------------------------------------------------------------
-% check flux through the boundaries
+% Check flux through the boundaries
 %--------------------------------------------------------------------------
 
 function flux = check_flux_phase_field(space, msh, uhat, uhat0)
@@ -486,34 +477,26 @@ function flux = check_flux_phase_field(space, msh, uhat, uhat0)
 sides = [1,2,3,4]; % all the boundaries
 flux = 0;
 
-for iside=1:length(sides)   
+for iside = 1:numel(sides)   
 
-    msh_side = msh_eval_boundary_side (msh, sides(iside) ) ;
-    msh_side_int = msh_boundary_side_from_interior (msh, sides(iside) ) ;
-    sp_side = space.constructor ( msh_side_int) ;
-    sp_side = sp_precompute ( sp_side , msh_side_int , 'gradient' , true );
+  msh_side = msh_eval_boundary_side (msh, sides(iside) ) ;
+  msh_side_int = msh_boundary_side_from_interior (msh, sides(iside) ) ;
+  sp_side = space.constructor ( msh_side_int) ;
+  sp_side = sp_precompute ( sp_side , msh_side_int , 'gradient' , true );
 
-
-    gradu = sp_eval_msh (uhat-uhat0, sp_side, msh_side, 'gradient');
-   
-
+  gradu = sp_eval_msh (uhat-uhat0, sp_side, msh_side, 'gradient');
     
-    valu = zeros(sp_side.ncomp, size(msh_side.quad_weights,1), size(msh_side.quad_weights,2));
-    for idim = 1:msh.rdim
-        valu = valu + (gradu(idim,:,:) .* msh_side.normal(idim,:,:));
-    end
+  valu = zeros(sp_side.ncomp, size(msh_side.quad_weights,1), size(msh_side.quad_weights,2));
+  for idim = 1:msh.rdim
+    valu = valu + (gradu(idim,:,:) .* msh_side.normal(idim,:,:));
+  end
 
+  w =msh_side.quad_weights .* msh_side.jacdet;
+  err_elem = sum (reshape (valu, [msh_side.nqn, msh_side.nel]) .* w);
+  err  = sum (err_elem);
 
-    w =msh_side.quad_weights .* msh_side.jacdet;
-    err_elem = sum (reshape (valu, [msh_side.nqn, msh_side.nel]) .* w);
-    err  = sum (err_elem);
-
-
-    flux = flux + err;
-
+  flux = flux + err;
 end
-
-
 
 end
 
