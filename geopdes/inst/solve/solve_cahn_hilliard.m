@@ -120,26 +120,41 @@ for idir = 1:msh.ndim
   end
 end
 
-% Matrix and data for Neumann
-% [BC, indBC, dof_free] = impose_essential_neumann_weak(nmnn_sides, space, msh);
+%%-------------------------------------------------------------------------
+% Precompute matrices
+
+% Compute the mass matrix
+mass_mat = op_u_v_tp(space,space,msh);
+
+% Compute the laplace matrix
+lapl_mat = op_laplaceu_laplacev_tp (space, space, msh, lambda);
+
+% Compute the boundary term
+term4 = int_term_4 (space, msh, lambda, nmnn_sides);
+
+% Compute the penalty matrix
+[Pen, pen_rhs] = penalty_matrix (space, msh, nmnn_sides, pen_nitsche);
+
 
 %%-------------------------------------------------------------------------
-% Initial conditions, and assemble the mass matrix
+% Initial conditions
 time = 0;
-mass_mat = op_u_v_tp (space, space, msh);
 if (exist('fun_u', 'var') && ~isempty(fun_u))
   rhs = op_f_v_tp (space, msh, fun_u);
-  u_n = mass_mat\rhs;
+  u_n = (mass_mat + pen_projection/pen_nitsche * Pen)\rhs;
 else
   u_n = zeros(space.ndof, 1);
 end
 
 if (exist('fun_udot', 'var') && ~isempty(fun_udot))
   rhs = op_f_v_tp(space, msh, fun_udot);
-  udot_n = mass_mat\rhs;
+  udot_n = (mass_mat + pen_projection/pen_nitsche * Pen)\rhs;
 else
   udot_n = zeros(space.ndof, 1);
 end
+
+flux_initial = check_flux_phase_field(space, msh, u_n, zeros(size(u_n)));
+disp(strcat('initial flux =',num2str(flux_initial)))
 
 %%-------------------------------------------------------------------------
 % Initialize structure to store the results
@@ -156,12 +171,16 @@ results.time(1) = time;
 
 %%-------------------------------------------------------------------------
 % Loop over time steps
-lapl_mat = op_laplaceu_laplacev_tp (space, space, msh, lambda);
 while time < Time_max
   disp('----------------------------------------------------------------')
   disp(strcat('time step t=',num2str(time)))
 
-  [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gamma, mass_mat, lapl_mat, space, msh);
+  [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gamma, ...
+                    mass_mat, lapl_mat, term4, Pen, pen_rhs, space, msh);
+
+  % check flux through the boundary
+  flux = check_flux_phase_field(space, msh, u_n1, zeros(size(u_n1)));
+  disp(strcat('flux norm =',num2str(flux)))
 
   % Time step update
   time = time + dt;
@@ -202,46 +221,18 @@ end
 % FUNCTIONS
 %--------------------------------------------------------------------------
 
-%--------------------------------------------------------------------------
-% Neumann boundary conditions
-%--------------------------------------------------------------------------
-function [BC, indBC, dof_free] = impose_essential_neumann_weak(nmnn_sides, space, msh)
-
-if (~isempty(nmnn_sides))
-
-    BC =  spalloc (space.ndof, space.ndof, 3*space.ndof);
-    indBC = [];
-
-    for iside = nmnn_sides
-        indBC = union (indBC, space.boundary(iside).dofs);
-        msh_side = msh_eval_boundary_side (msh, iside);
-        msh_side_int = msh_boundary_side_from_interior (msh, iside);
-        sp_side = space.constructor (msh_side_int);
-        sp_side = sp_precompute (sp_side, msh_side_int, 'value', true, 'gradient', true);
-        coe_side = ones(msh_side.nqn, msh_side.nel);
-        BC =  BC + op_gradv_n_u(sp_side ,sp_side ,msh_side, coe_side);
-    end
-    BC = BC';
-    dof_free = setdiff(1:space.ndof, indBC);
-
-else
-    BC = [];
-    indBC = [];
-    dof_free = 1:space.ndof;
-end
-
-
-end
 
 %--------------------------------------------------------------------------
 % One step of generalized alpha-method
 %--------------------------------------------------------------------------
-function [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gamma, mass_mat, lapl_mat, space, msh)
+
+function [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gamma, ...
+                       mass_mat, lapl_mat, term4, Pen, pen_rhs, space, msh)
 
 % Convergence criteria
   n_max_iter = 20;
   tol_rel_res = 1e-10;
-%   tol_abs_res = 1e-10;
+  tol_abs_res = 1e-10;
 
 % Predictor step
   u_n1 = u_n;
@@ -249,12 +240,15 @@ function [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gam
 
 % Newton loop
   for iter = 0:n_max_iter
+
   % Field at alpha level
     udot_a = udot_n + a_m *(udot_n1-udot_n);
     u_a = u_n + a_f *(u_n1-u_n);
 
   % Compute the residual (internal)
-    [Res_gl, stiff_mat] = Res_K_cahn_hilliard (space, msh, mass_mat, lapl_mat, u_a, udot_a);
+    [Res_gl, stiff_mat] = Res_K_cahn_hilliard (space, msh, ...
+                          mass_mat, lapl_mat, term4, Pen, pen_rhs, ...
+                          u_a, udot_a);
 
   % Convergence check
     if iter == 0
@@ -268,11 +262,11 @@ function [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gam
       disp(strcat('norm (abs) residual=',num2str(norm_res)))
       break
     end
-%     if norm_res<tol_abs_res
-%       disp(strcat('iteration n°=',num2str(iter)))
-%       disp(strcat('norm absolute residual=',num2str(norm_res)))
-%       break
-%     end
+    if norm_res<tol_abs_res
+      disp(strcat('iteration n°=',num2str(iter)))
+      disp(strcat('norm absolute residual=',num2str(norm_res)))
+      break
+    end
     if iter == n_max_iter
       disp(strcat('Newton reached the maximum number of iterations'))
       disp(strcat('norm residual=',num2str(norm_res)))
@@ -291,7 +285,10 @@ end
 %--------------------------------------------------------------------------
 % Canh-Hilliard residual and tangent matrix
 %--------------------------------------------------------------------------
-function [Res_gl, stiff_mat] = Res_K_cahn_hilliard(space, msh, mass_mat, lapl_mat, u_a, udot_a)
+
+function [Res_gl, stiff_mat] = Res_K_cahn_hilliard(space, msh, ...
+                          mass_mat, lapl_mat, term4, Pen, pen_rhs, ...
+                          u_a, udot_a)
 
     % Double well (matrices)
     [term2, term2K] = op_gradmu_gradv_tp(space, msh, u_a);    
@@ -301,12 +298,18 @@ function [Res_gl, stiff_mat] = Res_K_cahn_hilliard(space, msh, mass_mat, lapl_ma
 
     % Tangent stiffness matrix (mass is not considered here)
     stiff_mat = term2 + term2K + lapl_mat;
-end
 
+    % in case of neumann BC, add boundary terms
+    if isempty(term4) == 0
+         Res_gl = Res_gl - (term4 + term4') * u_a + Pen*u_a - pen_rhs;
+         stiff_mat = stiff_mat - (term4 + term4') + Pen;
+    end
+end
 
 %--------------------------------------------------------------------------
 % Integral of the double-well function
 %--------------------------------------------------------------------------
+
 function [A, B] = op_gradmu_gradv_tp (space, msh,  uhat)
 
 % Coefficients of the double well function.
@@ -344,3 +347,173 @@ function [A, B] = op_gradmu_gradv_tp (space, msh,  uhat)
     B = B + op_vel_dot_gradu_v (sp_col, sp_col, msh_col, coeffs_Bv)';
   end
 end
+
+%--------------------------------------------------------------------------
+% term 4, boundary term
+%--------------------------------------------------------------------------
+
+function [A] = int_term_4 (space, msh,  lambda, nmnn_sides)
+
+  if length(nmnn_sides)>0
+
+    A =  spalloc (space.ndof, space.ndof, 3*space.ndof);
+
+
+    for iside=1:length(nmnn_sides)   
+
+        msh_side = msh_eval_boundary_side (msh, nmnn_sides(iside) ) ;
+        msh_side_int = msh_boundary_side_from_interior (msh, nmnn_sides(iside) ) ;
+        sp_side = space.constructor ( msh_side_int) ;
+        sp_side = sp_precompute ( sp_side , msh_side_int , 'gradient' , true, 'laplacian', true );
+
+        for idim = 1:msh.rdim
+            x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
+        end
+        coe_side = lambda (x{:});
+
+        A =  A + op_gradv_n_laplaceu(sp_side ,sp_side ,msh_side, coe_side);
+    end
+
+
+else
+    A = [];
+end
+
+
+end
+
+%--------------------------------------------------------------------------
+% Operator grav_n_laplaceu
+%--------------------------------------------------------------------------
+
+function varargout = op_gradv_n_laplaceu (spu, spv, msh, coeff)
+
+  gradv = reshape (spv.shape_function_gradients, spv.ncomp, [], ...
+		   msh.nqn, spv.nsh_max, msh.nel);
+
+  ndim = size (gradv, 2);
+
+  shpu = reshape (spu.shape_function_laplacians, spu.ncomp, msh.nqn, spu.nsh_max, msh.nel);
+
+  rows = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
+  cols = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
+  values = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
+
+  jacdet_weights = msh.jacdet .* msh.quad_weights .* coeff;
+  
+  ncounter = 0;
+  for iel = 1:msh.nel
+    if (all (msh.jacdet(:,iel)))
+      gradv_iel = gradv(:,:,:,:,iel);
+      normal_iel = reshape (msh.normal(:,:,iel), [1, ndim, msh.nqn]);
+
+      gradv_n = reshape (sum (bsxfun (@times, gradv_iel, normal_iel), 2), spv.ncomp, msh.nqn, spv.nsh_max, 1);
+      shpu_iel = reshape (shpu(:, :, :, iel), spu.ncomp, msh.nqn, 1, spu.nsh_max);
+
+      jacdet_iel = reshape (jacdet_weights(:,iel), [1,msh.nqn,1,1]);
+
+      gradv_n_times_jw = bsxfun (@times, jacdet_iel, gradv_n);
+      tmp1 = sum (bsxfun (@times, gradv_n_times_jw, shpu_iel), 1);
+      elementary_values = reshape (sum (tmp1, 2), spv.nsh_max, spu.nsh_max);
+      
+      [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
+      indices = rows_loc & cols_loc;
+      rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc(indices);
+      cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc(indices);
+      values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = elementary_values(indices);
+      ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);
+      
+    else
+      warning ('geopdes:jacdet_zero_at_quad_node', 'op_gradv_n_u: singular map in element number %d', iel)
+    end
+  end
+  
+
+  if (nargout == 1 || nargout == 0)
+    varargout{1} = sparse (rows, cols, values, spv.ndof, spu.ndof);
+  elseif (nargout == 3)
+    varargout{1} = rows;
+    varargout{2} = cols;
+    varargout{3} = values;
+  else
+    error ('op_gradv_n_u: wrong number of output arguments')
+  end
+  
+  
+end
+
+%--------------------------------------------------------------------------
+% penalty term
+%--------------------------------------------------------------------------
+
+function [P, rhs] = penalty_matrix (space, msh, nmnn_sides, pen)
+
+    P =  spalloc (space.ndof, space.ndof, 3*space.ndof);
+    rhs = zeros(space.ndof,1);
+
+    for iside = 1:length(nmnn_sides)
+        [mass_pen, rhs_pen] = penalty_grad (space, msh, nmnn_sides(iside), pen);
+        P = P + mass_pen; 
+        rhs = rhs + rhs_pen;
+
+    end
+
+end
+
+
+function [mass_pen, rhs_pen] = penalty_grad (space, msh, i_side, pen)
+
+msh_side = msh_eval_boundary_side (msh, i_side ) ;
+msh_side_int = msh_boundary_side_from_interior (msh, i_side ) ;
+sp_side = space.constructor ( msh_side_int) ;
+sp_side = sp_precompute ( sp_side , msh_side_int , 'gradient', true );
+
+
+coe_side = pen .* msh_side.charlen; 
+mass_pen = op_gradu_n_gradv_n(sp_side, sp_side, msh_side, coe_side);
+
+
+rhs_pen  = zeros(space.ndof,1); % no flux
+
+end
+
+%--------------------------------------------------------------------------
+% check flux through the boundaries
+%--------------------------------------------------------------------------
+
+function flux = check_flux_phase_field(space, msh, uhat, uhat0)
+
+sides = [1,2,3,4]; % all the boundaries
+flux = 0;
+
+for iside=1:length(sides)   
+
+    msh_side = msh_eval_boundary_side (msh, sides(iside) ) ;
+    msh_side_int = msh_boundary_side_from_interior (msh, sides(iside) ) ;
+    sp_side = space.constructor ( msh_side_int) ;
+    sp_side = sp_precompute ( sp_side , msh_side_int , 'gradient' , true );
+
+
+    gradu = sp_eval_msh (uhat-uhat0, sp_side, msh_side, 'gradient');
+   
+
+    
+    valu = zeros(sp_side.ncomp, size(msh_side.quad_weights,1), size(msh_side.quad_weights,2));
+    for idim = 1:msh.rdim
+        valu = valu + (gradu(idim,:,:) .* msh_side.normal(idim,:,:));
+    end
+
+
+    w =msh_side.quad_weights .* msh_side.jacdet;
+    err_elem = sum (reshape (valu, [msh_side.nqn, msh_side.nel]) .* w);
+    err  = sum (err_elem);
+
+
+    flux = flux + err;
+
+end
+
+
+
+end
+
