@@ -14,7 +14,7 @@
 %
 %   rhs: assembled right-hand side
 % 
-% Copyright (C) 2015, 2017, 2022 Rafael Vazquez
+% Copyright (C) 2015, 2017, 2022, 2023 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -46,17 +46,8 @@ function rhs = op_f_v_mp_vector (space, msh, coeff, patch_list)
 %     if (~isempty (space.dofs_ornt))
 %       rhs_loc = space.dofs_ornt{iptc}(:) .* rhs_loc(:);
 %     end
-    [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
-
-    Cpatch = repmat ({Cpatch}, 1, msh.rdim);
-    Cpatch_vector = blkdiag (Cpatch{:});
-    
-    cols = [];
-    for icomp = 1:msh.rdim
-      cols = union (cols, (icomp-1)*space.ndof + Cpatch_cols);
-    end
-
-    rhs(cols) = rhs(cols) + Cpatch_vector.' * rhs_loc;
+    [Cpatch, cols] = sp_compute_Cpatch_vector (space, iptc, msh.rdim);
+    rhs(cols) = rhs(cols) + Cpatch.' * rhs_loc;
   end
 
 end

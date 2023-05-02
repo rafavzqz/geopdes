@@ -17,7 +17,7 @@
 %
 %  mat:    assembled stiffness matrix
 % 
-% Copyright (C) 2022 Rafael Vazquez
+% Copyright (C) 2022-2023 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -47,21 +47,10 @@ function A = op_KL_shells_mp (space_u, space_v, msh, E_coeff, nu_coeff, t_coeff,
   for iptc = patch_list
     Ap = op_KL_shells_tp (space_u.sp_patch{iptc}, space_v.sp_patch{iptc}, msh.msh_patch{iptc}, E_coeff, nu_coeff, t_coeff);
     
-    [Cpatch_u, Cpatch_cols_u] = sp_compute_Cpatch (space_u, iptc);
-    [Cpatch_v, Cpatch_cols_v] = sp_compute_Cpatch (space_v, iptc);
-    Cpatch_u = repmat ({Cpatch_u}, 1, msh.rdim);
-    Cpatch_v = repmat ({Cpatch_v}, 1, msh.rdim);
-    Cpatch_vector_spu = blkdiag (Cpatch_u{:});
-    Cpatch_vector_spv = blkdiag (Cpatch_v{:});
-    
-    cols_u = []; cols_v = [];
-    for icomp = 1:msh.rdim
-      cols_u = union (cols_u, (icomp-1)*space_u.ndof + Cpatch_cols_u);
-      cols_v = union (cols_v, (icomp-1)*space_v.ndof + Cpatch_cols_v);
-    end
+    [Cpatch_u, cols_u] = sp_compute_Cpatch_vector (space_u, iptc, msh.rdim);
+    [Cpatch_v, cols_v] = sp_compute_Cpatch_vector (space_v, iptc, msh.rdim);
 
-    A(cols_v,cols_u) = ...
-      A(cols_v,cols_u) + Cpatch_vector_spv.' * Ap * Cpatch_vector_spu;
+    A(cols_v,cols_u) = A(cols_v,cols_u) + Cpatch_v.' * Ap * Cpatch_u;
   end
   
 end

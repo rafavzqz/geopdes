@@ -14,7 +14,7 @@
 %
 %   mat:    assembled matrix
 % 
-% Copyright (C) 2015, 2022 Rafael Vazquez
+% Copyright (C) 2015, 2022, 2023 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -44,22 +44,10 @@ function A = op_su_ev_mp (spu, spv, msh, lambda, mu, patch_list)
   for iptc = patch_list
     Ap = op_su_ev_tp (spu.sp_patch{iptc}, spv.sp_patch{iptc}, msh.msh_patch{iptc}, lambda, mu);
 
-    [Cpatch_u, Cpatch_cols_u] = sp_compute_Cpatch (spu, iptc);
-    [Cpatch_v, Cpatch_cols_v] = sp_compute_Cpatch (spv, iptc);
-    
-    Cpatch_u = repmat ({Cpatch_u}, 1, msh.rdim);
-    Cpatch_v = repmat ({Cpatch_v}, 1, msh.rdim);
-    Cpatch_vector_spu = blkdiag (Cpatch_u{:});
-    Cpatch_vector_spv = blkdiag (Cpatch_v{:});
-    
-    cols_u = []; cols_v = [];
-    for icomp = 1:msh.rdim
-      cols_u = union (cols_u, (icomp-1)*spu.ndof + Cpatch_cols_u);
-      cols_v = union (cols_v, (icomp-1)*spv.ndof + Cpatch_cols_v);
-    end
-    
-    A(cols_v,cols_u) = ...
-      A(cols_v,cols_u) + Cpatch_vector_spv.' * Ap * Cpatch_vector_spu;
+    [Cpatch_u, cols_u] = sp_compute_Cpatch_vector (spu, iptc, msh.rdim);
+    [Cpatch_v, cols_v] = sp_compute_Cpatch_vector (spv, iptc, msh.rdim);
+        
+    A(cols_v,cols_u) = A(cols_v,cols_u) + Cpatch_v.' * Ap * Cpatch_u;
   end
 
 end
