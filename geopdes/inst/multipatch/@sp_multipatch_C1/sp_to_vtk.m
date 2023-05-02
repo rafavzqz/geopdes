@@ -78,9 +78,15 @@ function sp_to_vtk (u, space, geometry, npts, filename, fieldname, varargin)
 %                            filename_patch, fieldname, varargin{:})
 %     end
     elseif (numel(u) == space.ndof*geometry(iptc).rdim)
-      Cpatch_repmat = repmat (space.Cpatch(iptc), 1, geometry(iptc).rdim);
+      [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
+      Cpatch_repmat = repmat ({Cpatch}, 1, geometry(iptc).rdim);
       Cpatch_vector = blkdiag (Cpatch_repmat{:});
-      sp_to_vtk (Cpatch_vector * u, space.sp_patch{iptc}, geometry(iptc), npts, ...
+
+      cols = [];
+      for icomp = 1:geometry(iptc).rdim
+        cols = union (cols, (icomp-1)*space.ndof + Cpatch_cols);
+      end
+      sp_to_vtk (Cpatch_vector * u(cols), space.sp_patch{iptc}, geometry(iptc), npts, ...
                            filename_patch, fieldname, varargin{:})
     end
   end
