@@ -68,8 +68,9 @@ divergence = false;
   space_vec.ncomp = ncomp;
 
   space_vec.connectivity = [];
+  isnonzero = space.connectivity~=0;
   for icomp = 1:ncomp
-    space_vec.connectivity = [space_vec.connectivity; space.connectivity+(icomp-1)*space.ndof];
+    space_vec.connectivity = [space_vec.connectivity; (space.connectivity+(icomp-1)*space.ndof).*isnonzero];
   end
 
   if (value)
