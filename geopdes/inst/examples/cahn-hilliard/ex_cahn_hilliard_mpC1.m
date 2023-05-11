@@ -21,8 +21,8 @@ problem_data.Time_max = Time_max;
 
 
 % Penalty parameters
-problem_data.pen_nitsche = 1e4 * lambda; % Nitsche's method parameter
-problem_data.pen_projection = 1000;      % parameter of the penalized L2 projection (see initial conditions)
+problem_data.Cpen_nitsche = 1e4 * lambda; % Nitsche's method parameter
+problem_data.Cpen_projection = 1000;      % parameter of the penalized L2 projection (see initial conditions)
 
 % 2) INITIAL CONDITIONS
 mean = 0.0;

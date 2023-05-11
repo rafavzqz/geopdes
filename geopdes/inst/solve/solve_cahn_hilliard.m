@@ -149,7 +149,7 @@ else
 end
 
 if (exist('fun_udot', 'var') && ~isempty(fun_udot))
-  rhs = op_f_v_tp(space, msh, fun_udot);
+  rhs = op_f_v_tp (space, msh, fun_udot);
   udot_n = (mass_mat + Cpen_projection/Cpen_nitsche * Pen)\rhs;
 else
   udot_n = zeros(space.ndof, 1);
@@ -344,7 +344,7 @@ function [A, B] = op_gradmu_gradv_tp (space, msh,  uhat)
     for idim = 1:msh.ndim
       coeffs_Bv(idim,:,:) = coeffs_Bv(idim,:,:) .* reshape(coeffs_B, 1, size(coeffs_B,1), size(coeffs_B,2));
     end
-    B = B + op_vel_dot_gradu_v (sp_col, sp_col, msh_col, coeffs_Bv)';
+    B = B + op_vel_dot_gradu_v (sp_col, sp_col, msh_col, coeffs_Bv).';
   end
 end
 
