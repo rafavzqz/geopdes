@@ -74,7 +74,6 @@ npatch = numel (geometry);
 msh = cell (1, npatch); 
 sp = cell (1, npatch);
 for iptc = 1:npatch
-
 % Define the refined mesh, with tensor product structure
   [knots{iptc}, zeta{iptc}] = ...
          kntrefine (geometry(iptc).nurbs.knots, nsub-1, degree, regularity);
@@ -90,7 +89,6 @@ end
 
 [edges, vertices] = vertices_struct (geometry, interfaces, boundaries, boundary_interfaces);
 msh = msh_multipatch (msh, boundaries);
-% space = sp_multipatch (sp, msh, interfaces, boundary_interfaces);
 space = sp_multipatch_C1 (sp, msh, geometry, edges, vertices);
 clear sp
 

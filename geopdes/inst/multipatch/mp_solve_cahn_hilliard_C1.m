@@ -1,4 +1,4 @@
-% SOLVE_CAHN_HILLIARD_MP_C1: solve the Cahn-Hilliard equation, with C^1 multipatch splines, and a generalized alpha discretization in time.
+% MP_SOLVE_CAHN_HILLIARD_C1: solve the Cahn-Hilliard equation, with C^1 multipatch splines, and a generalized alpha discretization in time.
 %
 % The functions solves the problem of finding u such that
 %
@@ -14,7 +14,7 @@
 %
 % USAGE:
 %
-%   [geometry, msh, space, results] = solve_cahn_hilliard_mp_C1 (problem_data, method_data, save_info)
+%   [geometry, msh, space, results] = mp_solve_cahn_hilliard_C1 (problem_data, method_data, save_info)
 %
 % INPUT:
 %
@@ -64,7 +64,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [geometry, msh, space, results] = solve_cahn_hilliard_mpC1 (problem_data, method_data, save_info)
+function [geometry, msh, space, results] = mp_solve_cahn_hilliard_C1 (problem_data, method_data, save_info)
 
 %%-------------------------------------------------------------------------
 % Extract the fields from the data structures into local variables

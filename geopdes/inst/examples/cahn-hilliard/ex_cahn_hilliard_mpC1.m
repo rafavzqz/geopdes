@@ -47,7 +47,7 @@ method_data.dt = dt;                 % Time step size
 
 
 % 4) CALL TO THE SOLVER
-[geometry, msh, space, results] = solve_cahn_hilliard_mpC1 (problem_data, method_data, time_step_save);
+[geometry, msh, space, results] = mp_solve_cahn_hilliard_C1 (problem_data, method_data, time_step_save);
 
 
 % 5) POST-PROCESSING        
