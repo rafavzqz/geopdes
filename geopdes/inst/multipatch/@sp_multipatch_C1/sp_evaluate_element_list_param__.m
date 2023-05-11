@@ -16,8 +16,8 @@
 %           ------------+-----------------+----------------------------------
 %            value      |      true       |  compute shape_functions
 %            gradient   |      false      |  compute shape_function_gradients
-%            hessian    |      false      |  compute shape_function_hessians (only scalars)
-%            laplacian  |      false      |  compute shape_function_laplacians (only scalars)
+%            hessian    |      false      |  compute shape_function_hessians
+%            laplacian  |      false      |  compute shape_function_laplacians
 %
 % OUTPUT:
 %
