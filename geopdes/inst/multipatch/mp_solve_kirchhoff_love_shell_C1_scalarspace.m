@@ -1,4 +1,4 @@
-% SOLVE_KIRCHHOFF_LOVE_SHELL_C1_SCALARSPACE: Solve the Kirchhoff-Love shell model in a NURBS domain.
+% MP_SOLVE_KIRCHHOFF_LOVE_SHELL_C1_SCALARSPACE: Solve the Kirchhoff-Love shell model in a NURBS domain.
 %  It uses an object space of type sp_multipatch_C1 with scalar values, instead of vector valued.
 %
 % USAGE:
@@ -144,7 +144,7 @@ add_dofs = [add_dofs, space.ndof+add_dofs, 2*space.ndof+add_dofs];
 
 % We assemble the (pieces of the) stiffness matrix, the rhs (and its correction taking 
 % into account the Dirichlet conditions), and the basis change matrix (we will need it 
-% to go from the basis with kernel vectors obtained when examnining the dirichlet conditions 
+% to go from the basis with kernel vectors obtained when examining the Dirichlet conditions 
 % to the usual basis)
 vertex_dofs = kernel_dofs.all_vertex_dofs;
 vertex_dofs = [vertex_dofs, space.ndof+vertex_dofs, 2*space.ndof+vertex_dofs];
