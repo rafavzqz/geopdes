@@ -54,8 +54,13 @@ function msh_col = msh_evaluate_element_list (msh, elem_list, varargin)
 
   if (isempty (elem_list)), return, end
   
-  fields = {'quad_weights', 'geo_map', 'geo_map_jac', 'geo_map_der2', 'jacdet', 'element_size'};
-  cat_position = [2 3 4 5 2 2];
+  if (msh.ndim == 2 && msh.rdim == 3)
+    fields = {'quad_weights', 'geo_map', 'geo_map_jac', 'geo_map_der2', 'jacdet', 'element_size', 'normal'};
+    cat_position = [2 3 4 5 2 2 3];
+  else
+    fields = {'quad_weights', 'geo_map', 'geo_map_jac', 'geo_map_der2', 'jacdet', 'element_size'};
+    cat_position = [2 3 4 5 2 2];
+  end
   for ii = 1:numel (fields)
     msh_col.(fields{ii}) = [];
   end
