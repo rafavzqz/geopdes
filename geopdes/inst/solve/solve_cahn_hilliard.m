@@ -80,6 +80,13 @@ for iopt  = 1:numel (data_names)
 end
 
 %%-------------------------------------------------------------------------
+% Parameters for the double-well function (to be given in problem_data)
+alpha = 1; 
+beta = 1;
+mu = @(x) 3 * alpha * x.^2 - beta;
+dmu = @(x) 6 * alpha * x;
+
+%%-------------------------------------------------------------------------
 % Construct geometry structure
 geometry  = geo_load (geo_name);
 [knots, zeta] = kntrefine (geometry.nurbs.knots, nsub-1, degree, regularity);
@@ -177,7 +184,7 @@ while time < Time_max
   disp('----------------------------------------------------------------')
   disp(strcat('time step t=',num2str(time)))
 
-  [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gamma, ...
+  [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gamma, mu, dmu, ...
                     mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, space, msh);
 
   % check flux through the boundary
@@ -228,7 +235,7 @@ end
 % One step of generalized alpha-method
 %--------------------------------------------------------------------------
 
-function [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gamma, ...
+function [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gamma, mu, dmu, ...
                        mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, space, msh)
 
 % Convergence criteria
@@ -249,7 +256,8 @@ function [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gam
 
   % Compute the residual (internal)
     [Res_gl, stiff_mat] = Res_K_cahn_hilliard (space, msh, ...
-                          mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, u_a, udot_a);
+                          mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, ...
+                          u_a, udot_a, mu, dmu);
 
   % Convergence check
     if iter == 0
@@ -288,10 +296,10 @@ end
 %--------------------------------------------------------------------------
 
 function [Res_gl, stiff_mat] = Res_K_cahn_hilliard(space, msh, ...
-                          mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, u_a, udot_a)
+                          mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, u_a, udot_a, mu, dmu)
 
   % Double well (matrices)
-  [term2, term2K] = op_gradmu_gradv_tp(space, msh, u_a);    
+  [term2, term2K] = op_gradfu_gradv_tp(space, msh, u_a, mu, dmu);
  
   % Residual
   Res_gl = mass_mat*udot_a + term2*u_a  + lapl_mat*u_a;
@@ -303,48 +311,6 @@ function [Res_gl, stiff_mat] = Res_K_cahn_hilliard(space, msh, ...
   if (~isempty(bnd_mat))
     Res_gl = Res_gl - (bnd_mat + bnd_mat.') * u_a + Pen*u_a - pen_rhs;
     stiff_mat = stiff_mat - (bnd_mat + bnd_mat.') + Pen;
-  end
-end
-
-%--------------------------------------------------------------------------
-% Integral of the double-well function
-%--------------------------------------------------------------------------
-
-function [A, B] = op_gradmu_gradv_tp (space, msh,  uhat)
-
-% Coefficients of the double well function.
-  alpha = 1;
-  beta = 1;
-
-  for idim = 1:msh.ndim
-    size1 = size (space.sp_univ(idim).connectivity);
-    if (size1(2) ~= msh.nel_dir(idim))
-      error ('The discrete space is not associated to the mesh')
-    end
-  end
-
-  A = spalloc (space.ndof, space.ndof, 3*space.ndof);
-  B = spalloc (space.ndof, space.ndof, 6*space.ndof);
-
-  for iel = 1:msh.nel_dir(1)
-    msh_col = msh_evaluate_col (msh, iel);
-    sp_col  = sp_evaluate_col (space, msh_col, 'gradient', true);
-
-    % Evaluate the field and its gradient at the Gaussian points
-    utemp = sp_eval_msh (uhat, sp_col, msh_col, {'value', 'gradient'});
-    u = utemp{1};
-    gradu = utemp{2};
-
-    % Polynomial formulation for the double-well
-    coeffs_A = 3.* alpha .* u.^2 - beta;
-    A = A + op_gradu_gradv (sp_col, sp_col, msh_col, coeffs_A);
-
-    coeffs_B = 6.* alpha .* u;
-    coeffs_Bv = gradu;
-    for idim = 1:msh.ndim
-      coeffs_Bv(idim,:,:) = coeffs_Bv(idim,:,:) .* reshape(coeffs_B, 1, size(coeffs_B,1), size(coeffs_B,2));
-    end
-    B = B + op_vel_dot_gradu_v (sp_col, sp_col, msh_col, coeffs_Bv).';
   end
 end
 

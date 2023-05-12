@@ -1,8 +1,8 @@
-% OP_GRADFU_GRADV_TP: assemble the matrix A = [a(i,j)], a(i,j) = (grad (F(w) u_j), grad v_i) = 
-%  = (F(w) grad u_j, grad v_i) + (u_j grad (F(w)), grad v_i), 
-%  exploiting the tensor product structure, with "F" a given function
+% OP_GRADFU_GRADV_TP: assemble the matrix A = [a(i,j)], a(i,j) = (grad (f(w) u_j), grad v_i) = 
+%  = (f(w) grad u_j, grad v_i) + (u_j grad (f(w)), grad v_i), 
+%  exploiting the tensor product structure, with "f" a given function
 %  (derivative also needed), and "w" a discrete solution defined on the
-%  same space. Useful to have nonlinear terms.
+%  same space. Useful to compute nonlinear terms.
 %
 %   [mat1, mat2] = op_gradfu_gradv_tp (space, msh, uhat, f, df);
 %
@@ -11,14 +11,14 @@
 %   space:   object representing the space of trial and test functions (see sp_scalar)
 %   msh:     object defining the domain partition and the quadrature rule (see msh_cartesian)
 %   uhat:    degrees of freedom of "w", of size space.ndof x 1.
-%   f:       function handle to compute F(w).
-%   dF:      function handle to compute dF(w).
+%   f:       function handle to compute f(w).
+%   df:      function handle to compute df(w), the gradient of f.
 %
 % OUTPUT:
 %
-%   mat1:   assembled matrix for (F(w) grad u_j, grad v_i)
-%   mat2:   assembled matrix for (u_j grad (F(w)), grad v_i)
-% 
+%   mat1:   assembled matrix for (f(w) grad u_j, grad v_i)
+%   mat2:   assembled matrix for (u_j grad (f(w)), grad v_i)
+%
 % Copyright (C) 2011, Carlo de Falco, Rafael Vazquez
 % Copyright (C) 2016, 2017, Rafael Vazquez
 % Copyright (C) 2023, Michele Torre, Rafael Vazquez
