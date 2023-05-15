@@ -12,7 +12,7 @@
 %     patch_list:  patch to which each point begins. If empty, the patch
 %                   will be found using nrbinverse
 %     options:     cell array with the fields to plot
-%                   accepted options are 'value' (default), 'gradient' and 'laplacian'
+%                   accepted options are 'value' (default), 'gradient', 'laplacian', 'hessian'
 %
 % OUTPUT:
 %

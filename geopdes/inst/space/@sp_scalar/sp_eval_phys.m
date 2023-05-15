@@ -11,7 +11,7 @@
 %     pts:         array (rdim x npts) with coordinates of points
 %     npts:        number of points along each parametric direction
 %     options:     cell array with the fields to plot
-%                   accepted options are 'value' (default), 'gradient' and 'laplacian'
+%                   accepted options are 'value' (default), 'gradient', 'laplacian', 'hessian'
 %
 % OUTPUT:
 %
