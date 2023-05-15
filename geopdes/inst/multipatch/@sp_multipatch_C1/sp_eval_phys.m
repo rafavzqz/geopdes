@@ -1,15 +1,16 @@
 % SP_EVAL_PHYS: Compute the value or derivatives of a function from its degrees of freedom, at a given set of points in the physical domain.
 %
-%   eu = sp_eval_phys (u, space, geometry, pts, [options]);
-%   [eu, pts_list] = sp_eval_phys (u, space, geometry, pts, [options]);
+%   eu = sp_eval_phys (u, space, geometry, pts, [patch_list], [options]);
 %
 % INPUT:
 %     
 %     u:           vector of dof weights
-%     space:       object defining the discrete space (see sp_scalar)
-%     geometry:    geometry structure (see geo_load)
+%     space:       object defining the discrete space (see sp_multipatch_C1)
+%     geometry:    geometry structure (see mp_geo_load)
 %     pts:         array (rdim x npts) with coordinates of points
 %     npts:        number of points along each parametric direction
+%     patch_list:  patch to which each point begins. If empty, the patch
+%                   will be found using nrbinverse
 %     options:     cell array with the fields to plot
 %                   accepted options are 'value' (default), 'gradient' and 'laplacian'
 %
@@ -35,16 +36,24 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [eu, pts_list] = sp_eval_phys (u, space, geometry, pts, options)
+function eu = sp_eval_phys (u, space, geometry, pts, patch_list, options)
 
   if (numel (u) ~= space.ndof)
     error ('The number of degrees of freedom of the vector and the space do not match')
   end
+  if (numel(geometry) ~= space.npatch)
+    error ('The number of patches of the space and geometry do not coincide')
+  end    
   if (~isfield (geometry, 'nurbs'))
     error ('Only implemented for NURBS geometries')
   end
+  if (nargin > 4 && ~isempty(patch_list) && numel(patch_list) ~= size(pts, 2) )
+    error ('The number of patches in the list must be equal to the number of points')
+  end
 
-  if (nargin < 5)
+  npatch = numel (geometry);
+
+  if (nargin < 6)
     options = {'value'};
   end
   if (~iscell (options))
@@ -52,96 +61,100 @@ function [eu, pts_list] = sp_eval_phys (u, space, geometry, pts, options)
   end
   nopts = numel (options);
 
-  ndim = numel (space.knots);
+  ndim = numel (space.sp_patch{1}.knots);
   rdim = geometry.rdim;
   
   nurbs = geometry.nurbs;
+  if (ndim == 1)
+    for iptc = 1:npatch
+      geometry(iptc).nurbs.knots = {nurbs.knots};
+    end
+  end
 
   npts = size (pts, 2);
   pts_param = zeros (ndim, npts); flag = false (npts, 1);
+  
 % This is necessary because the NURBS toolbox works in the 3D space
   if (size(pts, 1) < 3)
     pts(end+1:3,:) = 0;
   end
-  
-  for ipt = 1:npts
-    [pts_param(:,ipt), flag(ipt)] = nrbinverse (nurbs, pts(:,ipt));
-  end
-  
-  if (~all(flag))
-    warning ('Some of the points are not on the geometry')
-    pts_param = pts_param(:,flag);
-    npts_on_F = size (pts_param, 2);
-    if (nargout == 2)
-      npts_out = npts_on_F;
-      pts_list = find (flag(:)');
-      inds_on_F = 1:npts_out;
-    else
-      npts_out = npts;
-      inds_on_F = find (flag);
+
+  if (nargin < 5 || isempty (patch_list))
+    patch_list = zeros (1, npts);
+    for ipnt = 1:npts
+      for iptc = 1:npatch
+        [pts_param(:,ipnt), flag(ipnt)] = nrbinverse (geometry(iptc).nurbs, pts(:,ipnt), 'MaxIter', 11);
+        if (flag(ipnt))
+          patch_list(ipnt) = iptc;
+          break
+        end
+      end
     end
-  else
-    npts_on_F = npts;
-    npts_out = npts;
-    inds_on_F = 1:npts;
-    pts_list = 1:npts;
   end
-  
-  for idim = 1:ndim
-    zeta{idim} = unique (space.knots{idim});
-    ind{idim} = findspan (numel(zeta{idim})-2, 0, pts_param(idim,:), zeta{idim}) + 1;
-  end
-      
+
+  vals = cell (1, npatch);
+  pts_on_patch = cell (1, npatch);
+  for iptc = 1:npatch
+    [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
+    pts_on_patch{iptc} = find (patch_list == iptc);
+    if (~isempty (pts_on_patch{iptc}))
+      u_ptc = Cpatch * u(Cpatch_cols);
+      vals{iptc} = sp_eval_phys (u_ptc, space.sp_patch{iptc}, geometry(iptc), pts(:,pts_on_patch{iptc}), options);
+      if (nopts == 1)
+        vals{iptc} = {vals{iptc}};
+      end
+    end
+  end  
+
   value = false; grad = false; laplacian = false; hessian = false;
   
   for iopt = 1:nopts
     switch (lower (options{iopt}))
       case 'value'
-        eu{iopt} = NaN (1, npts_out);
+        eu{iopt} = NaN (1, npts);
         eunum{iopt} = {1};
-        eusize{iopt} = npts_out;
+        eusize{iopt} = npts;
         value = true;
 
       case 'gradient'
-        eu{iopt} = NaN (rdim, npts_out);
+        eu{iopt} = NaN (rdim, npts);
         eunum{iopt} = {1:rdim};
-        eusize{iopt} = [rdim, npts_out];
+        eusize{iopt} = [rdim, npts];
         grad = true;
         
       case 'laplacian'
-        eu{iopt} = NaN (1, npts_out);
+        eu{iopt} = NaN (1, npts);
         eunum{iopt} = {1};
-        eusize{iopt} = npts_out;
+        eusize{iopt} = npts;
         laplacian = true;
 
       case 'hessian'
-        eu{iopt} = NaN (rdim, rdim, npts_out);
+        eu{iopt} = NaN (rdim, rdim, npts);
         eunum{iopt} = {1:rdim, 1:rdim};
-        eusize{iopt} = [rdim, rdim, npts_out];
+        eusize{iopt} = [rdim, rdim, npts];
         hessian = true;
     end
   end
 
-  for ipt = 1:npts_on_F
-    for idim = 1:ndim
-      brk{idim} = zeta{idim}(ind{idim}(ipt):ind{idim}(ipt)+1);
-    end
-    msh = msh_cartesian (brk, num2cell(pts_param(:,ipt)), [], geometry, 'boundary', false);
-    sp  = space.constructor (msh);
-
-    msh_col = msh_evaluate_element_list (msh, 1);
-    sp_col  = sp_evaluate_element_list (sp, msh_col, 'value', value, 'gradient', grad, ...
-            'laplacian', laplacian, 'hessian', hessian);
-    eu_aux = sp_eval_msh (u, sp_col, msh_col, options);
-
-    for iopt = 1:nopts
-      eu{iopt}(eunum{iopt}{:},inds_on_F(ipt)) = eu_aux{iopt};
-    end  
-  end
   for iopt = 1:nopts
-    eu{iopt} = reshape (eu{iopt}, [eusize{iopt}, 1]); % The extra 1 makes things work also in 1D
+    for iptc = 1:npatch
+      if (~isempty (pts_on_patch{iptc}))
+        eu{iopt}(eunum{iopt}{:},pts_on_patch{iptc}) = vals{iptc}{iopt};
+      end
+    end
   end
-
+  
+  if (nargout == 2)
+    pts_list = sort (cell2mat (pts_on_patch));
+    for iopt = 1:nopts
+      eu{iopt} = eu{iopt}(eunum{iopt}{:}, pts_list);
+    end
+  end
+  
+  if (any (isnan(eu{1})))
+    warning ('Some points are either not on the geometry, or not on the given patch')
+  end
+  
   if (nopts == 1)
     eu = eu{1};
   end
