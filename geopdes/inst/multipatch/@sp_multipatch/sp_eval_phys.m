@@ -61,7 +61,12 @@ function eu = sp_eval_phys (u, space, geometry, pts, patch_list, options)
   end
   nopts = numel (options);
 
-  ndim = numel (space.sp_patch{1}.knots);
+  is_scalar = isa (space.sp_patch{1}, 'sp_scalar');
+  if (is_scalar) 
+    ndim = numel (space.sp_patch{1}.knots);
+  else
+    ndim = numel (space.sp_patch{1}.scalar_spaces{1}.knots);
+  end
   rdim = geometry.rdim;
   
   nurbs = geometry.nurbs;
@@ -98,6 +103,9 @@ function eu = sp_eval_phys (u, space, geometry, pts, patch_list, options)
     pts_on_patch{iptc} = find (patch_list == iptc);
     if (~isempty (pts_on_patch{iptc}))
       u_ptc = u(space.gnum{iptc});
+      if (~isempty (space.dofs_ornt))
+        u_ptc = u_ptc .* space.dofs_ornt{iptc}(:);
+      end
       vals{iptc} = sp_eval_phys (u_ptc, space.sp_patch{iptc}, geometry(iptc), pts(:,pts_on_patch{iptc}), options);
       if (nopts == 1)
         vals{iptc} = {vals{iptc}};
@@ -105,35 +113,7 @@ function eu = sp_eval_phys (u, space, geometry, pts, patch_list, options)
     end
   end  
 
-  value = false; grad = false; laplacian = false; hessian = false;
-  
-  for iopt = 1:nopts
-    switch (lower (options{iopt}))
-      case 'value'
-        eu{iopt} = NaN (1, npts);
-        eunum{iopt} = {1};
-        eusize{iopt} = npts;
-        value = true;
-
-      case 'gradient'
-        eu{iopt} = NaN (rdim, npts);
-        eunum{iopt} = {1:rdim};
-        eusize{iopt} = [rdim, npts];
-        grad = true;
-        
-      case 'laplacian'
-        eu{iopt} = NaN (1, npts);
-        eunum{iopt} = {1};
-        eusize{iopt} = npts;
-        laplacian = true;
-
-      case 'hessian'
-        eu{iopt} = NaN (rdim, rdim, npts);
-        eunum{iopt} = {1:rdim, 1:rdim};
-        eusize{iopt} = [rdim, rdim, npts];
-        hessian = true;
-    end
-  end
+  [eu, eunum] = set_output_sizes (ndim, rdim, npts, space.ncomp, is_scalar, options);
 
   for iopt = 1:nopts
     for iptc = 1:npatch
@@ -158,4 +138,51 @@ function eu = sp_eval_phys (u, space, geometry, pts, patch_list, options)
     eu = eu{1};
   end
 
+end
+
+function [eu, eunum] = set_output_sizes (ndim, rdim, npts, ncomp, is_scalar, options)
+
+  nopts = numel(options);
+  eu = cell (nopts, 1); eunum = eu;
+
+  if (is_scalar)
+    for iopt = 1:nopts
+      switch (lower (options{iopt}))
+        case 'value'
+          eu{iopt} = NaN (1, npts);
+          eunum{iopt} = {1};
+        case 'gradient'
+          eu{iopt} = NaN (rdim, npts);
+          eunum{iopt} = {1:rdim};
+        case 'laplacian'
+          eu{iopt} = NaN (1, npts);
+          eunum{iopt} = {1};
+        case 'hessian'
+          eu{iopt} = NaN (rdim, rdim, npts);
+          eunum{iopt} = {1:rdim, 1:rdim};
+      end
+    end
+  else
+    for iopt = 1:numel(options)
+      switch (lower (options{iopt}))
+        case 'value'
+          eu{iopt} = NaN (ncomp, npts);
+          eunum{iopt} = {1:ncomp};
+        case 'gradient'
+          eu{iopt} = NaN (ncomp, rdim, npts);
+          eunum{iopt} = {1:ncomp, 1:rdim};
+        case 'curl'
+          if (ndim == 2 && rdim == 2)
+            eu{iopt} = NaN (1, npts);
+            eunum{iopt} = {1};
+          elseif (ndim == 3 && rdim == 3)
+            eu{iopt} = NaN (ncomp, rdim, npts);
+            eunum{iopt} = {1:ncomp};
+          end
+        case 'divergence'
+          eu{iopt} = NaN (1, npts);
+          eunum{iopt} = {1};
+      end
+    end
+  end
 end
