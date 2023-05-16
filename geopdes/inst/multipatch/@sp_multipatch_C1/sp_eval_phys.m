@@ -8,7 +8,6 @@
 %     space:       object defining the discrete space (see sp_multipatch_C1)
 %     geometry:    geometry structure (see mp_geo_load)
 %     pts:         array (rdim x npts) with coordinates of points
-%     npts:        number of points along each parametric direction
 %     patch_list:  patch to which each point begins. If empty, the patch
 %                   will be found using nrbinverse
 %     options:     cell array with the fields to plot
