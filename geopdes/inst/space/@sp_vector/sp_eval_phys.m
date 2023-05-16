@@ -6,12 +6,12 @@
 % INPUT:
 %     
 %     u:           vector of dof weights
-%     space:       object defining the discrete space (see sp_scalar)
+%     space:       object defining the discrete space (see sp_vector)
 %     geometry:    geometry structure (see geo_load)
 %     pts:         array (rdim x npts) with coordinates of points
 %     npts:        number of points along each parametric direction
 %     options:     cell array with the fields to plot
-%                   accepted options are 'value' (default), 'gradient' and 'laplacian'
+%                   accepted options are 'value' (default), 'gradient', 'curl' and 'divergence'
 %
 % OUTPUT:
 %

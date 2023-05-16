@@ -12,14 +12,14 @@
 %     patch_list:  patch to which each point begins. If empty, the patch
 %                   will be found using nrbinverse
 %     options:     cell array with the fields to plot
-%                   accepted options are 'value' (default), 'gradient', 'laplacian', 'hessian'
+%                   accepted options for scalars are 'value' (default), 'gradient', 'laplacian', 'hessian'
+%                   accepted options for vectors are 'value' (default), 'gradient', 'curl', 'divergence'
 %
 % OUTPUT:
 %
 %     eu:       cell-array with the fields evaluated at the given points.
-%     pts_list: list of points that are on the geometry, for which the
-%                values are computed.
-%  If there is only one output argument, points not on the geometry get a NaN value.
+%
+%  Points not on the geometry get a NaN value.
 % 
 % Copyright (C) 2023 Rafael Vazquez
 %
