@@ -67,12 +67,11 @@ function eu = sp_eval_phys (u, space, geometry, pts, patch_list, options)
   else
     ndim = numel (space.sp_patch{1}.scalar_spaces{1}.knots);
   end
-  rdim = geometry.rdim;
+  rdim = geometry(1).rdim;
   
-  nurbs = geometry.nurbs;
   if (ndim == 1)
     for iptc = 1:npatch
-      geometry(iptc).nurbs.knots = {nurbs.knots};
+      geometry(iptc).nurbs.knots = {geometry(iptc).nurbs.knots};
     end
   end
 

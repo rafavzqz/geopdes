@@ -38,9 +38,6 @@
 
 function eu = sp_eval_phys (u, space, geometry, pts, patch_list, options)
 
-  if (numel (u) ~= space.ndof)
-    error ('The number of degrees of freedom of the vector and the space do not match')
-  end
   if (numel(geometry) ~= space.npatch)
     error ('The number of patches of the space and geometry do not coincide')
   end    
@@ -51,6 +48,15 @@ function eu = sp_eval_phys (u, space, geometry, pts, patch_list, options)
     error ('The number of patches in the list must be equal to the number of points')
   end
 
+  if (numel (u) == space.ndof)
+    is_scalar = true;
+  elseif (numel (u) == (geometry(1).rdim * space.ndof))
+    is_scalar = false;
+    ncomp = geometry(1).rdim;
+  else
+    error ('The number of degrees of freedom of the vector and the space do not match')
+  end
+  
   npatch = numel (geometry);
 
   if (nargin < 6)
@@ -62,12 +68,11 @@ function eu = sp_eval_phys (u, space, geometry, pts, patch_list, options)
   nopts = numel (options);
 
   ndim = numel (space.sp_patch{1}.knots);
-  rdim = geometry.rdim;
+  rdim = geometry(1).rdim;
   
-  nurbs = geometry.nurbs;
   if (ndim == 1)
     for iptc = 1:npatch
-      geometry(iptc).nurbs.knots = {nurbs.knots};
+      geometry(iptc).nurbs.knots = {geometry(iptc).nurbs.knots};
     end
   end
 
@@ -94,47 +99,35 @@ function eu = sp_eval_phys (u, space, geometry, pts, patch_list, options)
 
   vals = cell (1, npatch);
   pts_on_patch = cell (1, npatch);
-  for iptc = 1:npatch
-    [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
-    pts_on_patch{iptc} = find (patch_list == iptc);
-    if (~isempty (pts_on_patch{iptc}))
-      u_ptc = Cpatch * u(Cpatch_cols);
-      vals{iptc} = sp_eval_phys (u_ptc, space.sp_patch{iptc}, geometry(iptc), pts(:,pts_on_patch{iptc}), options);
-      if (nopts == 1)
-        vals{iptc} = {vals{iptc}};
+  if (is_scalar)
+    for iptc = 1:npatch
+      pts_on_patch{iptc} = find (patch_list == iptc);
+      if (~isempty (pts_on_patch{iptc}))
+        [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
+        u_ptc = Cpatch * u(Cpatch_cols);
+        vals{iptc} = sp_eval_phys (u_ptc, space.sp_patch{iptc}, geometry(iptc), pts(:,pts_on_patch{iptc}), options);
+        if (nopts == 1)
+          vals{iptc} = {vals{iptc}};
+        end
       end
     end
-  end  
-
-  value = false; grad = false; laplacian = false; hessian = false;
-  
-  for iopt = 1:nopts
-    switch (lower (options{iopt}))
-      case 'value'
-        eu{iopt} = NaN (1, npts);
-        eunum{iopt} = {1};
-        eusize{iopt} = npts;
-        value = true;
-
-      case 'gradient'
-        eu{iopt} = NaN (rdim, npts);
-        eunum{iopt} = {1:rdim};
-        eusize{iopt} = [rdim, npts];
-        grad = true;
-        
-      case 'laplacian'
-        eu{iopt} = NaN (1, npts);
-        eunum{iopt} = {1};
-        eusize{iopt} = npts;
-        laplacian = true;
-
-      case 'hessian'
-        eu{iopt} = NaN (rdim, rdim, npts);
-        eunum{iopt} = {1:rdim, 1:rdim};
-        eusize{iopt} = [rdim, rdim, npts];
-        hessian = true;
+  else
+    msh_aux = struct ('ndim', ndim, 'rdim', rdim, 'boundary', []);
+    for iptc = 1:npatch
+      pts_on_patch{iptc} = find (patch_list == iptc);
+      if (~isempty (pts_on_patch{iptc}))
+        [Cpatch, Cpatch_cols] = sp_compute_Cpatch_vector (space, iptc, rdim);
+        u_ptc = Cpatch * u(Cpatch_cols);
+        sp_vec = sp_vector (repmat (space.sp_patch(iptc), rdim, 1), msh_aux);
+        vals{iptc} = sp_eval_phys (u_ptc, sp_vec, geometry(iptc), pts(:,pts_on_patch{iptc}), options);
+        if (nopts == 1)
+          vals{iptc} = {vals{iptc}};
+        end
+      end
     end
   end
+
+  [eu, eunum] = set_output_sizes (ndim, rdim, npts, ncomp, is_scalar, options);
 
   for iopt = 1:nopts
     for iptc = 1:npatch
@@ -159,4 +152,52 @@ function eu = sp_eval_phys (u, space, geometry, pts, patch_list, options)
     eu = eu{1};
   end
 
+end
+
+
+function [eu, eunum] = set_output_sizes (ndim, rdim, npts, ncomp, is_scalar, options)
+
+  nopts = numel(options);
+  eu = cell (nopts, 1); eunum = eu;
+
+  if (is_scalar)
+    for iopt = 1:nopts
+      switch (lower (options{iopt}))
+        case 'value'
+          eu{iopt} = NaN (1, npts);
+          eunum{iopt} = {1};
+        case 'gradient'
+          eu{iopt} = NaN (rdim, npts);
+          eunum{iopt} = {1:rdim};
+        case 'laplacian'
+          eu{iopt} = NaN (1, npts);
+          eunum{iopt} = {1};
+        case 'hessian'
+          eu{iopt} = NaN (rdim, rdim, npts);
+          eunum{iopt} = {1:rdim, 1:rdim};
+      end
+    end
+  else
+    for iopt = 1:numel(options)
+      switch (lower (options{iopt}))
+        case 'value'
+          eu{iopt} = NaN (ncomp, npts);
+          eunum{iopt} = {1:ncomp};
+        case 'gradient'
+          eu{iopt} = NaN (ncomp, rdim, npts);
+          eunum{iopt} = {1:ncomp, 1:rdim};
+        case 'curl'
+          if (ndim == 2 && rdim == 2)
+            eu{iopt} = NaN (1, npts);
+            eunum{iopt} = {1};
+          elseif (ndim == 3 && rdim == 3)
+            eu{iopt} = NaN (ncomp, rdim, npts);
+            eunum{iopt} = {1:ncomp};
+          end
+        case 'divergence'
+          eu{iopt} = NaN (1, npts);
+          eunum{iopt} = {1};
+      end
+    end
+  end
 end
