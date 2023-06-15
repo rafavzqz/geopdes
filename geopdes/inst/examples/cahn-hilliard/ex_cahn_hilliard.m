@@ -12,8 +12,8 @@ problem_data.periodic_directions = [];
 
 % Time and time step size
 Time_max = .08;
-dt = 1e-2;
-time_step_save = linspace(dt,Time_max,20);
+dt = 1e-4;
+time_step_save = linspace(dt,Time_max,9);
 problem_data.time = 0;
 problem_data.Time_max = Time_max;
 
