@@ -9,7 +9,7 @@ function [u_drchlt, drchlt_dofs, kernel_info] = sp_drchlt_C1_shells (space, msh,
 drchlt_dofs = [];
 
 boundaries = msh.boundaries;
-for iref = refs
+for iref = 1:numel(refs)
 %   href = @(varargin) h(varargin{:}, iref);
   if (~exist('drchlt_components','var'))
     components = 1:3;
@@ -17,9 +17,9 @@ for iref = refs
     components = drchlt_components{iref};
   end
   scalar_dofs_on_ref = [];
-  for bnd_side = 1:boundaries(iref).nsides
-    iptc = boundaries(iref).patches(bnd_side);
-    iside = boundaries(iref).faces(bnd_side);
+  for bnd_side = 1:boundaries(refs(iref)).nsides
+    iptc = boundaries(refs(iref)).patches(bnd_side);
+    iside = boundaries(refs(iref)).faces(bnd_side);
 
     msh_side = msh.msh_patch{iptc}.boundary(iside);
     sp_bnd = space.sp_patch{iptc}.boundary(iside);
