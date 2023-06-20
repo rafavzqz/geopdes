@@ -35,14 +35,22 @@ function errl2 = sp_l2_error (space, msh, u, uex)
     error ('The number of patches does not coincide') 
   end
 
+  error_l2 = zeros (msh.npatch, 1);
   for iptc = 1:msh.npatch
-%     if (isempty (space.dofs_ornt))
-    [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
-    u_ptc = Cpatch * u(Cpatch_cols);
-%     else
-%       u_ptc = u(space.gnum{iptc}) .* space.dofs_ornt{iptc}.';
-%     end
-    error_l2(iptc) = sp_l2_error (space.sp_patch{iptc}, msh.msh_patch{iptc}, u_ptc, uex);
+    if (space.ndof == numel(u))
+  %     if (isempty (space.dofs_ornt))
+      [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
+      u_ptc = Cpatch * u(Cpatch_cols);
+  %     else
+  %       u_ptc = u(space.gnum{iptc}) .* space.dofs_ornt{iptc}.';
+  %     end
+      error_l2(iptc) = sp_l2_error (space.sp_patch{iptc}, msh.msh_patch{iptc}, u_ptc, uex);
+    else
+      [Cpatch, Cpatch_cols] = sp_compute_Cpatch_vector (space, iptc, msh.rdim);
+      u_ptc = Cpatch * u(Cpatch_cols);
+      sp_vec = sp_vector (repmat (space.sp_patch(iptc), msh.rdim, 1), msh.msh_patch{iptc});
+      error_l2(iptc) = sp_l2_error (sp_vec, msh.msh_patch{iptc}, u_ptc, uex);
+    end
   end
   errl2 = sqrt (sum (error_l2 .* error_l2));
 

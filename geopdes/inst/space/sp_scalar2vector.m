@@ -44,6 +44,7 @@ gradient = false;
 divergence = false;
 curl = false;
 hessian = false;
+laplacian = false;
   if (~isempty (varargin))
     if (~rem (length (varargin), 2) == 0)
       error ('sp_scalar2vector: options must be passed in the [option, value] format');
@@ -59,6 +60,8 @@ hessian = false;
         divergence = varargin {ii+1};
       elseif (strcmpi (varargin {ii}, 'hessian'))
         hessian = varargin {ii+1};
+      elseif (strcmpi (varargin {ii}, 'laplacian'))
+        laplacian = varargin {ii+1};
       else
         warning ('Ignoring unknown option %s', varargin {ii});
       end
@@ -69,12 +72,15 @@ hessian = false;
   space_vec.nsh_max = ncomp * space.nsh_max;
   space_vec.nsh = ncomp * space.nsh;
   space_vec.ndof = ncomp * space.ndof;
-  space_vec.ndof_dir = repmat (space.ndof_dir, ncomp, 1);
+  if (isfield (space, 'ndof_dir'))
+    space_vec.ndof_dir = repmat (space.ndof_dir, ncomp, 1);
+  end
   space_vec.ncomp = ncomp;
 
   space_vec.connectivity = [];
+  isnonzero = space.connectivity~=0;
   for icomp = 1:ncomp
-    space_vec.connectivity = [space_vec.connectivity; space.connectivity+(icomp-1)*space.ndof];
+    space_vec.connectivity = [space_vec.connectivity; (space.connectivity+(icomp-1)*space.ndof).*isnonzero];
   end
 
   if (value)
@@ -131,4 +137,12 @@ hessian = false;
     end
   end
 
+  if (laplacian)
+    space_vec.shape_function_laplacians = zeros (ncomp, msh.nqn, space_vec.nsh_max, msh.nel);
+    for icomp = 1:ncomp
+      fun_inds = (icomp-1)*space.nsh_max+1:icomp*space.nsh_max;
+      space_vec.shape_function_laplacians(icomp,:,fun_inds,:) = space.shape_function_laplacians;
+    end
+  end
+  
 end

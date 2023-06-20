@@ -83,5 +83,8 @@ function msh_col = msh_restrict_to_patches (msh, patches)
   msh_col.geo_map_der2 = msh.geo_map_der2(:,:,:,:,global_elem_list);
   msh_col.jacdet       = msh.jacdet(:,global_elem_list);
   msh_col.element_size = msh.element_size(:,global_elem_list);
+  if (isfield (msh, 'normal'))
+    msh_col.normal       = msh.normal(:,:,global_elem_list);
+  end
   
 end

@@ -131,6 +131,7 @@ function msh = msh_cartesian (breaks, qn, qw, geo, varargin)
   msh.nel = prod (msh.nel_dir);
   
   msh.nqn_dir = cellfun (@(x) size(x,1), qn);
+  msh.nqn_dir = msh.nqn_dir(:)';
   msh.nqn  = prod (msh.nqn_dir);
   
   if (boundary && msh.ndim > 1)

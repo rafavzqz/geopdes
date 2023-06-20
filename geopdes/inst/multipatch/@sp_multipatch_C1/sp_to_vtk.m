@@ -21,7 +21,7 @@
 %    none    
 % 
 % Copyright (C) 2010 Carlo de Falco, Rafael Vazquez
-% Copyright (C) 2011, 2012, 2015, 2022 Rafael Vazquez
+% Copyright (C) 2011, 2012, 2015, 2022, 2023 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -68,8 +68,8 @@ function sp_to_vtk (u, space, geometry, npts, filename, fieldname, varargin)
     filename_patch = cat (2, filename, '_', num2str (iptc));
     fprintf (fid, str2, iptc, filename_patch_without_path);
 
-    [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
     if (numel(u) == space.ndof)
+      [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
 %     if (isempty (space.dofs_ornt))
       sp_to_vtk (Cpatch * u(Cpatch_cols), space.sp_patch{iptc}, geometry(iptc), npts, ...
                            filename_patch, fieldname, varargin{:})
@@ -78,9 +78,8 @@ function sp_to_vtk (u, space, geometry, npts, filename, fieldname, varargin)
 %                            filename_patch, fieldname, varargin{:})
 %     end
     elseif (numel(u) == space.ndof*geometry(iptc).rdim)
-      Cpatch_repmat = repmat (space.Cpatch(iptc), 1, geometry(iptc).rdim);
-      Cpatch_vector = blkdiag (Cpatch_repmat{:});
-      sp_to_vtk (Cpatch_vector * u, space.sp_patch{iptc}, geometry(iptc), npts, ...
+      [Cpatch, Cpatch_cols] = sp_compute_Cpatch_vector (space, iptc, geometry(iptc).rdim);
+      sp_to_vtk (Cpatch * u(Cpatch_cols), space.sp_patch{iptc}, geometry(iptc), npts, ...
                            filename_patch, fieldname, varargin{:})
     end
   end

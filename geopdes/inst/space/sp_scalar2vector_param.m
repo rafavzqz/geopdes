@@ -64,12 +64,15 @@ divergence = false;
   space_vec.nsh_max = ncomp * space.nsh_max;
   space_vec.nsh = ncomp * space.nsh;
   space_vec.ndof = ncomp * space.ndof;
-  space_vec.ndof_dir = repmat (space.ndof_dir, ncomp, 1);
+  if (isfield (space, 'ndof_dir'))
+    space_vec.ndof_dir = repmat (space.ndof_dir, ncomp, 1);
+  end
   space_vec.ncomp = ncomp;
 
   space_vec.connectivity = [];
+  isnonzero = space.connectivity~=0;
   for icomp = 1:ncomp
-    space_vec.connectivity = [space_vec.connectivity; space.connectivity+(icomp-1)*space.ndof];
+    space_vec.connectivity = [space_vec.connectivity; (space.connectivity+(icomp-1)*space.ndof).*isnonzero];
   end
 
   if (value)
