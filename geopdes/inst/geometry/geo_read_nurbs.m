@@ -123,10 +123,10 @@ for iptc = 1:npatches
   else
     geom(iptc).nurbs.coefs(4,:,:,:) = str2num (line);
   end
-  
-  geom(iptc).map      = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 0, rdim);
-  geom(iptc).map_der  = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 1, rdim);
-  geom(iptc).map_der2 = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 2, rdim);
+  tmp_nurbs = geom(iptc).nurbs;
+  geom(iptc).map      = @(PTS) geo_nurbs (tmp_nurbs, PTS, 0, rdim);
+  geom(iptc).map_der  = @(PTS) geo_nurbs (tmp_nurbs, PTS, 1, rdim);
+  geom(iptc).map_der2 = @(PTS) geo_nurbs (tmp_nurbs, PTS, 2, rdim);
 end
 
 fclose (fid);
