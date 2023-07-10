@@ -146,9 +146,10 @@ function [geom, boundaries, interfaces, subdomains] = mp_geo_read_nurbs (filenam
     end
     geom(iptc).nurbs.coefs(4,:,:,:) = reshape(str2num (line), geom(iptc).nurbs.number);
           
-    geom(iptc).map      = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 0);
-    geom(iptc).map_der  = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 1);
-    geom(iptc).map_der2 = @(PTS) geo_nurbs (geom(iptc).nurbs, PTS, 2);
+    tmp_nurbs = geom(iptc).nurbs;
+    geom(iptc).map      = @(PTS) geo_nurbs (tmp_nurbs, PTS, 0);
+    geom(iptc).map_der  = @(PTS) geo_nurbs (tmp_nurbs, PTS, 1);
+    geom(iptc).map_der2 = @(PTS) geo_nurbs (tmp_nurbs, PTS, 2);
   end
 
   interfaces = [];
