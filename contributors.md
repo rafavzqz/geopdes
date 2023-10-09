@@ -5,7 +5,7 @@ permalink: /contributors/
 ---
 
 ## Main developer
-[**Rafael Vázquez**](http://www.imati.cnr.it/index.php/rafael-vazquez) from [University of Santiago de Compostela](https://www.usc.gal/es/departamento/matematica-aplicada) (Spain), and formerly at [IMATI-CNR](https://www.imati.cnr.it/) (Pavia, Italy) and [EPFL](https://mns.epfl.ch) (Lausanne, Switzerland).
+[**Rafael Vázquez**](https://www.imati.cnr.it/mypage.php?idk=PG-61) from [University of Santiago de Compostela](https://www.usc.gal/es/departamento/matematica-aplicada) (Spain), and formerly at [IMATI-CNR](https://www.imati.cnr.it/) (Pavia, Italy) and [EPFL](https://mns.epfl.ch) (Lausanne, Switzerland).
 
 ## List of contributors
 
