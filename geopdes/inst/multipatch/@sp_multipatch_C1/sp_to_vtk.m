@@ -5,8 +5,8 @@
 % INPUT:
 %     
 %     u:           vector of dof weights
-%     space:       object representing the space of discrete functions (see sp_multipatch)
-%     geometry:    geometry structure (see geo_load)
+%     space:       object representing the space of discrete functions (see sp_multipatch_C1)
+%     geometry:    geometry structure (see mp_geo_load)
 %     npts:        number of points along each parametric direction where to evaluate
 %     filename:    name of the output file. 
 %     fieldnames:  how to name the saved variables in the vtk file

@@ -37,6 +37,9 @@
 
 function [errh2, errh1, errl2, errh2s, errh1s] = sp_h2_error (space, msh, u, uex, graduex, hessuex)
 
+  if (msh.rdim == 3)
+    error ('The H2 error is only computed for planar surfaces') 
+  end
   if (space.npatch ~= msh.npatch)
     error ('The number of patches does not coincide') 
   end

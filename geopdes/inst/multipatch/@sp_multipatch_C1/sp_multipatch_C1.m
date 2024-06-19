@@ -38,7 +38,8 @@
 %       Methods for post-processing, that require a computed vector of degrees of freedom
 %         sp_l2_error:    compute the error in L2 norm
 %         sp_h1_error:    compute the error in H1 norm
-%         sp_h2_error:    compute the error in H2 norm
+%         sp_h2_error:    compute the error in H2 norm (only for planar surfaces)
+%         sp_eval_phys:   compute the value of the solution in a given set of points
 %         sp_to_vtk:      export the computed solution to a pvd file, using a Cartesian grid of points on each patch
 %         sp_plot_solution: plot the solution in Matlab
 %
@@ -48,10 +49,13 @@
 %         sp_get_neighbors:       compute the neighbors, functions that share at least one element with a given one
 %         sp_get_functions_on_patch: compute the indices of non-vanishing C^1 functions on a patch
 %         sp_get_local_interior_functions: compute the local indices of interior functions on a patch
+%         sp_get_vertex_neighbors: compute the indices of elements in the support of vertex functions
 %
 %       Other methods
 %         sp_refine: generate a refined space, and subdivision matrices for the univariate spaces
 %         sp_compute_Cpatch: compute the matrix for B-splines representation on a patch
+%         sp_compute_Cpatch_vector: compute the matrix for B-splines representation on a patch
+%                                   for vector-valued spaces with the same space on each component
 %
 % Copyright (C) 2015-2023 Rafael Vazquez
 % Copyright (C) 2019-2023 Cesare Bracco
