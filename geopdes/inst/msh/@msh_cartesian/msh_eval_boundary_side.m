@@ -91,39 +91,40 @@ if (nargin == 2)
 
     % Compute the characteristic length in the normal direction
     % This has to be computed using information from the interior
-    qn = msh.qn; qw = msh.qw; nel_dir = msh.nel_dir;
-    if (mod (iside, 2) == 0)
-      qn{ind2} = qn{ind2}(:,end);
-      if (~isempty(msh.qw))
-        qw = qw{ind2}(:,end);
-      else
-        qw = [];
-      end
-    else
-      qn{ind2} = qn{ind2}(:,1);
-      if (~isempty(msh.qw))
-        qw = qw{ind2}(:,1);
-      else
-        qw = [];
-      end
-    end
-    nel_dir(ind2) = 1;
-
-    reorder = @(x) x(:)';
-    psize = reorder ([msh.nqn_dir; nel_dir]);
-    vorder = [1:2:msh.ndim*2, 2:2:msh.ndim*2]; % [1 3 5 2 4 6], for ndim = 3
-
-    jac = feval (msh.map_der, cellfun (reorder, qn, 'UniformOutput', false));
-    jac = reshape (jac, [msh.rdim, msh.ndim, psize]);
-    jac = permute (jac, [1 2 vorder+2]);
-    jac = reshape (jac, [msh.rdim, msh.ndim, msh.nqn_dir, msh_side.nel]);
-
-    jac = reshape (sqrt (sum (jac(:,ind2,:,:,:,:).^2, 1)), [msh.nqn_dir, msh_side.nel]); % Module
-
-    qsize = ones (1, msh.ndim);
-    qsize(ind2) = numel (qw);
-    jac_times_qw = bsxfun(@times, jac, reshape (qw, qsize));
-    msh_side.charlen = reshape (sum (jac_times_qw, ind2), msh_side.nqn, msh_side.nel);
+    msh_side.charlen = compute_characteristic_length (msh, iside);
+%     qn = msh.qn; qw = msh.qw; nel_dir = msh.nel_dir;
+%     if (mod (iside, 2) == 0)
+%       qn{ind2} = qn{ind2}(:,end);
+%       if (~isempty(msh.qw))
+%         qw = qw{ind2}(:,end);
+%       else
+%         qw = [];
+%       end
+%     else
+%       qn{ind2} = qn{ind2}(:,1);
+%       if (~isempty(msh.qw))
+%         qw = qw{ind2}(:,1);
+%       else
+%         qw = [];
+%       end
+%     end
+%     nel_dir(ind2) = 1;
+% 
+%     reorder = @(x) x(:)';
+%     psize = reorder ([msh.nqn_dir; nel_dir]);
+%     vorder = [1:2:msh.ndim*2, 2:2:msh.ndim*2]; % [1 3 5 2 4 6], for ndim = 3
+% 
+%     jac = feval (msh.map_der, cellfun (reorder, qn, 'UniformOutput', false));
+%     jac = reshape (jac, [msh.rdim, msh.ndim, psize]);
+%     jac = permute (jac, [1 2 vorder+2]);
+%     jac = reshape (jac, [msh.rdim, msh.ndim, msh.nqn_dir, msh_side.nel]);
+% 
+%     jac = reshape (sqrt (sum (jac(:,ind2,:,:,:,:).^2, 1)), [msh.nqn_dir, msh_side.nel]); % Module
+% 
+%     qsize = ones (1, msh.ndim);
+%     qsize(ind2) = numel (qw);
+%     jac_times_qw = bsxfun(@times, jac, reshape (qw, qsize));
+%     msh_side.charlen = reshape (sum (jac_times_qw, ind2), msh_side.nqn, msh_side.nel);
   end
 
 elseif (nargin == 3)
@@ -183,7 +184,8 @@ elseif (nargin == 3)
     % Now normalize
     norms = reshape (geopdes_norm__ (normal), [1, msh_side.nqn, msh_side.nel]);
     msh_side.normal = bsxfun (@rdivide, normal, norms);
-   
+
+    msh_side.charlen = compute_characteristic_length (msh, iside, element_list);
   end
     
 end
@@ -211,5 +213,55 @@ if (nargout == 2)
   end
 end
 
+
+end
+
+function charlen = compute_characteristic_length (msh, iside, element_list)
+
+    if (nargin == 2)
+      element_list = 1:msh.boundary(iside).nel;
+    end
+
+    ind2 = ceil (iside/2);
+    qn = msh.qn; qw = msh.qw; nel_dir = msh.nel_dir;
+    if (mod (iside, 2) == 0)
+      qn{ind2} = qn{ind2}(:,end);
+      if (~isempty(msh.qw))
+        qw = qw{ind2}(:,end);
+      else
+        qw = [];
+      end
+    else
+      qn{ind2} = qn{ind2}(:,1);
+      if (~isempty(msh.qw))
+        qw = qw{ind2}(:,1);
+      else
+        qw = [];
+      end
+    end
+    nel_dir(ind2) = 1;
+
+    reorder = @(x) x(:)';
+    psize = reorder ([msh.nqn_dir; nel_dir]);
+    vorder = [1:2:msh.ndim*2, 2:2:msh.ndim*2]; % [1 3 5 2 4 6], for ndim = 3
+
+    jac = feval (msh.map_der, cellfun (reorder, qn, 'UniformOutput', false));
+    jac = reshape (jac, [msh.rdim, msh.ndim, psize]);
+    jac = permute (jac, [1 2 vorder+2]);
+    jac = reshape (jac, [msh.rdim, msh.ndim, msh.nqn_dir, msh.boundary(iside).nel]);
+
+    jac = reshape (sqrt (sum (jac(:,ind2,:,:,:,:).^2, 1)), [msh.nqn_dir, msh.boundary(iside).nel]); % Module
+
+    if (msh.ndim == 2)
+      jac = jac(:,:,element_list);
+    elseif (msh.ndim == 3)
+      jac = jac(:,:,:,element_list);
+    end
+    qsize = ones (1, msh.ndim);
+    qsize(ind2) = numel (qw);
+    jac_times_qw = bsxfun(@times, jac, reshape (qw, qsize));
+    
+    charlen = sum (jac_times_qw, ind2);
+    charlen = reshape (charlen, msh.boundary(iside).nqn, numel(element_list));
 
 end
