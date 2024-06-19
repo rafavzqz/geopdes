@@ -42,7 +42,7 @@ rdim = msh_side.rdim;
 qw_jacdet    = msh_side.quad_weights .* msh_side.jacdet;
 normals      = msh_side.normal;
 tangents     = msh_side.geo_map_jac;
-tangents_der = msh_side.geo_map_der2;
+% tangents_der = msh_side.geo_map_der2;
 
 nsh_u = spu_param.nsh_max;
 nsh_v = spv_param.nsh_max;
@@ -50,29 +50,26 @@ nsh_v = spv_param.nsh_max;
 M_rows    = zeros(nsh_v*nsh_u*nel,1);
 M_columns = zeros(nsh_v*nsh_u*nel,1);
 M_values  = zeros(nsh_v*nsh_u*nel,1);
-R_rows    = zeros(nsh_v      *nel,1);
-R_values  = zeros(nsh_v      *nel,1);
+% R_rows    = zeros(nsh_v      *nel,1);
+% R_values  = zeros(nsh_v      *nel,1);
 
 M_ncounter = 0;
-R_ncounter = 0;
+% R_ncounter = 0;
 
 % Penalty coefficient
 mu_r = penalty_coeff*E_bnd(1,1)*thickness^3;
 
 for ise = 1:nel
     K = zeros(nsh_v,nsh_u);
-    R = zeros(nsh_v,1);
+    % R = zeros(nsh_v,1);
     for iqn = 1:nqn
         w = qw_jacdet(iqn,ise);
         % Tangent and derivative
         T_t  = tangents    (:,1,iqn,ise);
-        T_tt = tangents_der(:,1,1,iqn,ise);
+        % T_tt = tangents_der(:,1,1,iqn,ise);
         % Geometry
         Aa    = msh_side_from_interior.geo_map_jac (:,:,iqn,ise);
         Aa_b  = msh_side_from_interior.geo_map_der2(:,:,:,iqn,ise);
-        % Test and Trial shape functions
-        U = reshape(spu_param.shape_functions(:,iqn,:,ise), [rdim, nsh_u]);
-        V = reshape(spv_param.shape_functions(:,iqn,:,ise), [rdim, nsh_u]);
         % % Exact rotation
         % if ~isempty(rot_coeffs)
         %     Ta = Ta_L(:,iqn,ise);
@@ -80,18 +77,18 @@ for ise = 1:nel
         % Test and Trial shape functions derivatives
         u_a   = permute(reshape(spu_param.shape_function_gradients (:,:,  iqn,:,ise), [rdim,ndim,nsh_u]),[1,3,2    ]);
         u_ab  = permute(reshape(spu_param.shape_function_hessians  (:,:,:,iqn,:,ise), [rdim,ndim,ndim,nsh_u]),[1,4,2,3  ]);
-        v_a   = permute(reshape(spu_param.shape_function_gradients (:,:,  iqn,:,ise), [rdim,ndim,nsh_v]),[1,3,2    ]);
-        v_ab  = permute(reshape(spu_param.shape_function_hessians  (:,:,:,iqn,:,ise), [rdim,ndim,ndim,nsh_v]),[1,4,2,3  ]);
+        v_a   = permute(reshape(spv_param.shape_function_gradients (:,:,  iqn,:,ise), [rdim,ndim,nsh_v]),[1,3,2    ]);
+        v_ab  = permute(reshape(spv_param.shape_function_hessians  (:,:,:,iqn,:,ise), [rdim,ndim,ndim,nsh_v]),[1,4,2,3  ]);
         % Material and normal
         Young     = E_bnd (iqn,ise); 
         Poisson   = nu_bnd(iqn,ise);
-        [A_ort,B_ort,C_ort,D_ort] = isotropic_stiffness (Young,Poisson,thickness);
+        [A_ort,B_ort,C_ort,D_ort] = isotropic_stiffness (Young, Poisson, thickness);
         normal    = normals(:,iqn,ise);
 
         % Eventually flipping the tangent
         if (normal.'*cross(T_t,cross(Aa(:,1),Aa(:,2)))<0)
             T_t  = -T_t;
-            T_tt = -T_tt;
+            % T_tt = -T_tt;
         end
         % Rotation and forces and moment fluxes
 %        [Tu, Fu, Mu] = op_KL_fluxes(u_a, u_ab, u_abc, Aa, Aa_b, Aa_bc, T_t, T_tt, A_ort, B_ort, C_ort, D_ort, C_ort_e, D_ort_e, normal);
