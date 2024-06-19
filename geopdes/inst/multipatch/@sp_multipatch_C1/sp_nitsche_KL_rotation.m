@@ -35,6 +35,7 @@ function A = sp_nitsche_KL_rotation (space, msh, refs, E_coeff, nu_coeff, thickn
   A = spalloc (msh.rdim*space.ndof, msh.rdim*space.ndof, 3*msh.rdim*space.ndof);
 
 % Compute the matrices to impose the tangential boundary condition weakly
+  penalty_coeff = penalty_coeff * max (msh.msh_patch{1}.nel_dir);
   for iref = refs
     for bnd_side = 1:msh.boundaries(iref).nsides
       iptc = msh.boundaries(iref).patches(bnd_side);
