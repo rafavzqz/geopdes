@@ -7,7 +7,7 @@
 %
 % INPUTS:
 %     
-%     space:      the coarse space, an object of the sp_multipatch class (see sp_multipatch)
+%     space:      the coarse space, an object of the sp_multipatch class (see sp_multipatch_C1)
 %     msh:        an object of the msh_multipatch class, usuallly the refined mesh (see msh_multipatch)
 %     nsub:       number of uniform subdivisions to apply on each knot span, and for each direction
 %     degree:     degree of the fine space, and for each direction

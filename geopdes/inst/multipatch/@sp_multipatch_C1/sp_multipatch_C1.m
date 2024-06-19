@@ -41,7 +41,7 @@
 %         sp_h2_error:    compute the error in H2 norm (only for planar surfaces)
 %         sp_eval_phys:   compute the value of the solution in a given set of points
 %         sp_to_vtk:      export the computed solution to a pvd file, using a Cartesian grid of points on each patch
-%         sp_plot_solution: plot the solution in Matlab
+%         sp_plot_solution: plot the solution in Matlab (only for the scalar-valued case)
 %
 %       Methods for basic connectivity operations
 %         sp_get_basis_functions: compute the functions that do not vanish in a given list of elements
