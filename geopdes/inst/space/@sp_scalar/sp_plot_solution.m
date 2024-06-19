@@ -31,7 +31,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function sp_plot_solution (u, space, geometry, npts, ncuts)
+function sp_plot_solution (u, space, geometry, npts, ncuts, option)
 
 ndim = numel (space.knots);
 
@@ -54,6 +54,10 @@ if (ndim == 3)
   end
 end
 
+if (nargin < 6 || isempty (option))
+  option = 'value';
+end
+
 degree = space.degree;
 if (~exist ('vtk_pts', 'var'))
   for idim = 1:ndim
@@ -61,7 +65,7 @@ if (~exist ('vtk_pts', 'var'))
   end
 end
 
-[eu, F] = sp_eval (u, space, geometry, vtk_pts);
+[eu, F] = sp_eval (u, space, geometry, vtk_pts, option);
 rdim = size (F, 1);
 
 if (ndim == 1)
