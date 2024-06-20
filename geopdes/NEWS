@@ -13,10 +13,6 @@ Summary of important changes for geopdes-3.2.3:
 -----------------------------------------------------------------------------
 * Added new function: msh_get_neighbor_cells
 
-Summary of important changes for geopdes-3.2.3:
------------------------------------------------------------------------------
-* Added new function: msh_get_neighbor_cells
-
 Summary of important changes for geopdes-3.2.2:
 -----------------------------------------------------------------------------
 * Added periodic conditions for spline spaces

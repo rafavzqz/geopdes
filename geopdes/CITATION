@@ -2,7 +2,7 @@ To cite the GeoPDEs package, please use
 
     R. Vazquez
     A new design for the implementation of isogeometric analysis in Octave and Matlab: GeoPDEs 3.0
-    To appear in Computers and Mathematics with Applications
+    Computers and Mathematics with Applications, 72(3):523-554, 2016.
 
     C. de Falco, A. Reali, and R. Vazquez.
     GeoPDEs: A research tool for isogeometric analysis of PDEs.
@@ -13,8 +13,11 @@ The BibTeX entries for LaTeX users are:
 @article{geopdes3.0,
 	Author = {R. V{\'a}zquez},
 	Journal = {Computers and Mathematics with Applications},
+	Number = {3},
+	Pages = {523-554},
 	Title = {A new design for the implementation of isogeometric analysis in {O}ctave and {M}atlab: Geo{PDE}s 3.0},
 	Note = {To appear},
+	Volume = {72},
 	Year = {2016}}
 
 @article{geopdes,

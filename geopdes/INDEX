@@ -64,6 +64,7 @@ Space: functions to generate and compute discrete spline and NURBS spaces
  @sp_scalar/sp_evaluate_col_param
  @sp_scalar/sp_evaluate_element_list
  @sp_scalar/sp_evaluate_element_list_param
+ @sp_scalar/sp_exterior_derivative
  @sp_scalar/sp_h2_error
  @sp_scalar/sp_h1_error
  @sp_scalar/sp_l2_error
@@ -85,6 +86,7 @@ Space: functions to generate and compute discrete spline and NURBS spaces
  @sp_vector/sp_evaluate_col_param
  @sp_vector/sp_evaluate_element_list
  @sp_vector/sp_evaluate_element_list_param
+ @sp_vector/sp_exterior_derivative
  @sp_vector/sp_h2_error
  @sp_vector/sp_h1_error
  @sp_vector/sp_l2_error
@@ -119,6 +121,7 @@ Operators: functions to assemble different matrices and vector
  op_eu_ev
  op_fdotn_vdotn
  op_fdotn_v
+ op_f_curlv_3d
  op_f_gradv
  op_f_vxn_2d
  op_f_vxn_3d
@@ -142,6 +145,7 @@ Operators: functions to assemble different matrices and vector
  op_KL_shells
  op_KL_bending_stress
  op_KL_membrane_stress
+ op_geom_exterior
 Multipatch: functions of different kinds to solve problems in domains defined by multiple NURBS patches
  mp_dg_penalty
  mp_geo_load
@@ -167,6 +171,7 @@ Multipatch: functions of different kinds to solve problems in domains defined by
  @sp_multipatch/sp_hcurl_error
  @sp_multipatch/sp_plot_solution
  @sp_multipatch/sp_to_vtk
+ @sp_multipatch/sp_exterior_derivative
  @sp_multipatch/sp_evaluate_element_list
  @sp_multipatch/sp_get_cells
  @sp_multipatch/sp_get_basis_functions
