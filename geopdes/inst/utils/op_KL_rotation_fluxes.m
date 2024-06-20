@@ -22,7 +22,7 @@
 % NOTES:
 %
 %  1) While normal has to be normalized (unit vector) T_t does not have to
-%  2) Dabcd_ort is in tensor form. If the constitutive relationship is available in Voigt for it has to be converted
+%  2) Dabcd_ort is in tensor form. If the constitutive relationship is available in Voigt form it has to be converted
 %  3) The quantities involved all refer to a single point along the boundary line
 %
 %
