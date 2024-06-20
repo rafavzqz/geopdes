@@ -4,8 +4,8 @@
 %
 % INPUT:
 %    
-%   spu:     object representing the space of trial functions (see sp_multipatch)
-%   spv:     object representing the space of test functions (see sp_multipatch)
+%   spu:     object representing the space of trial functions (see sp_multipatch_C1)
+%   spv:     object representing the space of test functions (see sp_multipatch_C1)
 %   msh:     object that defines the domain partition and the quadrature rule (see msh_multipatch)
 %   lambda, mu: function handles to compute the Lame' coefficients
 %   patches: list of patches where the integrals have to be computed. By default, all patches are selected.

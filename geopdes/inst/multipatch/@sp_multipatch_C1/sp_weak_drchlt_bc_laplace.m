@@ -13,12 +13,12 @@
 %  and g the boundary condition to be imposed.
 %
 %
-%   [N_mat, N_rhs] = sp_weak_drchlt_bc_stokes  (space, msh, refs, bnd_func, coeff, Cpen)
+%   [N_mat, N_rhs] = sp_weak_drchlt_bc_laplace  (space, msh, refs, bnd_func, coeff, Cpen)
 %
 % INPUTS:
 %
-%  space_v:    multipatch space, formed by several tensor product spaces plus the connectivity (see sp_multipatch). 
-%  msh:        multipatch mesh, consisting of several Cartesian meshes (see msh_multipatch)
+%  space_v:    object for the multipatch space (see sp_multipatch_C1). 
+%  msh:        object for the multipatch mesh (see msh_multipatch)
 %  refs:       boundary sides on which the Dirichlet condition is imposed
 %  bnd_func:   the condition to be imposed (g in the equations)
 %  coeff:      function handle for the viscosity coefficient (mu in the equation)

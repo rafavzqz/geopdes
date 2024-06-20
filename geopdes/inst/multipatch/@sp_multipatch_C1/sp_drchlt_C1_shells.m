@@ -1,10 +1,44 @@
+% SP_DRCHLT_C1_SHELLS: assign the degrees of freedom to impose zero displacement boundary conditions.
+%  On boundary vertices, the kernel is computed to remove linear dependencies when restricting the functions to the boundary.
+%
+%   [u, dofs, kernel_info] = sp_drchlt_C1_shells (sp, msh, refs, drchlt_components)
+%
+% INPUT:
+%
+%  sp:         object representing the multipatch space of trial functions (see sp_multipatch_C1)
+%  msh:        object containing the domain partition and the quadrature rule (see msh_multipatch)
+%  refs:       boundary references on which the conditions are imposed
+%  drchlt_components: cell-array, the components that are set to zero for each drchlt_side
+%
+% OUTPUT:
+%
+%  u:           assigned value to the degrees of freedom
+%  dofs:        global numbering of the corresponding basis functions
+%  kernel_info: a struct with information of kernel computation, containing:
+%              - vertices_numbers: vertices which contain a function in the kernel
+%              - all_vertex_dofs:  all functions on those vertices
+%              - quasi_interior_dofs: functions that will be treated as
+%                                     internal ones (as many as in the kernel)
+%              - B_change_local: coefficients of the functions in the kernel,
+%                                in terms of vertex basis functions. Matrix of size
+%                                numel(all_vertex_dofs) x numel (quasi_interior_dofs)
+%
+% Copyright (C) 2022-2023 Cesare Bracco, Andrea Farahat, Rafael Vazquez
+%
+%    This program is free software: you can redistribute it and/or modify
+%    it under the terms of the GNU General Public License as published by
+%    the Free Software Foundation, either version 3 of the License, or
+%    (at your option) any later version.
+
+%    This program is distributed in the hope that it will be useful,
+%    but WITHOUT ANY WARRANTY; without even the implied warranty of
+%    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+%    GNU General Public License for more details.
+%
+%    You should have received a copy of the GNU General Public License
+%    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 function [u_drchlt, drchlt_dofs, kernel_info] = sp_drchlt_C1_shells (space, msh, refs, drchlt_components)
-
-% TODO: IT WILL ALWAYS SET THE VALUE TO ZERO
-
-% refs should be the whole boundary, for now
-% M = spalloc (msh.rdim*space.ndof, msh.rdim*space.ndof, msh.rdim*space.ndof);
-% rhs = zeros (msh.rdim*space.ndof, 1);
 
 drchlt_dofs = [];
 

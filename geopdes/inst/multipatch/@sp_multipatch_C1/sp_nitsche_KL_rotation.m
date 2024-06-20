@@ -4,8 +4,8 @@
 %
 % INPUT:
 %     
-%    space:     space object (see sp_vector)
-%    msh:       mesh object (see msh_cartesian)
+%    space:     space object (see sp_multipatch_C1)
+%    msh:       mesh object (see msh_multipatch)
 %    bnd_sides: boundary sides on which the rotation free condition is imposed
 %    E_coeff:   function handle for the Young modulus
 %    nu_coeff:  function handle for the Poisson ratio
@@ -30,6 +30,7 @@
 %
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 function A = sp_nitsche_KL_rotation (space, msh, refs, E_coeff, nu_coeff, thickness, penalty_coeff)
 
   A = spalloc (msh.rdim*space.ndof, msh.rdim*space.ndof, 3*msh.rdim*space.ndof);
