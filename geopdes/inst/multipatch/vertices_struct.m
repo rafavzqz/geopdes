@@ -1,4 +1,4 @@
-% VERTICES_STRUCT: Compute interfaces and vertices struct, necessary to build the basis
+% VERTICES_STRUCT: Compute interfaces and vertices struct, necessary to build the C1 basis
 %
 %     [edges, vertices] = vertices_struct (geometry, interfaces, boundaries, boundary_interfaces)
 %
