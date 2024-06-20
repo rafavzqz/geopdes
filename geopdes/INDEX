@@ -13,6 +13,7 @@ Solve: solvers for some simple problems, that you can modify to solve your own p
  solve_bilaplace_gradgrad_2d_iso
  solve_adv_diff_2d
  solve_linear_elasticity
+ solve_linear_elasticity_scalarspace
  solve_maxwell_eig
  solve_maxwell_eig_mixed1
  solve_maxwell_eig_mixed2_2d
@@ -20,6 +21,7 @@ Solve: solvers for some simple problems, that you can modify to solve your own p
  solve_navier_stokes
  solve_stokes
  solve_kirchhoff_love_shell
+ solve_kirchhoff_love_shell_scalarspace
  solve_BE_Beam
 Geometry: read geometry files, that can be created with the NURBS package
  geo_nurbs
@@ -175,6 +177,28 @@ Multipatch: functions of different kinds to solve problems in domains defined by
  @sp_multipatch/sp_weak_drchlt_bc_laplace
  @sp_multipatch/sp_weak_drchlt_bc_stokes
  @sp_multipatch/sp_refine
+ sp_multipatch_C1
+ @sp_multipatch/sp_l2_error
+ @sp_multipatch/sp_h1_error
+ @sp_multipatch/sp_h2_error
+ @sp_multipatch/sp_h2_equiv_lap_error
+ @sp_multipatch/sp_plot_solution
+ @sp_multipatch/sp_to_vtk
+ @sp_multipatch/sp_eval_phys
+ @sp_multipatch/sp_evaluate_element_list
+ @sp_multipatch/sp_get_cells
+ @sp_multipatch/sp_get_basis_functions
+ @sp_multipatch/sp_get_functions_on_patch
+ @sp_multipatch/sp_get_local_interior_functions
+ @sp_multipatch/sp_get_neighbors
+ @sp_multipatch/sp_compute_Cpatch
+ @sp_multipatch/sp_compute_Cpatch_vector
+ @sp_multipatch/sp_bilaplacian_drchlt_C1_exact
+ @sp_multipatch/sp_bilaplacian_drchlt_C1
+ @sp_multipatch/sp_drchlt_C1_shells
+ @sp_multipatch/sp_nitsche_KL_rotation
+ @sp_multipatch/sp_weak_drchlt_bc_laplace
+ @sp_multipatch/sp_refine
 Utilities: other functions in the package
  collocation_csp
  knt_derham
@@ -183,3 +207,5 @@ Utilities: other functions in the package
  newtons_method
  get_boundary_indices
  get_volumetric_indices
+ isotropic_stiffness
+ op_KL_rotation_fluxes

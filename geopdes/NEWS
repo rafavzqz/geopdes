@@ -1,3 +1,18 @@
+Summary of important changes for geopdes-3.4.0:
+-----------------------------------------------------------------------------
+* Added new class SP_MULTIPATCH_C1.
+* Added solvers for C1 spaces: Laplace, bilaplace, linear elast., Kirchhoff-Love shell.
+* Added solver for linear elasticity and Kirchhoff-Love using scalar spaces.
+
+Summary of important changes for geopdes-3.3.0:
+-----------------------------------------------------------------------------
+* Added functions to compute the exterior derivative.
+* Added new operators: op_f_curlv_(mp,tp,3d), op_f_gradv_(mp,tp).
+
+Summary of important changes for geopdes-3.2.3:
+-----------------------------------------------------------------------------
+* Added new function: msh_get_neighbor_cells
+
 Summary of important changes for geopdes-3.2.3:
 -----------------------------------------------------------------------------
 * Added new function: msh_get_neighbor_cells
