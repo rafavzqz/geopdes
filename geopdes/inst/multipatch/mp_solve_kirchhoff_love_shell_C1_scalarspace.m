@@ -1,4 +1,4 @@
-% MP_SOLVE_KIRCHHOFF_LOVE_SHELL_C1_SCALARSPACE: Solve the Kirchhoff-Love shell model in a NURBS domain.
+% MP_SOLVE_KIRCHHOFF_LOVE_SHELL_C1_SCALARSPACE: Solve the Kirchhoff-Love shell model in an AS-G1 multipatch domain.
 %  It uses an object space of type sp_multipatch_C1 with scalar values, instead of vector valued.
 %
 % USAGE:

@@ -1,4 +1,4 @@
-% MP_SOLVE_BILAPLACE_C1: solve the bilaplacian problem in a multipatch geometry.
+% MP_SOLVE_BILAPLACE_C1: solve the bilaplacian problem in an AS-G1 multipatch geometry.
 %
 % USAGE:
 %

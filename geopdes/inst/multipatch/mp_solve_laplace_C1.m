@@ -1,4 +1,4 @@
-% MP_SOLVE_LAPLACE: solve the Laplacian problem in a multipatch geometry.
+% MP_SOLVE_LAPLACE_C1: solve the Laplacian problem in a multipatch geometry, with C1 continuity.
 %
 % Example to solve the diffusion problem
 %
@@ -6,12 +6,12 @@
 %                epsilon(x) du/dn = g    on Gamma_N
 %                               u = h    on Gamma_D
 %
-% where the domain \Omega is formed by several patches of the form F((0,1)^n).
+% where \Omega is an analysis-suitable G1 multipatch domain.
 %
 % USAGE:
 %
 %  [geometry, msh, space, u] = 
-%          mp_solve_laplace (problem_data, method_data)
+%          mp_solve_laplace_C1 (problem_data, method_data)
 %
 % INPUT:
 %
@@ -35,7 +35,7 @@
 %
 %  geometry: array of geometry structures (see geo_load)
 %  msh:      multipatch mesh, consisting of several Cartesian meshes (see msh_multipatch)
-%  space:    multipatch space, formed by several tensor product spaces plus the connectivity (see sp_multipatch)
+%  space:    multipatch space, formed by several tensor product spaces plus the connectivity (see sp_multipatch_C1)
 %  u:        the computed degrees of freedom
 %
 % Copyright (C) 2009, 2010 Carlo de Falco
@@ -126,12 +126,3 @@ end
 u = stiff_mat \ rhs;
 
 end
-
-%!demo
-%! ex_laplace_Lshaped_mp
-
-%!demo
-%! ex_laplace_cube_mp
-
-%!demo
-%! ex_laplace_thick_L_mp

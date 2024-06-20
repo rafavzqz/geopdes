@@ -8,7 +8,7 @@
 %                     u = h    on Gamma_D
 %
 % with   sigma(u) = mu*(grad(u) + grad(u)^t) + lambda*div(u)*I,
-% and the domain \Omega is formed by several patches of the form F((0,1)^n).
+% and \Omega is an analysis-suitable G1 multipatch domain.
 %
 %   u:          displacement vector
 %   sigma:      Cauchy stress tensor
@@ -18,19 +18,17 @@
 % USAGE:
 %
 %  [geometry, msh, space, u] = 
-%             mp_solve_linear_elasticity (problem_data, method_data)
+%             mp_solve_linear_elasticity_C1_scalarspace (problem_data, method_data)
 %
 % INPUT:
 %
 %  problem_data: a structure with data of the problem. It contains the fields:
 %    - geo_name:     name of the file containing the geometry
-%    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
-%    - drchlt_sides: sides with Dirichlet boundary condition
+%    - nmnn_sides:   sides with Neumann boundary condition (NOT IMPLEMENTED)
+%    - drchlt_sides: sides with Dirichlet boundary condition (ONLY HOMOGENEOUS CONDITIONS)
 %    - lambda_lame:  first Lame' parameter
 %    - mu_lame:      second Lame' parameter
 %    - f:            source term
-%    - h:            function for Dirichlet boundary condition
-%    - g:            function for Neumann condition (if nmnn_sides is not empty)
 %
 %  method_data : a structure with discretization data. Its fields are:
 %    - degree:     degree of the spline functions.
@@ -196,9 +194,3 @@ int_dofs = setdiff (1:ndof, drchlt_dofs);
 u(int_dofs) = mat(int_dofs, int_dofs) \ rhs(int_dofs);
 
 end
-
-%!demo
-%! ex_plane_strain_Lshaped_mp
-
-%!demo
-%! ex_lin_elast_cube_mp
