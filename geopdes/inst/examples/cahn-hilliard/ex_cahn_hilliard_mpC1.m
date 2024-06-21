@@ -25,7 +25,7 @@ problem_data.Cpen_nitsche = 1e4 * lambda; % Nitsche's method parameter
 problem_data.Cpen_projection = 1000;      % parameter of the penalized L2 projection (see initial conditions)
 
 % 2) INITIAL CONDITIONS
-mean = 0.0;
+mean = 0.4;
 var = 0.05;
 ic_fun = @(x, y) mean + (rand(size(x))*2-1)*var; % Random initial condition
 %ic_fun = @(x, y) 0.1 * cos(2*pi*x) .* cos(2*pi*y); % Condition as in Gomes, Reali, Sangalli, JCP (2014).
