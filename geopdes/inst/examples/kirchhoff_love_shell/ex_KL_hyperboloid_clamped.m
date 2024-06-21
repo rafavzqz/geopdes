@@ -39,3 +39,8 @@ method_data.penalty_coeff = 10;
 [geometry, msh, space, u] = solve_kirchhoff_love_shell (problem_data, method_data);
 pts = {[1], [0.5]};
 displ = sp_eval (u, space, geometry, pts)
+
+output_file = 'hyperboloid_1patch';
+vtk_pts = {linspace(0, 1, 51), linspace(0, 1, 51)};
+fprintf ('The result is saved in the file %s \n \n', output_file);
+sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'Displacement', 'value')
