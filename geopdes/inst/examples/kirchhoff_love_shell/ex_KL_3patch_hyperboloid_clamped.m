@@ -18,7 +18,6 @@ problem_data.thickness = thickness;
 % Source and boundary terms
 hx = @(x, y, z) zeros(size(x));
 hy = @(x, y, z) zeros(size(x));
-% hz = @(x, y, z) 80000*ones(size(x));
 hz = @(x, y, z) -8000*thickness*ones(size(x));
 
 problem_data.f       = @(x, y, z, ind) cat(1, ...
