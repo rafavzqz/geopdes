@@ -40,7 +40,7 @@ method_data.nquad       = method_data.degree+1; % Points for the Gaussian quadra
 
 subplot(1,2,1)
 npts = [51 51];
-sp_plot_solution (u, space, geometry, npts); shading interp
+sp_plot_solution (u, space, geometry, npts); shading interp; title('Computed solution')
 vtk_pts = {linspace(0,1,npts(1)), linspace(0,1,npts(2))};
 subplot(1,2,2)
 for iptc = 1:msh.npatch
@@ -49,3 +49,4 @@ for iptc = 1:msh.npatch
   surf(X, Y, problem_data.uex(X,Y));
   hold on; shading interp
 end
+title('Exact solution')
