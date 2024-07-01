@@ -13,7 +13,7 @@ problem_data.c_diff  = @(x, y, z) ones(size(x));
 % Source and boundary terms
 C = 1;
 p = -1;
-cons=200;
+cons = 200;
 problem_data.f = @(x, y, z) 16.*cons.*exp(1).^((-1).*cons.*(x.^2+y.^2+(x.^2+(-1).*y.^2).^2)).* ...
                             (1+4.*x.^2+4.*y.^2).^(-5).*(cons.^3.*(1+4.*x.^2+4.*y.^2).^3.*(4.* ...
                             x.^6+(-4).*x.^4.*((-1)+y.^2)+(y+2.*y.^3).^2+x.^2.*(1+8.*y.^2+(-4) ...
@@ -41,7 +41,6 @@ problem_data.lapuex  = @(x, y, z) 4.*cons.*exp(1).^((-1).*cons.*(x.^2+y.^2+(x.^2
                                     -8)+cons).*y.^2+4.*((-5)+2.*cons).*y.^4+20.*cons.*y.^6+16.*cons.* ...
                                     y.^8+x.^2.*((-8)+cons+(-24).*y.^2+16.*cons.*y.^2+44.*cons.*y.^4)+( ...
                                     -4).*x.^4.*(5+cons.*((-2)+(-11).*y.^2+8.*y.^4)));
-
 
 deg = 3;
 method_data.degree      = [deg deg];     % Degree of the splines
