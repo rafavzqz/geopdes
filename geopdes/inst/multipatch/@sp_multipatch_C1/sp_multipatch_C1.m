@@ -57,7 +57,7 @@
 %         sp_compute_Cpatch_vector: compute the matrix for B-splines representation on a patch
 %                                   for vector-valued spaces with the same space on each component
 %
-% Copyright (C) 2015-2023 Rafael Vazquez
+% Copyright (C) 2015-2024 Rafael Vazquez
 % Copyright (C) 2019-2023 Cesare Bracco
 % Copyright (C) 2022 Andrea Farahat
 %
@@ -153,12 +153,15 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces_all, vertices)
     sp.ndof_interior_per_patch(iptc) = numel (interior_dofs);
   end
   clear interior_dofs
-  
+
+  warnaux = warning('query','geopdes:nrbmultipatch');
+  warning ('off', 'geopdes:nrbmultipatch')
   [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices, v_fun_matrices] = ...
     compute_coefficients (sp, msh, geometry, interfaces_all, vertices);
+  warning (warnaux.state, 'geopdes:nrbmultipatch')
 
 %Sigmas, K and V matrices used in the construction of vertex functions
-  sp.vertex_function_matrices=v_fun_matrices;
+  sp.vertex_function_matrices = v_fun_matrices;
 
 % Total number of functions, and of functions of each type
   sp.ndof_edges = sum (ndof_per_interface);
@@ -210,7 +213,7 @@ function [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices, v_fun_matr
 %      with patch = vertices(jj).patches(ii).
 
 % Initialize cell array containing sigma, K and V matrices for each vertex
-v_fun_matrices=cell(2, numel(vertices));
+v_fun_matrices = cell(2, numel(vertices));
 
 %Initialize output variables with correct size
 ndof_per_interface = zeros (1, numel(interfaces_all));
