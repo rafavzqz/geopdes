@@ -98,45 +98,11 @@ if (exist ('rotation_sides', 'var') && ~isempty(rotation_sides))
 end
 
 % Apply boundary conditions
-% drchlt_dofs = []; drchlt_dofs2 = [];
-% for iref = 1:numel(drchlt_sides)
-%   if (~exist('drchlt_components','var'))
-%     components = 1:3;
-%   else
-%     components = drchlt_components{iref};
-%   end
-%   bnd_ref = drchlt_sides(iref);
-%   scalar_dofs_on_ref = [];
-%   scalar_dofs_on_ref2 = [];
-%   for bnd_side = 1:msh.boundaries(bnd_ref).nsides
-%     iptc = msh.boundaries(bnd_ref).patches(bnd_side);
-%     iside = msh.boundaries(bnd_ref).faces(bnd_side);
-% 
-% %     msh_side = msh.msh_patch{iptc}.boundary(iside);
-%     side_dofs = space.sp_patch{iptc}.boundary(iside).dofs;
-%     
-%     [~,scalar_dofs] = find (abs(space.Cpatch{iptc}(side_dofs,:))>1e-15);
-% %     [~,scalar_dofs] = find (space.Cpatch{iptc}(side_dofs,:));
-%     scalar_dofs_on_ref = union (scalar_dofs_on_ref, scalar_dofs);
-%   end
-%   for icomp = components
-%     drchlt_dofs = union (drchlt_dofs, (icomp-1)*space.ndof + scalar_dofs_on_ref);
-%     drchlt_dofs2 = union (drchlt_dofs2, (icomp-1)*space2.ndof + scalar_dofs_on_ref2);
-%   end
-% end
-% 
-% ndof = msh.rdim * space.ndof;
-% u = zeros (ndof, 1);
-% int_dofs = setdiff (1:ndof, drchlt_dofs);
-% 
-% % Solve the linear system
-% u(int_dofs) = K(int_dofs, int_dofs) \ rhs(int_dofs);
-
-if (~isfield (problem_data, 'uex'))
+% if (~isfield (problem_data, 'uex'))
   [u_drchlt, drchlt_dofs, kernel_dofs] = sp_drchlt_C1_shells (space, msh, drchlt_sides, drchlt_components);
-else
-  [u_drchlt, drchlt_dofs, kernel_dofs] = sp_drchlt_C1_exact_shells (space, msh, drchlt_sides, problem_data.uex);
-end
+% else
+%   [u_drchlt, drchlt_dofs, kernel_dofs] = sp_drchlt_C1_exact_shells (space, msh, drchlt_sides, problem_data.uex);
+% end
 
 ndof = msh.rdim * space.ndof;
 u = zeros (ndof, 1);
