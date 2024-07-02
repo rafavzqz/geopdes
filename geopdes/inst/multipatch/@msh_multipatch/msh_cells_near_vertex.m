@@ -1,4 +1,4 @@
-% MSH_CELLS_NEAR_VERTEX: Identify the elements adjacent to given vertices
+% MSH_CELLS_NEAR_VERTEX: Identify the elements adjacent to given vertices.
 %
 %     [all_adjacent_elemens, elems_near_vertex] = msh_cells_near_vertex (msh, vertices)
 %
