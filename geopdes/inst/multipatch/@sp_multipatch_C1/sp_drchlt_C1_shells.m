@@ -12,7 +12,7 @@
 %
 % OUTPUT:
 %
-%  u:           assigned value to the degrees of freedom
+%  u:           assigned value to the degrees of freedom (zero for now)
 %  dofs:        global numbering of the corresponding basis functions
 %  kernel_info: a struct with information of kernel computation, containing:
 %              - vertices_numbers: vertices which contain a function in the kernel
