@@ -13,6 +13,7 @@
 %           ------------+-----------------+----------------------------------
 %            value      |      true       |  compute shape_functions
 %            gradient   |      false      |  compute shape_function_gradients
+%            divergence |      false      |  compute shape_function_divs
 %            hessian    |      false      |  compute shape_function_hessians
 %
 % OUTPUT:

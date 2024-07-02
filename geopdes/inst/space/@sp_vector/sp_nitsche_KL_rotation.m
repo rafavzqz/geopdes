@@ -10,7 +10,7 @@
 %    E_coeff:   function handle for the Young modulus
 %    nu_coeff:  function handle for the Poisson ratio
 %    thickness: scalar value for the thickness
-%    C_penalty: a penalization term
+%    C_penalty: parameter for the penalization term
 %   
 % OUTPUT:
 %
