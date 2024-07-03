@@ -1,4 +1,5 @@
-clear problem_data method_data
+% PHYSICAL DATA OF THE PROBLEM
+clear problem_data
 
 nrb = nrb4surf ([-0.5, -0.5], [0.5, -0.5], [-0.5, 0.5], [0.5 0.5]);
 nrb = nrbdegelev (nrb, [1 1]);
@@ -28,7 +29,8 @@ problem_data.f       = @(x, y, z, ind) cat(1, ...
     reshape (hy (x,y,z), [1, size(x)]), ...
     reshape (hz (x,y,z), [1, size(x)]));
 
-% Discretization parameters
+% DISCRETIZATION PARAMETERS
+clear method_data
 deg = 3;
 method_data.degree     = deg*[1 1];      % Degree of the splines
 method_data.regularity = (deg-1)*[1 1];  % Regularity of the splines

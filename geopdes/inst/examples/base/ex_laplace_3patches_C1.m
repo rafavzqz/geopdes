@@ -1,5 +1,5 @@
 % PHYSICAL DATA OF THE PROBLEM
-clear problem_data  
+clear problem_data
 problem_data.geo_name = 'geo_3patch_ASG1.txt';
 
 % Type of boundary conditions for each side of the domain
@@ -25,6 +25,8 @@ problem_data.graduex = @(x,y) 2*alpha*cat (1, ...
             reshape (((x-P(1)).^2+(y-P(2)).^2).^(alpha-1).*(x-P(1)), [1, size(x)]), ...
             reshape (((x-P(1)).^2+(y-P(2)).^2).^(alpha-1).*(y-P(2)), [1, size(x)]));
 
+% DISCRETIZATION PARAMETERS
+clear method_data
 deg = 4;
 method_data.degree      = [deg deg];     % Degree of the splines
 method_data.regularity  = [deg-2 deg-2]; % Regularity of the splines

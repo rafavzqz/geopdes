@@ -1,4 +1,5 @@
-clear problem_data method_data
+% PHYSICAL DATA OF THE PROBLEM
+clear problem_data
 
 problem_data.geo_name = 'geo_paraboloid_ASG1.txt';
 
@@ -24,12 +25,13 @@ problem_data.f       = @(x, y, z, ind) cat(1, ...
     reshape (hy (x,y,z), [1, size(x)]), ...
     reshape (hz (x,y,z), [1, size(x)]));
 
-% Discretization parameters
+% DISCRETIZATION PARAMETERS
+clear method_data
 deg = 4;
-method_data.degree     = deg*[1 1];        % Degree of the splines
-method_data.regularity = (deg-2)*[1 1];        % Regularity of the splines
+method_data.degree     = deg*[1 1];      % Degree of the splines
+method_data.regularity = (deg-2)*[1 1];  % Regularity of the splines
 method_data.nsub       = [16 16];        % Number of subdivisions of the coarsest mesh, with respect to the mesh in geometry
-method_data.nquad      = (deg+1)*[1 1];       % Points for the Gaussian quadrature rule
+method_data.nquad      = (deg+1)*[1 1];  % Points for the Gaussian quadrature rule
 
 [geometry, msh, space, u] = ...
            mp_solve_kirchhoff_love_shell_C1_scalarspace (problem_data, method_data);

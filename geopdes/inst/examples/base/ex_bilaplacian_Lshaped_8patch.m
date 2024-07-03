@@ -1,8 +1,7 @@
 % PHYSICAL DATA OF THE PROBLEM
-clear problem_data  
+clear problem_data
 problem_data.geo_name = 'geo_Lshaped_8patches.txt';
 
-%EXAMPLE SMOOTH
 % Type of boundary conditions for each side of the domain
 problem_data.nmnn_sides   = [];
 problem_data.drchlt_sides = [1 2 3 4 5 6];
@@ -27,7 +26,7 @@ problem_data.uex     = @(x, y) solution_bilaplacian_Lshaped (x, y);
 problem_data.graduex = @(x, y) solution_bilaplacian_Lshaped_grad (x, y);
 problem_data.hessuex = @(x, y) solution_bilaplacian_Lshaped_hessian (x, y);
 
-% CHOICE OF THE DISCRETIZATION PARAMETERS (Coarse mesh)
+% DISCRETIZATION PARAMETERS
 clear method_data
 method_data.degree      = [4 4];        % Degree of the splines
 method_data.regularity  = [2 2];        % Regularity of the splines

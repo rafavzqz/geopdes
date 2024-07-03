@@ -1,5 +1,5 @@
 % PHYSICAL DATA OF THE PROBLEM
-
+clear problem_data
 problem_data.geo_name = 'geo_open_quasisphere_5p_ASG1.txt';
 
 % Type of boundary conditions for each side of the domain
@@ -15,6 +15,8 @@ problem_data.f = @(x, y, z) ones(size(x));
 problem_data.g = @(x, y, z, ind) zeros(size(x));
 problem_data.h = @(x, y, z, ind) zeros(size(x));
 
+% DISCRETIZATION PARAMETERS
+clear method_data
 deg = 4;
 method_data.degree      = [deg deg];     % Degree of the splines
 method_data.regularity  = [deg-2 deg-2]; % Regularity of the splines

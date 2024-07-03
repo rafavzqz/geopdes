@@ -1,5 +1,5 @@
 % PHYSICAL DATA OF THE PROBLEM
-
+clear problem_data
 problem_data.geo_name = 'geo_hyperboloid_ASG1.txt';
 
 % Type of boundary conditions for each side of the domain
@@ -42,6 +42,8 @@ problem_data.lapuex  = @(x, y, z) 4.*cons.*exp(1).^((-1).*cons.*(x.^2+y.^2+(x.^2
                                     y.^8+x.^2.*((-8)+cons+(-24).*y.^2+16.*cons.*y.^2+44.*cons.*y.^4)+( ...
                                     -4).*x.^4.*(5+cons.*((-2)+(-11).*y.^2+8.*y.^4)));
 
+% DISCRETIZATION PARAMETERS
+clear method_data
 deg = 3;
 method_data.degree      = [deg deg];     % Degree of the splines
 method_data.regularity  = [deg-2 deg-2]; % Regularity of the splines
