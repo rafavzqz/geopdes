@@ -45,9 +45,8 @@ problem_data.lapuex  = @(x, y, z) 4.*cons.*exp(1).^((-1).*cons.*(x.^2+y.^2+(x.^2
 deg = 3;
 method_data.degree      = [deg deg];     % Degree of the splines
 method_data.regularity  = [deg-2 deg-2]; % Regularity of the splines
-method_data.nsub        = [8 8];         % Number of subdivisions of the coarsest mesh, with respect to the mesh in geometry
+method_data.nsub        = [16 16];         % Number of subdivisions of the coarsest mesh, with respect to the mesh in geometry
 method_data.nquad       = [deg+1 deg+1]; % Points for the Gaussian quadrature rule
-method_data.Cpen = 10 * (min(method_data.degree) + 1);
 
 [geometry, msh, space, u] = mp_solve_bilaplace_C1 (problem_data, method_data);
 npts = [41 41];
