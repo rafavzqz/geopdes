@@ -10,8 +10,9 @@ problem_data.weak_drchlt_sides = [1 2 3 4 5 6];
 problem_data.c_diff  = @(x, y) ones(size(x));
         
 % Source and boundary terms
-C = 20; P=[17/3+0.15, 2+0.075];
-alpha=4/6;
+C = 20; 
+P = [17/3+0.15, 2+0.075];
+alpha = 4/6;
 problem_data.f = @(x,y) -2*alpha*((x-P(1)).^2+(y-P(2)).^2).^(alpha-2).*...
                        (((x-P(1)).^2+(y-P(2)).^2)+2*(alpha-1)*(x-P(1)).^2)...
                         -2*alpha*((x-P(1)).^2+(y-P(2)).^2).^(alpha-2).*...
