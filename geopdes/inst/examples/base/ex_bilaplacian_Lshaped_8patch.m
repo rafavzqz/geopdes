@@ -14,9 +14,6 @@ problem_data.c_diff  = @(x, y) ones(size(x));
 %             reshape (zeros(size(x)), [1, size(x)]));
 
 % Source and boundary terms
-C = 1;
-p = -1;
-% Bilaplacian
 problem_data.f = @bilaplacian_rhs_Lshaped;
 % problem_data.g = @(x, y, ind) bilaplacian_Lshaped_g_nmnn_8patches (x,y,ind);
 problem_data.h = @(x, y, ind) solution_bilaplacian_Lshaped (x, y);
