@@ -5,7 +5,6 @@ problem_data.geo_name = 'geo_6patch_ASG1.txt';
 
 % Type of boundary conditions for each side of the domain
 problem_data.nmnn_sides   = [];
-problem_data.drchlt_sides = [];
 problem_data.weak_drchlt_sides = [1 2 3 4 5 6 7 8];
 
 problem_data.c_diff  = @(x, y) ones(size(x));
