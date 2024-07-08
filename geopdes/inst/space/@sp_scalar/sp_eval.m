@@ -72,6 +72,14 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options)
   if (iscell (npts))
     pts = npts;
     npts = cellfun (@numel, pts);
+    degree = space.degree;
+    for idim = 1:ndim
+      knt_aux = space.knots{idim}(degree(idim)+1:end-degree(idim));
+      ind = find (pts{idim}(1)>=knt_aux(1:end-1), 1, 'last');
+      endpoints(1,idim) = knt_aux(ind);
+      ind = find (pts{idim}(end)>=knt_aux(1:end-1), 1, 'last');
+      endpoints(2,idim) = knt_aux(ind+1);
+    end
   elseif (isvector (npts))
     if (numel (npts) == 1)
       npts = npts * ones (1,ndim);

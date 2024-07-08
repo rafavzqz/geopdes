@@ -93,9 +93,10 @@ function geometry = geo_load (in)
     geometry.dnurbs = deriv;
     geometry.dnurbs2 = deriv2;
 
-    geometry.map      =  @(PTS) geo_nurbs (geometry.nurbs, deriv, deriv2, PTS, 0, rdim);
-    geometry.map_der  =  @(PTS) geo_nurbs (geometry.nurbs, deriv, deriv2, PTS, 1, rdim);
-    geometry.map_der2 =  @(PTS) geo_nurbs (geometry.nurbs, deriv, deriv2, PTS, 2, rdim);
+    tmp_nurbs = geometry.nurbs;
+    geometry.map      =  @(PTS) geo_nurbs (tmp_nurbs, deriv, deriv2, PTS, 0, rdim);
+    geometry.map_der  =  @(PTS) geo_nurbs (tmp_nurbs, deriv, deriv2, PTS, 1, rdim);
+    geometry.map_der2 =  @(PTS) geo_nurbs (tmp_nurbs, deriv, deriv2, PTS, 2, rdim);
 
     if (numel (geometry.nurbs.order) > 1)
       bnd = nrbextract (geometry.nurbs);
@@ -105,9 +106,10 @@ function geometry = geo_load (in)
         geometry.boundary(ibnd).dnurbs   = deriv;
         geometry.boundary(ibnd).dnurbs2  = deriv2;
         geometry.boundary(ibnd).rdim     = rdim;
-        geometry.boundary(ibnd).map      = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 0, rdim);
-        geometry.boundary(ibnd).map_der  = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 1, rdim);
-        geometry.boundary(ibnd).map_der2 = @(PTS) geo_nurbs (bnd(ibnd), deriv, deriv2, PTS, 2, rdim);
+        tmp_bnd = bnd(ibnd);
+        geometry.boundary(ibnd).map      = @(PTS) geo_nurbs (tmp_bnd, deriv, deriv2, PTS, 0, rdim);
+        geometry.boundary(ibnd).map_der  = @(PTS) geo_nurbs (tmp_bnd, deriv, deriv2, PTS, 1, rdim);
+        geometry.boundary(ibnd).map_der2 = @(PTS) geo_nurbs (tmp_bnd, deriv, deriv2, PTS, 2, rdim);
       end
     end
     if (strcmpi (wrn_struct.state, 'on'))
@@ -115,8 +117,9 @@ function geometry = geo_load (in)
     end
   else
     for ibnd = 1:6 % This loop should be until 2*ndim, but ndim is not known
-      geometry.boundary(ibnd).map     = @(PTS) boundary_map (geometry.map, ibnd, PTS);
-      geometry.boundary(ibnd).map_der = @(PTS) boundary_map_der (geometry.map, geometry.map_der, ibnd, PTS);
+      tmp_map = geometry.map;
+      geometry.boundary(ibnd).map     = @(PTS) boundary_map (tmp_map, ibnd, PTS);
+      geometry.boundary(ibnd).map_der = @(PTS) boundary_map_der (tmp_map, geometry.map_der, ibnd, PTS);
     end
   end
 

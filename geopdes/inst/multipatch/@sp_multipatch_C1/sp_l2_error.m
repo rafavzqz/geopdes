@@ -4,7 +4,7 @@
 %
 % INPUT:
 %
-%   space: object defining the space of discrete functions (see sp_multipatch)
+%   space: object defining the space of discrete functions (see sp_multipatch_C1)
 %   msh:   object defining the domain partition and the quadrature rule (see msh_multipatch)
 %   u:     vector of dof weights
 %   uex:   function handle to evaluate the exact solution

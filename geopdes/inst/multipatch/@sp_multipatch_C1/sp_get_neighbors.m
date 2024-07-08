@@ -1,9 +1,9 @@
-% SP_GET_NEIGHBORS: Compute the indices of functions that share one element in the support of a given list of functions
+% SP_GET_NEIGHBORS: Compute the indices of functions that share one element in the support of a given list of functions.
 %
 % neighbors_indices = sp_get_neighbors (space, msh, indices)
 %
 % INPUT:
-%    space:   object defining the space of discrete functions (see sp_multipatch)
+%    space:   object defining the space of discrete functions (see sp_multipatch_C1)
 %    msh:     object defining the domain partition and the quadrature rule (see msh_multipatch)
 %    indices: indices of the functions.
 %

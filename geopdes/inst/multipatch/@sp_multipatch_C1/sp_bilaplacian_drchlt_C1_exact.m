@@ -1,11 +1,12 @@
-% SP_BILAPLACIAN_DRCHLT_C1_EXACT: assign the degrees of freedom of essential boundary conditions (value and normal derivative) through a projection.
+% SP_BILAPLACIAN_DRCHLT_C1_EXACT: assign the degrees of freedom of essential boundary conditions (value and normal derivative) 
+%  through a projection, from a known exact solution.
 %  On boundary vertices, the kernel is computed to remove linear dependencies when restricting the functions to the boundary.
 %
-%   [u, dofs] = sp_drchlt_l2_proj (sp, msh, refs, h, dudn)
+%   [u, dofs, kernel_info] = sp_bilaplacian_drchlt_C1_exact (sp, msh, refs, uex, graduex)
 %
 % INPUT:
 %
-%  sp:         object representing the multipatch space of trial functions (see sp_multipatch)
+%  sp:         object representing the multipatch space of trial functions (see sp_multipatch_C1)
 %  msh:        object containing the domain partition and the quadrature rule (see msh_multipatch)
 %  refs:       boundary references on which the conditions are imposed
 %  uex:        function handle to compute the Dirichlet condition from the exact solution

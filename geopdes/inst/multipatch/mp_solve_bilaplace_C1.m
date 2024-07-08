@@ -1,4 +1,4 @@
-% MP_SOLVE_BILAPLACE_C1: solve the bilaplacian problem in a multipatch geometry.
+% MP_SOLVE_BILAPLACE_C1: solve the bilaplacian problem in an AS-G1 multipatch geometry.
 %
 % USAGE:
 %
@@ -9,8 +9,7 @@
 %
 %  problem_data: a structure with data of the problem. It contains the fields:
 %    - geo_name:     name of the file containing the geometry
-%    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
-%    - drchlt_sides: sides with Dirichlet boundary condition
+%    - drchlt_sides: sides with essential (Dirichlet and Neumann) boundary condition
 %    - c_diff:       diffusion coefficient
 %    - f:            source term
 %    - g:            function for Neumann condition

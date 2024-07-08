@@ -1,9 +1,9 @@
-% SP_GET_BASIS_FUNCTIONS: Compute the indices of tensor-product B-splines acting on a list of cells.
+% SP_GET_BASIS_FUNCTIONS: Compute the indices of basis functions acting on a list of cells.
 %
 % fun_indices = sp_get_basis_functions (space, msh, indices)
 %
 % INPUT:
-%    space:   object defining the space of discrete functions (see sp_multipatch)
+%    space:   object defining the space of discrete functions (see sp_multipatch_C1)
 %    msh:     object defining the domain partition and the quadrature rule (see msh_multipatch)
 %    indices: indices of the cells.
 %

@@ -11,7 +11,7 @@
 %  E_coeff:  function handle to compute the Young's modulus
 %  nu_coeff: function handle to compute the Poisson's ratio
 %  t_coeff:  thickness of the shell, scalar value
-%   patches: list of patches where the integrals have to be computed. By default, all patches are selected.
+%  patches:  list of patches where the integrals have to be computed. By default, all patches are selected.
 
 % OUTPUT:
 %

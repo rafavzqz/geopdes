@@ -1,5 +1,4 @@
-% SP_GET_VERTEX_NEIGHBORS: Compute the indices of elements in the support
-%   of vertex functions, separated by patches
+% SP_GET_VERTEX_NEIGHBORS: Compute the indices of elements in the support of vertex functions, separated by patches.
 %
 % cell_indices = sp_get_vertex_neighbors (space, msh, vertex_index, patch_indices)
 %

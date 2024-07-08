@@ -35,14 +35,18 @@ function sp_plot_solution (u, space, geometry, varargin)
 % end
 
 hold_flag = ishold ;
-for iptc = 1:space.npatch
-%   if (isempty (space.dofs_ornt))
-    [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
-    sp_plot_solution (Cpatch* u(Cpatch_cols), space.sp_patch{iptc}, geometry(iptc), varargin{:});
-%   else
-%     sp_plot_solution (u(space.gnum{iptc}) .* space.dofs_ornt{iptc}.', space.sp_patch{iptc}, geometry(iptc), npts, ncuts);
-%   end
-  hold on
+if (numel(u) == space.ndof)
+  for iptc = 1:space.npatch
+%     if (isempty (space.dofs_ornt))
+      [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
+      sp_plot_solution (Cpatch* u(Cpatch_cols), space.sp_patch{iptc}, geometry(iptc), varargin{:});
+%     else
+%       sp_plot_solution (u(space.gnum{iptc}) .* space.dofs_ornt{iptc}.', space.sp_patch{iptc}, geometry(iptc), npts, ncuts);
+%     end
+    hold on
+  end
+else
+  error ('Not implemented yet')
 end
 
 if (~hold_flag)

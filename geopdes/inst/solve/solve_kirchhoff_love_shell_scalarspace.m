@@ -85,6 +85,10 @@ space = sp_nurbs (geometry.nurbs, msh);
 % Assemble the stiffness matrix and right-hand side
 K = op_KL_shells_tp (space, space, msh, E_coeff, nu_coeff, thickness);
 rhs = op_f_v_tp_vector (space, msh, f);
+% Apply zero rotation with Nitsche method
+if (exist ('rotation_sides', 'var') && ~isempty(rotation_sides))
+  K = K + sp_nitsche_KL_rotation (space, msh, rotation_sides, E_coeff, nu_coeff, thickness, penalty_coeff);
+end
 
 % Apply boundary conditions
 drchlt_dofs = [];

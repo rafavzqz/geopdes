@@ -4,7 +4,7 @@
 %
 % INPUTS:
 %     
-%    space:     object defining the space of discrete functions (see sp_multipatch)
+%    space:     object defining the space of discrete functions (see sp_multipatch_C1)
 %    msh_elems: structure containing the information of quadrature or
 %               visualization points, for a given list of elements and patches
 %               (see msh_multipatch/msh_evaluate_element_list)
@@ -16,8 +16,6 @@
 %            gradient   |      false      |  compute shape_function_gradients
 %            hessian    |      false      |  compute shape_function_hessians (only scalars)
 %            laplacian  |      false      |  compute shape_function_laplacians (only scalars)
-%            div        |      false      |  compute shape_function_divs (only vectors)
-%            curl       |      false      |  compute shape_function_curls (only vectors)
 %
 % OUTPUT:
 %

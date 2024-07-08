@@ -1,6 +1,6 @@
 % SP_GET_FUNCTIONS_ON_PATCH: Compute the indices of non-vanishing basis functions on a patch.
 %
-% [Cpatch_cols] = sp_get_functions_on_patch (space, patch)
+% [Cpatch_cols, dofs_interior, dofs_edge, dofs_vertex] = sp_get_functions_on_patch (space, patch)
 %
 % INPUT:
 %    space:   object defining the space of discrete functions (see sp_multipatch_C1)

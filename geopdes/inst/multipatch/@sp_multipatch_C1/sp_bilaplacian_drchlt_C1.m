@@ -1,11 +1,11 @@
 % SP_BILAPLACIAN_DRCHLT_C1: assign the degrees of freedom of essential boundary conditions (value and normal derivative) through a projection.
 %  On boundary vertices, the kernel is computed to remove linear dependencies when restricting the functions to the boundary.
 %
-%   [u, dofs] = sp_drchlt_l2_proj (sp, msh, refs, h, dudn)
+%   [u, dofs, kernel_info] = sp_bilaplacian_drchlt_C1 (sp, msh, refs, h, dudn)
 %
 % INPUT:
 %
-%  sp:         object representing the multipatch space of trial functions (see sp_multipatch)
+%  sp:         object representing the multipatch space of trial functions (see sp_multipatch_C1)
 %  msh:        object containing the domain partition and the quadrature rule (see msh_multipatch)
 %  refs:       boundary references on which the conditions are imposed
 %  h:          function handle to compute the Dirichlet condition

@@ -38,9 +38,10 @@
 %       Methods for post-processing, that require a computed vector of degrees of freedom
 %         sp_l2_error:    compute the error in L2 norm
 %         sp_h1_error:    compute the error in H1 norm
-%         sp_h2_error:    compute the error in H2 norm
+%         sp_h2_error:    compute the error in H2 norm (only for planar surfaces)
+%         sp_eval_phys:   compute the value of the solution in a given set of points
 %         sp_to_vtk:      export the computed solution to a pvd file, using a Cartesian grid of points on each patch
-%         sp_plot_solution: plot the solution in Matlab
+%         sp_plot_solution: plot the solution in Matlab (only for the scalar-valued case)
 %
 %       Methods for basic connectivity operations
 %         sp_get_basis_functions: compute the functions that do not vanish in a given list of elements
@@ -48,12 +49,15 @@
 %         sp_get_neighbors:       compute the neighbors, functions that share at least one element with a given one
 %         sp_get_functions_on_patch: compute the indices of non-vanishing C^1 functions on a patch
 %         sp_get_local_interior_functions: compute the local indices of interior functions on a patch
+%         sp_get_vertex_neighbors: compute the indices of elements in the support of vertex functions
 %
 %       Other methods
 %         sp_refine: generate a refined space, and subdivision matrices for the univariate spaces
 %         sp_compute_Cpatch: compute the matrix for B-splines representation on a patch
+%         sp_compute_Cpatch_vector: compute the matrix for B-splines representation on a patch
+%                                   for vector-valued spaces with the same space on each component
 %
-% Copyright (C) 2015-2023 Rafael Vazquez
+% Copyright (C) 2015-2024 Rafael Vazquez
 % Copyright (C) 2019-2023 Cesare Bracco
 % Copyright (C) 2022 Andrea Farahat
 %
@@ -149,12 +153,15 @@ function sp = sp_multipatch_C1 (spaces, msh, geometry, interfaces_all, vertices)
     sp.ndof_interior_per_patch(iptc) = numel (interior_dofs);
   end
   clear interior_dofs
-  
+
+  warnaux = warning('query','geopdes:nrbmultipatch');
+  warning ('off', 'geopdes:nrbmultipatch')
   [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices, v_fun_matrices] = ...
     compute_coefficients (sp, msh, geometry, interfaces_all, vertices);
+  warning (warnaux.state, 'geopdes:nrbmultipatch')
 
 %Sigmas, K and V matrices used in the construction of vertex functions
-  sp.vertex_function_matrices=v_fun_matrices;
+  sp.vertex_function_matrices = v_fun_matrices;
 
 % Total number of functions, and of functions of each type
   sp.ndof_edges = sum (ndof_per_interface);
@@ -206,7 +213,7 @@ function [ndof_per_interface, CC_edges, ndof_per_vertex, CC_vertices, v_fun_matr
 %      with patch = vertices(jj).patches(ii).
 
 % Initialize cell array containing sigma, K and V matrices for each vertex
-v_fun_matrices=cell(2, numel(vertices));
+v_fun_matrices = cell(2, numel(vertices));
 
 %Initialize output variables with correct size
 ndof_per_interface = zeros (1, numel(interfaces_all));
