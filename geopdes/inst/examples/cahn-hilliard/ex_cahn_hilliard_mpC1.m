@@ -1,5 +1,3 @@
-clc
-
 % 1) PHYSICAL DATA OF THE PROBLEM
 clear problem_data  
 % Physical domain, defined as NURBS map given in a text file
@@ -68,11 +66,9 @@ for step = 1:length(results.time)
   sp_to_vtk (results.u(:,step), space, geometry, vtk_pts, output_file, {'u','grad_u'}, {'value','gradient'})
 end
     
-% % 5.3) PLOT LAST RESULT
-% [eu, F] = sp_eval (results.u(:,end), space, geometry, vtk_pts);
-% [X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
-% surf (X, Y, eu)
-% colorbar
-% view(0,90)
-% shading interp
-% axis equal tight
+% 5.3) PLOT LAST RESULT
+sp_plot_solution (results.u(:,end), space, geometry);
+colorbar
+view(0,90)
+shading interp
+axis equal tight
