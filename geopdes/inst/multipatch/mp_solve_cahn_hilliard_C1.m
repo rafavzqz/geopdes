@@ -38,9 +38,9 @@
 %
 % OUTPUT:
 %
-%  geometry: geometry structure (see geo_load)
-%  msh:      mesh object that defines the quadrature rule (see msh_cartesian)
-%  space:    space object that defines the discrete space (see sp_scalar)
+%  geometry: geometry structure (see mp_geo_load)
+%  msh:      mesh object that defines the quadrature rule (see msh_multipatch)
+%  space:    space object that defines the discrete space (see sp_multipatch_C1)
 %  results:  a struct with the saved results, containing the following fields:
 %    - time: (array of length Ntime) time at which the solution was saved
 %    - u:    (size ndof x Ntime) degrees of freedom for the solution
@@ -118,7 +118,7 @@ gamma =  .5 + a_m - a_f;
 
 %%-------------------------------------------------------------------------
 % No flux b.c. (essential boundary condition)
-% Set Neumann boundary conditions for non-periodic sides
+% Set Neumann boundary conditions for every side
 nmnn_bou   = 1:numel(boundaries);
 
 %%-------------------------------------------------------------------------
@@ -377,60 +377,9 @@ function [P, rhs] = penalty_matrix (space, msh, nmnn_sides, pen)
 
 end
 
-
-% function [mass_pen, rhs_pen] = penalty_grad (space, msh, i_side, pen)
-% 
-% msh_side = msh_eval_boundary_side (msh, i_side ) ;
-% msh_side_int = msh_boundary_side_from_interior (msh, i_side ) ;
-% sp_side = space.constructor ( msh_side_int) ;
-% sp_side = sp_precompute ( sp_side , msh_side_int , 'gradient', true );
-% 
-% 
-% coe_side = pen .* msh_side.charlen; 
-% mass_pen = op_gradu_n_gradv_n(sp_side, sp_side, msh_side, coe_side);
-% 
-% 
-% rhs_pen  = zeros(space.ndof,1); % no flux
-% 
-% end
-
 %--------------------------------------------------------------------------
 % check flux through the boundaries
 %--------------------------------------------------------------------------
 
 % function flux = check_flux_phase_field(space, msh, uhat, uhat0)
-% 
-% sides = [1,2,3,4]; % all the boundaries
-% flux = 0;
-% 
-% for iside=1:length(sides)   
-% 
-%     msh_side = msh_eval_boundary_side (msh, sides(iside) ) ;
-%     msh_side_int = msh_boundary_side_from_interior (msh, sides(iside) ) ;
-%     sp_side = space.constructor ( msh_side_int) ;
-%     sp_side = sp_precompute ( sp_side , msh_side_int , 'gradient' , true );
-% 
-% 
-%     gradu = sp_eval_msh (uhat-uhat0, sp_side, msh_side, 'gradient');
-%    
-% 
-%     
-%     valu = zeros(sp_side.ncomp, size(msh_side.quad_weights,1), size(msh_side.quad_weights,2));
-%     for idim = 1:msh.rdim
-%         valu = valu + (gradu(idim,:,:) .* msh_side.normal(idim,:,:));
-%     end
-% 
-% 
-%     w =msh_side.quad_weights .* msh_side.jacdet;
-%     err_elem = sum (reshape (valu, [msh_side.nqn, msh_side.nel]) .* w);
-%     err  = sum (err_elem);
-% 
-% 
-%     flux = flux + err;
-% 
-% end
-% 
-% 
-% 
-% end
-
+% NOT IMPLEMENTED IN THE MULTIPATCH CASE

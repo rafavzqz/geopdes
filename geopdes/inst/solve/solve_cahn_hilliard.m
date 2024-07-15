@@ -25,7 +25,6 @@
 %    - Time_max:     final time
 %    - fun_u:        initial condition. Equal to zero by default.
 %    - fun_udot:     initial condition for time derivative. Equal to zero by default.
-%    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
 %
 %  method_data : a structure with discretization data. Its fields are:
 %    - degree:     degree of the spline functions.
@@ -133,7 +132,7 @@ end
 % Precompute matrices
 
 % Compute the mass matrix
-mass_mat = op_u_v_tp(space,space,msh);
+mass_mat = op_u_v_tp (space,space,msh);
 
 % Compute the laplace matrix
 lapl_mat = op_laplaceu_laplacev_tp (space, space, msh, lambda);
@@ -282,11 +281,11 @@ function [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gam
     end
     
   % Compute the update, and update the solution
-    A_gl = a_m * mass_mat + a_f * gamma *dt * stiff_mat ; 
+    A_gl = a_m * mass_mat + a_f * gamma * dt * stiff_mat ; 
     d_udot = - A_gl\Res_gl;
 
     udot_n1 = udot_n1 + d_udot;
-    u_n1 = u_n1 + gamma * dt* d_udot;
+    u_n1 = u_n1 + gamma * dt * d_udot;
   end
 
 end
@@ -299,7 +298,7 @@ function [Res_gl, stiff_mat] = Res_K_cahn_hilliard(space, msh, ...
                           mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, u_a, udot_a, mu, dmu)
 
   % Double well (matrices)
-  [term2, term2K] = op_gradfu_gradv_tp(space, msh, u_a, mu, dmu);
+  [term2, term2K] = op_gradfu_gradv_tp (space, msh, u_a, mu, dmu);
  
   % Residual
   Res_gl = mass_mat*udot_a + term2*u_a  + lapl_mat*u_a;
@@ -324,7 +323,7 @@ function [A] = int_boundary_term (space, msh,  lambda, nmnn_sides)
 
     A =  spalloc (space.ndof, space.ndof, 3*space.ndof);
 
-    for iside=1:numel(nmnn_sides)   
+    for iside = 1:numel(nmnn_sides)   
 
       msh_side = msh_eval_boundary_side (msh, nmnn_sides(iside) ) ;
       msh_side_int = msh_boundary_side_from_interior (msh, nmnn_sides(iside) ) ;
@@ -364,11 +363,10 @@ end
 
 function [mass_pen, rhs_pen] = penalty_grad (space, msh, i_side, pen)
 
-msh_side = msh_eval_boundary_side (msh, i_side ) ;
-msh_side_int = msh_boundary_side_from_interior (msh, i_side ) ;
-sp_side = space.constructor ( msh_side_int) ;
-sp_side = sp_precompute ( sp_side , msh_side_int , 'gradient', true );
-
+msh_side = msh_eval_boundary_side (msh, i_side);
+msh_side_int = msh_boundary_side_from_interior (msh, i_side);
+sp_side = space.constructor (msh_side_int);
+sp_side = sp_precompute (sp_side , msh_side_int , 'gradient', true);
 
 coe_side = pen .* msh_side.charlen; 
 mass_pen = op_gradu_n_gradv_n(sp_side, sp_side, msh_side, coe_side);
@@ -388,10 +386,10 @@ flux = 0;
 
 for iside = 1:numel(sides)   
 
-  msh_side = msh_eval_boundary_side (msh, sides(iside) ) ;
-  msh_side_int = msh_boundary_side_from_interior (msh, sides(iside) ) ;
-  sp_side = space.constructor ( msh_side_int) ;
-  sp_side = sp_precompute ( sp_side , msh_side_int , 'gradient' , true );
+  msh_side = msh_eval_boundary_side (msh, sides(iside));
+  msh_side_int = msh_boundary_side_from_interior (msh, sides(iside));
+  sp_side = space.constructor (msh_side_int);
+  sp_side = sp_precompute (sp_side , msh_side_int , 'gradient', true );
 
   gradu = sp_eval_msh (uhat-uhat0, sp_side, msh_side, 'gradient');
     
@@ -400,9 +398,9 @@ for iside = 1:numel(sides)
     valu = valu + (gradu(idim,:,:) .* msh_side.normal(idim,:,:));
   end
 
-  w =msh_side.quad_weights .* msh_side.jacdet;
+  w = msh_side.quad_weights .* msh_side.jacdet;
   err_elem = sum (reshape (valu, [msh_side.nqn, msh_side.nel]) .* w);
-  err  = sum (err_elem);
+  err = sum (err_elem);
 
   flux = flux + err;
 end
