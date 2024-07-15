@@ -17,11 +17,6 @@ time_step_save = linspace(dt,Time_max,9);
 problem_data.time = 0;
 problem_data.Time_max = Time_max;
 
-
-% Penalty parameters
-problem_data.Cpen_nitsche = 1e4 * lambda; % Nitsche's method parameter
-problem_data.Cpen_projection = 1000;      % parameter of the penalized L2 projection (see initial conditions)
-
 % 2) INITIAL CONDITIONS
 mean = 0.4;
 var = 0.05;
@@ -42,6 +37,9 @@ method_data.nquad      = [deg+1 deg+1];    % Points for the Gaussian quadrature 
 method_data.rho_inf_gen_alpha = 0.5; % Parameter for generalized-alpha method
 method_data.dt = dt;                 % Time step size
 
+% Penalty parameters
+problem_data.Cpen_nitsche = 1e4 * lambda; % Nitsche's method parameter
+problem_data.Cpen_projection = 1000;      % parameter of the penalized L2 projection (see initial conditions)
 
 
 % 4) CALL TO THE SOLVER
