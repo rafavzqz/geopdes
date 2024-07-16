@@ -108,12 +108,12 @@ clear sp
 % Generalized alpha parameters
 a_m = .5*((3-rho_inf_gen_alpha)/(1+rho_inf_gen_alpha));
 a_f =  1/(1+rho_inf_gen_alpha);
-gamma =  .5 + a_m - a_f;
+gamma = .5 + a_m - a_f;
 
 %%-------------------------------------------------------------------------
 % No flux b.c. (essential boundary condition)
 % Set Neumann boundary conditions for every side
-nmnn_bou   = 1:numel(boundaries);
+nmnn_bou = 1:numel(boundaries);
 
 %%-------------------------------------------------------------------------
 % Precompute matrices
@@ -173,7 +173,7 @@ while time < Time_max
   [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gamma, mu, dmu, ...
                     mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, space, msh);
 
-  % check flux through the boundary
+% check flux through the boundary
 %   flux = check_flux_phase_field(space, msh, u_n1, zeros(size(u_n1)));
 %   disp(strcat('flux norm =',num2str(flux)))
 
@@ -246,23 +246,22 @@ function [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gam
                           u_a, udot_a, mu, dmu);
 
   % Convergence check
-    if iter == 0
+    if (iter == 0)
       norm_res_0 = norm(Res_gl);
     end
     norm_res = norm(Res_gl);
     
-
-    if norm_res/norm_res_0 < tol_rel_res
+    if (norm_res/norm_res_0 < tol_rel_res)
       disp(strcat('iteration n°=',num2str(iter)))
       disp(strcat('norm (abs) residual=',num2str(norm_res)))
       break
     end
-    if norm_res<tol_abs_res
+    if (norm_res<tol_abs_res)
       disp(strcat('iteration n°=',num2str(iter)))
       disp(strcat('norm absolute residual=',num2str(norm_res)))
       break
     end
-    if iter == n_max_iter
+    if (iter == n_max_iter)
       disp(strcat('Newton reached the maximum number of iterations'))
       disp(strcat('norm residual=',num2str(norm_res)))
     end
