@@ -156,7 +156,7 @@ else
   udot_n = zeros(space.ndof, 1);
 end
 
-flux_initial = check_flux_phase_field(space, msh, u_n, zeros(size(u_n)));
+flux_initial = check_flux_phase_field(space, msh, u_n, zeros(size(u_n)), nmnn_sides);
 disp(strcat('initial flux =',num2str(flux_initial)))
 
 %%-------------------------------------------------------------------------
@@ -182,7 +182,7 @@ while time < Time_max
                     mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, space, msh);
 
   % check flux through the boundary
-  flux = check_flux_phase_field(space, msh, u_n1, zeros(size(u_n1)));
+  flux = check_flux_phase_field(space, msh, u_n1, zeros(size(u_n1)), nmnn_sides);
   disp(strcat('flux norm =',num2str(flux)))
 
   % Time step update
@@ -374,9 +374,8 @@ end
 % Check flux through the boundaries
 %--------------------------------------------------------------------------
 
-function flux = check_flux_phase_field(space, msh, uhat, uhat0)
+function flux = check_flux_phase_field(space, msh, uhat, uhat0, sides)
 
-sides = [1,2,3,4]; % all the boundaries
 flux = 0;
 
 for iside = 1:numel(sides)   
