@@ -6,7 +6,7 @@
 %
 % with Delta the Laplacian, and mu(u) = alpha u^3 - beta u, and Neumann boundary conditions.
 %
-% The values of alpha and beta (or mu itself) can be changed in op_gradmu_gradv_tp.
+% The values of mu and its derivative are given in problem_data, and used in op_gradfu_gradv_tp.
 %
 % For details on the problem and the formulation, see
 %  H. Gomez, V.M. Calo, Y. Bazilevs, T.J.R. Hughes, CMAME 197 (2008), 4333-4352.
@@ -22,10 +22,11 @@
 %    - geo_name:     name of the file containing the geometry
 %    - periodic_directions: parametric directions along which to apply periodic conditions (may be empty)
 %    - lambda:       parameter representing the length scale of the problem, and the width of the interface
+%    - mu:           function handle to compute mu (from the double well function)
+%    - dmu:          function handle to compute the derivative of mu
 %    - Time_max:     final time
 %    - fun_u:        initial condition. Equal to zero by default.
 %    - fun_udot:     initial condition for time derivative. Equal to zero by default.
-%    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
 %
 %  method_data : a structure with discretization data. Its fields are:
 %    - degree:     degree of the spline functions.
@@ -76,13 +77,6 @@ data_names = fieldnames (method_data);
 for iopt  = 1:numel (data_names)
   eval ([data_names{iopt} '= method_data.(data_names{iopt});']);
 end
-
-%%-------------------------------------------------------------------------
-% Parameters for the double-well function (to be given in problem_data)
-alpha = 1; 
-beta = 1;
-mu = @(x) 3 * alpha * x.^2 - beta;
-dmu = @(x) 6 * alpha * x;
 
 %%-------------------------------------------------------------------------
 % Construct geometry structure, and information for interfaces and boundaries

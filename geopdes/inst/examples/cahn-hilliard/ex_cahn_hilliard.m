@@ -3,9 +3,13 @@ clear problem_data
 % Physical domain, defined as NURBS map given in a text file
 problem_data.geo_name = 'geo_square.txt';
     
-% Physical parameters
+% Physical parameters (see solve_cahn_hilliard)
 lambda = (1/(4*sqrt(2)*pi))^2;
 problem_data.lambda  = @(x, y) lambda* ones(size(x));
+alpha = 1;
+beta  = 1;
+problem_data.mu  = @(x) 3 * alpha * x.^2 - beta;
+problem_data.dmu = @(x) 6 * alpha * x;
 
 % Periodic directions and boundary conditions
 problem_data.periodic_directions = [];

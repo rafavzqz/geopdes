@@ -5,10 +5,13 @@ nrb1 = nrb4surf ([0 0], [.5 0], [0 1], [.5 1]);
 nrb2 = nrb4surf ([.5 0], [1 0], [.5 1], [1 1]);
 problem_data.geo_name = [nrb1,nrb2]; %'geo_square_mp.txt';
     
-% Physical parameters
+% Physical parameters (see mp_solve_cahn_hilliard_C1)
 lambda = (1/(4*sqrt(2)*pi))^2;
 problem_data.lambda  = @(x, y) lambda* ones(size(x));
-
+alpha = 1;
+beta  = 1;
+problem_data.mu  = @(x) 3 * alpha * x.^2 - beta;
+problem_data.dmu = @(x) 6 * alpha * x;
 
 % Time and time step size
 Time_max = .5;
