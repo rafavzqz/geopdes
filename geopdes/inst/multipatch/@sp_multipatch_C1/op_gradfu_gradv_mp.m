@@ -35,12 +35,20 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [A, B] = op_gradfu_gradv_mp (space, msh, uhat, f, df)
+function [A, B] = op_gradfu_gradv_mp (space, msh, uhat, f, df, patch_list)
+
+  if (nargin < 6)
+    patch_list = 1:msh.npatch;
+  end
+
+  if ((space.npatch ~= msh.npatch))
+    error ('op_gradfu_gradv_mp: the number of patches does not coincide')
+  end
 
   A = spalloc (space.ndof, space.ndof, 3*space.ndof);
   B = spalloc (space.ndof, space.ndof, 6*space.ndof);
 
-  for iptc = 1:msh.npatch
+  for iptc = patch_list
     [Cpatch_u, Cpatch_cols_u] = sp_compute_Cpatch (space, iptc);
     u_ptc = Cpatch_u * uhat(Cpatch_cols_u);
 
