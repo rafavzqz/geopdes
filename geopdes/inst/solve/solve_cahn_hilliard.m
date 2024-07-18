@@ -136,7 +136,8 @@ lapl_mat = op_laplaceu_laplacev_tp (space, space, msh, lambda);
 bnd_mat = int_boundary_term (space, msh, lambda, nmnn_sides);
 
 % Compute the penalty matrix
-[Pen, pen_rhs] = penalty_matrix (space, msh, nmnn_sides, Cpen_nitsche);
+%[Pen, pen_rhs] = penalty_matrix (space, msh, nmnn_sides, Cpen_nitsche);
+[Pen, pen_rhs] = op_penalty_dudn (space, msh, nmnn_sides, Cpen_nitsche);
 
 
 %%-------------------------------------------------------------------------
@@ -338,37 +339,37 @@ function [A] = int_boundary_term (space, msh,  lambda, nmnn_sides)
   end
 end
 
-%--------------------------------------------------------------------------
-% Penalty term
-%--------------------------------------------------------------------------
-
-function [P, rhs] = penalty_matrix (space, msh, nmnn_sides, pen)
-
-  P =  spalloc (space.ndof, space.ndof, 3*space.ndof);
-  rhs = zeros(space.ndof,1);
-
-  for iside = 1:numel(nmnn_sides)
-    [mass_pen, rhs_pen] = penalty_grad (space, msh, nmnn_sides(iside), pen);
-    P = P + mass_pen; 
-    rhs = rhs + rhs_pen;
-  end
-
-end
-
-
-function [mass_pen, rhs_pen] = penalty_grad (space, msh, i_side, pen)
-
-msh_side = msh_eval_boundary_side (msh, i_side);
-msh_side_int = msh_boundary_side_from_interior (msh, i_side);
-sp_side = space.constructor (msh_side_int);
-sp_side = sp_precompute (sp_side , msh_side_int , 'gradient', true);
-
-coe_side = pen .* msh_side.charlen; 
-mass_pen = op_gradu_n_gradv_n(sp_side, sp_side, msh_side, coe_side);
-
-rhs_pen  = zeros(space.ndof,1);
-
-end
+% %--------------------------------------------------------------------------
+% % Penalty term
+% %--------------------------------------------------------------------------
+% 
+% function [P, rhs] = penalty_matrix (space, msh, nmnn_sides, pen)
+% 
+%   P =  spalloc (space.ndof, space.ndof, 3*space.ndof);
+%   rhs = zeros(space.ndof,1);
+% 
+%   for iside = 1:numel(nmnn_sides)
+%     [mass_pen, rhs_pen] = penalty_grad (space, msh, nmnn_sides(iside), pen);
+%     P = P + mass_pen; 
+%     rhs = rhs + rhs_pen;
+%   end
+% 
+% end
+% 
+% 
+% function [mass_pen, rhs_pen] = penalty_grad (space, msh, i_side, pen)
+% 
+% msh_side = msh_eval_boundary_side (msh, i_side);
+% msh_side_int = msh_boundary_side_from_interior (msh, i_side);
+% sp_side = space.constructor (msh_side_int);
+% sp_side = sp_precompute (sp_side , msh_side_int , 'gradient', true);
+% 
+% coe_side = pen .* msh_side.charlen; 
+% mass_pen = op_gradu_n_gradv_n(sp_side, sp_side, msh_side, coe_side);
+% 
+% rhs_pen  = zeros(space.ndof,1);
+% 
+% end
 
 %--------------------------------------------------------------------------
 % Check flux through the boundaries

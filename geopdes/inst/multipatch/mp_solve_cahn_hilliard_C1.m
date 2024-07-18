@@ -113,7 +113,7 @@ gamma = .5 + a_m - a_f;
 %%-------------------------------------------------------------------------
 % No flux b.c. (essential boundary condition)
 % Set Neumann boundary conditions for every side
-nmnn_bou = 1:numel(boundaries);
+nmnn_sides = 1:numel(boundaries);
 
 %%-------------------------------------------------------------------------
 % Precompute matrices
@@ -125,10 +125,10 @@ mass_mat = op_u_v_mp (space,space,msh);
 lapl_mat = op_laplaceu_laplacev_mp (space, space, msh, lambda);
 
 % Compute the boundary term
-bnd_mat = int_boundary_term (space, msh, lambda, nmnn_bou);
+bnd_mat = int_boundary_term (space, msh, lambda, nmnn_sides);
 
 % Compute the penalty matrix
-[Pen, pen_rhs] = penalty_matrix (space, msh, nmnn_bou, Cpen_nitsche);
+[Pen, pen_rhs] = op_penalty_dudn (space, msh, nmnn_sides, Cpen_nitsche);
 
 
 %%-------------------------------------------------------------------------
@@ -337,38 +337,38 @@ function [A] = int_boundary_term (space, msh,  lambda, nmnn_sides)
   end
 end
 
-%--------------------------------------------------------------------------
-% penalty term
-%--------------------------------------------------------------------------
-
-function [P, rhs] = penalty_matrix (space, msh, nmnn_sides, pen)
-
-  P =  spalloc (space.ndof, space.ndof, 3*space.ndof);
-  rhs = zeros(space.ndof,1);
-
-  for iref = nmnn_sides
-    for bnd_side = 1:msh.boundaries(iref).nsides
-      iptc = msh.boundaries(iref).patches(bnd_side);
-      iside = msh.boundaries(iref).faces(bnd_side);
-
-      msh_side = msh_eval_boundary_side (msh.msh_patch{iptc}, iside);
-      msh_side_from_interior = msh_boundary_side_from_interior (msh.msh_patch{iptc}, iside);
-
-      sp_bnd = space.sp_patch{iptc}.constructor (msh_side_from_interior);
-      sp_bnd = sp_precompute (sp_bnd, msh_side_from_interior, 'value', false, 'gradient', true);
-
-      coe_side = pen .* msh_side.charlen; 
-      tmp = op_gradu_n_gradv_n(sp_bnd, sp_bnd, msh_side, coe_side);
-      
-      [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
-      P(Cpatch_cols,Cpatch_cols) = P(Cpatch_cols,Cpatch_cols) + ...
-        Cpatch.' * (tmp) * Cpatch;
-
-      %rhs = rhs + rhs_pen;
-    end
-  end
-
-end
+% %--------------------------------------------------------------------------
+% % penalty term
+% %--------------------------------------------------------------------------
+% 
+% function [P, rhs] = penalty_matrix (space, msh, nmnn_sides, pen)
+% 
+%   P =  spalloc (space.ndof, space.ndof, 3*space.ndof);
+%   rhs = zeros(space.ndof,1);
+% 
+%   for iref = nmnn_sides
+%     for bnd_side = 1:msh.boundaries(iref).nsides
+%       iptc = msh.boundaries(iref).patches(bnd_side);
+%       iside = msh.boundaries(iref).faces(bnd_side);
+% 
+%       msh_side = msh_eval_boundary_side (msh.msh_patch{iptc}, iside);
+%       msh_side_from_interior = msh_boundary_side_from_interior (msh.msh_patch{iptc}, iside);
+% 
+%       sp_bnd = space.sp_patch{iptc}.constructor (msh_side_from_interior);
+%       sp_bnd = sp_precompute (sp_bnd, msh_side_from_interior, 'value', false, 'gradient', true);
+% 
+%       coe_side = pen .* msh_side.charlen; 
+%       tmp = op_gradu_n_gradv_n(sp_bnd, sp_bnd, msh_side, coe_side);
+% 
+%       [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
+%       P(Cpatch_cols,Cpatch_cols) = P(Cpatch_cols,Cpatch_cols) + ...
+%         Cpatch.' * (tmp) * Cpatch;
+% 
+%       %rhs = rhs + rhs_pen;
+%     end
+%   end
+% 
+% end
 
 %--------------------------------------------------------------------------
 % check flux through the boundaries
