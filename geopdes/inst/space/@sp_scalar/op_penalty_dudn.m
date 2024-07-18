@@ -46,7 +46,7 @@ function [P, rhs] = op_penalty_dudn (space, msh, sides, Cpen, coeff)
     coe_side = Cpen .* msh_side.charlen; 
     mass_pen = op_gradu_n_gradv_n (sp_side, sp_side, msh_side, coe_side);
 
-    if (nargin == 6)
+    if (nargin == 5)
       x = cell (msh.rdim, 1);
       for idim = 1:msh.rdim
         x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);

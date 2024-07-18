@@ -55,7 +55,7 @@ function [P, rhs] = op_penalty_dudn (space, msh, sides, Cpen, coeff)
       P(Cpatch_cols,Cpatch_cols) = P(Cpatch_cols,Cpatch_cols) + ...
         Cpatch.' * (tmp) * Cpatch;
 
-      if (nargin == 6)
+      if (nargin == 5)
         x = cell (msh.rdim, 1);
         for idim = 1:msh.rdim
           x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
