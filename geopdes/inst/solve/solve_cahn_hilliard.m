@@ -284,29 +284,29 @@ end
 % 
 % end
 % 
-%--------------------------------------------------------------------------
-% Canh-Hilliard residual and tangent matrix
-%--------------------------------------------------------------------------
-
-function [Res_gl, stiff_mat] = Res_K_cahn_hilliard(space, msh, ...
-                          mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, u_a, udot_a, mu, dmu)
-
-  % Double well (matrices)
-  [term2, term2K] = op_gradfu_gradv_tp (space, msh, u_a, mu, dmu);
- 
-  % Residual
-  Res_gl = mass_mat*udot_a + term2*u_a  + lapl_mat*u_a;
-
-  % Tangent stiffness matrix (mass is not considered here)
-  stiff_mat = term2 + term2K + lapl_mat;
-
-  % In case of Neumann BC, add boundary terms
-  if (~isempty(bnd_mat))
-    Res_gl = Res_gl - (bnd_mat + bnd_mat.') * u_a + Pen*u_a - pen_rhs;
-    stiff_mat = stiff_mat - (bnd_mat + bnd_mat.') + Pen;
-  end
-end
-
+% %--------------------------------------------------------------------------
+% % Cahn-Hilliard residual and tangent matrix
+% %--------------------------------------------------------------------------
+% 
+% function [Res_gl, stiff_mat] = Res_K_cahn_hilliard(space, msh, ...
+%                           mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, u_a, udot_a, mu, dmu)
+% 
+%   % Double well (matrices)
+%   [term2, term2K] = op_gradfu_gradv_tp (space, msh, u_a, mu, dmu);
+% 
+%   % Residual
+%   Res_gl = mass_mat*udot_a + term2*u_a  + lapl_mat*u_a;
+% 
+%   % Tangent stiffness matrix (mass is not considered here)
+%   stiff_mat = term2 + term2K + lapl_mat;
+% 
+%   % In case of Neumann BC, add boundary terms
+%   if (~isempty(bnd_mat))
+%     Res_gl = Res_gl - (bnd_mat + bnd_mat.') * u_a + Pen*u_a - pen_rhs;
+%     stiff_mat = stiff_mat - (bnd_mat + bnd_mat.') + Pen;
+%   end
+% end
+% 
 % %--------------------------------------------------------------------------
 % % Boundary term, \int_\Gamma (\Delta u) (\partial v / \partial n)
 % %--------------------------------------------------------------------------
