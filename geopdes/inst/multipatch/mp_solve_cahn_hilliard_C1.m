@@ -168,7 +168,7 @@ while time < Time_max
   disp('----------------------------------------------------------------')
   disp(strcat('time step t=',num2str(time)))
 
-  [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gamma, mu, dmu, ...
+  [u_n1, udot_n1] = generalized_alpha_step_cahn_hilliard (u_n, udot_n, dt, a_m, a_f, gamma, mu, dmu, ...
                     mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, space, msh);
 
 % check flux through the boundary
@@ -215,88 +215,88 @@ end
 %--------------------------------------------------------------------------
 
 
+% %--------------------------------------------------------------------------
+% % One step of generalized alpha-method
+% %--------------------------------------------------------------------------
+% 
+% function [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gamma, mu, dmu, ...
+%                        mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, space, msh)
+% 
+% % Convergence criteria
+%   n_max_iter = 20;
+%   tol_rel_res = 1e-10;
+%   tol_abs_res = 1e-10;
+% 
+% % Predictor step
+%   u_n1 = u_n;
+%   udot_n1 = (gamma-1)/gamma * udot_n; 
+% 
+% % Newton loop
+%   for iter = 0:n_max_iter
+% 
+%   % Field at alpha level
+%     udot_a = udot_n + a_m *(udot_n1-udot_n);
+%     u_a = u_n + a_f *(u_n1-u_n);
+% 
+%   % Compute the residual (internal)
+%     [Res_gl, stiff_mat] = Res_K_cahn_hilliard (space, msh, ...
+%                           mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, ...
+%                           u_a, udot_a, mu, dmu);
+% 
+%   % Convergence check
+%     if (iter == 0)
+%       norm_res_0 = norm(Res_gl);
+%     end
+%     norm_res = norm(Res_gl);
+% 
+%     if (norm_res/norm_res_0 < tol_rel_res)
+%       disp(strcat('iteration n°=',num2str(iter)))
+%       disp(strcat('norm (abs) residual=',num2str(norm_res)))
+%       break
+%     end
+%     if (norm_res<tol_abs_res)
+%       disp(strcat('iteration n°=',num2str(iter)))
+%       disp(strcat('norm absolute residual=',num2str(norm_res)))
+%       break
+%     end
+%     if (iter == n_max_iter)
+%       disp(strcat('Newton reached the maximum number of iterations'))
+%       disp(strcat('norm residual=',num2str(norm_res)))
+%     end
+% 
+%   % Compute the update, and update the solution
+%     A_gl = a_m * mass_mat + a_f * gamma *dt * stiff_mat ; 
+%     d_udot = - A_gl\Res_gl;
+% 
+%     udot_n1 = udot_n1 + d_udot;
+%     u_n1 = u_n1 + gamma * dt* d_udot;
+%   end
+% 
+% end
+% 
 %--------------------------------------------------------------------------
-% One step of generalized alpha-method
+% Cahn-Hilliard residual and tangent matrix
 %--------------------------------------------------------------------------
-
-function [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gamma, mu, dmu, ...
-                       mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, space, msh)
-
-% Convergence criteria
-  n_max_iter = 20;
-  tol_rel_res = 1e-10;
-  tol_abs_res = 1e-10;
-
-% Predictor step
-  u_n1 = u_n;
-  udot_n1 = (gamma-1)/gamma * udot_n; 
-
-% Newton loop
-  for iter = 0:n_max_iter
-
-  % Field at alpha level
-    udot_a = udot_n + a_m *(udot_n1-udot_n);
-    u_a = u_n + a_f *(u_n1-u_n);
-
-  % Compute the residual (internal)
-    [Res_gl, stiff_mat] = Res_K_cahn_hilliard (space, msh, ...
-                          mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, ...
-                          u_a, udot_a, mu, dmu);
-
-  % Convergence check
-    if (iter == 0)
-      norm_res_0 = norm(Res_gl);
-    end
-    norm_res = norm(Res_gl);
-    
-    if (norm_res/norm_res_0 < tol_rel_res)
-      disp(strcat('iteration n°=',num2str(iter)))
-      disp(strcat('norm (abs) residual=',num2str(norm_res)))
-      break
-    end
-    if (norm_res<tol_abs_res)
-      disp(strcat('iteration n°=',num2str(iter)))
-      disp(strcat('norm absolute residual=',num2str(norm_res)))
-      break
-    end
-    if (iter == n_max_iter)
-      disp(strcat('Newton reached the maximum number of iterations'))
-      disp(strcat('norm residual=',num2str(norm_res)))
-    end
-    
-  % Compute the update, and update the solution
-    A_gl = a_m * mass_mat + a_f * gamma *dt * stiff_mat ; 
-    d_udot = - A_gl\Res_gl;
-
-    udot_n1 = udot_n1 + d_udot;
-    u_n1 = u_n1 + gamma * dt* d_udot;
-  end
-
-end
-
-%--------------------------------------------------------------------------
-% Canh-Hilliard residual and tangent matrix
-%--------------------------------------------------------------------------
-
-function [Res_gl, stiff_mat] = Res_K_cahn_hilliard(space, msh, ...
-                          mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, u_a, udot_a, mu, dmu)
-
-  % Double well (matrices)
-  [term2, term2K] = op_gradfu_gradv_mp (space, msh, u_a, mu, dmu);    
- 
-  % Residual
-  Res_gl = mass_mat*udot_a + term2*u_a  + lapl_mat*u_a;
-
-  % Tangent stiffness matrix (mass is not considered here)
-  stiff_mat = term2 + term2K + lapl_mat;
-
-  % In case of Neumann BC, add boundary terms
-  if (~isempty(bnd_mat))
-    Res_gl = Res_gl - (bnd_mat + bnd_mat.') * u_a + Pen*u_a - pen_rhs;
-    stiff_mat = stiff_mat - (bnd_mat + bnd_mat.') + Pen;
-  end
-end
-
+% 
+% function [Res_gl, stiff_mat] = Res_K_cahn_hilliard(space, msh, ...
+%                           mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, u_a, udot_a, mu, dmu)
+% 
+%   % Double well (matrices)
+%   [term2, term2K] = op_gradfu_gradv_mp (space, msh, u_a, mu, dmu);    
+% 
+%   % Residual
+%   Res_gl = mass_mat*udot_a + term2*u_a  + lapl_mat*u_a;
+% 
+%   % Tangent stiffness matrix (mass is not considered here)
+%   stiff_mat = term2 + term2K + lapl_mat;
+% 
+%   % In case of Neumann BC, add boundary terms
+%   if (~isempty(bnd_mat))
+%     Res_gl = Res_gl - (bnd_mat + bnd_mat.') * u_a + Pen*u_a - pen_rhs;
+%     stiff_mat = stiff_mat - (bnd_mat + bnd_mat.') + Pen;
+%   end
+% end
+% 
 % %--------------------------------------------------------------------------
 % % Boundary term, \int_\Gamma (\Delta u) (\partial v / \partial n)
 % %--------------------------------------------------------------------------

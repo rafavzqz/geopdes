@@ -29,7 +29,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function [A] = op_nitsche_consistency_cahn_hilliard (space, msh, nmnn_sides, coeff)
+function A = op_nitsche_consistency_cahn_hilliard (space, msh, nmnn_sides, coeff)
 
   if (nargin == 3 || isempty(coeff))
     coeff = @(varargin) ones (size(varargin{1}));
