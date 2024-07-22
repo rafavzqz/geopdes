@@ -75,6 +75,8 @@ Space: functions to generate and compute discrete spline and NURBS spaces
  @sp_scalar/sp_to_vtk
  @sp_scalar/sp_drchlt_l2_proj
  @sp_scalar/sp_weak_drchlt_bc_laplace
+ @sp_scalar/op_penalty_dudn
+ @sp_scalar/op_nitsche_consistency_cahn_hilliard
  @sp_scalar/sp_get_basis_functions
  @sp_scalar/sp_get_cells
  @sp_scalar/sp_get_neighbors
@@ -183,27 +185,29 @@ Multipatch: functions of different kinds to solve problems in domains defined by
  @sp_multipatch/sp_weak_drchlt_bc_stokes
  @sp_multipatch/sp_refine
  sp_multipatch_C1
- @sp_multipatch/sp_l2_error
- @sp_multipatch/sp_h1_error
- @sp_multipatch/sp_h2_error
- @sp_multipatch/sp_h2_equiv_lap_error
- @sp_multipatch/sp_plot_solution
- @sp_multipatch/sp_to_vtk
- @sp_multipatch/sp_eval_phys
- @sp_multipatch/sp_evaluate_element_list
- @sp_multipatch/sp_get_cells
- @sp_multipatch/sp_get_basis_functions
- @sp_multipatch/sp_get_functions_on_patch
- @sp_multipatch/sp_get_local_interior_functions
- @sp_multipatch/sp_get_neighbors
- @sp_multipatch/sp_compute_Cpatch
- @sp_multipatch/sp_compute_Cpatch_vector
- @sp_multipatch/sp_bilaplacian_drchlt_C1_exact
- @sp_multipatch/sp_bilaplacian_drchlt_C1
- @sp_multipatch/sp_drchlt_C1_shells
- @sp_multipatch/sp_nitsche_KL_rotation
- @sp_multipatch/sp_weak_drchlt_bc_laplace
- @sp_multipatch/sp_refine
+ @sp_multipatch_C1/sp_l2_error
+ @sp_multipatch_C1/sp_h1_error
+ @sp_multipatch_C1/sp_h2_error
+ @sp_multipatch_C1/sp_h2_equiv_lap_error
+ @sp_multipatch_C1/sp_plot_solution
+ @sp_multipatch_C1/sp_to_vtk
+ @sp_multipatch_C1/sp_eval_phys
+ @sp_multipatch_C1/sp_evaluate_element_list
+ @sp_multipatch_C1/sp_get_cells
+ @sp_multipatch_C1/sp_get_basis_functions
+ @sp_multipatch_C1/sp_get_functions_on_patch
+ @sp_multipatch_C1/sp_get_local_interior_functions
+ @sp_multipatch_C1/sp_get_neighbors
+ @sp_multipatch_C1/sp_compute_Cpatch
+ @sp_multipatch_C1/sp_compute_Cpatch_vector
+ @sp_multipatch_C1/sp_bilaplacian_drchlt_C1_exact
+ @sp_multipatch_C1/sp_bilaplacian_drchlt_C1
+ @sp_multipatch_C1/sp_drchlt_C1_shells
+ @sp_multipatch_C1/sp_nitsche_KL_rotation
+ @sp_multipatch_C1/sp_weak_drchlt_bc_laplace
+ @sp_multipatch_C1/op_penalty_dudn
+ @sp_multipatch_C1/op_nitsche_consistency_cahn_hilliard
+ @sp_multipatch_C1/sp_refine
 Utilities: other functions in the package
  collocation_csp
  knt_derham

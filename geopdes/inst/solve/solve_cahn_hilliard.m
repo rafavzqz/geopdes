@@ -52,7 +52,7 @@
 % Only periodic and Neumann boundary conditions are implemented. Neumann
 %  conditions are considered by default.
 %
-% Copyright (C) 2023 Michele Torre, Rafael Vazquez
+% Copyright (C) 2023, 2024 Michele Torre, Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -133,12 +133,11 @@ mass_mat = op_u_v_tp (space,space,msh);
 lapl_mat = op_laplaceu_laplacev_tp (space, space, msh, lambda);
 
 % Compute the boundary term
-bnd_mat = int_boundary_term (space, msh, lambda, nmnn_sides);
+bnd_mat = op_nitsche_consistency_cahn_hilliard (space, msh, nmnn_sides, lambda);
 
 % Compute the penalty matrix
 %[Pen, pen_rhs] = penalty_matrix (space, msh, nmnn_sides, Cpen_nitsche);
 [Pen, pen_rhs] = op_penalty_dudn (space, msh, nmnn_sides, Cpen_nitsche);
-
 
 %%-------------------------------------------------------------------------
 % Initial conditions
@@ -260,7 +259,6 @@ function [u_n1, udot_n1] = generalized_alpha_step(u_n, udot_n, dt, a_m, a_f, gam
     end
     norm_res = norm(Res_gl);
     
-
     if (norm_res/norm_res_0 < tol_rel_res)
       disp(strcat('iteration n°=',num2str(iter)))
       disp(strcat('norm (abs) residual=',num2str(norm_res)))
@@ -302,42 +300,42 @@ function [Res_gl, stiff_mat] = Res_K_cahn_hilliard(space, msh, ...
   % Tangent stiffness matrix (mass is not considered here)
   stiff_mat = term2 + term2K + lapl_mat;
 
-  % In case of neumann BC, add boundary terms
+  % In case of Neumann BC, add boundary terms
   if (~isempty(bnd_mat))
     Res_gl = Res_gl - (bnd_mat + bnd_mat.') * u_a + Pen*u_a - pen_rhs;
     stiff_mat = stiff_mat - (bnd_mat + bnd_mat.') + Pen;
   end
 end
 
-%--------------------------------------------------------------------------
-% Boundary term, \int_\Gamma (\Delta u) (\partial v / \partial n)
-%--------------------------------------------------------------------------
-
-function [A] = int_boundary_term (space, msh,  lambda, nmnn_sides)
-
-  if (~isempty(nmnn_sides))
-
-    A =  spalloc (space.ndof, space.ndof, 3*space.ndof);
-
-    for iside = 1:numel(nmnn_sides)   
-
-      msh_side = msh_eval_boundary_side (msh, nmnn_sides(iside) ) ;
-      msh_side_int = msh_boundary_side_from_interior (msh, nmnn_sides(iside) ) ;
-      sp_side = space.constructor ( msh_side_int) ;
-      sp_side = sp_precompute ( sp_side , msh_side_int , 'gradient' , true, 'laplacian', true );
-
-      for idim = 1:msh.rdim
-        x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
-      end
-      coe_side = lambda (x{:});
-
-      A =  A + op_gradv_n_laplaceu(sp_side ,sp_side ,msh_side, coe_side);
-    end
-
-  else
-    A = [];
-  end
-end
+% %--------------------------------------------------------------------------
+% % Boundary term, \int_\Gamma (\Delta u) (\partial v / \partial n)
+% %--------------------------------------------------------------------------
+% 
+% function [A] = int_boundary_term (space, msh,  lambda, nmnn_sides)
+% 
+%   if (~isempty(nmnn_sides))
+% 
+%     A =  spalloc (space.ndof, space.ndof, 3*space.ndof);
+% 
+%     for iside = 1:numel(nmnn_sides)   
+% 
+%       msh_side = msh_eval_boundary_side (msh, nmnn_sides(iside) ) ;
+%       msh_side_int = msh_boundary_side_from_interior (msh, nmnn_sides(iside) ) ;
+%       sp_side = space.constructor ( msh_side_int) ;
+%       sp_side = sp_precompute ( sp_side , msh_side_int , 'gradient' , true, 'laplacian', true );
+% 
+%       for idim = 1:msh.rdim
+%         x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
+%       end
+%       coe_side = lambda (x{:});
+% 
+%       A =  A + op_gradv_n_laplaceu(sp_side ,sp_side ,msh_side, coe_side);
+%     end
+% 
+%   else
+%     A = [];
+%   end
+% end
 
 % %--------------------------------------------------------------------------
 % % Penalty term

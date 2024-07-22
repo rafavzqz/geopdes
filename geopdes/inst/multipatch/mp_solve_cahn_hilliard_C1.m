@@ -20,7 +20,6 @@
 %
 %  problem_data: a structure with data of the problem. It contains the fields:
 %    - geo_name:     name of the file containing the geometry
-%    - periodic_directions: parametric directions along which to apply periodic conditions (may be empty)
 %    - lambda:       parameter representing the length scale of the problem, and the width of the interface
 %    - mu:           function handle to compute mu (from the double well function)
 %    - dmu:          function handle to compute the derivative of mu
@@ -50,7 +49,7 @@
 % Only periodic and Neumann boundary conditions are implemented. Neumann
 %  conditions are considered by default.
 %
-% Copyright (C) 2023 Michele Torre, Rafael Vazquez
+% Copyright (C) 2023, 2024 Michele Torre, Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -125,11 +124,10 @@ mass_mat = op_u_v_mp (space,space,msh);
 lapl_mat = op_laplaceu_laplacev_mp (space, space, msh, lambda);
 
 % Compute the boundary term
-bnd_mat = int_boundary_term (space, msh, lambda, nmnn_sides);
+bnd_mat = op_nitsche_consistency_cahn_hilliard (space, msh, nmnn_sides, lambda);
 
 % Compute the penalty matrix
 [Pen, pen_rhs] = op_penalty_dudn (space, msh, nmnn_sides, Cpen_nitsche);
-
 
 %%-------------------------------------------------------------------------
 % Initial conditions
@@ -292,51 +290,51 @@ function [Res_gl, stiff_mat] = Res_K_cahn_hilliard(space, msh, ...
   % Tangent stiffness matrix (mass is not considered here)
   stiff_mat = term2 + term2K + lapl_mat;
 
-  % in case of neumann BC, add boundary terms
+  % In case of Neumann BC, add boundary terms
   if (~isempty(bnd_mat))
     Res_gl = Res_gl - (bnd_mat + bnd_mat.') * u_a + Pen*u_a - pen_rhs;
     stiff_mat = stiff_mat - (bnd_mat + bnd_mat.') + Pen;
   end
 end
 
-%--------------------------------------------------------------------------
-% Boundary term, \int_\Gamma (\Delta u) (\partial v / \partial n)
-%--------------------------------------------------------------------------
-
-function [A] = int_boundary_term (space, msh,  lambda, nmnn_sides)
-
-  if (~isempty(nmnn_sides))
-
-    A =  spalloc (space.ndof, space.ndof, 3*space.ndof);
-
-    for iref = nmnn_sides
-      for bnd_side = 1:msh.boundaries(iref).nsides  
-        iptc = msh.boundaries(iref).patches(bnd_side);
-        iside = msh.boundaries(iref).faces(bnd_side);
-
-        msh_side = msh_eval_boundary_side (msh.msh_patch{iptc}, iside ) ;
-        msh_side_int = msh_boundary_side_from_interior (msh.msh_patch{iptc}, iside ) ;
-
-        sp_side = space.sp_patch{iptc}.constructor (msh_side_int);
-        sp_side = sp_precompute ( sp_side , msh_side_int , 'gradient' , true, 'laplacian', true );
-
-        for idim = 1:msh.rdim
-          x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
-        end
-        coe_side = lambda (x{:});
-        tmp = op_gradv_n_laplaceu(sp_side ,sp_side ,msh_side, coe_side);
-
-        [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
-        A(Cpatch_cols,Cpatch_cols) = ...
-              A(Cpatch_cols,Cpatch_cols) + Cpatch.' * tmp * Cpatch;
-      end
-    end
-
-  else
-    A = [];
-  end
-end
-
+% %--------------------------------------------------------------------------
+% % Boundary term, \int_\Gamma (\Delta u) (\partial v / \partial n)
+% %--------------------------------------------------------------------------
+% 
+% function [A] = int_boundary_term (space, msh,  lambda, nmnn_sides)
+% 
+%   if (~isempty(nmnn_sides))
+% 
+%     A =  spalloc (space.ndof, space.ndof, 3*space.ndof);
+% 
+%     for iref = nmnn_sides
+%       for bnd_side = 1:msh.boundaries(iref).nsides  
+%         iptc = msh.boundaries(iref).patches(bnd_side);
+%         iside = msh.boundaries(iref).faces(bnd_side);
+% 
+%         msh_side = msh_eval_boundary_side (msh.msh_patch{iptc}, iside ) ;
+%         msh_side_int = msh_boundary_side_from_interior (msh.msh_patch{iptc}, iside ) ;
+% 
+%         sp_side = space.sp_patch{iptc}.constructor (msh_side_int);
+%         sp_side = sp_precompute ( sp_side , msh_side_int , 'gradient' , true, 'laplacian', true );
+% 
+%         for idim = 1:msh.rdim
+%           x{idim} = reshape (msh_side.geo_map(idim,:,:), msh_side.nqn, msh_side.nel);
+%         end
+%         coe_side = lambda (x{:});
+%         tmp = op_gradv_n_laplaceu(sp_side ,sp_side ,msh_side, coe_side);
+% 
+%         [Cpatch, Cpatch_cols] = sp_compute_Cpatch (space, iptc);
+%         A(Cpatch_cols,Cpatch_cols) = ...
+%               A(Cpatch_cols,Cpatch_cols) + Cpatch.' * tmp * Cpatch;
+%       end
+%     end
+% 
+%   else
+%     A = [];
+%   end
+% end
+% 
 % %--------------------------------------------------------------------------
 % % penalty term
 % %--------------------------------------------------------------------------
