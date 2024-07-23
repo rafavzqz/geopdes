@@ -167,6 +167,7 @@ disp (eigv(1:5))
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
 %! [geometry, msh, space, sp_mul, eigv, eigf] = mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
+%! eigv = eigv(eigv>0 & eigv<Inf)
 %! assert (msh.nel, 108)
 %! assert (space.ndof, 923)
 %! assert (sp_mul.ndof, 360)

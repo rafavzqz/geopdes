@@ -52,6 +52,7 @@ title ('8^{th} eigenfunction')
 %! method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
 %! [geometry, msh, space, eigv, eigf] = solve_maxwell_eig (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
+%! eigv = eigv(abs(eigv)<Inf);
 %! nzeros = numel (find (eigv < 1e-10));
 %! assert (msh.nel, 128)
 %! assert (space.ndof, 430)

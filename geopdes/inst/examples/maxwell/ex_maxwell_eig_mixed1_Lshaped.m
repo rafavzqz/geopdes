@@ -51,7 +51,8 @@ title ('8^{th} eigenfunction')
 %! method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
 %! [geometry, msh, space, sp_mul, eigv, eigf] = solve_maxwell_eig_mixed1 (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
+%! eigv = eigv(eigv>0 & eigv<Inf)
 %! assert (msh.nel, 128)
 %! assert (space.ndof, 430)
 %! assert (sp_mul.ndof, 231)
-%! assert (eigv(2:6), [1.47283540635722; 3.53399368976646; 9.86962050365007; 9.86962103171719; 11.38943951321592], 1e-13)
+%! assert (eigv(1:5), [1.47283540635722; 3.53399368976646; 9.86962050365007; 9.86962103171719; 11.38943951321592], 1e-13)
