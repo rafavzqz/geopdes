@@ -170,9 +170,9 @@ save_info(end+1) = problem_data.Time_max + 1e5;
 % Save initial conditions
 save_id = 1;
 if (time >= save_info(1))
-  results.u(:,1) = u_n;
-  results.udot(:,1) = udot_n;
-  results.time(1) = time;
+  results.u(:,save_id) = u_n;
+  results.udot(:,save_id) = udot_n;
+  results.time(save_id) = time;
   save_id = 2;
   save_info = save_info(save_info > time);
 end
