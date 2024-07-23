@@ -23,6 +23,9 @@ Solve: solvers for some simple problems, that you can modify to solve your own p
  solve_kirchhoff_love_shell
  solve_kirchhoff_love_shell_scalarspace
  solve_BE_Beam
+ solve_cahn_hilliard
+ cahn_hilliard/generalized_alpha_step_cahn_hilliard
+ cahn_hilliard/Res_K_cahn_hilliard
 Geometry: read geometry files, that can be created with the NURBS package
  geo_nurbs
  geo_load
@@ -163,6 +166,7 @@ Multipatch: functions of different kinds to solve problems in domains defined by
  mp_solve_maxwell_src
  mp_solve_stokes
  mp_solve_stokes_div_conforming
+ mp_solve_cahn_hilliard_C1
  msh_restrict_to_patches
  msh_multipatch
  @msh_multipatch/msh_evaluate_element_list

@@ -156,9 +156,6 @@ else
   udot_n = zeros(space.ndof, 1);
 end
 
-flux_initial = check_flux_phase_field(space, msh, u_n, zeros(size(u_n)), nmnn_sides);
-disp(strcat('initial flux =',num2str(flux_initial)))
-
 %%-------------------------------------------------------------------------
 % Initialize structure to store the results
 save_id = 1;
@@ -180,10 +177,6 @@ while time < Time_max
 
   [u_n1, udot_n1] = generalized_alpha_step_cahn_hilliard (u_n, udot_n, dt, a_m, a_f, gamma, mu, dmu, ...
                     mass_mat, lapl_mat, bnd_mat, Pen, pen_rhs, space, msh);
-
-  % check flux through the boundary
-  flux = check_flux_phase_field(space, msh, u_n1, zeros(size(u_n1)), nmnn_sides);
-  disp(strcat('flux norm =',num2str(flux)))
 
   % Time step update
   time = time + dt;
@@ -399,4 +392,3 @@ for iside = 1:numel(sides)
 end
 
 end
-
