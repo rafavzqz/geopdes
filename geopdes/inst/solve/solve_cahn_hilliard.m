@@ -39,6 +39,8 @@
 %    - Cpen_nitsche: penalization parameter for Nitsche's method, to impose Neumann conditions
 %    - Cpen_projection: penalization parameter to impose zero flux for the initial condition
 %
+%  save_info: time values at which the solution should be saved (see "results" in the output)
+%
 % OUTPUT:
 %
 %  geometry: geometry structure (see geo_load)
@@ -141,7 +143,7 @@ bnd_mat = op_nitsche_consistency_cahn_hilliard (space, msh, nmnn_sides, lambda);
 
 %%-------------------------------------------------------------------------
 % Initial conditions
-time = 0;
+time = problem_data.initial_time;
 if (exist('fun_u', 'var') && ~isempty(fun_u))
   rhs = op_f_v_tp (space, msh, fun_u);
   u_n = (mass_mat + Cpen_projection/Cpen_nitsche * Pen)\rhs;
@@ -158,16 +160,22 @@ end
 
 %%-------------------------------------------------------------------------
 % Initialize structure to store the results
-save_id = 1;
-results.u = zeros(length(u_n), length(save_info)+1);
-results.udot = zeros(length(u_n), length(save_info)+1);
-results.time = zeros(length(save_info)+1,1);
-flag_stop_save = false;
+save_info = save_info(save_info>=problem_data.initial_time & save_info<=problem_data.Time_max);
+
+results.u = zeros(length(u_n), length(save_info));
+results.udot = zeros(length(u_n), length(save_info));
+results.time = zeros(length(save_info), 1);
+save_info(end+1) = problem_data.Time_max + 1e5;
 
 % Save initial conditions
-results.u(:,1) = u_n;
-results.udot(:,1) = udot_n;
-results.time(1) = time;
+save_id = 1;
+if (time >= save_info(1))
+  results.u(:,1) = u_n;
+  results.udot(:,1) = udot_n;
+  results.time(1) = time;
+  save_id = 2;
+  save_info = save_info(save_info > time);
+end
 
 %%-------------------------------------------------------------------------
 % Loop over time steps
@@ -189,16 +197,12 @@ while time < Time_max
   end
 
   % Store results
-  if (flag_stop_save == false)
-    if (time >= save_info(save_id))
-      save_id = save_id + 1;
-      results.u(:,save_id) = u_n;
-      results.udot(:,save_id) = udot_n;
-      results.time(save_id) = time;
-      if (save_id > length(save_info))
-        flag_stop_save = true;
-      end
-    end
+  if (time >= save_info(1))
+    results.u(:,save_id) = u_n;
+    results.udot(:,save_id) = udot_n;
+    results.time(save_id) = time;
+    save_id = save_id + 1;
+    save_info = save_info(save_info > time);
   end
 end
 
@@ -207,9 +211,9 @@ disp(strcat('END ANALYSIS t=',num2str(time)))
 disp('----------------------------------------------------------------')
 
 % Crop results
-results.u = results.u(:,1:save_id);
-results.udot = results.udot(:,1:save_id);
-results.time = results.time(1:save_id);
+results.u = results.u(:,1:save_id-1);
+results.udot = results.udot(:,1:save_id-1);
+results.time = results.time(1:save_id-1);
 
 end
 
