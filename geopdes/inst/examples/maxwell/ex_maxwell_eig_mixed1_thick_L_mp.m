@@ -65,7 +65,7 @@ disp (eigv(1:5))
 %! [geometry, msh, space, sp_mul, eigv, eigf] = ...
 %!                   mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
-%! eigv = eigv(eigv>0 & eigv<Inf)
+%! eigv = eigv(eigv>0 & eigv<Inf);
 %! assert (msh.nel, 81)
 %! assert (space.ndof, 820)
 %! assert (sp_mul.ndof, 325)
