@@ -15,12 +15,11 @@ problem_data.dmu = @(x) 6 * alpha * x;
 problem_data.periodic_directions = [];
 
 % Time and time step size
-Time_max = .08;
+Time_max = 0.08;
 dt = 1e-3;
-time_step_save = linspace(dt,Time_max,20);
-problem_data.time = 0;
+time_step_save = linspace(0, Time_max, 21);
+problem_data.initial_time = 0;
 problem_data.Time_max = Time_max;
-
 
 % 2) INITIAL CONDITIONS
 % mean = 0.0;
@@ -52,26 +51,23 @@ method_data.Cpen_projection = 1000;      % parameter of the penalized L2 project
 
 % 5) POST-PROCESSING        
 vtk_pts = {linspace(0, 1, nel*4), linspace(0, 1, nel*4)};
-folder_name = strcat('results_CH_p',num2str(deg),'_nel',num2str(nel),'_lambda',num2str(lambda));
+folder_name = strcat('cahn_hilliard_p',num2str(deg),'_nel',num2str(nel),'_lambda',num2str(lambda));
 status = mkdir(folder_name);
 
-% 5.1) EXPORT TIME  
+% 5.1) EXPORT TIME
 filename = strcat( folder_name,'/filenum_to_time.mat');
 time_steps = results.time;
 save(filename, 'time_steps');
 
-
 % 5.2) EXPORT TO PARAVIEW    
 for step = 1:length(results.time)
-  output_file = strcat( folder_name,'/Square_cahn_hilliard_', num2str(step) );
+  output_file = strcat (folder_name,'/Square_Cahn_Hilliard_', num2str(step));
   fprintf ('The result is saved in the file %s \n \n', output_file);
-  sp_to_vtk (results.u(:,step), space, geometry, vtk_pts, output_file, {'u','grad_u'}, {'value','gradient'})
+  sp_to_vtk (results.u(:,step), space, geometry, vtk_pts, output_file, {'value','gradient'}, {'value','gradient'})
 end
     
 % 5.3) PLOT LAST RESULT
-[eu, F] = sp_eval (results.u(:,end), space, geometry, vtk_pts);
-[X, Y]  = deal (squeeze(F(1,:,:)), squeeze(F(2,:,:)));
-surf (X, Y, eu)
+sp_plot_solution (results.u(:,end), space, geometry);
 colorbar
 view(0,90)
 shading interp
