@@ -3,6 +3,7 @@ Summary of important changes for geopdes-3.4.0:
 * Added new class SP_MULTIPATCH_C1.
 * Added solvers for C1 spaces: Laplace, bilaplace, linear elast., Kirchhoff-Love shell.
 * Added solver for linear elasticity and Kirchhoff-Love using scalar spaces.
+* Added solver for Cahn-Hilliard equations, in single patch and multipatch.
 
 Summary of important changes for geopdes-3.3.0:
 -----------------------------------------------------------------------------
