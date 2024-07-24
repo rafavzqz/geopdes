@@ -14,7 +14,7 @@
 %
 %   A: assembled matrix
 % 
-% Copyright (C) 2015, Rafael, 2017 Vazquez
+% Copyright (C) 2015, 2017, Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
