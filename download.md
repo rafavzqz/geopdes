@@ -6,12 +6,12 @@ permalink: /download/
 
 You can download the latest version of GeoPDEs in the following link: 
 
-## [Download GeoPDEs 3.2.2](https://github.com/rafavzqz/geopdes/releases/download/release_3.2.2/GeoPDEs-full.tar.gz)
+## [Download GeoPDEs 3.4.0](https://github.com/rafavzqz/geopdes/releases/download/release_3.4.0/GeoPDEs-full.tar.gz)
 
 # File contents
 
 * The GeoPDEs package.
-* The GeoPDEs hierarchical package (beta version).
+* The GeoPDEs hierarchical package.
 * The NURBS package.
 * Two technical reports, explaining the design of GeoPDEs.
 * A README file, with detailed installation instructions.
@@ -40,3 +40,5 @@ More detailed installation instructions are found in the README file.
 # GeoPDEs in GitHub
 
 The source code of GeoPDEs is now available in [GitHub](https://github.com/rafavzqz/geopdes). Older versions of GeoPDEs are also available in the repository.
+
+The source code of GeoPDEs_hierarchical is also available in [GitHub](https://github.com/rafavzqz/geopdes_hierarchical).
