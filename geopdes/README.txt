@@ -36,9 +36,9 @@ CONTENTS:
 
   Download and uncompress the file GeoPDEs_full.tar.gz. This file contains 
    all that is necessary to install GeoPDEs:
-   - The GeoPDEs package: geopdes-3.2.2.tar.gz
+   - The GeoPDEs package: geopdes-3.4.0.tar.gz
    - The NURBS package: nurbs-1.4.3.tar.gz
-   - The GeoPDEs-hierarchical package: geopdes_hierarchical-3.2.2.tar.gz
+   - The GeoPDEs-hierarchical package: geopdes_hierarchical-3.4.0.tar.gz
    - The technical report of GeoPDEs: GeoPDES-report.pdf
    - The technical report for hierarchical splines: GeoPDES-hierarchical-report.pdf
    - This README file.
