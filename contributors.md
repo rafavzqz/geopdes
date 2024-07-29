@@ -26,6 +26,7 @@ permalink: /contributors/
 * **Eduardo M. Garau**, algorithms and implementation of adaptive methods with hierarchical B-splines.
 * **Giuliano Guarino**, imposition of zero rotation for Kirchhoff-Love shells.
 * **Bernard Kapidani**, spaces with periodic conditions, exterior derivative.
+* **Melina Merkel**, fixed memory issues when reading geometry files.
 * **Monica Montardini**, collocation methods, periodic conditions.
 * **Luca Pegolotti**, contributions to Navier-Stokes equations.
 * **Marco Pingaro**, implementation of the bilaplacian and the Kirchhoff-Love plate.
