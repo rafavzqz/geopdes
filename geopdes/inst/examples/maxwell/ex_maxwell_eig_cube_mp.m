@@ -175,6 +175,7 @@ disp (eigv(nzeros+1:nzeros+5))
 %! method_data.nquad      = [3 3 3]; % Points for the Gaussian quadrature rule
 %! [geometry, msh, space, eigv, eigf] = mp_solve_maxwell_eig (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
+%! eigv = eigv(abs(eigv)<Inf);
 %! nzeros = numel (find (eigv < 1e-10));
 %! assert (msh.nel, 108)
 %! assert (space.ndof, 923)

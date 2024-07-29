@@ -12,7 +12,7 @@ problem_data.drchlt_sides = [1 2 3 4];
 % Physical parameters
 problem_data.c_diff  = @(x, y, z) ones(size(x));
 
-% Source and boundary terms
+% % Source and boundary terms
 alp = 5; bet = 1; L = 1;
 g1 = @(x,y) (1-cos(atan(x./y))).*(1-sin(atan(x./y)));
 g2 = @(x,y) cos(atan(x./y)) + sin(atan(x./y)) - 4*cos(atan(x./y)).*sin(atan(x./y));
@@ -29,15 +29,19 @@ problem_data.graduex = @(x, y, z) cat (1, ...
                 reshape ( 1./sqrt(x.^2+y.^2).*cos(atan(y./x))*bet.*gz(z).*dg1(x,y), [1, size(x)]), ...
                 reshape ( alp*pi/L * cos(alp*pi/L*z) .* bet .* g1(x,y), [1, size(x)]));
 
+
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
 method_data.degree     = [3 3];       % Degree of the splines
-method_data.regularity = [2 2];       % Regularity of the splines
+method_data.regularity = [1 1];       % Regularity of the splines
 method_data.nsub       = [9 9];       % Number of subdivisions
 method_data.nquad      = [4 4];       % Points for the Gaussian quadrature rule
 
 % 3) CALL TO THE SOLVER
 [geometry, msh, space, u] = solve_laplace (problem_data, method_data);
+    
+% Display errors of the computed solution in the L2 and H1 norm
+[error_h1, error_l2] = sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex)
 
 % 4) POST-PROCESSING
 % 4.1) EXPORT TO PARAVIEW
@@ -59,9 +63,19 @@ subplot (1,2,2)
 surf (X, Y, Z, problem_data.uex (X,Y,Z))
 title ('Exact solution'), axis tight
 
-% Display errors of the computed solution in the L2 and H1 norm
-[error_h1, error_l2] = ...
-           sp_h1_error (space, msh, u, problem_data.uex, problem_data.graduex)
+% figure
+% npts = [20 20];
+% [eu, F] = sp_eval(u, space, geometry, vtk_pts, 'gradient');
+% % F = reshape (geometry(iptc).map(vtk_pts), [hmsh.rdim, npts]);
+% X = reshape (F(1,:), npts); Y = reshape (F(2,:), npts); Z = reshape (F(3,:), npts);
+% gradex = problem_data.graduex(X,Y,Z);
+% subplot (1,2,1)
+% surf(X, Y, Z, squeeze(gradex(3,:,:)));
+% shading interp
+% subplot (1,2,2)
+% surf(X, Y, Z, squeeze(eu(3,:,:)));
+% shading interp
+
 
 %!demo
 %! ex_laplace_beltrami

@@ -7,16 +7,17 @@
 %
 % INPUT:
 %
-%  f: function handler of the non-linear system
-%  x0: starting vector
-%  jac: function handler of the Jacobian of the non-linear system
-%  tol: tolerance of the method
+%  f:     function handle of the non-linear system
+%  x0:    starting vector
+%  jac:   function handle of the Jacobian of the non-linear system
+%  tol:   tolerance of the method
+%  maxit: maximum number of iterations
 %
 % OUTPUT:
 %
-%  x: solution such that f(x) = 0
+%  x:   solution such that f(x) = 0
 %  err: residual of the last iteration
-%  it: number of iterations
+%  it:  number of iterations
 %
 % Copyright (C) 2018 Luca Pegolotti
 %
@@ -51,5 +52,4 @@ while (err > tol && it < maxit)
     disp(['	done, error = ',num2str(err)]);
 end
 
-
-
+end

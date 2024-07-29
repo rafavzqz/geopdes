@@ -23,7 +23,7 @@ The BibTeX entries for LaTeX users are:
 @article{geopdes,
 	Author = {C. de Falco and A. Reali and R. V{\'a}zquez},
 	Journal = {Advances in Engineering Software},
-	Number = {12},
+	Number = {3},
 	Pages = {1020-1034},
 	Title = {Geo{PDE}s: A research tool for Isogeometric Analysis of {PDE}s},
 	Volume = {42},

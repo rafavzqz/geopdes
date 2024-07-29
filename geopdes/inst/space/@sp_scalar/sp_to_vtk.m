@@ -40,7 +40,11 @@
 
 function sp_to_vtk (u, space, geometry, npts, filename, fieldname, varargin)
 
-  [eu, F] = sp_eval (u, space, geometry, npts, varargin{:});
+  if (numel(u) == space.ndof)
+    [eu, F] = sp_eval (u, space, geometry, npts, varargin{:});
+  elseif (numel(u) == geometry.rdim * space.ndof)
+    [eu, F] = sp_eval_vector (u, space, geometry, npts, varargin{:});
+  end
 
   msh_to_vtk (F, eu, filename, fieldname);
 

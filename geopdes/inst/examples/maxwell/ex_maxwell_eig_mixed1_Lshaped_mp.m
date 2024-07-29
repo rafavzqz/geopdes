@@ -88,6 +88,7 @@ title ('8^{th} eigenfunction')
 %! [geometry, msh, space, sp_mul, eigv, eigf] = ...
 %!                   mp_solve_maxwell_eig_mixed1 (problem_data, method_data);
 %! [eigv, perm] = sort (eigv);
+%! eigv = eigv(eigv>0 & eigv<Inf);
 %! assert (msh.nel, 108)
 %! assert (space.ndof, 416)
 %! assert (sp_mul.ndof, 225)
