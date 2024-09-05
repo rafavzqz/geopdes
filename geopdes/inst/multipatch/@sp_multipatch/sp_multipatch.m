@@ -48,7 +48,7 @@
 %       Other methods
 %         sp_refine: generate a refined space, and subdivision matrices for the univariate spaces
 %
-% Copyright (C) 2015, 2017 Rafael Vazquez
+% Copyright (C) 2015, 2017, 2024 Rafael Vazquez
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
