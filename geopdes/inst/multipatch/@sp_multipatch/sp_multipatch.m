@@ -141,7 +141,19 @@ function sp = sp_multipatch (spaces, msh, interfaces, boundary_interfaces, gluin
       side_number  = msh.boundary.side_numbers(iptc);
       sp_bnd{iptc} = spaces{patch_number}.boundary(side_number);
     end
-    sp.boundary = sp_multipatch (sp_bnd, msh.boundary, boundary_interfaces);
+    if (gluing)
+      sp.boundary = sp_multipatch (sp_bnd, msh.boundary, boundary_interfaces);
+    else
+      glued_bnd_interfaces = true (numel(boundary_interfaces), 1);
+      vol_patch_numbers = msh.boundary.patch_numbers;
+      bnd_patches = [[boundary_interfaces.patch1]; [boundary_interfaces.patch2]];
+      for ii = 1:numel(boundary_interfaces)
+        if (vol_patch_numbers(bnd_patches(1,ii)) ~= vol_patch_numbers(bnd_patches(2,ii)))
+          glued_bnd_interfaces(ii) = false;
+        end
+      end
+      sp.boundary = sp_multipatch (sp_bnd, msh.boundary, boundary_interfaces(glued_bnd_interfaces));
+    end
     
     dofs = zeros (sp.boundary.ndof, 1);
     boundary_orientation = []; %boundary_orient = zeros (sp.boundary.ndof, 1);
