@@ -77,7 +77,7 @@ sp_univ = space.sp_univ;
 elem_list = msh.elem_list;
 
 elem_ind = cell (msh.ndim, 1);
-[elem_ind{:}] = ind2sub (msh.nel_dir, elem_list);
+[elem_ind{:}] = ind2sub ([msh.nel_dir 1], elem_list);
 elem_ind = cell2mat (elem_ind);
 
 nsh = 1;
