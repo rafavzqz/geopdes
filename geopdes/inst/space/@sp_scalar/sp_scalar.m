@@ -161,8 +161,14 @@ function sp = sp_scalar (knots, degree, weights, msh, transform, periodic_dir)
         end
       
         bnd_ndof_dir = sp.ndof_dir(ind);
+        aux_ndof_dir = sp.ndof_dir; aux_ndof_dir(ind2) = 1;
         bnd_ndof = prod (bnd_ndof_dir);
-        [ind_univ{ind}] = ind2sub (bnd_ndof_dir, 1:bnd_ndof);
+        ind_aux = cell (msh.ndim, 1);
+%        [ind_univ{ind}] = ind2sub (bnd_ndof_dir, 1:bnd_ndof);
+        [ind_aux{:}] = ind2sub (aux_ndof_dir, 1:bnd_ndof);
+        for ii = 1:numel(ind)
+          ind_univ{ind(ii)} = ind_aux{ind(ii)};
+        end
         if (rem (iside, 2) == 0)
           ind_univ{ind2} = sp.ndof_dir(ind2) * ones (1, bnd_ndof);
         else
