@@ -1,3 +1,8 @@
+Summary of important changes for geopdes-3.4.2:
+-----------------------------------------------------------------------------
+* Fixed bug due to a change in the behavior of ind2sub in Matlab 2024b
+* Changed 6-patch ASG1 geometry, to make it exactly as in the paper
+
 Summary of important changes for geopdes-3.4.1:
 -----------------------------------------------------------------------------
 * Fixed boundary space for non-glued multipatch spaces
