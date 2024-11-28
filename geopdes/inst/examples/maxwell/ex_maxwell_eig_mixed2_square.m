@@ -25,7 +25,7 @@ method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
                        solve_maxwell_eig_mixed2_2d (problem_data, method_data);
 
 % 4) POSTPROCESSING
-[eigv, perm] = sort (eigv);
+[eigv, perm] = sort (abs(eigv));
 
 fprintf ('First computed eigenvalues: \n')
 disp (eigv(1:6))
