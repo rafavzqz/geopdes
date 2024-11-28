@@ -6,7 +6,7 @@ permalink: /download/
 
 You can download the latest version of GeoPDEs in the following link: 
 
-## [Download GeoPDEs 3.4.0](https://github.com/rafavzqz/geopdes/releases/download/v3.4.0/GeoPDEs-3.4.0-full.tar.gz)
+## [Download GeoPDEs 3.4.2](https://github.com/rafavzqz/geopdes/releases/download/v3.4.2/GeoPDEs-3.4.2-full.tar.gz)
 
 # File contents
 
