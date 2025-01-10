@@ -1,6 +1,6 @@
 % MP_GEO_LOAD: create a multipatch geometry structure and the interfaces structure from a file.
 %
-% [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = mp_geo_load (input, tolerance)
+% [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = mp_geo_load (input, [tolerance])
 %
 % INPUT :
 %
@@ -8,8 +8,9 @@
 %   - an array of NURBS structures representing a nurbs geometry, as in the NURBS toolbox
 %   - a string variable with the name of the file to be read (see doc/geo_specs_mp_v21.txt)
 %
-%   In the second case, the information is automatically generated with the function
-%    nrbmultipatch. It is recommended to check that all the information is correct.
+%   In the first case, the information is automatically generated with the function
+%    nrbmultipatch, using the value given by "tolerance". If not present, a default
+%    tolerance of 1e-13 is used. It is recommended to check that all the information is correct.
 %
 % OUTPUT:
 %
@@ -66,7 +67,7 @@
 % <http://www.gnu.org/licenses/>.
 
 function [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = mp_geo_load (in, tol)
-  if nargin < 2
+  if (nargin < 2)
     tol = 1e-13;
   end
   
