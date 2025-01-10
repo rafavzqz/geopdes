@@ -1,6 +1,6 @@
 % MP_GEO_LOAD: create a multipatch geometry structure and the interfaces structure from a file.
 %
-% [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = mp_geo_load (input)
+% [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = mp_geo_load (input, tolerance)
 %
 % INPUT :
 %
@@ -65,7 +65,10 @@
 % along with Octave; see the file COPYING.  If not, see
 % <http://www.gnu.org/licenses/>.
 
-function [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = mp_geo_load (in)
+function [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = mp_geo_load (in, tol)
+  if nargin < 2
+    tol = 1e-13;
+  end
   
   if (ischar (in))
     if (strcmpi (in(end-3:end), '.mat'))
@@ -138,7 +141,7 @@ function [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = m
       geometry(iptc) = geo_load (in(iptc));
     end
     warning ('geopdes:nrbmultipatch', 'Automatically generating the interface and boundary information with nrbmultipatch')
-    [interfaces, boundaries] = nrbmultipatch (in);
+    [interfaces, boundaries] = nrbmultipatch (in, tol);
     subdomains(1).name = 'SUBDOMAIN 1';
     subdomains(1).patches = 1:numel(in);
   else
@@ -193,7 +196,7 @@ function [geometry, boundaries, interfaces, subdomains, boundary_interfaces] = m
         for iptc = 1:numel(patch_numbers)
           bnd_nurbs(iptc) = geometry(patch_numbers(iptc)).boundary(side_numbers(iptc)).nurbs;
         end
-        boundary_interfaces = nrbmultipatch (bnd_nurbs);
+        boundary_interfaces = nrbmultipatch (bnd_nurbs, tol);
       else
         boundary_interfaces = [];
       end
