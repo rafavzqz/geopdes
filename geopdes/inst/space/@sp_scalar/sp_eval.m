@@ -81,6 +81,7 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options)
       endpoints(2,idim) = knt_aux(ind+1);
     end
   elseif (isvector (npts))
+    npts = npts(:).';
     if (numel (npts) == 1)
       npts = npts * ones (1,ndim);
     end

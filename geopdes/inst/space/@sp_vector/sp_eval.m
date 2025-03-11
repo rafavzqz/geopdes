@@ -77,6 +77,7 @@ function [eu, F] = sp_eval (u, space, geometry, npts, options, lambda_lame, mu_l
     pts = npts;
     npts = cellfun (@numel, pts);
   elseif (isvector (npts))
+    npts = npts(:).';
     if (numel (npts) == 1)
       npts = npts * ones (1,ndim);
     end
